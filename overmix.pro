@@ -3,7 +3,7 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = imgmerger
+TARGET = Overmix
 DEPENDPATH += . src
 INCLUDEPATH += .
 QT += widgets

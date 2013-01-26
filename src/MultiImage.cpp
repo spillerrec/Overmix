@@ -48,30 +48,24 @@ void MultiImage::add_image( QString path ){
 				p.setX( 0 );
 			if( p.y() < 0 )
 				p.setY( 0 );
+			
+			qDebug( "old p: %d,%d", p.x(), p.y() );
 		}
 		
-		double diff = 99999;
+		//Keep repeating with higher levels until it drops
+		//below threshould
 		int level = 1;
-		while( diff > 24 && level < 6 ){
-			pair<QPoint,double> result = best_round( img1, img, level, 0.5 );
-			level++;
-			p += result.first;
-			diff = result.second;
-		}
-	//	int py = best_vertical_slow( imgs[imgs.size()-1], img );
-	//	if( y!=py ){
-	//		qDebug( "Missed alignment: %d where should be %d", y, py );
-	//		qDebug( "with file: %s", path.toLocal8Bit().data() );
-	//		y = py;
-	//	}
-		p += box.topLeft();
+		pair<QPoint,double> result;
+		do{
+			result = best_round( img1, img, level, 0.75 );
+		}while( result.second > 24 && level++ < 6 );
+		p += box.topLeft() + result.first;
 	}
 	
-	//TODO: what to do with zeros
-	bool no_zero = true;
+	//Add image
 	imgs.push_back( img );
 	pos.push_back( pair<int,int>( p.x(), p.y() ) );
-	size_cache = QRect();
+	size_cache = QRect(); //Reset cache
 }
 
 void MultiImage::save( QString path ) const{
@@ -420,11 +414,11 @@ std::pair<QPoint,double> MultiImage::best_round_sub( QImage img1, QImage img2, i
 	int amount = level*2 + 2;
 	double h_offset = (double)(right - left) / amount;
 	double v_offset = (double)(bottom - top) / amount;
-	qDebug( "offsets: %.2f, %.2f", h_offset, v_offset );
+//	qDebug( "offsets: %.2f, %.2f", h_offset, v_offset );
 	level = level > 1 ? level-1 : 1;
 	
 	if( h_offset < 1 && v_offset < 1 ){
-		qDebug( "\tstarting trivial step" );
+//		qDebug( "\tstarting trivial step" );
 		//Handle trivial step
 		//Check every diff in the remaining area
 		for( int ix=left; ix<=right; ix++ )
@@ -446,6 +440,9 @@ std::pair<QPoint,double> MultiImage::best_round_sub( QImage img1, QImage img2, i
 			for( double ix=left+h_offset; ix<=right; ix+=h_add ){
 				int x = ( ix < 0.0 ) ? ceil( ix-0.5 ) : floor( ix+0.5 );
 				int y = ( iy < 0.0 ) ? ceil( iy-0.5 ) : floor( iy+0.5 );
+				
+				//Avoid right-most case. Can't be done in the loop
+				//as we always want it to run at least once.
 				if( x == right || y == bottom )
 					continue;
 				
@@ -462,59 +459,10 @@ std::pair<QPoint,double> MultiImage::best_round_sub( QImage img1, QImage img2, i
 					t->do_diff_center(); //Calculate new
 				
 				comps.push_back( t );
-			//	t->debug();
+//				t->debug();
 			}
 	}
-	/*
-	{
-		//Handle interation step
-		//Horizontal movement
-		if( h_offset >= 1 ){
-			img_comp* l = new img_comp_round( img1, img2, left, h_middle, left+h_offset,      top+v_offset, v_middle+v_offset, v_middle );
-			img_comp* r = new img_comp_round( img1, img2, h_middle, right, h_middle+h_offset, top+v_offset, v_middle+v_offset, v_middle );
-			l->do_diff_center();
-			r->do_diff_center();
-			qDebug( "\tlr: %.2f %.2f", l->diff, r->diff );
-			comps.push_back( l );
-			comps.push_back( r );
-		}
-		
-		//Vertical movement
-		if( v_offset >= 1 ){
-			img_comp* t = new img_comp_round( img1, img2, left+h_offset, h_middle+h_offset, h_middle, top, v_middle, top+v_offset );
-			img_comp* b = new img_comp_round( img1, img2, left+h_offset, h_middle+h_offset, h_middle, v_middle, bottom, v_middle+v_offset );
-			t->do_diff_center();
-			b->do_diff_center();
-			qDebug( "\ttb: %.2f %.2f", t->diff, b->diff );
-			comps.push_back( t );
-			comps.push_back( b );
-		}
-		
-		//Dirgonal movement
-		if( v_offset >= 1 && h_offset >= 1 ){
-			img_comp* tl = new img_comp_round( img1, img2, left, h_middle, left+h_offset,      top, v_middle, top+v_offset );
-			img_comp* tr = new img_comp_round( img1, img2, h_middle, right, h_middle+h_offset, top, v_middle, top+v_offset );
-			img_comp* bl = new img_comp_round( img1, img2, left, h_middle, left+h_offset,      v_middle, bottom, v_middle+v_offset );
-			img_comp* br = new img_comp_round( img1, img2, h_middle, right, h_middle+h_offset, v_middle, bottom, v_middle+v_offset );
-			
-			tl->do_diff_center();
-			tr->do_diff_center();
-			bl->do_diff_center();
-			br->do_diff_center();
-			qDebug( "\ttl,tr,bl,br: %.2f %.2f %.2f %.2f", tl->diff, tr->diff, bl->diff, br->diff );
-			
-			comps.push_back( tl );
-			comps.push_back( tr );
-			comps.push_back( bl );
-			comps.push_back( br );
-		}
-		
-		//Center
-		img_comp* c = new img_comp_round( img1, img2, left+h_offset, h_middle+h_offset, h_middle, top+v_offset, v_middle+v_offset, v_middle );
-		c->diff = diff;
-		comps.push_back( c );
-	}
-	*/
+	
 	//Find best comp
 	img_comp* best = NULL;
 	double best_diff = 99999;
