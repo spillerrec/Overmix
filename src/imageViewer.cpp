@@ -46,10 +46,6 @@ imageViewer::imageViewer( QWidget* parent ): QWidget( parent ){
 	
 	shown_pos = QPoint( 0,0 );
 	shown_zoom_level = 0;
-	
-	time = new QTimer( this );
-	time->setSingleShot( true );
-	connect( time, SIGNAL( timeout() ), this, SLOT( next_frame() ) );
 }
 
 

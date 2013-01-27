@@ -57,9 +57,6 @@ class imageViewer: public QWidget{
 			auto_upscale_only = !downscales;
 		}
 		
-	private:
-		QTimer *time;
-		
 	
 	protected:
 		void paintEvent( QPaintEvent *event );

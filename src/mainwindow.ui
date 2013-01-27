@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>458</width>
-    <height>417</height>
+    <height>513</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,16 +38,20 @@
       <item>
        <widget class="QGroupBox" name="groupBox">
         <property name="title">
-         <string>Mergin method</string>
+         <string>Merging</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
-          <widget class="QRadioButton" name="merge_fast">
+          <widget class="QRadioButton" name="merge_h">
            <property name="text">
-            <string>Fast</string>
+            <string>Horizontal</string>
            </property>
-           <property name="checkable">
-            <bool>true</bool>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="merge_v">
+           <property name="text">
+            <string>Vertical</string>
            </property>
            <property name="checked">
             <bool>true</bool>
@@ -55,18 +59,82 @@
           </widget>
          </item>
          <item>
-          <widget class="QRadioButton" name="merge_h">
+          <widget class="QRadioButton" name="merge_both">
            <property name="text">
-            <string>Perfect horizontal</string>
+            <string>Both</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QRadioButton" name="merge_v">
-           <property name="text">
-            <string>Perfect vertical</string>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>Less movement:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>More movement:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QSlider" name="sld_movement">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
            </property>
           </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="cbx_average">
+           <property name="text">
+            <string>Use average for merging</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QPushButton" name="btn_undo">
+             <property name="text">
+              <string>Undo</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_clear">
+             <property name="text">
+              <string>Clear</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>
@@ -74,7 +142,7 @@
       <item>
        <widget class="QGroupBox" name="groupBox_3">
         <property name="title">
-         <string>Thresshold</string>
+         <string>Filter</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
@@ -99,28 +167,40 @@
            </property>
           </widget>
          </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox_4">
-        <property name="title">
-         <string>Options</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <item>
-          <widget class="QCheckBox" name="cbx_dither">
-           <property name="text">
-            <string>Dither</string>
-           </property>
-          </widget>
-         </item>
          <item>
           <widget class="QCheckBox" name="cbx_diff">
            <property name="text">
             <string>Show difference</string>
            </property>
           </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="cbx_dither">
+           <property name="text">
+            <string>Dither</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QPushButton" name="btn_refresh">
+             <property name="text">
+              <string>Draw</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_save">
+             <property name="text">
+              <string>Save</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>
@@ -137,27 +217,6 @@
          </size>
         </property>
        </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btn_refresh">
-        <property name="text">
-         <string>Refresh</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btn_clear">
-        <property name="text">
-         <string>Clear</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btn_save">
-        <property name="text">
-         <string>Save</string>
-        </property>
-       </widget>
       </item>
      </layout>
     </item>

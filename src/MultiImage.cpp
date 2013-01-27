@@ -26,6 +26,7 @@ unsigned MultiImage::diff_amount = 0;
 void MultiImage::clear(){
 	imgs.clear();
 	pos.clear();
+	size_cache = QRect();
 	viewer->change_image( NULL, true );
 	temp = NULL;
 }
@@ -36,7 +37,6 @@ void MultiImage::add_image( QString path ){
 	QRect box = get_size();
 	
 	if( imgs.size() > 0 ){
-		bool use_average = false;
 		QImage img1;
 		if( use_average )
 			img1 = image_average();
@@ -48,8 +48,6 @@ void MultiImage::add_image( QString path ){
 				p.setX( 0 );
 			if( p.y() < 0 )
 				p.setY( 0 );
-			
-			qDebug( "old p: %d,%d", p.x(), p.y() );
 		}
 		
 		//Keep repeating with higher levels until it drops
@@ -57,7 +55,19 @@ void MultiImage::add_image( QString path ){
 		int level = 1;
 		pair<QPoint,double> result;
 		do{
-			result = best_round( img1, img, level, 0.75 );
+			switch( merge_method ){
+				case 1: 
+						result = best_horizontal( img1, img, level, movement );
+					break;
+				case 2: 
+						result = best_vertical( img1, img, level, movement );
+					break;
+				
+				case 0:
+				default:
+						result = best_round( img1, img, level, movement );
+					break;
+			}
 		}while( result.second > 24 && level++ < 6 );
 		p += box.topLeft() + result.first;
 	}
@@ -309,28 +319,38 @@ int MultiImage::best_vertical_slow( QImage img1, QImage img2 ){
 }
 
 
-int MultiImage::best_vertical( QImage img1, QImage img2 ){
+std::pair<QPoint,double> MultiImage::best_vertical( QImage img1, QImage img2, int level, double range ){
 	diff_amount = 0;
-	unsigned height = img1.height();
 	
-	double diff = img_diff( 0,0, img1, img2 );
-	int y = best_round_sub( img1, img2, 1, 0,0,0, -height+1, height, 0, diff ).first.y();
+	int y = ( img1.height() - img2.height() ) / 2;
+	double diff = img_diff( 0,y, img1, img2 );
+	std::pair<QPoint,double> result = best_round_sub(
+			img1, img2, level
+		,	0,0,0
+		,	(1 - img2.height()) * range, (img1.height() - 1) * range, y
+		,	diff
+		);
 	
 	qDebug( "Diff performance: %d", diff_amount );
 	
-	return y;
+	return result;
 }
 
-int MultiImage::best_horizontal( QImage img1, QImage img2 ){
+std::pair<QPoint,double> MultiImage::best_horizontal( QImage img1, QImage img2, int level, double range ){
 	diff_amount = 0;
-	unsigned width = img1.width();
 	
-	double diff = img_diff( 0,0, img1, img2 );
-	int x = best_round_sub( img1, img2, 1, -width+1, width, 0, 0,0,0, diff ).first.x();
+	int x = ( img1.width() - img2.width() ) / 2;
+	double diff = img_diff( x,0, img1, img2 );
+	std::pair<QPoint,double> result = best_round_sub(
+			img1, img2, level
+		,	(1 - img2.width()) * range, (img1.width() - 1) * range, x
+		,	0,0,0
+		,	diff
+		);
 	
 	qDebug( "Diff performance: %d", diff_amount );
 	
-	return x;
+	return result;
 }
 
 

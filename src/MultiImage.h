@@ -164,6 +164,9 @@ class MultiImage{
 		bool do_dither;
 		bool do_diff;
 		unsigned threshould;
+		double movement;
+		int merge_method; //0 = both, 1 = hor, 2 = ver
+		bool use_average;
 		
 		
 		QImage image_average();
@@ -172,8 +175,8 @@ class MultiImage{
 		static unsigned diff_amount;
 		static double img_diff( int x, int y, QImage &img1, QImage &img2 );
 		static int best_vertical_slow( QImage img1, QImage img2 );
-		static int best_vertical( QImage img1, QImage img2 );
-		static int best_horizontal( QImage img1, QImage img2 );
+		static std::pair<QPoint,double> best_vertical( QImage img1, QImage img2, int level, double range = 1.0 );
+		static std::pair<QPoint,double> best_horizontal( QImage img1, QImage img2, int level, double range = 1.0 );
 		
 		static std::pair<QPoint,double> best_round( QImage img1, QImage img2, int level, double range = 1.0 );
 		static std::pair<QPoint,double> best_round_sub( QImage img1, QImage img2, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, double diff );
@@ -185,11 +188,17 @@ class MultiImage{
 			do_diff = false;
 			threshould = 16*256;
 			temp = NULL;
+			movement = 0.5;
+			merge_method = 0;
+			use_average = true;
 		}
 		
 		void set_dither( bool value ){ do_dither = value; }
 		void set_diff( bool value ){ do_diff = value; }
+		void set_use_average( bool value ){ use_average = value; }
 		void set_threshould( unsigned value ){ threshould = value * 256; }
+		void set_movement( double value ){ movement = value; }
+		void set_merge_method( int value ){ merge_method = value; }
 		
 		void clear();
 		void add_image( QString path );

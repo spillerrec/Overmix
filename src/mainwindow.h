@@ -48,7 +48,10 @@ class main_widget: public QMainWindow{
 		void clear_image();
 		void change_dither();
 		void change_diff();
+		void change_use_average();
 		void change_threshould();
+		void change_movement();
+		void change_merge_method();
 };
 
 #endif
