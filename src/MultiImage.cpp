@@ -20,17 +20,12 @@
 #include "MultiImageIterator.h"
 
 #include <cmath>
-#include <QPen>
-#include <QTime>
 
-unsigned MultiImage::diff_amount = 0;
+using namespace std;
 
-MultiImage::MultiImage( imageViewer* view ){
-	viewer = view;
-	do_dither = false;
+MultiImage::MultiImage(){
 	do_diff = false;
 	threshould = 16*256;
-	temp = NULL;
 	movement = 0.5;
 	merge_method = 0;
 	use_average = true;
@@ -39,24 +34,20 @@ MultiImage::MultiImage( imageViewer* view ){
 void MultiImage::clear(){
 	imgs.clear();
 	pos.clear();
-	size_cache = QRect();
-	viewer->change_image( NULL, true );
-	temp = NULL;
+	calculate_size();
 }
 
 void MultiImage::add_image( QString path ){
 	QImage img( path );
 	QPoint p( 0,0 );
-	QRect box = get_size();
 	
 	if( imgs.size() > 0 ){
 		QImage img1;
 		if( use_average )
-			img1 = image_average();
+			img1 = render( FILTER_AVERAGE );
 		else{
 			img1 = imgs[imgs.size()-1];
-			p.setX( pos[imgs.size()-1].first );
-			p.setY( pos[imgs.size()-1].second );
+			p = pos[imgs.size()-1];
 			if( p.x() < 0 )
 				p.setX( 0 );
 			if( p.y() < 0 )
@@ -82,32 +73,18 @@ void MultiImage::add_image( QString path ){
 					break;
 			}
 		}while( result.second > 24 && level++ < 6 );
-		p += box.topLeft() + result.first;
+		p += get_size().topLeft() + result.first;
 	}
 	
 	//Add image
 	imgs.push_back( img );
-	pos.push_back( pair<int,int>( p.x(), p.y() ) );
-	size_cache = QRect();
+	pos.push_back( p );
+	calculate_size();
 }
 
-void MultiImage::save( QString path ) const{
-	if( temp )
-		temp->save( path );
-}
-
-
-QImage MultiImage::image_average(){
-	return render( FILTER_AVERAGE );
-}
-
-QImage MultiImage::render( filters filter, bool dither ){
-	vector<QPoint> p;
-	for( unsigned i=0; i<pos.size(); i++ )
-		p.push_back( QPoint( pos[i].first, pos[i].second ) );
-	
-	QRect box = get_size(); //TODO: make this function const
-	MultiImageIterator it( imgs, p, box.x(),box.y() );
+QImage MultiImage::render( filters filter, bool dither ) const{
+	QRect box = get_size();
+	MultiImageIterator it( imgs, pos, box.x(),box.y() );
 	color *line = new color[ box.width()+1 ];
 	
 	QImage temp( box.width(), box.height(), QImage::Format_ARGB32 );
@@ -146,42 +123,11 @@ QImage MultiImage::render( filters filter, bool dither ){
 }
 
 
-void MultiImage::draw(){
-	QTime t;
-	t.start();
+void MultiImage::calculate_size(){
+	size_cache = QRect();
 	
-	viewer->change_image( new QImage( render( FILTER_SIMPLE_SLIDE, do_dither ) ), true );
-	
-	qDebug( "draw took %d msec", t.elapsed() );
-}
-
-QRect MultiImage::get_size(){
-	if( size_cache.isValid() )
-		return size_cache;
-	
-	int ymin, ymax, xmin, xmax;
-	ymin = xmin = 9999; //Bah...
-	ymax = xmax = 0;
-	
-	if( pos.size() && pos.size() == imgs.size() ){
-		for( unsigned i=0; i<pos.size(); i++ ){
-			if( xmin > pos[i].first )
-				xmin = pos[i].first;
-			if( xmax < (pos[i].first + imgs[i].width()) )
-				xmax = pos[i].first + imgs[i].width();
-				
-			if( ymin > pos[i].second )
-				ymin = pos[i].second;
-			if( ymax < (pos[i].second + imgs[i].height()) )
-				ymax = pos[i].second + imgs[i].height();
-		}
-	}
-	else{
-		ymin = xmin = 0;
-	}
-	
-	qDebug( "Size: %d %d %d %d", xmin, ymin, xmax-xmin, ymax-ymin );
-	return size_cache = QRect( xmin, ymin, xmax-xmin, ymax-ymin );
+	for( unsigned i=0; i<pos.size(); i++ )
+		size_cache = size_cache.united( QRect( pos[i], imgs[i].size() ) );
 }
 
 double MultiImage::img_diff( int x, int y, QImage &img1, QImage &img2 ){
@@ -213,43 +159,30 @@ double MultiImage::img_diff( int x, int y, QImage &img1, QImage &img2 ){
 	}
 //	qDebug( "%d %d - %d %d %d %d - %d",x,y, common.x(), common.y(), common.width(), common.height(), diff * 2 / amount );
 	
-	diff_amount++;
 	return amount ? ((double)diff / (double)amount) : 999999;
 }
 
 
 MergeResult MultiImage::best_vertical( QImage img1, QImage img2, int level, double range ){
-	diff_amount = 0;
-	
 	int y = ( img1.height() - img2.height() ) / 2;
 	double diff = img_diff( 0,y, img1, img2 );
-	MergeResult result = best_round_sub(
+	return best_round_sub(
 			img1, img2, level
 		,	0,0,0
 		,	(1 - img2.height()) * range, (img1.height() - 1) * range, y
 		,	diff
 		);
-	
-	qDebug( "Diff performance: %d", diff_amount );
-	
-	return result;
 }
 
 MergeResult MultiImage::best_horizontal( QImage img1, QImage img2, int level, double range ){
-	diff_amount = 0;
-	
 	int x = ( img1.width() - img2.width() ) / 2;
 	double diff = img_diff( x,0, img1, img2 );
-	MergeResult result = best_round_sub(
+	return best_round_sub(
 			img1, img2, level
 		,	(1 - img2.width()) * range, (img1.width() - 1) * range, x
 		,	0,0,0
 		,	diff
 		);
-	
-	qDebug( "Diff performance: %d", diff_amount );
-	
-	return result;
 }
 
 
@@ -333,11 +266,9 @@ MergeResult MultiImage::best_round_sub( QImage img1, QImage img2, int level, int
 	int amount = level*2 + 2;
 	double h_offset = (double)(right - left) / amount;
 	double v_offset = (double)(bottom - top) / amount;
-//	qDebug( "offsets: %.2f, %.2f", h_offset, v_offset );
 	level = level > 1 ? level-1 : 1;
 	
 	if( h_offset < 1 && v_offset < 1 ){
-//		qDebug( "\tstarting trivial step" );
 		//Handle trivial step
 		//Check every diff in the remaining area
 		for( int ix=left; ix<=right; ix++ )
@@ -378,7 +309,6 @@ MergeResult MultiImage::best_round_sub( QImage img1, QImage img2, int level, int
 					t->do_diff_center(); //Calculate new
 				
 				comps.push_back( t );
-//				t->debug();
 			}
 	}
 	

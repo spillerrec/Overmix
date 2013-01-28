@@ -31,6 +31,7 @@ class main_widget: public QMainWindow{
 		class Ui_main_widget *ui;
 		imageViewer viewer;
 		MultiImage image;
+		QImage *temp;
 	
 	public:
 		explicit main_widget();
@@ -46,7 +47,6 @@ class main_widget: public QMainWindow{
 		void refresh_image();
 		void save_image();
 		void clear_image();
-		void change_dither();
 		void change_diff();
 		void change_use_average();
 		void change_threshould();

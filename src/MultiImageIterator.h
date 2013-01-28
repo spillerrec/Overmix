@@ -24,14 +24,14 @@
 #include <utility>
 #include <vector>
 
-#include "MultiImage.h" //TODO: seperate color
+#include "color.h"
 
 typedef std::pair<unsigned,unsigned> Line;
 
 class MultiImageIterator{
 	private:
-		std::vector<QImage> imgs;
-		std::vector<QPoint> pos;
+		const std::vector<QImage> &imgs;
+		const std::vector<QPoint> &pos;
 		
 		std::vector<const QRgb*> lines;
 		std::vector<Line> line_width;
@@ -45,8 +45,7 @@ class MultiImageIterator{
 		void fill_values();
 	
 	public:
-		MultiImageIterator( std::vector<QImage> images, std::vector<QPoint> points, unsigned x=0, unsigned y=0 );
-		~MultiImageIterator();
+		MultiImageIterator( const std::vector<QImage> &images, const std::vector<QPoint> &points, unsigned x=0, unsigned y=0 );
 		
 		void next_y(){ new_y( current_y + 1 ); }
 		void next_x(){ new_x( current_x + 1 ); }

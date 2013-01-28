@@ -19,19 +19,13 @@
 #include "MultiImageIterator.h"
 
 
-MultiImageIterator::MultiImageIterator( std::vector<QImage> images, std::vector<QPoint> points, unsigned x, unsigned y ){
-	imgs = images;
-	pos = points;
+MultiImageIterator::MultiImageIterator( const std::vector<QImage> &images, const std::vector<QPoint> &points, unsigned x, unsigned y )
+	:	imgs( images), pos( points ){
 	values.reserve( imgs.size() );
 	line_width.reserve( imgs.size() );
 	lines.reserve( imgs.size() );
 	new_y( y );
 	new_x( x );
-	
-}
-
-MultiImageIterator::~MultiImageIterator(){
-	
 }
 
 
