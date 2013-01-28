@@ -17,11 +17,24 @@
 
 
 #include "MultiImage.h"
+#include "MultiImageIterator.h"
 
 #include <cmath>
 #include <QPen>
+#include <QTime>
 
 unsigned MultiImage::diff_amount = 0;
+
+MultiImage::MultiImage( imageViewer* view ){
+	viewer = view;
+	do_dither = false;
+	do_diff = false;
+	threshould = 16*256;
+	temp = NULL;
+	movement = 0.5;
+	merge_method = 0;
+	use_average = true;
+}
 
 void MultiImage::clear(){
 	imgs.clear();
@@ -75,7 +88,7 @@ void MultiImage::add_image( QString path ){
 	//Add image
 	imgs.push_back( img );
 	pos.push_back( pair<int,int>( p.x(), p.y() ) );
-	size_cache = QRect(); //Reset cache
+	size_cache = QRect();
 }
 
 void MultiImage::save( QString path ) const{
@@ -85,55 +98,37 @@ void MultiImage::save( QString path ) const{
 
 
 QImage MultiImage::image_average(){
-	QRect box = get_size();
-	QImage img( box.width(), box.height(), QImage::Format_ARGB32 );
-	
-	for( int iy = 0; iy < box.height(); iy++ ){
-		QRgb* row = (QRgb*)img.scanLine( iy );
-		for( int ix = 0; ix < box.width(); ix++ ){
-				
-			int r, g, b, a, amount;
-			r = g = b = a = amount = 0;
-			for( unsigned i=0; i<imgs.size(); i++ ){
-				pair<int,int> p = pos[i];
-				QRect placement( QPoint( p.first, p.second ), imgs[i].size() );
-				if( placement.contains( QPoint( ix+box.x(),iy+box.y() ) ) ){
-					QRgb px = imgs[i].pixel( ix-p.first+box.x(), iy-p.second+box.y() );
-					r += qRed( px );
-					g += qGreen( px );
-					b += qBlue( px );
-					a += qAlpha( px );
-					amount++;
-				}
-			}
-			if( amount )
-				row[ix] = qRgba( r / amount, g / amount, b / amount, a / amount );
-			else
-				row[ix] = qRgba( 255, 255, 255, 0 );
-		}
-	}
-	
-	return img;
+	return render( FILTER_AVERAGE );
 }
 
-
-void MultiImage::draw(){
-	QRect box = get_size();
+QImage MultiImage::render( filters filter, bool dither ){
+	vector<QPoint> p;
+	for( unsigned i=0; i<pos.size(); i++ )
+		p.push_back( QPoint( pos[i].first, pos[i].second ) );
+	
+	QRect box = get_size(); //TODO: make this function const
+	MultiImageIterator it( imgs, p, box.x(),box.y() );
 	color *line = new color[ box.width()+1 ];
 	
-	temp = new QImage( /*image_average() );/*/box.width(), box.height(), QImage::Format_ARGB32 );
-	temp->fill(0);
-	for( int iy = 0; iy < box.height(); iy++ ){
-		QRgb* row = (QRgb*)temp->scanLine( iy );
-		for( int ix = 0; ix < box.width(); ix++ ){
-			color c = get_color( ix+box.x(), iy+box.y() );
+	QImage temp( box.width(), box.height(), QImage::Format_ARGB32 );
+	temp.fill(0);
+	for( int iy = 0; iy < box.height(); iy++, it.next_line() ){
+		QRgb* row = (QRgb*)temp.scanLine( iy );
+		for( int ix = 0; ix < box.width(); ix++, it.next_x() ){
+			color c;
+			switch( filter ){
+				case FILTER_SIMPLE:	c = it.simple_filter( threshould ); break;
+				case FILTER_SIMPLE_SLIDE:	c = it.simple_slide( threshould ); break;
+				default:
+				case FILTER_AVERAGE:	c = it.average(); break;
+			}
 			
-			if( do_dither )
+			if( dither )
 				c += line[ix];
 			
 			color rounded = (c) / 256;
 			
-			if( do_dither ){
+			if( dither ){
 				color err = c - ( rounded * 256 );
 				line[ix] = err / 4;
 				line[ix+1] += err / 2;
@@ -145,8 +140,19 @@ void MultiImage::draw(){
 			row[ix] = qRgba( rounded.r, rounded.g, rounded.b, rounded.a );
 		}
 	}
-	delete line;//*/
-	viewer->change_image( temp, true );
+	delete line;
+	
+	return temp;
+}
+
+
+void MultiImage::draw(){
+	QTime t;
+	t.start();
+	
+	viewer->change_image( new QImage( render( FILTER_SIMPLE_SLIDE, do_dither ) ), true );
+	
+	qDebug( "draw took %d msec", t.elapsed() );
 }
 
 QRect MultiImage::get_size(){
@@ -176,95 +182,6 @@ QRect MultiImage::get_size(){
 	
 	qDebug( "Size: %d %d %d %d", xmin, ymin, xmax-xmin, ymax-ymin );
 	return size_cache = QRect( xmin, ymin, xmax-xmin, ymax-ymin );
-}
-
-color MultiImage::get_color( int x, int y ) const{
-	//Find all pixels on this spot
-	vector<color> pixels;
-	for( unsigned i=0; i<imgs.size(); i++ ){
-		pair<int,int> p = pos[i];
-		QRect placement( QPoint( p.first, p.second ), imgs[i].size() );
-		if( placement.contains( QPoint( x,y ) ) )
-			pixels.push_back( color( imgs[i].pixel( x-p.first, y-p.second ) ) );
-	}
-	
-	//If none was found, make it transparent
-	int size = pixels.size();
-	if( size < 1 )
-		return color( 0,0,0,0 );
-	
-	//*
-	
-	//Find the one where threshould will give most samples
-	unsigned best = 0;
-	color best_color;
-	for( unsigned i=0; i<pixels.size(); i++ ){
-		unsigned amount = 0;
-		color avg;
-		
-		for( unsigned j=0; j<pixels.size(); j++ ){
-			color d( pixels[i] );
-			d.diff( pixels[j] );
-			
-			unsigned max = d.r > d.g ? d.r : d.g;
-			max = d.b > max ? d.b : max;
-			if( max <= threshould ){
-				amount++;
-				avg += pixels[j];
-			}
-		}
-		
-		if( amount > best ){
-			best = amount;
-			best_color = avg / amount;
-		}
-	}
-	
-	
-	if( best ){
-		if( do_diff )
-			best_color.r = best_color.g = best_color.b = 255*256 * best / pixels.size();
-		return best_color;
-	}
-	else
-		return color( 0,0,255*256 );
-	
-	/*/
-	//Calculate average:
-	color avg;
-	for( unsigned i=0; i<pixels.size(); i++ )
-		avg += pixels[i];
-	avg /= size;
-	
-	//Calculate value
-	color r;
-	unsigned amount = 0;
-	int threshould = 16*256;
-	for( unsigned i=0; i<pixels.size(); i++ ){
-		//Find difference from average
-		color d( pixels[i] );
-		d.diff( avg );
-		
-		//Find the largest difference
-		unsigned max = d.r > d.g ? d.r : d.g;
-		max = d.b > max ? d.b : max;
-		
-		//Only apply if below threshould
-		if( max <= threshould ){
-			r += pixels[i];
-			amount++;
-		}
-	}
-	
-	//Let it be transparent if no amount
-	if( amount ){
-		r.a *= amount;
-		return r / amount;
-	}
-	else
-		return color( 0,0,255*256 );
-	
-	//*/
 }
 
 double MultiImage::img_diff( int x, int y, QImage &img1, QImage &img2 ){
@@ -301,30 +218,12 @@ double MultiImage::img_diff( int x, int y, QImage &img1, QImage &img2 ){
 }
 
 
-int MultiImage::best_vertical_slow( QImage img1, QImage img2 ){
-	double min = 99999;
-	int y = 0;
-	
-	int height = img1.height();
-	for( int i=1-height; i<height; i++ ){
-		double diff = img_diff( 0, i, img1, img2 );
-//		qDebug( "Diff: %d at %d", diff, i );
-		if( diff < min ){
-			min = diff;
-			y = i;
-		}
-	}
-	
-	return y;
-}
-
-
-std::pair<QPoint,double> MultiImage::best_vertical( QImage img1, QImage img2, int level, double range ){
+MergeResult MultiImage::best_vertical( QImage img1, QImage img2, int level, double range ){
 	diff_amount = 0;
 	
 	int y = ( img1.height() - img2.height() ) / 2;
 	double diff = img_diff( 0,y, img1, img2 );
-	std::pair<QPoint,double> result = best_round_sub(
+	MergeResult result = best_round_sub(
 			img1, img2, level
 		,	0,0,0
 		,	(1 - img2.height()) * range, (img1.height() - 1) * range, y
@@ -336,12 +235,12 @@ std::pair<QPoint,double> MultiImage::best_vertical( QImage img1, QImage img2, in
 	return result;
 }
 
-std::pair<QPoint,double> MultiImage::best_horizontal( QImage img1, QImage img2, int level, double range ){
+MergeResult MultiImage::best_horizontal( QImage img1, QImage img2, int level, double range ){
 	diff_amount = 0;
 	
 	int x = ( img1.width() - img2.width() ) / 2;
 	double diff = img_diff( x,0, img1, img2 );
-	std::pair<QPoint,double> result = best_round_sub(
+	MergeResult result = best_round_sub(
 			img1, img2, level
 		,	(1 - img2.width()) * range, (img1.width() - 1) * range, x
 		,	0,0,0
@@ -375,7 +274,7 @@ struct img_comp{
 		do_diff( h_middle, v_middle );
 	}
 	
-	virtual std::pair<QPoint,double> result(){ return std::pair<QPoint,double>(QPoint( h_middle, v_middle ),diff); }
+	virtual MergeResult result(){ return std::pair<QPoint,double>(QPoint( h_middle, v_middle ),diff); }
 	virtual void debug(){
 		qDebug( "img_comp (%d,%d) at %.2f", h_middle, v_middle, diff );
 	}
@@ -398,7 +297,7 @@ struct img_comp_round : img_comp{
 		bottom = b;
 	}
 	
-	std::pair<QPoint,double> result(){
+	MergeResult result(){
 		return MultiImage::best_round_sub( img1, img2, level, left, right, h_middle, top, bottom, v_middle, diff );
 	}
 	void debug(){
@@ -406,7 +305,7 @@ struct img_comp_round : img_comp{
 	}
 };
 
-std::pair<QPoint,double> MultiImage::best_round( QImage img1, QImage img2, int level, double range ){
+MergeResult MultiImage::best_round( QImage img1, QImage img2, int level, double range ){
 	//Bail if invalid settings
 	if(	level < 1
 		||	range < 0.0
@@ -414,7 +313,7 @@ std::pair<QPoint,double> MultiImage::best_round( QImage img1, QImage img2, int l
 		||	img1.isNull()
 		||	img2.isNull()
 		)
-		return std::pair<QPoint,double>(QPoint(),99999);
+		return MergeResult(QPoint(),99999);
 	
 	//Starting point is the one where both images are centered on each other
 	int x = ( img1.width() - img2.width() ) / 2;
@@ -428,7 +327,7 @@ std::pair<QPoint,double> MultiImage::best_round( QImage img1, QImage img2, int l
 		);
 }
 
-std::pair<QPoint,double> MultiImage::best_round_sub( QImage img1, QImage img2, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, double diff ){
+MergeResult MultiImage::best_round_sub( QImage img1, QImage img2, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, double diff ){
 	qDebug( "Round %d: %d,%d,%d x %d,%d,%d at %.2f", level, left, h_middle, right, top, v_middle, bottom, diff );
 	vector<img_comp*> comps;
 	int amount = level*2 + 2;
@@ -463,7 +362,7 @@ std::pair<QPoint,double> MultiImage::best_round_sub( QImage img1, QImage img2, i
 				
 				//Avoid right-most case. Can't be done in the loop
 				//as we always want it to run at least once.
-				if( x == right || y == bottom )
+				if( ( x == right && x != left ) || ( y == bottom && y != top ) )
 					continue;
 				
 				//Create and add
@@ -496,12 +395,12 @@ std::pair<QPoint,double> MultiImage::best_round_sub( QImage img1, QImage img2, i
 	
 	if( !best ){
 		qDebug( "ERROR! no result to continue on!!" );
-		return std::pair<QPoint,double>(QPoint(),99999);
+		return MergeResult(QPoint(),99999);
 	}
 	
 	//Calculate result, delete and return
 	qDebug( "\tbest: %d,%d at %.2f", best->h_middle, best->v_middle, best->diff );
-	std::pair<QPoint,double> result = best->result();
+	MergeResult result = best->result();
 	
 	for( unsigned i=0; i<comps.size(); i++ )
 		delete comps[i];

@@ -52,6 +52,11 @@ struct color{
 		a = ( c.a > a ) ? c.a - a : a - c.a;
 	}
 	
+	unsigned gray(){
+		//This function corresponds to qGray()
+		return ( r*11 + g*16 + b*5 ) / 32;
+	}
+	
 	color(){
 		clear();
 	}
@@ -153,12 +158,16 @@ struct color{
 	}
 };
 
+typedef std::pair<QPoint,double> MergeResult;
 
 class MultiImage{
+	//Cache
+	private:
+		QRect size_cache;
+	
 	private:
 		vector<QImage> imgs;
 		vector<pair<int,int> > pos;
-		QRect size_cache;
 		imageViewer* viewer;
 		QImage* temp;
 		bool do_dither;
@@ -174,25 +183,16 @@ class MultiImage{
 	public:
 		static unsigned diff_amount;
 		static double img_diff( int x, int y, QImage &img1, QImage &img2 );
-		static int best_vertical_slow( QImage img1, QImage img2 );
-		static std::pair<QPoint,double> best_vertical( QImage img1, QImage img2, int level, double range = 1.0 );
-		static std::pair<QPoint,double> best_horizontal( QImage img1, QImage img2, int level, double range = 1.0 );
+		static MergeResult best_vertical( QImage img1, QImage img2, int level, double range = 1.0 );
+		static MergeResult best_horizontal( QImage img1, QImage img2, int level, double range = 1.0 );
 		
-		static std::pair<QPoint,double> best_round( QImage img1, QImage img2, int level, double range = 1.0 );
-		static std::pair<QPoint,double> best_round_sub( QImage img1, QImage img2, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, double diff );
+		static MergeResult best_round( QImage img1, QImage img2, int level, double range = 1.0 );
+		static MergeResult best_round_sub( QImage img1, QImage img2, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, double diff );
 		
 	public:
-		MultiImage( imageViewer* view ){
-			viewer = view;
-			do_dither = false;
-			do_diff = false;
-			threshould = 16*256;
-			temp = NULL;
-			movement = 0.5;
-			merge_method = 0;
-			use_average = true;
-		}
+		MultiImage( imageViewer* view );
 		
+		//Setters
 		void set_dither( bool value ){ do_dither = value; }
 		void set_diff( bool value ){ do_diff = value; }
 		void set_use_average( bool value ){ use_average = value; }
@@ -204,11 +204,16 @@ class MultiImage{
 		void add_image( QString path );
 		void save( QString path ) const;
 		
+		enum filters{
+			FILTER_AVERAGE,
+			FILTER_SIMPLE,
+			FILTER_SIMPLE_SLIDE
+		};
+		QImage render( filters filter, bool dither = false );
 		void draw();
 		
 		unsigned get_count() const{ return imgs.size(); }
 		QRect get_size();
-		color get_color( int x, int y ) const;
 	
 };
 
