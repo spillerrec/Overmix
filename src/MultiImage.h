@@ -66,6 +66,7 @@ class MultiImage{
 		
 		enum filters{
 			FILTER_AVERAGE,
+			FILTER_DIFFERENCE,
 			FILTER_SIMPLE,
 			FILTER_SIMPLE_SLIDE
 		};

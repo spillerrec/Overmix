@@ -86,6 +86,23 @@ color MultiImageIterator::average(){
 	return avg;
 }
 
+color MultiImageIterator::difference(){
+	color avg = average();
+	color diff_avg;
+	
+	if( values.size() ){
+		for( unsigned i=0; i<values.size(); i++ ){
+			color diff( avg );
+			diff.diff( values[i] );
+			diff_avg += diff;
+		}
+		diff_avg /= values.size();
+	}
+	
+	diff_avg.a = 255*256;
+	return diff_avg;
+}
+
 color MultiImageIterator::simple_filter( unsigned threshould ){
 	fill_values();
 	

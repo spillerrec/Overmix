@@ -57,6 +57,7 @@ class MultiImageIterator{
 		
 	public:
 		color average();
+		color difference();
 		color simple_filter( unsigned threshould );
 		color simple_slide( unsigned threshould );
 };

@@ -94,6 +94,7 @@ QImage MultiImage::render( filters filter, bool dither ) const{
 		for( int ix = 0; ix < box.width(); ix++, it.next_x() ){
 			color c;
 			switch( filter ){
+				case FILTER_DIFFERENCE:	c = it.difference(); break;
 				case FILTER_SIMPLE:	c = it.simple_filter( threshould ); break;
 				case FILTER_SIMPLE_SLIDE:	c = it.simple_slide( threshould ); break;
 				default:

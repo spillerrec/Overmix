@@ -225,7 +225,6 @@ void imageViewer::mouseReleaseEvent( QMouseEvent *event ){
 
 void imageViewer::wheelEvent( QWheelEvent *event ){
 	int amount = event->delta() / 8;
-	QPoint pos = event->pos();
 	
 	if( amount > 0 )
 		shown_zoom_level++;
