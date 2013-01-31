@@ -19,17 +19,22 @@
 #include "MultiImageIterator.h"
 
 
-MultiImageIterator::MultiImageIterator( const std::vector<QImage> &images, const std::vector<QPoint> &points, unsigned x, unsigned y )
+MultiImageIterator::MultiImageIterator( const std::vector<QImage> &images, const std::vector<QPoint> &points, int x, int y )
 	:	imgs( images), pos( points ){
 	values.reserve( imgs.size() );
 	line_width.reserve( imgs.size() );
 	lines.reserve( imgs.size() );
 	new_y( y );
 	new_x( x );
+	
+	//Find left_most point
+	left = 99999;
+	for( unsigned i=0; i<pos.size(); i++ )
+		left = ( left > pos[i].x() ) ? pos[i].x() : left;
 }
 
 
-void MultiImageIterator::new_x( unsigned x ){
+void MultiImageIterator::new_x( int x ){
 	int offset = x - current_x;
 	current_x = x;
 	
@@ -40,8 +45,8 @@ void MultiImageIterator::new_x( unsigned x ){
 }
 
 
-void MultiImageIterator::new_y( unsigned y ){
-	//Chech cache
+void MultiImageIterator::new_y( int y ){
+	//Check cache
 	if( y == current_y && lines.size() != 0 )
 		return;
 	
@@ -64,7 +69,7 @@ void MultiImageIterator::new_y( unsigned y ){
 void MultiImageIterator::fill_values(){
 	if( values.size() == 0 )
 		for( unsigned i=0; i<lines.size(); i++ )
-			if( current_x >= line_width[i].first && current_x < line_width[i].second )
+			if( (current_x >= line_width[i].first) && (current_x < line_width[i].second) )
 				values.push_back( color( *(lines[i]) ) );
 }
 

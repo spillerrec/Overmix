@@ -26,7 +26,7 @@
 
 #include "color.h"
 
-typedef std::pair<unsigned,unsigned> Line;
+typedef std::pair<int,int> Line;
 
 class MultiImageIterator{
 	private:
@@ -36,21 +36,22 @@ class MultiImageIterator{
 		std::vector<const QRgb*> lines;
 		std::vector<Line> line_width;
 		std::vector<color> values;
-		unsigned current_x;
-		unsigned current_y;
+		int current_x;
+		int current_y;
+		int left;
 		
 	private:
-		void new_y( unsigned y );
-		void new_x( unsigned x );
+		void new_y( int y );
+		void new_x( int x );
 		void fill_values();
 	
 	public:
-		MultiImageIterator( const std::vector<QImage> &images, const std::vector<QPoint> &points, unsigned x=0, unsigned y=0 );
+		MultiImageIterator( const std::vector<QImage> &images, const std::vector<QPoint> &points, int x=0, int y=0 );
 		
 		void next_y(){ new_y( current_y + 1 ); }
 		void next_x(){ new_x( current_x + 1 ); }
 		void next_line(){
-			current_x = 0; //We can do this as new_y() updates this as well
+			current_x = left; //We can do this as new_y() updates this as well
 			next_y();
 		}
 		
