@@ -42,9 +42,7 @@ main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidg
 	//TODO: undo
 	
 	//Checkboxes
-	change_diff();
 	change_use_average();
-	connect( ui->cbx_diff, SIGNAL( toggled(bool) ), this, SLOT( change_diff() ) );
 	connect( ui->cbx_average, SIGNAL( toggled(bool) ), this, SLOT( change_use_average() ) );
 	
 	//Sliders
@@ -94,7 +92,18 @@ void main_widget::refresh_text(){
 }
 
 void main_widget::refresh_image(){
-	temp = new QImage( image.render( MultiImage::FILTER_SIMPLE_SLIDE, ui->cbx_dither->isChecked() ) );
+	//Select filter
+	MultiImage::filters type = MultiImage::FILTER_AVERAGE;
+	if( ui->rbtn_simple->isChecked() )
+		type = MultiImage::FILTER_SIMPLE;
+	else if( ui->rbtn_diff->isChecked() )
+		type = MultiImage::FILTER_DIFFERENCE;
+	else if( ui->rbtn_slow_slide->isChecked() )
+		type = MultiImage::FILTER_SIMPLE_SLIDE;
+	else if( ui->rbtn_fast_slide->isChecked() )
+		type = MultiImage::FILTER_SIMPLE_SLIDE;
+	
+	temp = new QImage( image.render( type, ui->cbx_dither->isChecked() ) );
 	viewer.change_image( temp, true );
 	refresh_text();
 }
@@ -103,10 +112,6 @@ void main_widget::save_image(){
 	QString filename = QFileDialog::getSaveFileName( this, tr("Save image"), "", tr("PNG files (*.png)") );
 	if( !filename.isEmpty() && temp )
 		temp->save( filename );
-}
-
-void main_widget::change_diff(){
-	image.set_diff( ui->cbx_diff->isChecked() );
 }
 
 void main_widget::change_use_average(){

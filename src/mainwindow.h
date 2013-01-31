@@ -47,7 +47,6 @@ class main_widget: public QMainWindow{
 		void refresh_image();
 		void save_image();
 		void clear_image();
-		void change_diff();
 		void change_use_average();
 		void change_threshould();
 		void change_movement();

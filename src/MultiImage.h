@@ -37,7 +37,6 @@ class MultiImage{
 	private:
 		std::vector<QImage> imgs;
 		std::vector<QPoint> pos;
-		bool do_diff;
 		unsigned threshould;
 		double movement;
 		int merge_method; //0 = both, 1 = hor, 2 = ver
@@ -55,7 +54,6 @@ class MultiImage{
 		MultiImage();
 		
 		//Setters
-		void set_diff( bool value ){ do_diff = value; }
 		void set_use_average( bool value ){ use_average = value; }
 		void set_threshould( unsigned value ){ threshould = value * 256; }
 		void set_movement( double value ){ movement = value; }

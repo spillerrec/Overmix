@@ -24,7 +24,6 @@
 using namespace std;
 
 MultiImage::MultiImage(){
-	do_diff = false;
 	threshould = 16*256;
 	movement = 0.5;
 	merge_method = 0;

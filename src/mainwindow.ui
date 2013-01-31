@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>458</width>
-    <height>513</height>
+    <height>568</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,19 +21,10 @@
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
       <item>
-       <widget class="QGroupBox" name="groupBox_2">
-        <property name="title">
-         <string>Info</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QLabel" name="lbl_height"/>
-         </item>
-         <item>
-          <widget class="QLabel" name="lbl_amount"/>
-         </item>
-        </layout>
-       </widget>
+       <widget class="QLabel" name="lbl_height"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="lbl_amount"/>
       </item>
       <item>
        <widget class="QGroupBox" name="groupBox">
@@ -41,6 +32,9 @@
          <string>Merging</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">
+         <property name="spacing">
+          <number>3</number>
+         </property>
          <item>
           <widget class="QRadioButton" name="merge_h">
            <property name="text">
@@ -70,14 +64,24 @@
            <item>
             <widget class="QLabel" name="label_2">
              <property name="text">
-              <string>Less movement:</string>
+              <string>&lt; Less</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Movement</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="label">
              <property name="text">
-              <string>More movement:</string>
+              <string>More &gt;</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -145,6 +149,47 @@
          <string>Filter</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_3">
+         <property name="spacing">
+          <number>3</number>
+         </property>
+         <item>
+          <widget class="QRadioButton" name="rbtn_avg">
+           <property name="text">
+            <string>Average</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="rbtn_diff">
+           <property name="text">
+            <string>Difference</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="rbtn_simple">
+           <property name="text">
+            <string>Simple filter</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="rbtn_slow_slide">
+           <property name="text">
+            <string>Slow sliding window</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="rbtn_fast_slide">
+           <property name="text">
+            <string>Fast sliding window</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
          <item>
           <widget class="QSlider" name="sld_threshould">
            <property name="sizePolicy">
@@ -164,13 +209,6 @@
            </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="cbx_diff">
-           <property name="text">
-            <string>Show difference</string>
            </property>
           </widget>
          </item>
