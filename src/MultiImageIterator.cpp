@@ -18,6 +18,8 @@
 
 #include "MultiImageIterator.h"
 
+#include <cmath>
+
 
 MultiImageIterator::MultiImageIterator( const std::vector<QImage> &images, const std::vector<QPoint> &points, int x, int y )
 	:	imgs( images), pos( points ){
@@ -97,6 +99,9 @@ color MultiImageIterator::difference(){
 			diff_avg += diff;
 		}
 		diff_avg /= values.size();
+		diff_avg.r = std::sqrt( diff_avg.r ) * 256;
+		diff_avg.g = std::sqrt( diff_avg.g ) * 256;
+		diff_avg.b = std::sqrt( diff_avg.b ) * 256;
 	}
 	
 	diff_avg.a = 255*256;
@@ -104,13 +109,7 @@ color MultiImageIterator::difference(){
 }
 
 color MultiImageIterator::simple_filter( unsigned threshould ){
-	fill_values();
-	
-	//Calculate average:
-	color avg;
-	for( unsigned i=0; i<values.size(); i++ )
-		avg += values[i];
-	avg /= values.size();
+	color avg = average();
 	
 	//Calculate value
 	color r;
@@ -176,3 +175,45 @@ color MultiImageIterator::simple_slide( unsigned threshould ){
 	else
 		return color( 0,0,255*256 );
 }
+
+
+struct color_comp{
+	color c;
+	unsigned gray;
+	
+	color_comp( color c ){
+		this->c = c;
+		gray = c.gray();
+	}
+	
+	bool operator<( const color_comp& comp ) const{
+		return gray < comp.gray;
+	}
+};
+
+color MultiImageIterator::fast_slide( unsigned threshould ){
+	fill_values();
+	
+	//Prepare array, avoid reallocs
+	static std::vector<color_comp> comps;
+	comps.clear();
+	comps.reserve( imgs.size() );
+	
+	//Fill array with gray values stored
+	for( unsigned i=0; i<values.size(); i++ )
+		comps.push_back( color_comp( values[i] ) );
+	
+	//Sort it
+	std::sort( comps.begin(), comps.end() );
+	
+	//Find the part where the window gives most samples
+	unsigned best_amount = 0;
+	unsigned best_index = 0;
+	unsigned current_start = 0;
+	unsigned current_width = 0;
+	unsigned gray_sum = 0;
+	for( int i=0; i<comps.size(); i++ ){
+		
+	}
+}
+

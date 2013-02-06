@@ -44,6 +44,8 @@ class MultiImage{
 	
 	public:
 		static double img_diff( int x, int y, QImage &img1, QImage &img2 );
+		static double img_subv_diff( int x, int y, QImage &img1, QImage &img2 );
+		static QImage img_subv( double v_diff, QImage &img );
 		static MergeResult best_vertical( QImage img1, QImage img2, int level, double range = 1.0 );
 		static MergeResult best_horizontal( QImage img1, QImage img2, int level, double range = 1.0 );
 		

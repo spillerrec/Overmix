@@ -60,6 +60,7 @@ class MultiImageIterator{
 		color difference();
 		color simple_filter( unsigned threshould );
 		color simple_slide( unsigned threshould );
+		color fast_slide( unsigned threshould );
 };
 
 #endif
