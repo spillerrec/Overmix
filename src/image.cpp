@@ -64,7 +64,7 @@ double image::diff( const image& img, int x, int y ) const{
 		for( int ix=common.x(); ix<common.width()+common.x(); ix++ ){
 			color p1 = row1[ix];
 			color p2 = row2[ix];
-			if( p1.a > 127 && p2.a > 127 ){
+			if( p1.a > 127*256 && p2.a > 127*256 ){
 				color d = p1.difference( p2 );
 				difference += d.r;
 				difference += d.g;
