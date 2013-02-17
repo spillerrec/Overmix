@@ -19,6 +19,7 @@
 
 #include <QRect>
 #include <vector>
+#include <QtConcurrentMap>
 
 using namespace std;
 
@@ -114,10 +115,8 @@ struct img_comp{
 		diff = -1;
 	}
 	void do_diff( int x, int y ){
-		diff = img1.diff( img2, x, y );
-	}
-	void do_diff_center(){
-		do_diff( h_middle, v_middle );
+		if( diff < 0 )
+			diff = img1.diff( img2, x, y );
 	}
 	
 	virtual MergeResult result(){ return std::pair<QPoint,double>(QPoint( h_middle, v_middle ),diff); }
@@ -125,6 +124,9 @@ struct img_comp{
 		qDebug( "img_comp (%d,%d) at %.2f", h_middle, v_middle, diff );
 	}
 };
+void do_diff_center( img_comp* comp ){
+	comp->do_diff( comp->h_middle, comp->v_middle );
+}
 
 struct img_comp_round : img_comp{
 	int level;
@@ -175,7 +177,7 @@ MergeResult image::best_round( const image& img, int level, double range ) const
 
 MergeResult image::best_round_sub( const image& img, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, double diff ) const{
 	qDebug( "Round %d: %d,%d,%d x %d,%d,%d at %.2f", level, left, h_middle, right, top, v_middle, bottom, diff );
-	vector<img_comp*> comps;
+	QList<img_comp*> comps;
 	int amount = level*2 + 2;
 	double h_offset = (double)(right - left) / amount;
 	double v_offset = (double)(bottom - top) / amount;
@@ -189,9 +191,7 @@ MergeResult image::best_round_sub( const image& img, int level, int left, int ri
 				img_comp* t = new img_comp( *this, img, ix, iy );
 				if( ix == h_middle && iy == v_middle )
 					t->diff = diff;
-				else
-					t->do_diff_center();
-				comps.push_back( t );
+				comps << t;
 			}
 	}
 	else{
@@ -218,20 +218,22 @@ MergeResult image::best_round_sub( const image& img, int level, int left, int ri
 				
 				if( x == h_middle && y == v_middle )
 					t->diff = diff; //Reuse old diff
-				else
-					t->do_diff_center(); //Calculate new
 				
-				comps.push_back( t );
+				comps << t;
 			}
 	}
+	
+	//Calculate diffs
+	QFuture<void> progress = QtConcurrent::map( comps, do_diff_center );
+	progress.waitForFinished();
 	
 	//Find best comp
 	img_comp* best = NULL;
 	double best_diff = 99999;
 	
 	for( unsigned i=0; i<comps.size(); i++ ){
-		if( comps[i]->diff < best_diff ){
-			best = comps[i];
+		if( comps.at(i)->diff < best_diff ){
+			best = comps.at(i);
 			best_diff = best->diff;
 		}
 	}
@@ -246,7 +248,7 @@ MergeResult image::best_round_sub( const image& img, int level, int left, int ri
 	MergeResult result = best->result();
 	
 	for( unsigned i=0; i<comps.size(); i++ )
-		delete comps[i];
+		delete comps.at(i);
 	
 	return result;
 }

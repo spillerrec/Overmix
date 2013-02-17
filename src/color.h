@@ -230,10 +230,12 @@ class ColorAvg{
 		
 		color get_color() const{
 			color c;
-			c.r = r / amount;
-			c.g = g / amount;
-			c.b = b / amount;
-			c.a = a / amount;
+			if( amount ){
+				c.r = r / amount;
+				c.g = g / amount;
+				c.b = b / amount;
+				c.a = a / amount;
+			}
 			return c;
 		}
 		
