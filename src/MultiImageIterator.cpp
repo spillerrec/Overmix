@@ -21,8 +21,8 @@
 #include <cmath>
 
 
-MultiImageIterator::MultiImageIterator( const std::vector<QImage> &images, const std::vector<QPoint> &points, int x, int y )
-	:	imgs( images), pos( points ){
+MultiImageIterator::MultiImageIterator( const std::vector<image*> &images, const std::vector<QPoint> &points, int x, int y )
+	:	imgs( images ), pos( points ){
 	values.reserve( imgs.size() );
 	line_width.reserve( imgs.size() );
 	lines.reserve( imgs.size() );
@@ -58,9 +58,9 @@ void MultiImageIterator::new_y( int y ){
 	for( unsigned iy=0; iy<imgs.size(); iy++ ){
 		QPoint p = pos[iy];
 		int new_y = y - p.y();
-		if( new_y >= 0 && new_y < imgs[iy].height() ){
-			lines.push_back( (const QRgb*)imgs[iy].constScanLine( new_y ) - p.x() + current_x );
-			line_width.push_back( Line( p.x(), p.x() + imgs[iy].width() ) );
+		if( new_y >= 0 && (unsigned)new_y < imgs[iy]->get_height() ){
+			lines.push_back( imgs[iy]->scan_line( new_y ) - p.x() + current_x );
+			line_width.push_back( Line( p.x(), p.x() + imgs[iy]->get_width() ) );
 		}
 	}
 	
@@ -72,18 +72,16 @@ void MultiImageIterator::fill_values(){
 	if( values.size() == 0 )
 		for( unsigned i=0; i<lines.size(); i++ )
 			if( (current_x >= line_width[i].first) && (current_x < line_width[i].second) )
-				values.push_back( color( *(lines[i]) ) );
+				values.push_back( *lines[i] );
 }
 
 color MultiImageIterator::average(){
-	color avg;
+	ColorAvg avg;
 	fill_values();
 	
-	if( values.size() ){
+	if( values.size() )
 		for( unsigned i=0; i<values.size(); i++ )
 			avg += values[i];
-		avg /= values.size();
-	}
 	
 	return avg;
 }
@@ -112,8 +110,7 @@ color MultiImageIterator::simple_filter( unsigned threshould ){
 	color avg = average();
 	
 	//Calculate value
-	color r;
-	unsigned amount = 0;
+	ColorAvg r;
 	for( unsigned i=0; i<values.size(); i++ ){
 		//Find difference from average
 		color d( values[i] );
@@ -124,16 +121,13 @@ color MultiImageIterator::simple_filter( unsigned threshould ){
 		max = d.b > max ? d.b : max;
 		
 		//Only apply if below threshould
-		if( max <= threshould ){
+		if( max <= threshould )
 			r += values[i];
-			amount++;
-		}
 	}
 	
 	//Let it be transparent if no amount
-	if( amount ){
-		r.a *= amount;
-		return r / amount;
+	if( r.size() ){
+		return r;
 	}
 	else
 		return color( 0,0,255*256 );
@@ -145,8 +139,7 @@ color MultiImageIterator::simple_slide( unsigned threshould ){
 	unsigned best = 0;
 	color best_color;
 	for( unsigned i=0; i<values.size(); i++ ){
-		unsigned amount = 0;
-		color avg;
+		ColorAvg avg;
 		
 		for( unsigned j=0; j<values.size(); j++ ){
 			color d( values[i] );
@@ -154,15 +147,13 @@ color MultiImageIterator::simple_slide( unsigned threshould ){
 			
 			unsigned max = d.r > d.g ? d.r : d.g;
 			max = d.b > max ? d.b : max;
-			if( max <= threshould ){
-				amount++;
+			if( max <= threshould )
 				avg += values[j];
-			}
 		}
 		
-		if( amount > best ){
-			best = amount;
-			best_color = avg / amount;
+		if( avg.size() > best ){
+			best = avg.size();
+			best_color = avg;
 		}
 	}
 	
@@ -173,7 +164,7 @@ color MultiImageIterator::simple_slide( unsigned threshould ){
 		return best_color;
 	}
 	else
-		return color( 0,0,255*256 );
+		return color();
 }
 
 
@@ -212,7 +203,7 @@ color MultiImageIterator::fast_slide( unsigned threshould ){
 	unsigned current_start = 0;
 	unsigned current_width = 0;
 	unsigned gray_sum = 0;
-	for( int i=0; i<comps.size(); i++ ){
+	for( unsigned i=0; i<comps.size(); i++ ){
 		
 	}
 }

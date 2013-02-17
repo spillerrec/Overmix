@@ -24,9 +24,8 @@
 #include <utility>
 #include <vector>
 
-#include "color.h"
+#include "image.h"
 
-typedef std::pair<QPoint,double> MergeResult;
 
 class MultiImage{
 	//Cache
@@ -35,7 +34,7 @@ class MultiImage{
 		void calculate_size();
 	
 	private:
-		std::vector<QImage> imgs;
+		std::vector<image*> imgs;
 		std::vector<QPoint> pos;
 		unsigned threshould;
 		double movement;
@@ -43,17 +42,12 @@ class MultiImage{
 		bool use_average;
 	
 	public:
-		static double img_diff( int x, int y, QImage &img1, QImage &img2 );
 		static double img_subv_diff( int x, int y, QImage &img1, QImage &img2 );
 		static QImage img_subv( double v_diff, QImage &img );
-		static MergeResult best_vertical( QImage img1, QImage img2, int level, double range = 1.0 );
-		static MergeResult best_horizontal( QImage img1, QImage img2, int level, double range = 1.0 );
-		
-		static MergeResult best_round( QImage img1, QImage img2, int level, double range = 1.0 );
-		static MergeResult best_round_sub( QImage img1, QImage img2, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, double diff );
 		
 	public:
 		MultiImage();
+		~MultiImage();
 		
 		//Setters
 		void set_use_average( bool value ){ use_average = value; }
@@ -70,6 +64,7 @@ class MultiImage{
 			FILTER_SIMPLE,
 			FILTER_SIMPLE_SLIDE
 		};
+		image* render_image( filters filter ) const;
 		QImage render( filters filter, bool dither = false ) const;
 		
 		unsigned get_count() const{ return imgs.size(); }
