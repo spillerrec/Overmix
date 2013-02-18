@@ -52,7 +52,8 @@ void MultiImage::add_image( QString path ){
 	qDebug( "image loaded: %d", t.elapsed() );
 	
 	if( imgs.size() > 0 ){
-		image *img1 = NULL;;
+		image *img1 = NULL;
+		bool destroy = true;
 		if( use_average )
 			img1 = render_image( FILTER_AVERAGE );
 		else{
@@ -62,6 +63,7 @@ void MultiImage::add_image( QString path ){
 				p.setX( 0 );
 			if( p.y() < 0 )
 				p.setY( 0 );
+			destroy = false;
 		}
 		
 		qDebug( "image prepared: %d", t.elapsed() );
@@ -81,41 +83,14 @@ void MultiImage::add_image( QString path ){
 				
 				case 0:
 				default:
-						result = img1->best_round( *img, level, movement );
+						result = img1->best_round( *img, level, movement, movement );
 					break;
 			}
 		}while( result.second > 24 && level++ < 6 );
 		
-		//Do sub-pixel align
-	//	img_subv_diff( result.first.x(), result.first.y(), img1, img );
-	//	QImage best_img = img;
-	//	double best_diff = result.second;
-		int y_add = 0;
-/* 		for( int i=-19; i<20; i++ ){
-			QImage sub = img_subv( i/20.0, img );
-			double diff = img_diff( result.first.x(), result.first.y()+1, img1, sub );
-			qDebug( "Diff at %d: %.2f", i, diff );
-			
-			if( diff < best_diff ){
-				best_diff = diff;
-				best_img = sub;
-				y_add = 1;
-			}
-		}
-		img = best_img; */
-	/* 	
-		img_subv( result.first.x(), result.first.y(), 0.1, img1, img ).save( "01.png" );
-		img_subv( result.first.x(), result.first.y(), 0.2, img1, img ).save( "02.png" );
-		img_subv( result.first.x(), result.first.y(), 0.3, img1, img ).save( "03.png" );
-		img_subv( result.first.x(), result.first.y(), 0.4, img1, img ).save( "04.png" );
-		img_subv( result.first.x(), result.first.y(), 0.5, img1, img ).save( "05.png" );
-		img_subv( result.first.x(), result.first.y(), 0.6, img1, img ).save( "06.png" );
-		img_subv( result.first.x(), result.first.y(), 0.7, img1, img ).save( "07.png" );
-		img_subv( result.first.x(), result.first.y(), 0.8, img1, img ).save( "08.png" );
-		img_subv( result.first.x(), result.first.y(), 0.9, img1, img ).save( "09.png" ); */
-		
-		p += get_size().topLeft() + result.first + QPoint( 0,y_add);
-		delete img1;
+		p += get_size().topLeft() + result.first;
+		if( destroy )
+			delete img1;
 		qDebug( "image compared: %d", t.elapsed() );
 	}
 	
