@@ -29,6 +29,8 @@ MultiImageIterator::MultiImageIterator( const std::vector<image*> &images, const
 	new_y( y );
 	new_x( x );
 	
+	threshould = 0;
+	
 	//Find left_most point
 	left = 99999;
 	for( unsigned i=0; i<pos.size(); i++ )
@@ -107,7 +109,7 @@ color MultiImageIterator::difference(){
 	return result;
 }
 
-color MultiImageIterator::simple_filter( unsigned threshould ){
+color MultiImageIterator::simple_filter(){
 	color avg = average();
 	
 	//Calculate value
@@ -134,7 +136,7 @@ color MultiImageIterator::simple_filter( unsigned threshould ){
 		return color( 0,0,255*256 );
 }
 
-color MultiImageIterator::simple_slide( unsigned threshould ){
+color MultiImageIterator::simple_slide(){
 	fill_values();
 	
 	unsigned best = 0;
@@ -183,7 +185,7 @@ struct color_comp{
 	}
 };
 
-color MultiImageIterator::fast_slide( unsigned threshould ){
+color MultiImageIterator::fast_slide(){
 	fill_values();
 	
 	//Prepare array, avoid reallocs

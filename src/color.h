@@ -111,7 +111,7 @@ struct color{
 		g = qGreen( c ) * 256;
 		b = qBlue( c ) * 256;
 		a = qAlpha( c ) * 256;
-		linearize();
+	//	linearize();
 	}
 	
 	color& operator+=( const color &rhs ){
@@ -215,7 +215,7 @@ class ColorAvg{
 			g += rhs.g;
 			b += rhs.b;
 			a += rhs.a;
-			amount++;
+			++amount;
 			return *this;
 		}
 		
@@ -224,19 +224,20 @@ class ColorAvg{
 			g -= rhs.g;
 			b -= rhs.b;
 			a -= rhs.a;
-			amount++;
+			--amount;
 			return *this;
 		}
 		
 		color get_color() const{
-			color c;
-			if( amount ){
-				c.r = r / amount;
-				c.g = g / amount;
-				c.b = b / amount;
-				c.a = a / amount;
-			}
-			return c;
+			if( amount )
+				return color(
+						r / amount
+					,	g / amount
+					,	b / amount
+					,	a / amount
+					);
+			else
+				return color();
 		}
 		
 		operator color(){ return get_color(); }

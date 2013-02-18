@@ -20,6 +20,7 @@
 #include "MultiImageIterator.h"
 
 #include <cmath>
+#include <QTime>
 
 using namespace std;
 
@@ -42,8 +43,13 @@ void MultiImage::clear(){
 }
 
 void MultiImage::add_image( QString path ){
-	image *img = new image( QImage( path ) );
+	QTime t;
+	t.start();
+	QImage temp( path );
+	qDebug( "QImage loaded: %d", t.elapsed() );
+	image *img = new image( temp );// QImage( path ) );
 	QPoint p( 0,0 );
+	qDebug( "image loaded: %d", t.elapsed() );
 	
 	if( imgs.size() > 0 ){
 		image *img1 = NULL;;
@@ -57,6 +63,8 @@ void MultiImage::add_image( QString path ){
 			if( p.y() < 0 )
 				p.setY( 0 );
 		}
+		
+		qDebug( "image prepared: %d", t.elapsed() );
 		
 		//Keep repeating with higher levels until it drops
 		//below threshould
@@ -108,6 +116,7 @@ void MultiImage::add_image( QString path ){
 		
 		p += get_size().topLeft() + result.first + QPoint( 0,y_add);
 		delete img1;
+		qDebug( "image compared: %d", t.elapsed() );
 	}
 	
 	//Add image
@@ -117,37 +126,48 @@ void MultiImage::add_image( QString path ){
 }
 
 image* MultiImage::render_image( filters filter ) const{
+	QTime t;
+	t.start();
 	QRect box = get_size();
 	MultiImageIterator it( imgs, pos, box.x(),box.y() );
+	it.set_threshould( threshould );
+	
+	//Pointer to the function we want to use
+	color (MultiImageIterator::*function)();
+	switch( filter ){
+		case FILTER_DIFFERENCE:   function = &MultiImageIterator::difference; break;
+		case FILTER_SIMPLE:       function = &MultiImageIterator::simple_filter; break;
+		case FILTER_SIMPLE_SLIDE: function = &MultiImageIterator::simple_slide; break;
+		default:
+		case FILTER_AVERAGE:      function = &MultiImageIterator::average; break;
+	}
 	
 	image *img = new image( box.width(), box.height() );
+	qDebug( "render init took: %d", t.elapsed() );
 	for( int iy = 0; iy < box.height(); iy++, it.next_line() ){
 		color* row = img->scan_line( iy );
-		for( int ix = 0; ix < box.width(); ix++, it.next_x() ){
-			switch( filter ){
-				case FILTER_DIFFERENCE:	row[ ix ] = it.difference(); break;
-				case FILTER_SIMPLE:	row[ ix ] = it.simple_filter( threshould ); break;
-				case FILTER_SIMPLE_SLIDE:	row[ ix ] = it.simple_slide( threshould ); break;
-				default:
-				case FILTER_AVERAGE:	row[ ix ] = it.average(); break;
-			}
-		}
+		for( int ix = 0; ix < box.width(); ++ix, it.next_x(), ++row )
+			*row = (it.*function)();
 	}
+	qDebug( "render rest took: %d", t.elapsed() );
 	
 	return img;
 }
 
 QImage MultiImage::render( filters filter, bool dither ) const{
 	image *img = render_image( filter );
+	QTime t;
+	t.start();
 	color *line = new color[ img->get_width()+1 ];
 	
 	QImage temp( img->get_width(), img->get_height(), QImage::Format_ARGB32 );
 	temp.fill(0);
 	for( unsigned iy = 0; iy < img->get_height(); iy++ ){
 		QRgb* row = (QRgb*)temp.scanLine( iy );
-		for( unsigned ix = 0; ix < img->get_width(); ix++ ){
-			color c = img->pixel( ix, iy );
-			c.sRgb();
+		color* img_row = img->scan_line( iy );
+		for( unsigned ix = 0; ix < img->get_width(); ix++, img_row++, row++ ){
+			color c = *img_row;
+		//	c.sRgb();
 			
 			if( dither )
 				c += line[ix];
@@ -163,11 +183,13 @@ QImage MultiImage::render( filters filter, bool dither ) const{
 			}
 			
 			//rounded.trunc( 255 );
-			row[ix] = qRgba( rounded.r, rounded.g, rounded.b, rounded.a );
+			*row = qRgba( rounded.r, rounded.g, rounded.b, rounded.a );
 		}
 	}
 	delete line;
 	delete img;
+	
+	qDebug( "image load took: %d", t.elapsed() );
 	
 	return temp;
 }

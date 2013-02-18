@@ -39,6 +39,7 @@ class MultiImageIterator{
 		int current_x;
 		int current_y;
 		int left;
+		unsigned threshould;
 		
 	private:
 		void new_y( int y );
@@ -54,13 +55,14 @@ class MultiImageIterator{
 			current_x = left; //We can do this as new_y() updates this as well
 			next_y();
 		}
+		void set_threshould( unsigned new_threshould ){ threshould = new_threshould; }
 		
 	public:
 		color average();
 		color difference();
-		color simple_filter( unsigned threshould );
-		color simple_slide( unsigned threshould );
-		color fast_slide( unsigned threshould );
+		color simple_filter();
+		color simple_slide();
+		color fast_slide();
 };
 
 #endif

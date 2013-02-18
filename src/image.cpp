@@ -35,9 +35,9 @@ image::image( QImage img ){
 	
 	for( unsigned iy=0; iy<height; iy++ ){
 		const QRgb *row = (const QRgb*)img.constScanLine( iy );
-		for( unsigned ix=0; ix<width; ix++ ){
-			data[ ix + iy*width] = color( row[ix] );
-		}
+		color* row2 = scan_line( iy );
+		for( unsigned ix=0; ix<width; ++ix, ++row, ++row2 )
+			*row2 = color( *row );
 	}
 }
 
@@ -176,7 +176,7 @@ MergeResult image::best_round( const image& img, int level, double range ) const
 }
 
 MergeResult image::best_round_sub( const image& img, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, double diff ) const{
-	qDebug( "Round %d: %d,%d,%d x %d,%d,%d at %.2f", level, left, h_middle, right, top, v_middle, bottom, diff );
+//	qDebug( "Round %d: %d,%d,%d x %d,%d,%d at %.2f", level, left, h_middle, right, top, v_middle, bottom, diff );
 	QList<img_comp*> comps;
 	int amount = level*2 + 2;
 	double h_offset = (double)(right - left) / amount;
@@ -244,7 +244,7 @@ MergeResult image::best_round_sub( const image& img, int level, int left, int ri
 	}
 	
 	//Calculate result, delete and return
-	qDebug( "\tbest: %d,%d at %.2f", best->h_middle, best->v_middle, best->diff );
+//	qDebug( "\tbest: %d,%d at %.2f", best->h_middle, best->v_middle, best->diff );
 	MergeResult result = best->result();
 	
 	for( unsigned i=0; i<comps.size(); i++ )
