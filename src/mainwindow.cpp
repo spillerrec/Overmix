@@ -30,6 +30,7 @@
 #include <QImage>
 #include <QPainter>
 #include <QFileDialog>
+#include <QProgressDialog>
 
 main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidget*)this){
 	ui->setupUi(this);
@@ -74,9 +75,20 @@ void main_widget::dropEvent( QDropEvent *event ){
 	if( event->mimeData()->hasUrls() ){
 		event->setDropAction( Qt::CopyAction );
 		
+		QList<QUrl> urls( event->mimeData()->urls() );
+		
+		QProgressDialog progress( "Mixing images", "Stop", 0, urls.count(), this );
+		progress.setWindowModality( Qt::WindowModal );
+		
+		int i=0;
 		foreach( QUrl url, event->mimeData()->urls() ){
+			progress.setValue( i );
 			image.add_image( url.toLocalFile() );
+			i++;
+			if( progress.wasCanceled() )
+				break;
 		}
+		
 		refresh_text();
 		update();
 		

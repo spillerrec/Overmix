@@ -46,14 +46,14 @@ class image{
 		
 		double diff( const image& img, int x, int y ) const;
 		
-		MergeResult best_vertical( const image& img, int level, double range ) const{
+		MergeResult best_vertical( image& img, int level, double range ){
 			return best_round( img, level, 0, range );
 		}
-		MergeResult best_horizontal( const image& img, int level, double range ) const{
+		MergeResult best_horizontal( image& img, int level, double range ){
 			return best_round( img, level, range, 0 );
 		}
-		MergeResult best_round( const image& img, int level, double range_x, double range_y ) const;
-		MergeResult best_round_sub( const image& img, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, double diff ) const;
+		MergeResult best_round( image& img, int level, double range_x, double range_y );
+		MergeResult best_round_sub( image& img, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, double diff );
 };
 
 #endif

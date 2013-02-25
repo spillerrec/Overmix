@@ -80,8 +80,8 @@ double image::diff( const image& img, int x, int y ) const{
 
 
 struct img_comp{
-	const image& img1;
-	const image& img2;
+	image* img1;
+	image* img2;
 	int h_middle;
 	int v_middle;
 	double diff;
@@ -91,7 +91,9 @@ struct img_comp{
 	int top;
 	int bottom;
 	
-	img_comp( const image& image1, const image& image2, int hm, int vm, int lvl=0, int l=0, int r=0, int t=0, int b=0 ) : img1( image1 ), img2( image2 ){
+	img_comp( image& image1, image& image2, int hm, int vm, int lvl=0, int l=0, int r=0, int t=0, int b=0 ){
+		img1 = &image1;
+		img2 = &image2;
 		h_middle = hm;
 		v_middle = vm;
 		diff = -1;
@@ -103,12 +105,12 @@ struct img_comp{
 	}
 	void do_diff( int x, int y ){
 		if( diff < 0 )
-			diff = img1.diff( img2, x, y );
+			diff = img1->diff( *img2, x, y );
 	}
 	
 	MergeResult result() const{
 		if( level > 0 )
-			return img1.best_round_sub( img2, level, left, right, h_middle, top, bottom, v_middle, diff );
+			return img1->best_round_sub( *img2, level, left, right, h_middle, top, bottom, v_middle, diff );
 		else
 			return MergeResult(QPoint( h_middle, v_middle ),diff);
 	}
@@ -117,7 +119,7 @@ void do_diff_center( img_comp& comp ){
 	comp.do_diff( comp.h_middle, comp.v_middle );
 }
 
-MergeResult image::best_round( const image& img, int level, double range_x, double range_y ) const{
+MergeResult image::best_round( image& img, int level, double range_x, double range_y ){
 	//Bail if invalid settings
 	if(	level < 1
 		||	( range_x < 0.0 || range_x > 1.0 )
@@ -139,7 +141,7 @@ MergeResult image::best_round( const image& img, int level, double range_x, doub
 		);
 }
 
-MergeResult image::best_round_sub( const image& img, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, double diff ) const{
+MergeResult image::best_round_sub( image& img, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, double diff ){
 //	qDebug( "Round %d: %d,%d,%d x %d,%d,%d at %.2f", level, left, h_middle, right, top, v_middle, bottom, diff );
 	QList<img_comp> comps;
 	int amount = level*2 + 2;

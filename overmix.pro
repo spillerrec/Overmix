@@ -2,7 +2,7 @@ TEMPLATE = app
 TARGET = Overmix
 DEPENDPATH += . src
 INCLUDEPATH += .
-QT += widgets
+QT += widgets concurrent
 
 # Input
 HEADERS += src/mainwindow.h src/MultiImage.h src/imageViewer.h src/MultiImageIterator.h src/color.h src/image.h
