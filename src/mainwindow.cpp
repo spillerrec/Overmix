@@ -24,7 +24,6 @@
 #include <QFileInfo>
 #include <QFile>
 #include <QMimeData>
-#include <QUrl>
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QImage>
@@ -57,6 +56,10 @@ main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidg
 	connect( ui->merge_both, SIGNAL( clicked() ), this, SLOT( change_merge_method() ) );
 	connect( ui->merge_h, SIGNAL( clicked() ), this, SLOT( change_merge_method() ) );
 	connect( ui->merge_v, SIGNAL( clicked() ), this, SLOT( change_merge_method() ) );
+	
+	//Add images
+	qRegisterMetaType<QList<QUrl> >( "QList<QUrl>" );
+	connect( this, SIGNAL( urls_retrived(QList<QUrl>) ), this, SLOT( process_urls(QList<QUrl>) ), Qt::QueuedConnection );
 
 	//Refresh info labels
 	refresh_text();
@@ -75,25 +78,27 @@ void main_widget::dropEvent( QDropEvent *event ){
 	if( event->mimeData()->hasUrls() ){
 		event->setDropAction( Qt::CopyAction );
 		
-		QList<QUrl> urls( event->mimeData()->urls() );
-		
-		QProgressDialog progress( "Mixing images", "Stop", 0, urls.count(), this );
-		progress.setWindowModality( Qt::WindowModal );
-		
-		int i=0;
-		foreach( QUrl url, event->mimeData()->urls() ){
-			progress.setValue( i );
-			image.add_image( url.toLocalFile() );
-			i++;
-			if( progress.wasCanceled() )
-				break;
-		}
-		
-		refresh_text();
-		update();
+		emit urls_retrived( event->mimeData()->urls() );
 		
 		event->accept();
 	}
+}
+
+void main_widget::process_urls( QList<QUrl> urls ){
+	QProgressDialog progress( "Mixing images", "Stop", 0, urls.count(), this );
+	progress.setWindowModality( Qt::WindowModal );
+	
+	int i=0;
+	foreach( QUrl url, urls ){
+		progress.setValue( i );
+		image.add_image( url.toLocalFile() );
+		i++;
+		if( progress.wasCanceled() )
+			break;
+	}
+	
+	refresh_text();
+	update();
 }
 
 

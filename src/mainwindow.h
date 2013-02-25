@@ -20,6 +20,7 @@
 
 #include <QMainWindow>
 #include <QImage>
+#include <QUrl>
 
 #include "MultiImage.h"
 #include "imageViewer.h"
@@ -40,9 +41,11 @@ class main_widget: public QMainWindow{
 		void dragEnterEvent( QDragEnterEvent *event );
 		void dropEvent( QDropEvent *event );
 	
-	private:
+	signals:
+		void urls_retrived( QList<QUrl> urls );
 	
 	private slots:
+		void process_urls( QList<QUrl> urls );
 		void refresh_text();
 		void refresh_image();
 		void save_image();
