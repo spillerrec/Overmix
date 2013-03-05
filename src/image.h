@@ -34,6 +34,7 @@ class image{
 	public:
 		image( unsigned w, unsigned h );
 		image( QImage img );
+		image( const char* path );
 		~image();
 		
 		bool is_invalid() const{ return height == 0 || width == 0; }

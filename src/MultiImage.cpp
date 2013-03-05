@@ -45,9 +45,9 @@ void MultiImage::clear(){
 void MultiImage::add_image( QString path ){
 	QTime t;
 	t.start();
-	QImage temp( path );
+	//QImage temp( path );
 	qDebug( "QImage loaded: %d", t.elapsed() );
-	image *img = new image( temp );// QImage( path ) );
+	image *img = new image( path.toLocal8Bit().constData() );// QImage( path ) );
 	QPoint p( 0,0 );
 	qDebug( "image loaded: %d", t.elapsed() );
 	

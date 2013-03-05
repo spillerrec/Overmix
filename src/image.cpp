@@ -40,6 +40,29 @@ image::image( QImage img ){
 			*row2 = color( *row );
 	}
 }
+image::image( const char* path ){
+	FILE *f = fopen( path, "rb" );
+	qDebug( "FILE: %p", f );
+	if( f ){
+		fread( &width, sizeof(unsigned), 1, f );
+		fread( &height, sizeof(unsigned), 1, f );
+		qDebug( "read: %dx%d", width, height );
+		unsigned depth;
+		fread( &depth, sizeof(unsigned), 1, f );
+		
+		data = new color[ height * width ];
+		
+		for( unsigned iy=0; iy<height; iy++ ){
+			color* row = scan_line( iy );
+			for( unsigned ix=0; ix<width; ++ix, ++row ){
+				unsigned short c=127*255;
+				fread( &c, 2, 1, f );
+				c <<= 6;
+				*row = color( c,c,c );
+			}
+		}
+	}
+}
 
 image::~image(){
 	qDebug( "deleting image %p", this );
