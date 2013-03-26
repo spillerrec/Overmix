@@ -143,6 +143,7 @@ QImage MultiImage::render( filters filter, bool dither ) const{
 		for( unsigned ix = 0; ix < img->get_width(); ix++, img_row++, row++ ){
 			color c = *img_row;
 		//	c.sRgb();
+			c = c.rec709_to_rgb();
 			
 			if( dither )
 				c += line[ix];

@@ -18,6 +18,7 @@
 #ifndef COLOR_H
 #define COLOR_H
 
+#include <QCoreApplication>
 #include <QColor>
 #include <cmath>
 
@@ -63,7 +64,55 @@ struct color{
 					qDebug( "didn't match: %d %d", i, i2 );
 			}
 		}
-	
+		
+		
+		color rec709_to_rgb(){
+			//*
+			double y = r / (255*256.0);
+			double u = g / (255*256.0);
+			double v = b / (255*256.0);
+			
+			//Remove foot- and head-room
+			y = (y - (16 / 255.0)) * ( 1 + 16.0 / 255.0 + (256-235) / 255.0 );
+			u = (u - (16 / 255.0)) * ( 1 + 16.0 / 255.0 + (256-240) / 255.0 );
+			v = (v - (16 / 255.0)) * ( 1 + 16.0 / 255.0 + (256-240) / 255.0 );
+			
+			//Don't let it outside the allowed range
+			y = (y < 0 ) ? 0 : y;
+			u = (u < 0 ) ? 0 : u;
+			v = (v < 0 ) ? 0 : v;
+			y = (y > 1 ) ? 1 : y;
+			u = (u > 1 ) ? 1 : u;
+			v = (v > 1 ) ? 1 : v;
+			
+			//Move chroma
+			u -= 0.5;
+			v -= 0.5;
+			
+			double rr = y + 1.5701 * v;
+			double rg = y - 0.1870 * u - 0.4664 * v;
+			double rb = y + 1.8556 * u;
+			
+			//Don't let it outside the allowed range
+			rr = (rr < 0 ) ? 0 : rr;
+			rg = (rg < 0 ) ? 0 : rg;
+			rb = (rb < 0 ) ? 0 : rb;
+			rr = (rr > 1 ) ? 1 : rr;
+			rg = (rg > 1 ) ? 1 : rg;
+			rb = (rb > 1 ) ? 1 : rb;
+			
+			rr = std::pow( std::pow( rr, 2.4 ), 1/2.2 );
+			rg = std::pow( std::pow( rg, 2.4 ), 1/2.2 );
+			rb = std::pow( std::pow( rb, 2.4 ), 1/2.2 );
+			
+			//Transform range
+			rr = (rr) * 255*256;
+			rg = (rg) * 255*256;
+			rb = (rb) * 255*256;
+			
+			return color( rr, rg, rb, a );
+		}
+		
 	void clear(){
 		r = b = g = a = 0;
 	}

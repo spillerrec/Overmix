@@ -21,6 +21,8 @@
 #include <vector>
 #include <QtConcurrentMap>
 
+#include <png.h>
+
 using namespace std;
 
 image::image( unsigned w, unsigned h ){
@@ -41,33 +43,149 @@ image::image( QImage img ){
 	}
 }
 image::image( const char* path ){
-	FILE *f = fopen( path, "rb" );
-	qDebug( "FILE: %p", f );
-	if( f ){
-		fread( &width, sizeof(unsigned), 1, f );
-		fread( &height, sizeof(unsigned), 1, f );
-		qDebug( "read: %dx%d", width, height );
-		unsigned depth;
-		fread( &depth, sizeof(unsigned), 1, f );
-		
-		data = new color[ height * width ];
-		
-		for( unsigned iy=0; iy<height; iy++ ){
-			color* row = scan_line( iy );
-			for( unsigned ix=0; ix<width; ++ix, ++row ){
-				unsigned short c=127*255;
-				fread( &c, 2, 1, f );
-				c <<= 6;
-				*row = color( c,c,c );
-			}
-		}
-	}
+	if( !from_png( path ) )
+		from_dump( path );
 }
 
 image::~image(){
 	qDebug( "deleting image %p", this );
 	if( data )
 		delete[] data;
+}
+
+
+bool image::from_dump( const char* path ){
+	FILE *f = fopen( path, "rb" );
+	if( !f )
+		return false;
+	
+	fread( &width, sizeof(unsigned), 1, f );
+	fread( &height, sizeof(unsigned), 1, f );
+	qDebug( "read: %dx%d", width, height );
+	unsigned depth;
+	fread( &depth, sizeof(unsigned), 1, f );
+	
+	data = new color[ height * width ];
+	
+	for( unsigned iy=0; iy<height; iy++ ){
+		color* row = scan_line( iy );
+		for( unsigned ix=0; ix<width; ++ix, ++row ){
+			unsigned short c=127*255;
+			fread( &c, 2, 1, f );
+			c <<= 6;
+			*row = color( c,c,c );
+		}
+	}
+	
+	unsigned sub_width, sub_height;
+	fread( &sub_width, sizeof(unsigned), 1, f );
+	fread( &sub_height, sizeof(unsigned), 1, f );
+	qDebug( "read: %dx%d", width, height );
+	unsigned sub_depth;
+	fread( &sub_depth, sizeof(unsigned), 1, f );
+	
+	for( unsigned iy=0; iy<sub_height; iy++ ){
+		color* row1 = scan_line( iy*2 );
+		color* row2 = scan_line( iy*2+1 );
+		for( unsigned ix=0; ix<sub_width; ++ix ){
+			unsigned short c=127*255;
+			fread( &c, 2, 1, f );
+			c <<= 6;
+			row1[ix*2].g = c;
+			row1[ix*2+1].g = c;
+			row2[ix*2].g = c;
+			row2[ix*2+1].g = c;
+		}
+	}
+	fread( &sub_width, sizeof(unsigned), 1, f );
+	fread( &sub_height, sizeof(unsigned), 1, f );
+	qDebug( "read: %dx%d", width, height );
+	fread( &sub_depth, sizeof(unsigned), 1, f );
+	
+	for( unsigned iy=0; iy<sub_height; iy++ ){
+		color* row1 = scan_line( iy*2 );
+		color* row2 = scan_line( iy*2+1 );
+		for( unsigned ix=0; ix<sub_width; ++ix ){
+			unsigned short c=127*255;
+			fread( &c, 2, 1, f );
+			c <<= 6;
+			row1[ix*2].b = c;
+			row1[ix*2+1].b = c;
+			row2[ix*2].b = c;
+			row2[ix*2+1].b = c;
+		}
+	}
+	
+	fclose( f );
+	return true;
+}
+
+
+static int read_chunk_callback_thing( png_structp ptr, png_unknown_chunkp chunk ){
+	return 0;
+}
+
+bool image::from_png( const char* path ){
+	FILE *f = fopen( path, "rb" );
+	if( !f )
+		return false;
+	
+	//Read signature
+	unsigned char header[8];
+	fread( &header, 1, 8, f );
+	
+	//Check signature
+	if( png_sig_cmp( header, 0, 8 ) ){
+		fclose( f );
+		return false;
+	}
+	
+	//Start initializing libpng
+	png_structp png_ptr = png_create_read_struct( PNG_LIBPNG_VER_STRING, NULL, NULL, NULL );
+	if( !png_ptr ){
+		png_destroy_read_struct( &png_ptr, NULL, NULL );
+		fclose( f );
+		return false;
+	}
+	
+	png_infop info_ptr = png_create_info_struct( png_ptr );
+	if( !info_ptr ){
+		png_destroy_read_struct( &png_ptr, NULL, NULL );
+		fclose( f );
+		return false;
+	}
+	
+	png_infop end_info = png_create_info_struct( png_ptr );
+	if( !end_info ){
+		png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
+		fclose( f );
+		return false;
+	}
+	
+	png_init_io( png_ptr, f );
+	png_set_sig_bytes( png_ptr, 8 );
+	png_set_read_user_chunk_fn( png_ptr, NULL, read_chunk_callback_thing );
+	
+	
+	//Finally start reading
+	png_read_png( png_ptr, info_ptr, PNG_TRANSFORM_STRIP_16 | PNG_TRANSFORM_EXPAND, NULL );
+	png_bytep *row_pointers = png_get_rows( png_ptr, info_ptr );
+	
+	height = png_get_image_height( png_ptr, info_ptr );
+	width = png_get_image_width( png_ptr, info_ptr );
+	data = new color[ height * width ];
+	
+	for( unsigned iy=0; iy<height; iy++ ){
+		color* row = scan_line( iy );
+		for( unsigned ix=0; ix<width; ix++ ){
+			int r = row_pointers[iy][ix*3 + 0] * 256;
+			int g = row_pointers[iy][ix*3 + 1] * 256;
+			int b = row_pointers[iy][ix*3 + 2] * 256;
+			row[ix] = color( r, g, b );
+		}
+	}
+	
+	return true;
 }
 
 
@@ -81,17 +199,18 @@ double image::diff( const image& img, int x, int y ) const{
 	
 	for( int iy=common.y(); iy<common.height()+common.y(); iy++ ){
 		const color* row1 = scan_line( iy );
-		const color* row2 = img.scan_line( iy-y );
+		const color* row2 = img.scan_line( iy-y ) - x;
 		
-		row2 -= x;
 		for( int ix=common.x(); ix<common.width()+common.x(); ix++ ){
 			color p1 = row1[ix];
 			color p2 = row2[ix];
 			if( p1.a > 127*256 && p2.a > 127*256 ){
-				color d = p1.difference( p2 );
+				/* color d = p1.difference( p2 );
 				difference += d.r;
 				difference += d.g;
-				difference += d.b;
+				difference += d.b; */
+				
+				difference += p2.r > p1.r ? p2.r-p1.r : p1.r-p2.r;
 				amount++;
 			}
 		}

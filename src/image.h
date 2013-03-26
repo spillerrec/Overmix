@@ -31,6 +31,9 @@ class image{
 		unsigned width;
 		color *data;
 		
+		bool from_dump( const char* path );
+		bool from_png( const char* path );
+		
 	public:
 		image( unsigned w, unsigned h );
 		image( QImage img );

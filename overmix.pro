@@ -3,6 +3,7 @@ TARGET = Overmix
 DEPENDPATH += . src
 INCLUDEPATH += .
 QT += widgets concurrent
+LIBS += -lpng
 
 # Input
 HEADERS += src/mainwindow.h src/MultiImage.h src/imageViewer.h src/MultiImageIterator.h src/color.h src/image.h
