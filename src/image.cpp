@@ -15,7 +15,7 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "image.h"
+#include "Image.hpp"
 
 #include <QRect>
 #include <vector>

@@ -24,7 +24,7 @@
 #include <utility>
 #include <vector>
 
-#include "image.h"
+#include "Image.hpp"
 
 
 class MultiImage{

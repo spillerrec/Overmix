@@ -22,8 +22,8 @@
 #include <QImage>
 #include <QUrl>
 
-#include "MultiImage.h"
-#include "imageViewer.h"
+#include "MultiImage.hpp"
+#include "imageViewer.hpp"
 
 class main_widget: public QMainWindow{
 	Q_OBJECT

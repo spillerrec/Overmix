@@ -17,7 +17,7 @@
 
 #include "ImageEx.hpp"
 #include "Plane.hpp"
-#include "image.h"
+#include "Image.hpp"
 
 #include <png.h>
 

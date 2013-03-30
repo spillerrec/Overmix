@@ -15,7 +15,7 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "imageViewer.h"
+#include "imageViewer.hpp"
 
 #include <QPoint>
 #include <QSize>

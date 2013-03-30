@@ -16,7 +16,7 @@
 */
 
 
-#include "MultiImageIterator.h"
+#include "MultiImageIterator.hpp"
 
 #include <cmath>
 
