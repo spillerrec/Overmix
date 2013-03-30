@@ -18,6 +18,7 @@
 
 #include "MultiImage.h"
 #include "MultiImageIterator.h"
+#include "ImageEx.hpp"
 
 #include <cmath>
 #include <QTime>
@@ -46,8 +47,11 @@ void MultiImage::add_image( QString path ){
 	QTime t;
 	t.start();
 	//QImage temp( path );
-	qDebug( "QImage loaded: %d", t.elapsed() );
-	image *img = new image( path.toLocal8Bit().constData() );// QImage( path ) );
+	//qDebug( "QImage loaded: %d", t.elapsed() );
+	//image *img = new image( path.toLocal8Bit().constData() );// QImage( path ) );
+	ImageEx img_org;
+	img_org.read_file( path.toLocal8Bit().constData() );
+	image *img = img_org.to_image();
 	QPoint p( 0,0 );
 	qDebug( "image loaded: %d", t.elapsed() );
 	
