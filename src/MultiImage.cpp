@@ -17,7 +17,7 @@
 
 
 #include "MultiImage.hpp"
-#include "MultiImageIterator.hpp"
+#include "Image.hpp"
 #include "ImageEx.hpp"
 
 #include <cmath>
