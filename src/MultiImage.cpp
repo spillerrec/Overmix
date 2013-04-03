@@ -47,9 +47,6 @@ void MultiImage::clear(){
 void MultiImage::add_image( QString path ){
 	QTime t;
 	t.start();
-	//QImage temp( path );
-	//qDebug( "QImage loaded: %d", t.elapsed() );
-	//image *img = new image( path.toLocal8Bit().constData() );// QImage( path ) );
 	ImageEx *img = new ImageEx();
 	img->read_file( path.toLocal8Bit().constData() );
 	QPoint p( 0,0 );
@@ -90,7 +87,7 @@ void MultiImage::add_image( QString path ){
 						result = img1->best_round( *img, level, movement, movement );
 					break;
 			}
-		}while( result.second > 24 && level++ < 6 );
+		}while( result.second > 24*256 && level++ < 6 );
 		
 		p += get_size().topLeft() + result.first;
 		if( destroy )
@@ -124,7 +121,8 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 	for( unsigned i=0; i<imgs.size(); i++ )
 		info.push_back( PlaneItInfo( &(*imgs[i])[0].p, pos[i].x(),pos[i].y() ) );
 	
-	MultiPlaneIterator it( info, box.width(), box.height(), box.x(),box.y() );
+	MultiPlaneIterator it( info );
+	it.iterate_all();
 	
 	for( ; it.valid(); it.next() )
 		it.write_average();

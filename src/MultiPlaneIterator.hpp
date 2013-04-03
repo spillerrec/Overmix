@@ -48,35 +48,41 @@ struct PlaneItInfo{
 class MultiPlaneIterator{
 	private:
 		std::vector<PlaneItInfo> infos;
-		int current_x;
-		int current_y;
-		unsigned height;
-		unsigned width;
+		int x;
+		int y;
+		int right;
+		int bottom;
 		int left;
+		int top;
 		
 	private:
 		void new_y( int y );
 		void new_x( int x );
-		
-		void row_starts( int y );
 	
 	public:
-		MultiPlaneIterator( std::vector<PlaneItInfo> info, unsigned w, unsigned h, int x=0, int y=0 );
+		MultiPlaneIterator( std::vector<PlaneItInfo> info ) :	infos( info ){
+			x = y = left = top = 0;
+			right = bottom = -1;
+		}
 		
-		void next_y(){ new_y( current_y + 1 ); }
-		void next_x(){ new_x( current_x + 1 ); }
+		bool valid() const{ return y <= bottom && x <= right; }
+		unsigned width(){ return right - left; }
+		unsigned height(){ return top - bottom; }
+		
+		void iterate_all();
+		void iterate_shared();
+		
+		void next_y(){ new_y( y + 1 ); }
+		void next_x(){ new_x( x + 1 ); }
 		void next_line(){
 			next_y();
 			new_x( left );
 		}
 		void next(){
-			if( current_x+1 < width )
+			if( x < right )
 				next_x();
 			else
 				next_line();
-		}
-		bool valid() const{
-			return current_y < height && current_x < width;
 		}
 		
 	public:

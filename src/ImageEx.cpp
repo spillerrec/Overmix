@@ -20,9 +20,12 @@
 #include "Image.hpp"
 #include "MultiPlaneIterator.hpp"
 
+#include <limits>
 #include <png.h>
 #include <QtConcurrentMap>
 
+
+static const double DOUBLE_MAX = std::numeric_limits<double>::max();
 
 bool ImageEx::read_dump_plane( FILE *f, unsigned index ){
 	if( !f )
@@ -195,12 +198,7 @@ image* ImageEx::to_image(){
 double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 	//Check if valid
 	if( !is_valid() || !img.is_valid() )
-		return 999999;
-	
-	//Find common
-	QRect r1( QPoint(0,0), QSize( planes[0]->get_width(), planes[0]->get_height() ) );
-	QRect r2( QPoint(x,y), QSize( img[0].p.get_width(), img[0].p.get_height() ) );
-	QRect common = r1.intersected( r2 );
+		return DOUBLE_MAX;
 	
 	//Prepare iterator
 	std::vector<PlaneItInfo> info;
@@ -211,7 +209,8 @@ double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 	if( img.alpha_plane() )
 		info.push_back( PlaneItInfo( img.alpha_plane(), x,y ) );
 	
-	MultiPlaneIterator it( info, common.width(), common.height(), common.x(),common.y() );
+	MultiPlaneIterator it( info );
+	it.iterate_shared();
 	
 	
 	
@@ -221,10 +220,11 @@ double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 	
 	if( info.size() == 3 ){
 		for( ; it.valid(); it.next() ){
-			//if( it[2] > 127*256 ){
+		//	if( it[2] > 127*256 ){
 				difference += it.diff( 0, 1 );
 				amount++;
-			}
+		//	}
+		}
 	}
 	else if( info.size() == 4 ){
 		for( ; it.valid(); it.next() )
@@ -236,12 +236,12 @@ double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 	else{
 		for( ; it.valid(); it.next() )
 			difference += it.diff( 0, 1 );
-		amount = common.width() * common.height();
+		amount = it.width() * it.height();
 	}
 	
-	qDebug( "x: %d, y: %d, width: %d, height: %d, size: %d", common.x(),common.y(), common.width(), common.height(), info.size() );
-	qDebug( "difference: %d, amount: %d", difference, amount );
-	return amount ? (double)difference / amount : 99999;
+	double result = amount ? (double)difference / amount : DOUBLE_MAX;
+//	qDebug( "difference: %llu, amount: %u, result: %f, size: %u", difference, amount, result, info.size() );
+	return result;
 }
 
 
@@ -295,7 +295,7 @@ MergeResult ImageEx::best_round( ImageEx& img, int level, double range_x, double
 		||	!is_valid()
 		||	!img.is_valid()
 		)
-		return MergeResult(QPoint(),99999);
+		return MergeResult(QPoint(),DOUBLE_MAX);
 	
 	//Starting point is the one where both images are centered on each other
 	int x = ( (int)get_width() - img.get_width() ) / 2;
@@ -362,7 +362,7 @@ MergeResult ImageEx::best_round_sub( ImageEx& img, int level, int left, int righ
 	
 	//Find best comp
 	const img_comp* best = NULL;
-	double best_diff = 99999;
+	double best_diff = DOUBLE_MAX;
 	
 	for( int i=0; i<comps.size(); i++ ){
 		if( comps.at(i).diff < best_diff ){
@@ -373,7 +373,7 @@ MergeResult ImageEx::best_round_sub( ImageEx& img, int level, int left, int righ
 	
 	if( !best ){
 		qDebug( "ERROR! no result to continue on!!" );
-		return MergeResult(QPoint(),99999);
+		return MergeResult(QPoint(),DOUBLE_MAX);
 	}
 	
 	return best->result();
