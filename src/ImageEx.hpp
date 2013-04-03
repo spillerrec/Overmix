@@ -20,6 +20,9 @@
 
 #include "Plane.hpp"
 #include <cstdio>
+#include <utility>
+#include <QPoint>
+typedef std::pair<QPoint,double> MergeResult;
 
 class image;
 
@@ -28,10 +31,10 @@ struct PlaneInfo{
 		Plane &p;
 		double offset_x;
 		double offset_y;
-		int spacing_x;
-		int spacing_y;
+		unsigned spacing_x;
+		unsigned spacing_y;
 		
-		PlaneInfo( Plane &p, double off_x, double off_y, int spacing ) : p( p ){
+		PlaneInfo( Plane &p, double off_x, double off_y, unsigned spacing ) : p( p ){
 			offset_x = off_x;
 			offset_y = off_y;
 			spacing_x = spacing_y = spacing;
@@ -39,10 +42,17 @@ struct PlaneInfo{
 };
 
 class ImageEx{
+	public:
+		enum system{
+			RGB,
+			YUV
+		};
+	
 	private:
 		bool initialized;
 		Plane **planes;
 		PlaneInfo **infos;
+		system type;
 		bool initialize_size( unsigned size );
 		bool read_dump_plane( FILE *f, unsigned index );
 		bool from_dump( const char* path );
@@ -51,8 +61,12 @@ class ImageEx{
 	public:
 		ImageEx(){
 			initialized = false;
-			planes = 0;
-			infos = 0;
+			planes = new Plane*[4];
+			infos = new PlaneInfo*[4];
+			for( int i=0; i<4; i++ ){
+				planes[i] = 0;
+				infos[i] = 0;
+			}
 		}
 		~ImageEx(){
 			if( planes )
@@ -61,9 +75,37 @@ class ImageEx{
 				delete[] infos;
 		}
 		
+		bool create( unsigned width, unsigned height );
+		
+		bool is_valid() const{ return initialized; }
+		
 		bool read_file( const char* path );
+		Plane* alpha_plane() const{ return planes[3]; }
 		
 		image* to_image();
+		
+		unsigned get_width(){
+			return (*this)[0].p.get_width();
+		}
+		unsigned get_height(){
+			return (*this)[0].p.get_height();
+		}
+		
+		
+		double diff( const ImageEx& img, int x, int y ) const;
+		
+		MergeResult best_vertical( ImageEx& img, int level, double range ){
+			return best_round( img, level, 0, range );
+		}
+		MergeResult best_horizontal( ImageEx& img, int level, double range ){
+			return best_round( img, level, range, 0 );
+		}
+		MergeResult best_round( ImageEx& img, int level, double range_x, double range_y );
+		MergeResult best_round_sub( ImageEx& img, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, double diff );
+		
+		PlaneInfo& operator[]( const unsigned index ) const{
+			return *infos[index];
+		}
 };
 
 #endif

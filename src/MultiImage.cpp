@@ -22,6 +22,7 @@
 
 #include <cmath>
 #include <QTime>
+#include "MultiPlaneIterator.hpp"
 
 using namespace std;
 
@@ -49,14 +50,13 @@ void MultiImage::add_image( QString path ){
 	//QImage temp( path );
 	//qDebug( "QImage loaded: %d", t.elapsed() );
 	//image *img = new image( path.toLocal8Bit().constData() );// QImage( path ) );
-	ImageEx img_org;
-	img_org.read_file( path.toLocal8Bit().constData() );
-	image *img = img_org.to_image();
+	ImageEx *img = new ImageEx();
+	img->read_file( path.toLocal8Bit().constData() );
 	QPoint p( 0,0 );
 	qDebug( "image loaded: %d", t.elapsed() );
 	
 	if( imgs.size() > 0 ){
-		image *img1 = NULL;
+		ImageEx *img1 = NULL;
 		bool destroy = true;
 		if( use_average )
 			img1 = render_image( FILTER_AVERAGE );
@@ -104,13 +104,35 @@ void MultiImage::add_image( QString path ){
 	calculate_size();
 }
 
-image* MultiImage::render_image( filters filter ) const{
+ImageEx* MultiImage::render_image( filters filter ) const{
 	QTime t;
 	t.start();
+	
+	//Do iterator
+	std::vector<PlaneItInfo> info;
 	QRect box = get_size();
+	ImageEx *img = new ImageEx();
+	if( !img )
+		return NULL;
+	if( !img->create( box.width(), box.height() ) ){
+		delete img;
+		return NULL;
+	}
+	
+	//TODO: add draw plane
+	info.push_back( PlaneItInfo( &(*img)[0].p, box.x(),box.y() ) );
+	for( unsigned i=0; i<imgs.size(); i++ )
+		info.push_back( PlaneItInfo( &(*imgs[i])[0].p, pos[i].x(),pos[i].y() ) );
+	
+	MultiPlaneIterator it( info, box.width(), box.height(), box.x(),box.y() );
+	
+	for( ; it.valid(); it.next() )
+		it.write_average();
+	
+	
+	/* 
 	MultiImageIterator it( imgs, pos, box.x(),box.y() );
 	it.set_threshould( threshould );
-	
 	//Pointer to the function we want to use
 	color (MultiImageIterator::*function)();
 	switch( filter ){
@@ -127,14 +149,16 @@ image* MultiImage::render_image( filters filter ) const{
 		color* row = img->scan_line( iy );
 		for( int ix = 0; ix < box.width(); ++ix, it.next_x(), ++row )
 			*row = (it.*function)();
-	}
+	} */
 	qDebug( "render rest took: %d", t.elapsed() );
 	
 	return img;
 }
 
 QImage MultiImage::render( filters filter, bool dither ) const{
-	image *img = render_image( filter );
+	ImageEx *img_org = render_image( filter );
+	image *img = img_org->to_image();
+	delete img_org;
 	QTime t;
 	t.start();
 	color *line = new color[ img->get_width()+1 ];
@@ -147,7 +171,7 @@ QImage MultiImage::render( filters filter, bool dither ) const{
 		for( unsigned ix = 0; ix < img->get_width(); ix++, img_row++, row++ ){
 			color c = *img_row;
 		//	c.sRgb();
-			c = c.rec709_to_rgb();
+		//	c = c.rec709_to_rgb();
 			
 			if( dither )
 				c += line[ix];

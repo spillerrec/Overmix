@@ -24,7 +24,7 @@
 #include <utility>
 #include <vector>
 
-#include "Image.hpp"
+#include "ImageEx.hpp"
 
 
 class MultiImage{
@@ -34,7 +34,7 @@ class MultiImage{
 		void calculate_size();
 	
 	private:
-		std::vector<image*> imgs;
+		std::vector<ImageEx*> imgs;
 		std::vector<QPoint> pos;
 		unsigned threshould;
 		double movement;
@@ -64,7 +64,7 @@ class MultiImage{
 			FILTER_SIMPLE,
 			FILTER_SIMPLE_SLIDE
 		};
-		image* render_image( filters filter ) const;
+		ImageEx* render_image( filters filter ) const;
 		QImage render( filters filter, bool dither = false ) const;
 		
 		unsigned get_count() const{ return imgs.size(); }

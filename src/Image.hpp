@@ -22,8 +22,6 @@
 
 #include <QPoint>
 #include <QImage>
-#include <utility>
-typedef std::pair<QPoint,double> MergeResult;
 
 class image{
 	private:
@@ -31,13 +29,9 @@ class image{
 		unsigned width;
 		color *data;
 		
-		bool from_dump( const char* path );
-		bool from_png( const char* path );
-		
 	public:
 		image( unsigned w, unsigned h );
 		image( QImage img );
-		image( const char* path );
 		~image();
 		
 		bool is_invalid() const{ return height == 0 || width == 0; }
@@ -48,16 +42,6 @@ class image{
 		color* scan_line( unsigned y ) const{ return data + y*width; }
 		color* raw() const{ return data; }
 		
-		double diff( const image& img, int x, int y ) const;
-		
-		MergeResult best_vertical( image& img, int level, double range ){
-			return best_round( img, level, 0, range );
-		}
-		MergeResult best_horizontal( image& img, int level, double range ){
-			return best_round( img, level, range, 0 );
-		}
-		MergeResult best_round( image& img, int level, double range_x, double range_y );
-		MergeResult best_round_sub( image& img, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, double diff );
 };
 
 #endif
