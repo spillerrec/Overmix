@@ -17,8 +17,8 @@
 
 #include "ImageEx.hpp"
 #include "Plane.hpp"
-#include "Image.hpp"
 #include "MultiPlaneIterator.hpp"
+#include "color.hpp"
 
 #include <limits>
 #include <png.h>
@@ -174,20 +174,30 @@ bool ImageEx::create( unsigned width, unsigned height ){
 	return initialized = true;
 }
 
-image* ImageEx::to_image(){
+QImage ImageEx::to_qimage(){
 	if( !planes || !planes[0] )
-		return NULL;
+		return QImage();
 	
-	image* img = new image( planes[0]->get_width(), planes[0]->get_height() );
-	if( !img )
-		return NULL;
+	//Create iterator
+	std::vector<PlaneItInfo> info;
+	info.push_back( PlaneItInfo( planes[0], 0,0 ) );
+	MultiPlaneIterator it( info );
+	it.iterate_all();
 	
-	for( unsigned iy=0; iy<img->get_height(); iy++ ){
-		color* row = img->scan_line( iy );
-		color_type* org_row = planes[0]->scan_line( iy );
-		for( unsigned ix=0; ix<img->get_width(); ix++ ){
-			color_type val = org_row[ix];
-			row[ix] = color( val, val, val );
+	//color *line = new color[ width+1 ];
+	
+	//Create image
+	QImage img(	it.width(), it.height()
+		,	( planes[4] ) ? QImage::Format_ARGB32 : QImage::Format_RGB32
+		);
+	img.fill(0);
+	
+	//TODO: select function
+	
+	for( unsigned iy=0; iy<it.height(); iy++, it.next_line() ){
+		QRgb* row = (QRgb*)img.scanLine( iy );
+		for( unsigned ix=0; ix<it.width(); ix++, it.next_x() ){
+			row[ix] = it.gray_to_qrgb();
 		}
 	}
 	

@@ -17,7 +17,6 @@
 
 
 #include "MultiImage.hpp"
-#include "Image.hpp"
 #include "ImageEx.hpp"
 
 #include <cmath>
@@ -155,10 +154,11 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 
 QImage MultiImage::render( filters filter, bool dither ) const{
 	ImageEx *img_org = render_image( filter );
-	image *img = img_org->to_image();
-	delete img_org;
 	QTime t;
 	t.start();
+	QImage img = img_org->to_qimage();
+	delete img_org;
+	/* 
 	color *line = new color[ img->get_width()+1 ];
 	
 	QImage temp( img->get_width(), img->get_height(), QImage::Format_ARGB32 );
@@ -189,11 +189,11 @@ QImage MultiImage::render( filters filter, bool dither ) const{
 		}
 	}
 	delete line;
-	delete img;
+	delete img; */
 	
 	qDebug( "image load took: %d", t.elapsed() );
 	
-	return temp;
+	return img;
 }
 
 

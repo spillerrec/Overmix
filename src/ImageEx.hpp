@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <utility>
 #include <QPoint>
+#include <QImage>
 typedef std::pair<QPoint,double> MergeResult;
 
 class image;
@@ -82,7 +83,7 @@ class ImageEx{
 		bool read_file( const char* path );
 		Plane* alpha_plane() const{ return planes[3]; }
 		
-		image* to_image();
+		QImage to_qimage();
 		
 		unsigned get_width(){
 			return (*this)[0].p.get_width();

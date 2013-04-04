@@ -19,6 +19,7 @@
 #define MULTI_PLANE_ITERATOR_H
 
 #include <vector>
+#include <QImage>
 
 #include "Plane.hpp"
 
@@ -66,8 +67,8 @@ class MultiPlaneIterator{
 		}
 		
 		bool valid() const{ return y <= bottom && x <= right; }
-		unsigned width(){ return right - left; }
-		unsigned height(){ return top - bottom; }
+		unsigned width(){ return right - left + 1; }
+		unsigned height(){ return bottom - top + 1; }
 		
 		void iterate_all();
 		void iterate_shared();
@@ -93,6 +94,11 @@ class MultiPlaneIterator{
 		color_type diff( unsigned i1, unsigned i2 ){
 			color_type c1 = (*this)[i1], c2 = (*this)[i2];
 			return c2 > c1 ? c2-c1 : c1-c2;
+		}
+		
+		QRgb gray_to_qrgb(){
+			int val = (*this)[0]/256;
+			return qRgb( val, val, val );
 		}
 		
 		void write_average();
