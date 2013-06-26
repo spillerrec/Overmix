@@ -70,8 +70,15 @@ class ImageEx{
 			}
 		}
 		~ImageEx(){
+			for( int i=0; i<4; i++ ){
+				if( planes[i] )
+					delete planes[i];
+				if( infos[i] )
+					delete infos[i];
+			}
+			
 			if( planes )
-				delete[] planes; //TODO: fix
+				delete[] planes;
 			if( infos )
 				delete[] infos;
 		}
