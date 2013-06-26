@@ -93,3 +93,13 @@ void MultiPlaneIterator::write_average(){
 	if( amount )
 		*infos[0].row = avg / amount;
 }
+
+
+#include "color.hpp"
+
+QRgb MultiPlaneIterator::yuv_to_qrgb(){
+	color yuv( (*this)[0], (*this)[1], (*this)[2] );
+	color rgb = yuv.rec709_to_rgb();
+	return qRgb( rgb.r/256, rgb.g/256, rgb.b/256 );
+}
+

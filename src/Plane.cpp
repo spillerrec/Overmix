@@ -16,6 +16,7 @@
 */
 
 #include "Plane.hpp"
+#include <cmath>
 
 using namespace std;
 
@@ -31,5 +32,76 @@ Plane::Plane( unsigned w, unsigned h ){
 Plane::~Plane(){
 	if( data )
 		delete[] data;
+}
+
+
+
+Plane* Plane::scale_nearest( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const{
+//	if( offset_x <= -1.0 || offset_x >= 1.0 || offset_y <= -1.0 || offset_y >= 1.0 )
+//		return 0;
+	
+	Plane *scaled = new Plane( wanted_width, wanted_height );
+	if( !scaled || scaled->is_invalid() )
+		return 0;
+	
+	for( unsigned iy=0; iy<wanted_height; iy++ ){
+		color_type* row = scaled->scan_line( iy );
+		for( unsigned ix=0; ix<wanted_width; ix++ ){
+			double pos_x = ((double)ix / wanted_width) * width;
+			double pos_y = ((double)iy / wanted_height) * height;
+			
+			row[ix] = pixel( floor( pos_x ), floor( pos_y ) );
+		}
+	}
+	
+	return scaled;
+}
+
+
+Plane* Plane::scale_linear( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const{
+	if( offset_x <= -1.0 || offset_x >= 1.0 || offset_y <= -1.0 || offset_y >= 1.0 )
+		return 0;
+	
+	Plane *scaled = new Plane( wanted_width, wanted_height );
+	if( !scaled || scaled->is_invalid() )
+		return 0;
+	
+	return 0; //Not implemented
+}
+
+
+Plane* Plane::scale_bilinear( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const{
+	if( offset_x <= -1.0 || offset_x >= 1.0 || offset_y <= -1.0 || offset_y >= 1.0 )
+		return 0;
+	
+	Plane *scaled = new Plane( wanted_width, wanted_height );
+	if( !scaled || scaled->is_invalid() )
+		return 0;
+	
+	return 0; //Not implemented
+}
+
+
+Plane* Plane::scale_cubic( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const{
+	if( offset_x <= -1.0 || offset_x >= 1.0 || offset_y <= -1.0 || offset_y >= 1.0 )
+		return 0;
+	
+	Plane *scaled = new Plane( wanted_width, wanted_height );
+	if( !scaled || scaled->is_invalid() )
+		return 0;
+	
+	return 0; //Not implemented
+}
+
+
+Plane* Plane::scale_lanczos( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const{
+	if( offset_x <= -1.0 || offset_x >= 1.0 || offset_y <= -1.0 || offset_y >= 1.0 )
+		return 0;
+	
+	Plane *scaled = new Plane( wanted_width, wanted_height );
+	if( !scaled || scaled->is_invalid() )
+		return 0;
+	
+	return 0; //Not implemented
 }
 

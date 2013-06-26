@@ -104,10 +104,13 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 	QTime t;
 	t.start();
 	
+	qDebug( "render_image: image count: %d", imgs.size() );
+	
+	//TODO: check for first image!
+	
 	//Do iterator
-	std::vector<PlaneItInfo> info;
 	QRect box = get_size();
-	ImageEx *img = new ImageEx();
+	ImageEx *img = new ImageEx( imgs[0]->get_system() );
 	if( !img )
 		return NULL;
 	if( !img->create( box.width(), box.height() ) ){
@@ -115,16 +118,58 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 		return NULL;
 	}
 	
-	//TODO: add draw plane
-	info.push_back( PlaneItInfo( &(*img)[0].p, box.x(),box.y() ) );
-	for( unsigned i=0; i<imgs.size(); i++ )
-		info.push_back( PlaneItInfo( &(*imgs[i])[0].p, pos[i].x(),pos[i].y() ) );
+	ImageEx &first( *imgs[0] );
+	int width = first[0].p.get_width();
+	int height = first[0].p.get_height();
 	
-	MultiPlaneIterator it( info );
-	it.iterate_all();
+	for( unsigned i=0; i<3; i++ ){ //TODO: determine amount of planes!
+		std::vector<PlaneItInfo> info;
+		info.push_back( PlaneItInfo( &(*img)[i].p, box.x(),box.y() ) );
+		
+		int local_width = first[i].p.get_width();
+		int local_height = first[i].p.get_height();
+		std::vector<Plane*> temp;
+		
+		
+		if( local_width == width && local_height == height ){
+			for( unsigned j=0; j<imgs.size(); j++ )
+				info.push_back( PlaneItInfo( &(*imgs[j])[i].p, pos[j].x(),pos[j].y() ) );
+		}
+		else{
+			temp.reserve( imgs.size() );
+			for( unsigned j=0; j<imgs.size(); j++ ){
+				Plane *p = (*imgs[j])[i].p.scale_nearest( width, height, 0, 0 );
+				if( !p )
+					qDebug( "No plane :\\" );
+				temp.push_back( p );
+				info.push_back( PlaneItInfo( p, pos[j].x(),pos[j].y() ) );
+			}
+		}
+		
+		MultiPlaneIterator it( info );
+		it.iterate_all();
+		
+		for( ; it.valid(); it.next() )
+			it.write_average();
+		
+		//Remove scaled planes
+		for( unsigned j=0; j<temp.size(); j++ )
+			delete temp[j];
+	}
 	
-	for( ; it.valid(); it.next() )
-		it.write_average();
+	/* 
+	for( int i=1; i<=2; i++ ){
+		//TODO: add draw plane
+		info.push_back( PlaneItInfo( &(*img)[i].p, box.x()/2,box.y()/2 ) );
+		for( unsigned i=0; i<imgs.size(); i++ )
+			info.push_back( PlaneItInfo( &(*imgs[i])[i].p, pos[i].x()/2,pos[i].y()/2 ) );
+		
+		MultiPlaneIterator it( info );
+		it.iterate_all();
+		
+		for( ; it.valid(); it.next() )
+			it.write_average();
+	} */
 	
 	
 	/* 

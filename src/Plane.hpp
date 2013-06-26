@@ -39,6 +39,12 @@ class Plane{
 		
 		color_type& pixel( unsigned x, unsigned y ) const{ return data[ x + y*line_width ]; }
 		color_type* scan_line( unsigned y ) const{ return data + y*line_width; }
+		
+		Plane* scale_nearest( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const;
+		Plane* scale_linear( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const;
+		Plane* scale_bilinear( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const;
+		Plane* scale_cubic( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const;
+		Plane* scale_lanczos( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const;
 };
 
 #endif

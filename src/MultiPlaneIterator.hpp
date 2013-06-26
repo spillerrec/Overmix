@@ -101,6 +101,12 @@ class MultiPlaneIterator{
 			return qRgb( val, val, val );
 		}
 		
+		QRgb rgb_to_qrgb(){
+			return qRgb( (*this)[0]/256, (*this)[1]/256, (*this)[2]/256 );
+		}
+		
+		QRgb yuv_to_qrgb();
+		
 		void write_average();
 };
 

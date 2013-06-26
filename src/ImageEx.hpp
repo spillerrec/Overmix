@@ -60,7 +60,7 @@ class ImageEx{
 		bool from_png( const char* path );
 		
 	public:
-		ImageEx(){
+		ImageEx( system type = RGB ) : type( type ){
 			initialized = false;
 			planes = new Plane*[4];
 			infos = new PlaneInfo*[4];
@@ -91,6 +91,8 @@ class ImageEx{
 		unsigned get_height(){
 			return (*this)[0].p.get_height();
 		}
+		
+		system get_system() const{ return type; }
 		
 		
 		double diff( const ImageEx& img, int x, int y ) const;

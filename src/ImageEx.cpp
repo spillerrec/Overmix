@@ -73,6 +73,9 @@ bool ImageEx::from_dump( const char* path ){
 	result &= read_dump_plane( f, 2 );
 	
 	fclose( f );
+	
+	type = YUV;
+	
 	return result;
 }
 
@@ -148,6 +151,8 @@ bool ImageEx::from_png( const char* path ){
 		}
 	}
 	
+	type = RGB;
+	
 	return true;
 	
 	//TODO: cleanup libpng
@@ -181,6 +186,8 @@ QImage ImageEx::to_qimage(){
 	//Create iterator
 	std::vector<PlaneItInfo> info;
 	info.push_back( PlaneItInfo( planes[0], 0,0 ) );
+	info.push_back( PlaneItInfo( planes[1], 0,0 ) );
+	info.push_back( PlaneItInfo( planes[2], 0,0 ) );
 	MultiPlaneIterator it( info );
 	it.iterate_all();
 	
@@ -197,7 +204,7 @@ QImage ImageEx::to_qimage(){
 	for( unsigned iy=0; iy<it.height(); iy++, it.next_line() ){
 		QRgb* row = (QRgb*)img.scanLine( iy );
 		for( unsigned ix=0; ix<it.width(); ix++, it.next_x() ){
-			row[ix] = it.gray_to_qrgb();
+			row[ix] = ( type == YUV ) ? it.yuv_to_qrgb() : it.rgb_to_qrgb();
 		}
 	}
 	
