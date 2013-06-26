@@ -55,7 +55,7 @@ void MultiImage::add_image( QString path ){
 		ImageEx *img1 = NULL;
 		bool destroy = true;
 		if( use_average )
-			img1 = render_image( FILTER_AVERAGE );
+			img1 = render_image( FILTER_FOR_MERGING );
 		else{
 			img1 = imgs[imgs.size()-1];
 			p = pos[imgs.size()-1];
@@ -118,11 +118,16 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 		return NULL;
 	}
 	
+	//TODO: determine amount of planes!
+	unsigned planes_amount = 3; //TODO: alpha?
+	if( filter == FILTER_FOR_MERGING && imgs[0]->get_system() == ImageEx::YUV )
+		planes_amount = 1;
+	
 	ImageEx &first( *imgs[0] );
 	int width = first[0].p.get_width();
 	int height = first[0].p.get_height();
 	
-	for( unsigned i=0; i<3; i++ ){ //TODO: determine amount of planes!
+	for( unsigned i=0; i<planes_amount; i++ ){
 		std::vector<PlaneItInfo> info;
 		info.push_back( PlaneItInfo( &(*img)[i].p, box.x(),box.y() ) );
 		

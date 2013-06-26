@@ -59,6 +59,7 @@ class MultiImage{
 		void add_image( QString path );
 		
 		enum filters{
+			FILTER_FOR_MERGING,
 			FILTER_AVERAGE,
 			FILTER_DIFFERENCE,
 			FILTER_SIMPLE,
