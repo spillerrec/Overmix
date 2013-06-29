@@ -22,6 +22,7 @@
 #include <QImage>
 
 #include "Plane.hpp"
+#include "color.hpp"
 
 struct PlaneItInfo{
 	Plane *p;
@@ -87,8 +88,16 @@ class MultiPlaneIterator{
 		}
 		
 	public:
-		color_type& operator[]( const int index ){
+		color_type& operator[]( const int index ) const{
 			return *infos[index].row;
+		}
+		
+		color pixel() const{
+			return color( (*this)[0], (*this)[1], (*this)[2] );
+		}
+		
+		color pixel_alpha() const{
+			return color( (*this)[0], (*this)[1], (*this)[2], (*this)[3] );
 		}
 		
 		color_type diff( unsigned i1, unsigned i2 ){

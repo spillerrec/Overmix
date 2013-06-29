@@ -179,7 +179,7 @@ bool ImageEx::create( unsigned width, unsigned height ){
 	return initialized = true;
 }
 
-QImage ImageEx::to_qimage(){
+QImage ImageEx::to_qimage( bool dither ){
 	if( !planes || !planes[0] )
 		return QImage();
 	
@@ -188,14 +188,21 @@ QImage ImageEx::to_qimage(){
 	info.push_back( PlaneItInfo( planes[0], 0,0 ) );
 	info.push_back( PlaneItInfo( planes[1], 0,0 ) );
 	info.push_back( PlaneItInfo( planes[2], 0,0 ) );
+	if( alpha_plane() )
+		info.push_back( PlaneItInfo( alpha_plane(), 0,0 ) );
 	MultiPlaneIterator it( info );
 	it.iterate_all();
 	
-	//color *line = new color[ width+1 ];
+	//Fetch with alpha
+	color (MultiPlaneIterator::*pixel)() const = ( alpha_plane() )
+		?	&MultiPlaneIterator::pixel : &MultiPlaneIterator::pixel_alpha;
+	
+	
+	color *line = new color[ get_width()+1 ];
 	
 	//Create image
 	QImage img(	it.width(), it.height()
-		,	( planes[4] ) ? QImage::Format_ARGB32 : QImage::Format_RGB32
+		,	( alpha_plane() ) ? QImage::Format_ARGB32 : QImage::Format_RGB32
 		);
 	img.fill(0);
 	
@@ -204,9 +211,29 @@ QImage ImageEx::to_qimage(){
 	for( unsigned iy=0; iy<it.height(); iy++, it.next_line() ){
 		QRgb* row = (QRgb*)img.scanLine( iy );
 		for( unsigned ix=0; ix<it.width(); ix++, it.next_x() ){
-			row[ix] = ( type == YUV ) ? it.yuv_to_qrgb() : it.rgb_to_qrgb();
+			color p = (it.*pixel)();
+			if( type == YUV )
+				p = p.rec709_to_rgb();
+			
+			if( dither )
+				p += line[ix];
+			
+			color rounded = (p) / 256;
+			
+			if( dither ){
+				color err = p - ( rounded * 256 );
+				line[ix] = err / 4;
+				line[ix+1] += err / 2;
+				if( ix )
+					line[ix-1] += err / 4;
+			}
+			
+			//rounded.trunc( 255 );
+			row[ix] = qRgba( rounded.r, rounded.g, rounded.b, rounded.a );
 		}
 	}
+	
+	delete[] line;
 	
 	return img;
 }

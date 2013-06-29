@@ -206,40 +206,8 @@ QImage MultiImage::render( filters filter, bool dither ) const{
 	ImageEx *img_org = render_image( filter );
 	QTime t;
 	t.start();
-	QImage img = img_org->to_qimage();
+	QImage img = img_org->to_qimage( dither );
 	delete img_org;
-	/* 
-	color *line = new color[ img->get_width()+1 ];
-	
-	QImage temp( img->get_width(), img->get_height(), QImage::Format_ARGB32 );
-	temp.fill(0);
-	for( unsigned iy = 0; iy < img->get_height(); iy++ ){
-		QRgb* row = (QRgb*)temp.scanLine( iy );
-		color* img_row = img->scan_line( iy );
-		for( unsigned ix = 0; ix < img->get_width(); ix++, img_row++, row++ ){
-			color c = *img_row;
-		//	c.sRgb();
-		//	c = c.rec709_to_rgb();
-			
-			if( dither )
-				c += line[ix];
-			
-			color rounded = (c) / 256;
-			
-			if( dither ){
-				color err = c - ( rounded * 256 );
-				line[ix] = err / 4;
-				line[ix+1] += err / 2;
-				if( ix )
-					line[ix-1] += err / 4;
-			}
-			
-			//rounded.trunc( 255 );
-			*row = qRgba( rounded.r, rounded.g, rounded.b, rounded.a );
-		}
-	}
-	delete line;
-	delete img; */
 	
 	qDebug( "image load took: %d", t.elapsed() );
 	
