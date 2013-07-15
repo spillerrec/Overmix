@@ -20,6 +20,8 @@
 #include "ImageEx.hpp"
 
 #include <cmath>
+#include <queue>
+#include <fstream>
 #include <QTime>
 #include "MultiPlaneIterator.hpp"
 
@@ -41,6 +43,30 @@ void MultiImage::clear(){
 	imgs.clear();
 	pos.clear();
 	calculate_size();
+}
+
+pair<QPoint,double> MultiImage::merge_image( ImageEx& img1, ImageEx& img2 ) const{
+	//Keep repeating with higher levels until it drops
+	//below threshould
+	int level = 1;
+	pair<QPoint,double> result;
+	do{
+		switch( merge_method ){
+			case 1: 
+					result = img1.best_horizontal( img2, level, movement );
+				break;
+			case 2: 
+					result = img1.best_vertical( img2, level, movement );
+				break;
+			
+			case 0:
+			default:
+					result = img1.best_round( img2, level, movement, movement );
+				break;
+		}
+	}while( result.second > 24*256 && level++ < 6 );
+	
+	return result;
 }
 
 void MultiImage::add_image( QString path ){
@@ -68,25 +94,8 @@ void MultiImage::add_image( QString path ){
 		
 		qDebug( "image prepared: %d", t.elapsed() );
 		
-		//Keep repeating with higher levels until it drops
-		//below threshould
-		int level = 1;
-		pair<QPoint,double> result;
-		do{
-			switch( merge_method ){
-				case 1: 
-						result = img1->best_horizontal( *img, level, movement );
-					break;
-				case 2: 
-						result = img1->best_vertical( *img, level, movement );
-					break;
-				
-				case 0:
-				default:
-						result = img1->best_round( *img, level, movement, movement );
-					break;
-			}
-		}while( result.second > 24*256 && level++ < 6 );
+		
+		pair<QPoint,double> result = merge_image( *img1, *img );
 		
 		p += get_size().topLeft() + result.first;
 		if( destroy )
@@ -100,11 +109,86 @@ void MultiImage::add_image( QString path ){
 	calculate_size();
 }
 
+
+MultiImage::ImageMatches MultiImage::overlaps_image( unsigned index ) const{
+	if( index >= get_count() )
+		return ImageMatches();
+	
+	QRect current( get_rect( index ) );
+	ImageMatches matches;
+	double area = current.width() * current.height();
+	
+	for( unsigned i=0; i<imgs.size(); i++ ){
+		if( i == index )
+			continue;
+		
+		QRect common = current.intersected( get_rect( i ) );
+		if( common.width() > 0 && common.height() > 0 ){
+			double common_area = common.width() * common.height();
+			if( common_area/area > 0.75 )
+				matches.push_back( ImageMatch( i, common_area / area ) );
+		}
+	}
+	
+	return matches;
+}
+
+
+void MultiImage::subalign_images(){
+	//Find all overlapping images
+	vector<ImageMatches> align;
+	align.reserve( get_count() );
+	for( unsigned i=0; i<imgs.size(); i++ )
+		align.push_back( overlaps_image( i ) );
+	
+	//We will store the enlarged planes and when we can release them again here:
+	vector<std::pair<Plane*,unsigned> > cache;
+	cache.reserve( get_count() );
+	for( unsigned i=0; i<get_count(); i++ )
+		cache.push_back( pair<Plane*,unsigned>( NULL, 0 ) );
+	
+	//Find the last occurence of each image
+	//Do this by looping through all overlapping images, and set unsigned to i
+	for( unsigned i=0; i<align.size(); i++ ){
+		for( unsigned j=0; j<align[i].size(); j++ ){
+			cache[ align[i][j].first ].second = i;
+		}
+	}
+	
+	//TODO: Find all relative positions
+	fstream rel( "/home/spiller/Projects/overmix/merges.txt", fstream::out );
+	for( unsigned i=0; i<imgs.size(); i++ ){
+		for( unsigned j=0; j<align[i].size(); j++ ){
+			unsigned index = align[i][j].first;
+			if( index >= i )
+				rel << "Find distance between " << i << " and " << index << "\n";
+		//	else
+		//		rel << "Reusing " << index << " and " << i << "\n";
+		}
+	}
+	rel.close();
+	
+	//TODO: adjust all relative positions into aboslute ones
+	
+	//TODO: align so that most images are on the grid?
+	
+	//Debug positions
+	fstream f( "/home/spiller/Projects/overmix/positions.txt", fstream::out );
+	for( unsigned i=0; i<imgs.size(); i++ ){
+		f << "Image " << i << ": " << pos[i].x() << "x" << pos[i].y() << " (ends at: " << cache[i].second << ") " << align[i].size() << "\n";
+		for( unsigned j=0; j<align[i].size(); j++ ){
+			f << "\t" << align[i][j].first << " " << align[i][j].second << "\n";
+		}
+	}
+	f.close();
+}
+
+
 ImageEx* MultiImage::render_image( filters filter ) const{
 	QTime t;
 	t.start();
 	
-	qDebug( "render_image: image count: %d", imgs.size() );
+	qDebug( "render_image: image count: %d", (int)imgs.size() );
 	
 	//TODO: check for first image!
 	
@@ -128,12 +212,12 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 	int height = first[0].p.get_height();
 	
 	for( unsigned i=0; i<planes_amount; i++ ){
-		std::vector<PlaneItInfo> info;
+		vector<PlaneItInfo> info;
 		info.push_back( PlaneItInfo( &(*img)[i].p, box.x(),box.y() ) );
 		
 		int local_width = first[i].p.get_width();
 		int local_height = first[i].p.get_height();
-		std::vector<Plane*> temp;
+		vector<Plane*> temp;
 		
 		
 		if( local_width == width && local_height == height ){
@@ -220,100 +304,6 @@ void MultiImage::calculate_size(){
 	
 	for( unsigned i=0; i<pos.size(); i++ )
 		size_cache = size_cache.united( QRect( pos[i], QSize( imgs[i]->get_width(), imgs[i]->get_height() ) ) );
-}
-
-
-double MultiImage::img_subv_diff( int x, int y, QImage &img1, QImage &img2 ){
-	double pos_align = 0;
-	double neg_align = 0;
-	double pos_amount = 0;
-	double neg_amount = 0;
-	
-	//Find the common area, and remove one-pixel around the edge on both
-	QRect r1( QPoint(0,1), img1.size() - QSize( 0,2 ) );
-	QRect r2( QPoint(x,y+1), img2.size() - QSize( 0,2 ) );
-	QRect common = r1.intersected( r2 );
-	
-	int pos[50];
-	for( int i=0; i<50; i++ )
-		pos[i] = 0;
-	
-	for( int iy=common.y(); iy<common.height()+common.y(); iy++ ){
-		const QRgb* fixed = (const QRgb*)img1.constScanLine( iy );
-		const QRgb* row2 = (const QRgb*)img2.constScanLine( iy-y-1 ) - x;
-		const QRgb* row1 = (const QRgb*)img2.constScanLine( iy-y ) - x;
-		const QRgb* row0 = (const QRgb*)img2.constScanLine( iy-y+1 ) - x;
-		
-		for( int ix=common.x(); ix<common.width()+common.x(); ix++ ){
-			QRgb f = fixed[ix];
-			QRgb r0 = row0[ix];
-			QRgb r1 = row1[ix];
-			QRgb r2 = row2[ix];
-			if( qAlpha( f ) > 127 && qAlpha( r1 ) > 127 ){
-				//Find positive align
-				int y = qRed( f ) + qGreen( f ) + qBlue( f );
-				int a = qRed( r0 ) + qGreen( r0 ) + qBlue( r0 );
-				int b = qRed( r1 ) + qGreen( r1 ) + qBlue( r1 );
-				int c = qRed( r2 ) + qGreen( r2 ) + qBlue( r2 );
-			int diff = abs( y-b );
-				double pos_g = abs(c-b)>4 ? (double)( y-b ) / (double)( c-b ) : -1;
-				double neg_g = abs(a-b)>4 ? (double)( y-b ) / (double)( a-b ) : 1;
-				
-				if( pos_g > 0 && pos_g < 1 ){
-					pos_align += pos_g * diff * diff;
-					pos_amount += diff * diff;
-					pos[ (int)std::floor( pos_g * 50 ) ]++;
-				}
-				if( neg_g < 0 && neg_g > -1 ){
-					neg_align += neg_g * diff * diff;
-					neg_amount += diff * diff;
-				}
-			}
-		}
-	}
-	
-	qDebug( "Pos: %.2f / %.2f = %.4f", pos_align, pos_amount, pos_align / pos_amount );
-	qDebug( "Neg: %.2f / %.2f = %.4f", neg_align, neg_amount, neg_align / neg_amount );
-	for(int i=0; i<50; i++ )
-		qDebug( "pos[%.2f]: %d", i / 50.0, pos[i] );
-	
-	return pos_amount > neg_amount ? pos_align : neg_align;
-}
-
-
-QImage MultiImage::img_subv( double v_diff, QImage &img ){
-	QImage img_new( img.width(), img.height()-2, QImage::Format_ARGB32 );
-	
-	for( int iy=0; iy<img_new.height(); iy++ ){
-		const QRgb* row2 = (const QRgb*)img.constScanLine( iy );
-		const QRgb* row1 = (const QRgb*)img.constScanLine( iy+1 );
-		const QRgb* row0 = (const QRgb*)img.constScanLine( iy+2 );
-		QRgb* row_new = (QRgb*)img_new.scanLine( iy );
-		
-		for( int ix=0; ix<img_new.width(); ix++ ){
-			QRgb r0 = row0[ix];
-			QRgb r1 = row1[ix];
-			QRgb r2 = row2[ix];
-			if( v_diff > 0 ){
-				int r = ( qRed(r2) - qRed(r1) )*v_diff + qRed(r1);
-				int g = ( qGreen(r2) - qGreen(r1) )*v_diff + qGreen(r1);
-				int b = ( qBlue(r2) - qBlue(r1) )*v_diff + qBlue(r1);
-				int a = ( qAlpha(r2) - qAlpha(r1) )*v_diff + qAlpha(r1);
-				
-				row_new[ix] = qRgba( r, g, b, a );
-			}
-			else{
-				int r = ( qRed(r0) - qRed(r1) )*v_diff + qRed(r1);
-				int g = ( qGreen(r0) - qGreen(r1) )*v_diff + qGreen(r1);
-				int b = ( qBlue(r0) - qBlue(r1) )*v_diff + qBlue(r1);
-				int a = ( qAlpha(r0) - qAlpha(r1) )*v_diff + qAlpha(r1);
-				
-				row_new[ix] = qRgba( r, g, b, a );
-			}
-		}
-	}
-	
-	return img_new;
 }
 
 

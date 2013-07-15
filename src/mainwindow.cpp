@@ -39,6 +39,7 @@ main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidg
 	connect( ui->btn_clear, SIGNAL( clicked() ), this, SLOT( clear_image() ) );
 	connect( ui->btn_refresh, SIGNAL( clicked() ), this, SLOT( refresh_image() ) );
 	connect( ui->btn_save, SIGNAL( clicked() ), this, SLOT( save_image() ) );
+	connect( ui->btn_subpixel, SIGNAL( clicked() ), this, SLOT( subpixel_align_image() ) );
 	//TODO: undo
 	
 	//Checkboxes
@@ -160,4 +161,9 @@ void main_widget::clear_image(){
 	viewer.change_image( NULL, true );
 	refresh_text();
 }
-		
+
+
+void main_widget::subpixel_align_image(){
+	image.subalign_images();
+}
+

@@ -40,11 +40,17 @@ class MultiImage{
 		double movement;
 		int merge_method; //0 = both, 1 = hor, 2 = ver
 		bool use_average;
-	
-	public:
-		static double img_subv_diff( int x, int y, QImage &img1, QImage &img2 );
-		static QImage img_subv( double v_diff, QImage &img );
 		
+		std::pair<QPoint,double> merge_image( ImageEx& img1, ImageEx& img2 ) const;
+		
+		QRect get_rect( unsigned index ) const{
+			return QRect( pos[index], QSize( imgs[index]->get_width(), imgs[index]->get_height() ) );
+		}
+		
+		typedef std::pair<unsigned,double> ImageMatch;
+		typedef std::vector<ImageMatch> ImageMatches;
+		ImageMatches overlaps_image( unsigned index ) const;
+	
 	public:
 		MultiImage();
 		~MultiImage();
@@ -57,6 +63,7 @@ class MultiImage{
 		
 		void clear();
 		void add_image( QString path );
+		void subalign_images();
 		
 		enum filters{
 			FILTER_FOR_MERGING,

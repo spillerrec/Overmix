@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>458</width>
-    <height>568</height>
+    <height>582</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -139,6 +139,13 @@
             </widget>
            </item>
           </layout>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_subpixel">
+           <property name="text">
+            <string>Sub-pixel align</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
