@@ -21,6 +21,29 @@
 #include <cmath>
 #include <climits>
 
+
+
+MultiPlaneLineIterator::MultiPlaneLineIterator(
+		int y, int left, int right, const std::vector<PlaneItInfo> &infos
+	)
+	:	x( left ), right( right ){
+		
+		//TODO: estimated reserve for vector?
+		lines.reserve( infos.size() );
+		
+		for( PlaneItInfo info : infos ){
+			int local_y = y - info.y;
+			if( info.check_y( local_y ) ){
+				color_type* row = info.p->scan_line( local_y );
+				
+				lines.push_back( PlaneLine( row
+						,	row + info.p->get_width()
+						,	row + ( x - info.x ) )
+						);
+			}
+		}
+	}
+
 void MultiPlaneIterator::iterate_all(){
 	x = y = INT_MAX;
 	bottom = right = INT_MIN;
@@ -78,28 +101,5 @@ void MultiPlaneIterator::new_y( int y ){
 		info.row_start = info.check_y( local_y ) ? info.p->scan_line( local_y ) : 0;
 		info.row = 0;
 	}
-}
-
-void MultiPlaneIterator::write_average(){
-	unsigned avg = 0, amount = 0;
-	
-	for( unsigned i=1; i<infos.size(); i++ ){
-		if( infos[i].row ){
-			avg += *infos[i].row;
-			amount++;
-		}
-	}
-	
-	if( amount )
-		*infos[0].row = avg / amount;
-}
-
-
-#include "color.hpp"
-
-QRgb MultiPlaneIterator::yuv_to_qrgb(){
-	color yuv( (*this)[0], (*this)[1], (*this)[2] );
-	color rgb = yuv.rec709_to_rgb();
-	return qRgb( rgb.r/256, rgb.g/256, rgb.b/256 );
 }
 

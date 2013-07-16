@@ -238,27 +238,25 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 		MultiPlaneIterator it( info );
 		it.iterate_all();
 		
-		for( ; it.valid(); it.next() )
-			it.write_average();
+		//Do average and store in [0]
+		it.for_all_lines( [](MultiPlaneLineIterator &it){
+				unsigned avg = 0, amount = 0;
+	
+				for( unsigned i=1; i<it.size(); i++ ){
+					if( it.valid( i ) ){
+						avg += it[i];
+						amount++;
+					}
+				}
+				
+				if( amount )
+					it[0] = avg / amount;
+			} );
 		
 		//Remove scaled planes
 		for( unsigned j=0; j<temp.size(); j++ )
 			delete temp[j];
 	}
-	
-	/* 
-	for( int i=1; i<=2; i++ ){
-		//TODO: add draw plane
-		info.push_back( PlaneItInfo( &(*img)[i].p, box.x()/2,box.y()/2 ) );
-		for( unsigned i=0; i<imgs.size(); i++ )
-			info.push_back( PlaneItInfo( &(*imgs[i])[i].p, pos[i].x()/2,pos[i].y()/2 ) );
-		
-		MultiPlaneIterator it( info );
-		it.iterate_all();
-		
-		for( ; it.valid(); it.next() )
-			it.write_average();
-	} */
 	
 	
 	/* 

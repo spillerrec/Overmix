@@ -19,7 +19,9 @@
 #define MULTI_PLANE_ITERATOR_H
 
 #include <vector>
+#include <utility>
 #include <QImage>
+#include <QtConcurrent>
 
 #include "Plane.hpp"
 #include "color.hpp"
@@ -45,6 +47,77 @@ struct PlaneItInfo{
 	bool check_y( int y ){
 		return y >= 0 && (unsigned)y < p->get_height();
 	}
+};
+
+class PlaneLine{
+	private:
+		color_type* start;
+		color_type* end;
+		color_type* current;
+		
+	public:
+		PlaneLine( color_type* start, color_type* end, color_type* current )
+			:	start( start ), end( end ), current( current ) { }
+		
+		bool valid() const{ return current >= start && current <= end; }
+		void next(){ current++; }
+		color_type& value() const{ return *current; }
+		operator color_type&(){ return value(); }
+};
+
+class MultiPlaneLineIterator{
+	private:
+		int x;
+		const int right;
+		std::vector<PlaneLine> lines;
+		
+	public:
+		MultiPlaneLineIterator(
+				int y, int left, int right, const std::vector<PlaneItInfo> &infos
+			);
+		
+		void next(){
+			for( PlaneLine& l : lines )
+				l.next();
+			x++;
+		}
+		
+		bool valid() const{ return x<=right; }
+		
+		color_type& operator[]( unsigned index ) const{
+			return lines[index].value();
+		}
+		bool valid( unsigned index ) const{
+			return lines[index].valid();
+		}
+		unsigned size() const{ return lines.size(); }
+		
+		void for_all( void func( MultiPlaneLineIterator &it ) ){
+			while( valid() ){
+				func( *this );
+				next();
+			}
+		}
+		
+		template <class T>
+		T for_all_combine(
+				T func( MultiPlaneLineIterator &it ) 
+			,	T comb( T t1, T t2 )
+			){
+			T t = func( *this );
+			next();
+			while( valid() ){
+				t = comb( t, func( *this ) );
+				next();
+			}
+			return t;
+		}
+		
+		
+		color_type diff( unsigned i1, unsigned i2 ){
+			color_type c1 = (*this)[i1], c2 = (*this)[i2];
+			return c2 > c1 ? c2-c1 : c1-c2;
+		}
 };
 
 class MultiPlaneIterator{
@@ -87,6 +160,47 @@ class MultiPlaneIterator{
 				next_line();
 		}
 		
+		
+		void for_all_lines( void func( MultiPlaneLineIterator &it ) ){
+			std::vector<MultiPlaneLineIterator> its;
+			its.reserve( bottom - top );
+			
+			for( int iy=top; iy<=bottom; iy++ ){
+				MultiPlaneLineIterator it( iy, left, right, infos );
+				//it.for_all( func );
+				its.push_back( it );
+			}
+			
+			QtConcurrent::blockingMap( its, [func](MultiPlaneLineIterator &it){
+					it.for_all( func );
+				} );
+		}
+		
+		template <class T>
+		T for_all_lines_combine( 
+				T func( MultiPlaneLineIterator &it )
+			,	T init
+			,	T combine( T val1, T val2 )
+			){
+			typedef std::pair<MultiPlaneLineIterator,T> Working;
+			std::vector<Working> its;
+			its.reserve( bottom - top );
+			
+			for( int iy=top; iy<=bottom; iy++ ){
+				MultiPlaneLineIterator it( iy, left, right, infos );
+				its.push_back( Working( it, init ) );
+			}
+			
+			QtConcurrent::blockingMap( its, [func,combine](Working &val){
+					val.second = val.first.for_all_combine( func, combine );
+				} );
+			
+			for( Working w : its )
+				init = combine( init, w.second );
+			
+			return init;
+		}
+		
 	public:
 		color_type& operator[]( const int index ) const{
 			return *infos[index].row;
@@ -99,24 +213,6 @@ class MultiPlaneIterator{
 		color pixel_alpha() const{
 			return color( (*this)[0], (*this)[1], (*this)[2], (*this)[3] );
 		}
-		
-		color_type diff( unsigned i1, unsigned i2 ){
-			color_type c1 = (*this)[i1], c2 = (*this)[i2];
-			return c2 > c1 ? c2-c1 : c1-c2;
-		}
-		
-		QRgb gray_to_qrgb(){
-			int val = (*this)[0]/256;
-			return qRgb( val, val, val );
-		}
-		
-		QRgb rgb_to_qrgb(){
-			return qRgb( (*this)[0]/256, (*this)[1]/256, (*this)[2]/256 );
-		}
-		
-		QRgb yuv_to_qrgb();
-		
-		void write_average();
 };
 
 #endif

@@ -256,36 +256,56 @@ double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 	MultiPlaneIterator it( info );
 	it.iterate_shared();
 	
+	typedef std::pair<unsigned long long,unsigned> Average;
+	Average avg( 0, 0 );
 	
+	auto sum = [](Average w1, Average w2){
+			w1.first += w2.first;
+			w1.second += w2.second;
+			return w1;
+		};
 	
-	
-	unsigned long long difference = 0;
-	unsigned amount = 0;
 	
 	if( info.size() == 3 ){
-		for( ; it.valid(); it.next() ){
-		//	if( it[2] > 127*256 ){
-				difference += it.diff( 0, 1 );
-				amount++;
-		//	}
-		}
+		avg = it.for_all_lines_combine<Average>(
+				[](MultiPlaneLineIterator &it) -> Average{
+					Average avg( 0, 0 );
+					
+					//if( it[2] > 127*256 ){
+						avg.first += it.diff( 0, 1 );
+						avg.second++;
+					//}
+					
+					return avg;
+				}
+			,	avg, sum
+			);
 	}
 	else if( info.size() == 4 ){
-		for( ; it.valid(); it.next() )
-			if( it[2] > 127*256 && it[3] > 127*256 ){
-				difference += it.diff( 0, 1 );
-				amount++;
-			}
+		avg = it.for_all_lines_combine<Average>(
+				[](MultiPlaneLineIterator &it) -> Average{
+					Average avg( 0, 0 );
+					
+					if( it[2] > 127*256 && it[3] > 127*256 ){
+						avg.first += it.diff( 0, 1 );
+						avg.second++;
+					}
+					
+					return avg;
+				}
+			,	avg, sum
+			);
 	}
 	else{
-		for( ; it.valid(); it.next() )
-			difference += it.diff( 0, 1 );
-		amount = it.width() * it.height();
+		avg = it.for_all_lines_combine<Average>(
+				[](MultiPlaneLineIterator &it) -> Average{
+					return Average( it.diff( 0, 1 ), 1 );
+				}
+			,	avg, sum
+			);
 	}
 	
-	double result = amount ? (double)difference / amount : DOUBLE_MAX;
-//	qDebug( "difference: %llu, amount: %u, result: %f, size: %u", difference, amount, result, info.size() );
-	return result;
+	return avg.second ? (double)avg.first / avg.second : DOUBLE_MAX;
 }
 
 
