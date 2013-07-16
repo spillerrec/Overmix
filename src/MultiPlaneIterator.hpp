@@ -59,7 +59,7 @@ class PlaneLine{
 		PlaneLine( color_type* start, color_type* end, color_type* current )
 			:	start( start ), end( end ), current( current ) { }
 		
-		bool valid() const{ return current >= start && current <= end; }
+		bool valid() const{ return current >= start && current < end; }
 		void next(){ current++; }
 		color_type& value() const{ return *current; }
 		operator color_type&(){ return value(); }
