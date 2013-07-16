@@ -162,16 +162,14 @@ class MultiPlaneIterator{
 		
 		
 		void for_all_lines( void func( MultiPlaneLineIterator &it ) ){
-			std::vector<MultiPlaneLineIterator> its;
+			std::vector<int> its;
 			its.reserve( bottom - top );
 			
-			for( int iy=top; iy<=bottom; iy++ ){
-				MultiPlaneLineIterator it( iy, left, right, infos );
-				//it.for_all( func );
-				its.push_back( it );
-			}
+			for( int iy=top; iy<=bottom; iy++ )
+				its.push_back( iy );
 			
-			QtConcurrent::blockingMap( its, [func](MultiPlaneLineIterator &it){
+			QtConcurrent::blockingMap( its, [func,this](int iy){
+					MultiPlaneLineIterator it( iy, this->left, this->right, this->infos );
 					it.for_all( func );
 				} );
 		}
@@ -182,17 +180,16 @@ class MultiPlaneIterator{
 			,	T init
 			,	T combine( T val1, T val2 )
 			){
-			typedef std::pair<MultiPlaneLineIterator,T> Working;
+			typedef std::pair<int,T> Working;
 			std::vector<Working> its;
 			its.reserve( bottom - top );
 			
-			for( int iy=top; iy<=bottom; iy++ ){
-				MultiPlaneLineIterator it( iy, left, right, infos );
-				its.push_back( Working( it, init ) );
-			}
+			for( int iy=top; iy<=bottom; iy++ )
+				its.push_back( Working( iy, init ) );
 			
-			QtConcurrent::blockingMap( its, [func,combine](Working &val){
-					val.second = val.first.for_all_combine( func, combine );
+			QtConcurrent::blockingMap( its, [func,combine,this](Working &val){
+					MultiPlaneLineIterator it( val.first, this->left, this->right, this->infos );
+					val.second = it.for_all_combine( func, combine );
 				} );
 			
 			for( Working w : its )

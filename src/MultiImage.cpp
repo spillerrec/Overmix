@@ -69,13 +69,10 @@ pair<QPoint,double> MultiImage::merge_image( ImageEx& img1, ImageEx& img2 ) cons
 	return result;
 }
 
-void MultiImage::add_image( QString path ){
+void MultiImage::add_image( ImageEx *img ){
 	QTime t;
 	t.start();
-	ImageEx *img = new ImageEx();
-	img->read_file( path.toLocal8Bit().constData() );
 	QPoint p( 0,0 );
-	qDebug( "image loaded: %d", t.elapsed() );
 	
 	if( imgs.size() > 0 ){
 		ImageEx *img1 = NULL;

@@ -30,6 +30,8 @@
 #include <QPainter>
 #include <QFileDialog>
 #include <QProgressDialog>
+#include <QTime>
+#include <QtConcurrent>
 
 main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidget*)this){
 	ui->setupUi(this);
@@ -85,18 +87,42 @@ void main_widget::dropEvent( QDropEvent *event ){
 	}
 }
 
+//Load an image for mapped, doesn't work with lambdas appearently...
+static ImageEx* load( QUrl url ){
+	ImageEx *img = new ImageEx();
+	img->read_file( url.toLocalFile().toLocal8Bit().constData() );
+	return img;
+}
+
 void main_widget::process_urls( QList<QUrl> urls ){
 	QProgressDialog progress( "Mixing images", "Stop", 0, urls.count(), this );
 	progress.setWindowModality( Qt::WindowModal );
 	
-	int i=0;
-	foreach( QUrl url, urls ){
+	QTime t;
+	t.start();
+	int loading_delay = 0;
+	
+	QFuture<ImageEx*> img_loader = QtConcurrent::run( load, urls[0] );
+	
+	for( int i=0; i<urls.count(); i++ ){
 		progress.setValue( i );
-		image.add_image( url.toLocalFile() );
-		i++;
-		if( progress.wasCanceled() )
+		
+		QTime delay;
+		delay.start();
+		//Get and start loading next image
+		ImageEx* img = img_loader.result();
+		if( i+1 < urls.count() )
+			img_loader = QtConcurrent::run( load, urls[i+1] );
+		loading_delay += delay.elapsed();
+		
+		image.add_image( img );
+		if( progress.wasCanceled() && i+1 < urls.count() ){
+			delete img_loader.result();
 			break;
+		}
 	}
+	qDebug( "Adding images took: %d", t.elapsed() );
+	qDebug( "Loading blocked for: %d ms", loading_delay );
 	
 	refresh_text();
 	update();

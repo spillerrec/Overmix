@@ -62,7 +62,7 @@ class MultiImage{
 		void set_merge_method( int value ){ merge_method = value; }
 		
 		void clear();
-		void add_image( QString path );
+		void add_image( ImageEx *img );
 		void subalign_images();
 		
 		enum filters{

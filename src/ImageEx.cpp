@@ -51,14 +51,21 @@ bool ImageEx::read_dump_plane( FILE *f, unsigned index ){
 	fread( &depth, sizeof(unsigned), 1, f );
 	unsigned byte_count = (depth + 7) / 8;
 	
+	unsigned char* buffer = new unsigned char[ width*byte_count ];
+	
+	
 	for( unsigned iy=0; iy<height; iy++ ){
 		color_type *row = p->scan_line( iy );
-		for( unsigned ix=0; ix<width; ++ix, ++row ){
-			fread( row, byte_count, 1, f );
-			*row <<= 16 - depth;
-		}
+		fread( buffer, byte_count, width, f );
+		if( byte_count == 1 )
+			for( unsigned ix=0; ix<width; ++ix, ++row )
+				*row = (color_type)(buffer[ix]) << (16 - depth);
+		else
+			for( unsigned ix=0; ix<width; ++ix, ++row )
+				*row = (color_type)((short int*)buffer)[ix] << (16 - depth);
 	}
 	
+	delete[] buffer;
 	return true;
 }
 
