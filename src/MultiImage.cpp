@@ -89,7 +89,7 @@ void MultiImage::add_image( ImageEx *img ){
 			destroy = false;
 		}
 		
-		qDebug( "image prepared: %d", t.elapsed() );
+		qDebug( "image prepared: %d", t.restart() );
 		
 		
 		pair<QPoint,double> result = merge_image( *img1, *img );
@@ -209,8 +209,16 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 	int height = first[0].p.get_height();
 	
 	for( unsigned i=0; i<planes_amount; i++ ){
+		//Clear output plane
+		Plane& p( (*img)[i].p );
+		for( unsigned iy=0; iy<p.get_height(); ++iy ){
+			color_type* row = p.scan_line( iy );
+			for( unsigned ix=0; ix<p.get_width(); ++ix )
+				row[ix] = 0;
+		}
+		
 		vector<PlaneItInfo> info;
-		info.push_back( PlaneItInfo( &(*img)[i].p, box.x(),box.y() ) );
+		info.push_back( PlaneItInfo( &p, box.x(),box.y() ) );
 		
 		int local_width = first[i].p.get_width();
 		int local_height = first[i].p.get_height();
