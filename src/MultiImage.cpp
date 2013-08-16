@@ -233,10 +233,20 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 		}
 		
 		MultiPlaneIterator it( info );
-		it.iterate_all();
 		
+		if( it.iterate_all() ){
 		//Do average and store in [0]
-		it.for_all_lines( [](MultiPlaneLineIterator &it){
+		it.for_all_pixels( [](MultiPlaneLineIterator &it){
+				unsigned avg = 0;
+				for( unsigned i=1; i<it.size(); i++ )
+					avg += it[i];
+				
+				it[0] = avg / (it.size() - 1); //NOTE: Will crash if image contains empty parts
+			} );
+		}
+		else{
+		//Do average and store in [0]
+		it.for_all_pixels( [](MultiPlaneLineIterator &it){
 				unsigned avg = 0, amount = 0;
 	
 				for( unsigned i=1; i<it.size(); i++ ){
@@ -249,6 +259,7 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 				if( amount )
 					it[0] = avg / amount;
 			} );
+		}
 		
 		//Remove scaled planes
 		for( unsigned j=0; j<temp.size(); j++ )

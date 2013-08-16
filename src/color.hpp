@@ -26,9 +26,42 @@ typedef unsigned short color_type;
 
 struct color{
 	color_type r;
-	color_type b;
 	color_type g;
+	color_type b;
 	color_type a;
+	
+	public:
+		//TODO: we do not handle the case of preallocated storage!
+		void* operator new( size_t size ){
+			return std::calloc( 1, size );
+		}
+		void* operator new[]( size_t size ){
+			return std::calloc( size, 1 );
+		}
+		void operator delete( void* p )  { std::free( p ); }
+		void operator delete[]( void* p ){ std::free( p ); }
+		
+	
+		color() { } //Initialized by new/delete
+		color( color_type r, color_type g, color_type b, color_type a = 255*256 ){
+			this->r = r;
+			this->g = g;
+			this->b = b;
+			this->a = a;
+		}
+		color( color* c ){
+			r = c->r;
+			g = c->g;
+			b = c->b;
+			a = c->a;
+		}
+		color( QRgb c ){
+			r = qRed( c ) * 256;
+			g = qGreen( c ) * 256;
+			b = qBlue( c ) * 256;
+			a = qAlpha( c ) * 256;
+		//	linearize();
+		}
 	
 	private:
 		static color_type sRgb2linear( color_type value ){
@@ -144,29 +177,6 @@ struct color{
 	color_type gray(){
 		//This function corresponds to qGray()
 		return ( r*11 + g*16 + b*5 ) / 32;
-	}
-	
-	color(){
-		clear();
-	}
-	color( color_type r, color_type g, color_type b, color_type a = 255*256 ){
-		this->r = r;
-		this->g = g;
-		this->b = b;
-		this->a = a;
-	}
-	color( color* c ){
-		r = c->r;
-		g = c->g;
-		b = c->b;
-		a = c->a;
-	}
-	color( QRgb c ){
-		r = qRed( c ) * 256;
-		g = qGreen( c ) * 256;
-		b = qBlue( c ) * 256;
-		a = qAlpha( c ) * 256;
-	//	linearize();
 	}
 	
 	color& operator+=( const color &rhs ){

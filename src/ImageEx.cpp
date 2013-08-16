@@ -245,11 +245,89 @@ QImage ImageEx::to_qimage( bool dither ){
 	return img;
 }
 
+#include <algorithm> //For min
+#include <cstdint> //For abs(int) and uint*_t
+
+struct DiffPara{
+	const Plane& p1;
+	const Plane& p2;
+	unsigned p1_top;
+	unsigned p2_top;
+	unsigned p1_left;
+	unsigned p2_left;
+	unsigned width;
+	
+	DiffPara( const Plane& p1, const Plane& p2 ) : p1( p1 ), p2( p2 ) { }
+	
+	unsigned calculate( int x, int y ){
+		p1_top = y < 0 ? 0 : y;
+		p2_top = y > 0 ? 0 : -y;
+		p1_left = x < 0 ? 0 : x;
+		p2_left = x > 0 ? 0 : -x;
+		width = std::min( p1.get_width() - p1_left, p2.get_width() - p2_left );
+		
+		return std::min( p1.get_height() - p1_top, p2.get_height() - p2_top );
+	}
+};
+
+
+static unsigned diff_2_line( int iy, const DiffPara& p ){
+	color_type *c1 = p.p1.scan_line( iy + p.p1_top ) + p.p1_left;
+	color_type *c2 = p.p2.scan_line( iy + p.p2_top ) + p.p2_left;
+	
+	color_type *end = c1 + p.width;
+	
+	unsigned sum = 0;
+	for( unsigned i=0; i<p.width; ++i ){// c1 < end ){
+		sum += std::abs( *c1 - *c2 );
+		
+		++c1; ++c2;
+	}
+	
+	return sum;
+}
+
+struct Para{
+	int iy;
+	const DiffPara& para;
+	unsigned result;
+	Para( int iy, const DiffPara& para ) : iy( iy ), para( para ) { }
+};
+void wrapper( Para& p ){ p.result = diff_2_line( p.iy, p.para ); }
+
+#include <QtConcurrent>
+static double diff_2( const Plane &p1, const Plane &p2, int x, int y ){
+	DiffPara para( p1, p2 );
+	unsigned height = para.calculate( x, y );
+	
+	//* Write all the lines for QtConcurrent::mapped
+	std::vector<Para> lines;
+	lines.reserve( height );
+	for( unsigned i=0; i<height; ++i )
+		lines.push_back( Para(i,para) );
+	
+	QtConcurrent::blockingMap( lines, wrapper );
+	
+	uint64_t sum = 0;
+	for( auto p : lines )
+		sum += p.result;
+	
+	/*///Do it in linear
+	uint64_t sum = 0;
+	for( unsigned iy=0; iy<height; iy++ )
+		sum += diff_2_line( iy, para );
+	//*/
+	
+	return sum / (double)( height * para.width );
+}
+
 
 double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 	//Check if valid
 	if( !is_valid() || !img.is_valid() )
 		return DOUBLE_MAX;
+	
+	return diff_2( *(planes[0]), img[0].p, x, y );
 	
 	//Prepare iterator
 	std::vector<PlaneItInfo> info;
@@ -274,22 +352,42 @@ double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 	
 	
 	if( info.size() == 3 ){
-		avg = it.for_all_lines_combine<Average>(
+		/*
+		avg = it.for_all_pixels_combine<Average>(
 				[](MultiPlaneLineIterator &it) -> Average{
-					Average avg( 0, 0 );
+					Average avg( 0, 1 );
 					
 					//if( it[2] > 127*256 ){
-						avg.first += it.diff( 0, 1 );
-						avg.second++;
+						avg.first += abs( (int)it[0] - it[1] );//it.diff( 0, 1 );
+					//	avg.second++;
 					//}
 					
 					return avg;
 				}
 			,	avg, sum
 			);
+		/*/
+		avg = it.for_all_lines_combine<Average>(
+				[](MultiPlaneLineIterator &it) -> Average{
+					Average avg( 0, it.left() + 1 );
+					
+					color_type *i1 = &it[0];
+					color_type *i2 = &it[1];
+				//	color_type *i3 = &it[2];
+					avg.first += abs( (int_fast16_t)(*i1 - *i2) );
+					while( it.valid() ){
+						i1++; i2++;// i3++;
+						avg.first += abs( (int_fast16_t)(*i1 - *i2) );
+					}
+					
+					return avg;
+				}
+			,	avg, sum
+			);
+		//*/
 	}
 	else if( info.size() == 4 ){
-		avg = it.for_all_lines_combine<Average>(
+		avg = it.for_all_pixels_combine<Average>(
 				[](MultiPlaneLineIterator &it) -> Average{
 					Average avg( 0, 0 );
 					
@@ -304,7 +402,7 @@ double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 			);
 	}
 	else{
-		avg = it.for_all_lines_combine<Average>(
+		avg = it.for_all_pixels_combine<Average>(
 				[](MultiPlaneLineIterator &it) -> Average{
 					return Average( it.diff( 0, 1 ), 1 );
 				}

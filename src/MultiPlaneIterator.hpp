@@ -66,7 +66,7 @@ class PlaneLine{
 };
 
 class MultiPlaneLineIterator{
-	private:
+	public:
 		int x;
 		const int right;
 		std::vector<PlaneLine> lines;
@@ -76,13 +76,34 @@ class MultiPlaneLineIterator{
 				int y, int left, int right, const std::vector<PlaneItInfo> &infos
 			);
 		
+		unsigned left() const{
+			return right - x;
+		}
+		
 		void next(){
 			for( PlaneLine& l : lines )
 				l.next();
-			x++;
 		}
 		
-		bool valid() const{ return x<=right; }
+		void next_2(){
+			lines[0].next();
+			lines[1].next();
+		}
+		
+		void next_3(){
+			lines[0].next();
+			lines[1].next();
+			lines[2].next();
+		}
+		
+		void next_4(){
+			lines[0].next();
+			lines[1].next();
+			lines[2].next();
+			lines[3].next();
+		}
+		
+		bool valid(){ return ++x <= right; }
 		
 		color_type& operator[]( unsigned index ) const{
 			return lines[index].value();
@@ -93,9 +114,10 @@ class MultiPlaneLineIterator{
 		unsigned size() const{ return lines.size(); }
 		
 		void for_all( void func( MultiPlaneLineIterator &it ) ){
+			func( *this );
 			while( valid() ){
-				func( *this );
 				next();
+				func( *this );
 			}
 		}
 		
@@ -105,10 +127,9 @@ class MultiPlaneLineIterator{
 			,	T comb( T t1, T t2 )
 			){
 			T t = func( *this );
-			next();
 			while( valid() ){
-				t = comb( t, func( *this ) );
 				next();
+				t = comb( t, func( *this ) );
 			}
 			return t;
 		}
@@ -144,7 +165,7 @@ class MultiPlaneIterator{
 		unsigned width(){ return right - left + 1; }
 		unsigned height(){ return bottom - top + 1; }
 		
-		void iterate_all();
+		bool iterate_all();
 		void iterate_shared();
 		
 		void next_y(){ new_y( y + 1 ); }
@@ -160,8 +181,20 @@ class MultiPlaneIterator{
 				next_line();
 		}
 		
-		
 		void for_all_lines( void func( MultiPlaneLineIterator &it ) ){
+			std::vector<int> its;
+			its.reserve( bottom - top );
+			
+			for( int iy=top; iy<=bottom; iy++ )
+				its.push_back( iy );
+			
+			QtConcurrent::blockingMap( its, [func,this](int iy){
+					MultiPlaneLineIterator it( iy, this->left, this->right, this->infos );
+					func( it );
+				} );
+		}
+		
+		void for_all_pixels( void func( MultiPlaneLineIterator &it ) ){
 			std::vector<int> its;
 			its.reserve( bottom - top );
 			
@@ -172,6 +205,30 @@ class MultiPlaneIterator{
 					MultiPlaneLineIterator it( iy, this->left, this->right, this->infos );
 					it.for_all( func );
 				} );
+		}
+		
+		template <class T>
+		T for_all_pixels_combine( 
+				T func( MultiPlaneLineIterator &it )
+			,	T init
+			,	T combine( T val1, T val2 )
+			){
+			typedef std::pair<int,T> Working;
+			std::vector<Working> its;
+			its.reserve( bottom - top );
+			
+			for( int iy=top; iy<=bottom; iy++ )
+				its.push_back( Working( iy, init ) );
+			
+			QtConcurrent::blockingMap( its, [func,combine,this](Working &val){
+					MultiPlaneLineIterator it( val.first, this->left, this->right, this->infos );
+					val.second = it.for_all_combine( func, combine );
+				} );
+			
+			for( Working w : its )
+				init = combine( init, w.second );
+			
+			return init;
 		}
 		
 		template <class T>
@@ -189,7 +246,7 @@ class MultiPlaneIterator{
 			
 			QtConcurrent::blockingMap( its, [func,combine,this](Working &val){
 					MultiPlaneLineIterator it( val.first, this->left, this->right, this->infos );
-					val.second = it.for_all_combine( func, combine );
+					val.second = func( it );
 				} );
 			
 			for( Working w : its )

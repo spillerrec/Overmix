@@ -44,7 +44,8 @@ MultiPlaneLineIterator::MultiPlaneLineIterator(
 		}
 	}
 
-void MultiPlaneIterator::iterate_all(){
+bool MultiPlaneIterator::iterate_all(){
+	int min = INT_MAX, max = INT_MIN;
 	x = y = INT_MAX;
 	bottom = right = INT_MIN;
 	for( unsigned i=0; i<infos.size(); i++ ){
@@ -56,10 +57,15 @@ void MultiPlaneIterator::iterate_all(){
 		y = info.y < y ? info.y : y;
 		right = right < r ? r : right;
 		bottom = bottom < b ? b : bottom;
+		
+		max = info.x > max ? info.x : max;
+		min = min > r ? r : min;
 	}
 	
 	new_y( top = y );
 	new_x( left = x );
+	
+	return max == left && min == right;
 }
 
 void MultiPlaneIterator::iterate_shared(){
