@@ -1,6 +1,6 @@
-/*.Debug
-/*.Release
 /debug
 /release
 /Makefile
-/ui_*.h
+/Makefile.*
+/out
+/*.pro.user
