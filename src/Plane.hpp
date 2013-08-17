@@ -40,6 +40,11 @@ class Plane{
 		color_type& pixel( unsigned x, unsigned y ) const{ return data[ x + y*line_width ]; }
 		color_type* scan_line( unsigned y ) const{ return data + y*line_width; }
 		
+	//Interlacing methods
+		bool is_interlaced() const;
+		void replace_line( Plane &p, bool top );
+		void combine_line( Plane &p, bool top );
+		
 		Plane* scale_nearest( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const;
 		Plane* scale_linear( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const;
 		Plane* scale_bilinear( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const;

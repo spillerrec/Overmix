@@ -47,6 +47,7 @@ main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidg
 	//Checkboxes
 	change_use_average();
 	connect( ui->cbx_average, SIGNAL( toggled(bool) ), this, SLOT( change_use_average() ) );
+	connect( ui->cbx_interlaced, SIGNAL( toggled(bool) ), this, SLOT( change_interlace() ) );
 	
 	//Sliders
 	change_threshould();
@@ -191,5 +192,11 @@ void main_widget::clear_image(){
 
 void main_widget::subpixel_align_image(){
 	image.subalign_images();
+}
+
+void main_widget::change_interlace(){
+	bool value = ui->cbx_interlaced->isChecked();
+	if( image.set_interlaceing( value ) != value )
+		ui->cbx_interlaced->setChecked( !value );
 }
 

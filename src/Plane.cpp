@@ -34,6 +34,57 @@ Plane::~Plane(){
 		delete[] data;
 }
 
+#include <QDebug>
+bool Plane::is_interlaced() const{
+	double avg2 = 0;
+	for( unsigned iy=0; iy<get_height()/2*2; ){
+		color_type *row1 = scan_line( iy++ );
+		color_type *row2 = scan_line( iy++ );
+		
+		unsigned long line_avg = 0;
+		for( unsigned ix=0; ix<get_width(); ++ix ){
+			color_type diff = row2[ix] > row1[ix] ? row2[ix] - row1[ix] : row1[ix] - row2[ix];
+			line_avg += (unsigned long)diff*diff;
+		}
+		avg2 += (double)line_avg / get_width();
+	}
+	avg2 /= get_height()/2;
+	avg2 /= 0xFFFF;
+	avg2 /= 0xFFFF;
+	
+	qDebug( "interlace factor: %f", avg2 );
+	return avg2 > 0.0015; //NOTE: Based on experiments, not reliable!
+}
+
+void Plane::replace_line( Plane &p, bool top ){
+	if( get_height() != p.get_height() || get_width() != p.get_width() ){
+		qWarning( "replace_line: Planes not equaly sized!" );
+		return;
+	}
+	
+	for( unsigned iy=(top ? 0 : 1); iy<get_height(); iy+=2 ){
+		color_type *row1 = scan_line( iy );
+		color_type *row2 = p.scan_line( iy );
+		
+		for( unsigned ix=0; ix<get_width(); ++ix )
+			row1[ix] = row2[ix];
+	}
+}
+
+void Plane::combine_line( Plane &p, bool top ){
+	if( get_height() != p.get_height() || get_width() != p.get_width() ){
+		qWarning( "combine_line: Planes not equaly sized!" );
+		return;
+	}
+	
+	for( unsigned iy=(top ? 0 : 1); iy<get_height(); iy+=2 ){
+		color_type *row1 = scan_line( iy );
+		color_type *row2 = p.scan_line( iy );
+		
+		for( unsigned ix=0; ix<get_width(); ++ix )
+			row1[ix] = ( (unsigned)row1[ix] + row2[ix] ) / 2;
+	}
+}
 
 
 Plane* Plane::scale_nearest( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const{

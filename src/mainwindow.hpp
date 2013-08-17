@@ -55,6 +55,7 @@ class main_widget: public QMainWindow{
 		void change_threshould();
 		void change_movement();
 		void change_merge_method();
+		void change_interlace();
 };
 
 #endif

@@ -117,6 +117,9 @@ class ImageEx{
 		
 		
 		double diff( const ImageEx& img, int x, int y ) const;
+		bool is_interlaced() const;
+		void replace_line( ImageEx& img, bool top );
+		void combine_line( ImageEx& img, bool top );
 		
 		MergeResult best_vertical( ImageEx& img, int level, double range, DiffCache *cache=nullptr ){
 			return best_round( img, level, 0, range, cache );

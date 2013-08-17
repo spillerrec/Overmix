@@ -50,6 +50,14 @@ class MultiImage{
 		typedef std::pair<unsigned,double> ImageMatch;
 		typedef std::vector<ImageMatch> ImageMatches;
 		ImageMatches overlaps_image( unsigned index ) const;
+		
+	private:
+		bool interlace_on;
+		ImageEx *prev_frame;
+		bool frame_interlaced;
+	public:
+		bool interlacing_enabled() const{ return interlace_on; }
+		bool set_interlaceing( bool setting );
 	
 	public:
 		MultiImage();

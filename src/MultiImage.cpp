@@ -32,6 +32,8 @@ MultiImage::MultiImage(){
 	movement = 0.5;
 	merge_method = 0;
 	use_average = true;
+	prev_frame = nullptr;
+	interlace_on = false;
 }
 MultiImage::~MultiImage(){
 	clear();
@@ -40,9 +42,19 @@ MultiImage::~MultiImage(){
 void MultiImage::clear(){
 	for( unsigned i=0; i<imgs.size(); i++ )
 		delete imgs[i];
+	if( prev_frame && frame_interlaced )
+		delete prev_frame;
+	prev_frame = nullptr;
+	
 	imgs.clear();
 	pos.clear();
 	calculate_size();
+}
+
+bool MultiImage::set_interlaceing( bool setting ){
+	if( imgs.size() == 0 )
+		interlace_on = setting;
+	return interlace_on;
 }
 
 pair<QPoint,double> MultiImage::merge_image( ImageEx& img1, ImageEx& img2 ) const{
@@ -74,6 +86,51 @@ void MultiImage::add_image( ImageEx *img ){
 	QTime t;
 	t.start();
 	QPoint p( 0,0 );
+	
+	//Detelecine
+	if( interlace_on ){
+		bool current_interlaced = img->is_interlaced();
+		
+		//Handle first image
+		if( !prev_frame ){
+			frame_interlaced = current_interlaced;
+			prev_frame = img;
+			
+			//Do we need another frame to continue?
+			if( current_interlaced )
+				return;
+		}
+		else{
+			if( !frame_interlaced ){ //p
+				if( !current_interlaced ){ //p + p
+					//Nothing to do, neighter is interlaced
+					prev_frame = img;
+					frame_interlaced = current_interlaced; //false
+				}
+				else{ //p + i
+					prev_frame->combine_line( *img, true );
+					prev_frame = img;
+					frame_interlaced = current_interlaced; //true
+					return;
+				}
+			}
+			else{
+				if( !current_interlaced ){ //i + p
+					img->combine_line( *prev_frame, false );
+					delete prev_frame;
+					prev_frame = img;
+					frame_interlaced = current_interlaced; //false
+				}
+				else{ // i + i
+					prev_frame->replace_line( *img, true );
+					ImageEx* temp = prev_frame;
+					prev_frame = img;
+					img = temp; //Swap
+					frame_interlaced = current_interlaced; //true
+				}
+			}
+		}
+	}
 	
 	if( imgs.size() > 0 ){
 		ImageEx *img1 = NULL;

@@ -413,6 +413,19 @@ double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 	return avg.second ? (double)avg.first / avg.second : DOUBLE_MAX;
 }
 
+bool ImageEx::is_interlaced() const{
+	return (*this)[0].p.is_interlaced();
+}
+void ImageEx::replace_line( ImageEx& img, bool top ){
+	for( unsigned i=0; i<4; ++i )
+		if( planes[i] ) //TODO: check if img has plane
+			planes[i]->replace_line( img[i].p, top );
+}
+void ImageEx::combine_line( ImageEx& img, bool top ){
+	for( unsigned i=0; i<4; ++i )
+		if( planes[i] ) //TODO: check if img has plane
+			planes[i]->combine_line( img[i].p, top );
+}
 
 //TODO: these two are brutally simple, improve?
 double DiffCache::get_diff( int x, int y ) const{
