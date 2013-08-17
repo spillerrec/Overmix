@@ -414,6 +414,20 @@ double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 }
 
 
+//TODO: these two are brutally simple, improve?
+double DiffCache::get_diff( int x, int y ) const{
+	for( auto c : cache )
+		if( c.x == x && c.y == y ){
+		//	qDebug( "Reusing diff: %dx%d with %.2f", x, y, c.diff );
+			return c.diff;
+		}
+	return -1;
+}
+void DiffCache::add_diff( int x, int y, double diff ){
+	Cached c = { x, y, diff };
+	cache << c;
+}
+
 
 struct img_comp{
 	ImageEx* img1;
@@ -426,6 +440,7 @@ struct img_comp{
 	int right;
 	int top;
 	int bottom;
+	bool diff_set;
 	
 	img_comp( ImageEx& image1, ImageEx& image2, int hm, int vm, int lvl=0, int l=0, int r=0, int t=0, int b=0 ){
 		img1 = &image1;
@@ -438,15 +453,21 @@ struct img_comp{
 		right = r;
 		top = t;
 		bottom = b;
+		diff_set = false;
 	}
 	void do_diff( int x, int y ){
-		if( diff < 0 )
+		if( !diff_set )
 			diff = img1->diff( *img2, x, y );
 	}
+	void set_diff( double new_diff ){
+		diff = new_diff;
+		if( diff >= 0 )
+			diff_set = true;
+	}
 	
-	MergeResult result() const{
+	MergeResult result( DiffCache *cache ) const{
 		if( level > 0 )
-			return img1->best_round_sub( *img2, level, left, right, h_middle, top, bottom, v_middle, diff );
+			return img1->best_round_sub( *img2, level, left, right, h_middle, top, bottom, v_middle, cache );
 		else
 			return MergeResult(QPoint( h_middle, v_middle ),diff);
 	}
@@ -456,7 +477,7 @@ static void do_diff_center( img_comp& comp ){
 	comp.do_diff( comp.h_middle, comp.v_middle );
 }
 
-MergeResult ImageEx::best_round( ImageEx& img, int level, double range_x, double range_y ){
+MergeResult ImageEx::best_round( ImageEx& img, int level, double range_x, double range_y, DiffCache *cache ){
 	//Bail if invalid settings
 	if(	level < 1
 		||	( range_x < 0.0 || range_x > 1.0 )
@@ -470,16 +491,23 @@ MergeResult ImageEx::best_round( ImageEx& img, int level, double range_x, double
 	int x = ( (int)get_width() - img.get_width() ) / 2;
 	int y = ( (int)get_height() - img.get_height() ) / 2;
 	
+	//Make sure cache exists
+	DiffCache temp;
+	if( !cache )
+		cache = &temp;
+	
+	cache->add_diff( x, y, diff( img, x,y ) );
+	
 	return best_round_sub(
 			img, level
 		,	((int)1 - (int)img.get_width()) * range_x, ((int)get_width() - 1) * range_x, x
 		,	((int)1 - (int)img.get_height()) * range_y, ((int)get_height() - 1) * range_y, y
-		,	diff( img, x,y )
+		,	cache
 		);
 }
 
-MergeResult ImageEx::best_round_sub( ImageEx& img, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, double diff ){
-//	qDebug( "Round %d: %d,%d,%d x %d,%d,%d at %.2f", level, left, h_middle, right, top, v_middle, bottom, diff );
+MergeResult ImageEx::best_round_sub( ImageEx& img, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, DiffCache *cache ){
+//	qDebug( "Round %d: %d,%d,%d x %d,%d,%d at %.2f", level, left, h_middle, right, top, v_middle, bottom, cache->get_diff( h_middle, v_middle ) );
 	QList<img_comp> comps;
 	int amount = level*2 + 2;
 	double h_offset = (double)(right - left) / amount;
@@ -492,8 +520,7 @@ MergeResult ImageEx::best_round_sub( ImageEx& img, int level, int left, int righ
 		for( int ix=left; ix<=right; ix++ )
 			for( int iy=top; iy<=bottom; iy++ ){
 				img_comp t( *this, img, ix, iy );
-				if( ix == h_middle && iy == v_middle )
-					t.diff = diff;
+				t.set_diff( cache->get_diff( ix, iy ) );
 				comps << t;
 			}
 	}
@@ -519,8 +546,7 @@ MergeResult ImageEx::best_round_sub( ImageEx& img, int level, int left, int righ
 					,	floor( iy - v_offset ), ceil( iy + v_offset )
 					);
 				
-				if( x == h_middle && y == v_middle )
-					t.diff = diff; //Reuse old diff
+				t.set_diff( cache->get_diff( x, y ) );
 				
 				comps << t;
 			}
@@ -533,11 +559,15 @@ MergeResult ImageEx::best_round_sub( ImageEx& img, int level, int left, int righ
 	const img_comp* best = NULL;
 	double best_diff = DOUBLE_MAX;
 	
-	for( int i=0; i<comps.size(); i++ ){
-		if( comps.at(i).diff < best_diff ){
-			best = &comps.at(i);
+	for( auto &c : comps ){
+		if( c.diff < best_diff ){
+			best = &c;
 			best_diff = best->diff;
 		}
+		
+		//Add to cache
+		if( !c.diff_set )
+			cache->add_diff( c.h_middle, c.v_middle, c.diff );
 	}
 	
 	if( !best ){
@@ -545,7 +575,7 @@ MergeResult ImageEx::best_round_sub( ImageEx& img, int level, int left, int righ
 		return MergeResult(QPoint(),DOUBLE_MAX);
 	}
 	
-	return best->result();
+	return best->result( cache );
 }
 
 

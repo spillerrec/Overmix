@@ -42,6 +42,20 @@ struct PlaneInfo{
 		}
 };
 
+class DiffCache{
+	private:
+		struct Cached{
+			int x;
+			int y;
+			double diff;
+		};
+		QList<Cached> cache;
+		
+	public:
+		double get_diff( int x, int y ) const;
+		void add_diff( int x, int y, double diff );
+};
+
 class ImageEx{
 	public:
 		enum system{
@@ -104,14 +118,14 @@ class ImageEx{
 		
 		double diff( const ImageEx& img, int x, int y ) const;
 		
-		MergeResult best_vertical( ImageEx& img, int level, double range ){
-			return best_round( img, level, 0, range );
+		MergeResult best_vertical( ImageEx& img, int level, double range, DiffCache *cache=nullptr ){
+			return best_round( img, level, 0, range, cache );
 		}
-		MergeResult best_horizontal( ImageEx& img, int level, double range ){
-			return best_round( img, level, range, 0 );
+		MergeResult best_horizontal( ImageEx& img, int level, double range, DiffCache *cache=nullptr ){
+			return best_round( img, level, range, 0, cache );
 		}
-		MergeResult best_round( ImageEx& img, int level, double range_x, double range_y );
-		MergeResult best_round_sub( ImageEx& img, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, double diff );
+		MergeResult best_round( ImageEx& img, int level, double range_x, double range_y, DiffCache *cache=nullptr );
+		MergeResult best_round_sub( ImageEx& img, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, DiffCache *cache );
 		
 		PlaneInfo& operator[]( const unsigned index ) const{
 			return *infos[index];

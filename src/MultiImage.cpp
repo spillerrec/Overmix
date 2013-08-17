@@ -50,18 +50,19 @@ pair<QPoint,double> MultiImage::merge_image( ImageEx& img1, ImageEx& img2 ) cons
 	//below threshould
 	int level = 1;
 	pair<QPoint,double> result;
+	DiffCache cache;
 	do{
 		switch( merge_method ){
 			case 1: 
-					result = img1.best_horizontal( img2, level, movement );
+					result = img1.best_horizontal( img2, level, movement, &cache );
 				break;
 			case 2: 
-					result = img1.best_vertical( img2, level, movement );
+					result = img1.best_vertical( img2, level, movement, &cache );
 				break;
 			
 			case 0:
 			default:
-					result = img1.best_round( img2, level, movement, movement );
+					result = img1.best_round( img2, level, movement, movement, &cache );
 				break;
 		}
 	}while( result.second > 24*256 && level++ < 6 );
