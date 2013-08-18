@@ -75,7 +75,7 @@ struct color{
 			return (color_type)( v *255*256 +0.5 );
 		}
 		static double ycbcr2srgb( double v ){
-			//rec. 709
+			//rec. 601 and 709
 			v = ( v < 0.08125 ) ? 1.0/4.5 * v : std::pow( (v+0.099)/1.099, 1.0/0.45 );
 			v = ( v <= 0.0031308 ) ? 12.92 * v : 1.055*std::pow( v, 1.0/2.4 ) - 0.055;
 			return v;
@@ -104,52 +104,13 @@ struct color{
 			}
 		}
 		
+		color yuv_to_rgb( double kr, double kg, double kb, bool gamma );
 		
-		color rec709_to_rgb(){
-			double y = r / (255*256.0);
-			double cb = g / (255*256.0);
-			double cr = b / (255*256.0);
-			
-			//Remove foot- and head-room
-			y = (y - (16 / 255.0)) * ( 1 + 16.0 / 255.0 + (256-235) / 255.0 );
-			cb = (cb - (16 / 255.0)) * ( 1 + 16.0 / 255.0 + (256-240) / 255.0 );
-			cr = (cr - (16 / 255.0)) * ( 1 + 16.0 / 255.0 + (256-240) / 255.0 );
-			
-			//Don't let it outside the allowed range
-			y = (y < 0 ) ? 0 : (y > 1 ) ? 1 : y;
-			cb = (cb < 0 ) ? 0 : (cb > 1 ) ? 1 : cb;
-			cr = (cr < 0 ) ? 0 : (cr > 1 ) ? 1 : cr;
-			
-			//Move chroma range
-			cb -= 0.5;
-			cr -= 0.5;
-			
-			//Convert to R'G'B'
-			const double kr = 0.2126;
-			const double kg = 0.7152;
-			const double kb = 0.0722;
-			
-			double rr = y + 2*(1-kr) * cr;
-			double rb = y + 2*(1-kb) * cb;
-			double rg = y - 2*kr*(1-kr)/kg * cr - 2*kb*(1-kb)/kg * cb;
-			
-			//Don't let it outside the allowed range
-			//Should not happen, so we can probably remove this later
-			rr = (rr < 0 ) ? 0 : (rr > 1 ) ? 1 : rr;
-			rg = (rg < 0 ) ? 0 : (rg > 1 ) ? 1 : rg;
-			rb = (rb < 0 ) ? 0 : (rb > 1 ) ? 1 : rb;
-			
-			//Gamma correction
-			rr = ycbcr2srgb( rr );
-			rg = ycbcr2srgb( rg );
-			rb = ycbcr2srgb( rb );
-			
-			//Transform range
-			rr = (rr) * 255*256;
-			rg = (rg) * 255*256;
-			rb = (rb) * 255*256;
-			
-			return color( rr, rg, rb, a );
+		color rec601_to_rgb( bool gamma=true ){
+			return yuv_to_rgb( 0.299, 0.587, 0.114, gamma );
+		}
+		color rec709_to_rgb( bool gamma=true ){
+			return yuv_to_rgb( 0.2126, 0.7152, 0.0722, gamma );
 		}
 		
 	void clear(){

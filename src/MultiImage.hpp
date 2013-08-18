@@ -81,7 +81,7 @@ class MultiImage{
 			FILTER_SIMPLE_SLIDE
 		};
 		ImageEx* render_image( filters filter ) const;
-		QImage render( filters filter, bool dither = false ) const;
+		QImage render( filters filter, bool dither=true, bool gamma=true, bool rec709=true ) const;
 		
 		unsigned get_count() const{ return imgs.size(); }
 		QRect get_size() const{ return size_cache; }

@@ -148,7 +148,12 @@ void main_widget::refresh_image(){
 	else if( ui->rbtn_fast_slide->isChecked() )
 		type = MultiImage::FILTER_SIMPLE_SLIDE;
 	
-	temp = new QImage( image.render( type, ui->cbx_dither->isChecked() ) );
+	temp = new QImage( image.render(
+			type
+		,	ui->cbx_dither->isChecked()
+		,	ui->cbx_gamma->isChecked()
+		,	ui->rbtn_rec709->isChecked()
+		) );
 	viewer.change_image( temp, true );
 	refresh_text();
 }

@@ -104,7 +104,7 @@ class ImageEx{
 		bool read_file( const char* path );
 		Plane* alpha_plane() const{ return planes[3]; }
 		
-		QImage to_qimage( bool dither );
+		QImage to_qimage( bool dither, bool gamma, bool rec709 );
 		
 		unsigned get_width(){
 			return (*this)[0].p.get_width();

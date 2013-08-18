@@ -186,7 +186,7 @@ bool ImageEx::create( unsigned width, unsigned height ){
 	return initialized = true;
 }
 
-QImage ImageEx::to_qimage( bool dither ){
+QImage ImageEx::to_qimage( bool dither, bool gamma, bool rec709 ){
 	if( !planes || !planes[0] )
 		return QImage();
 	
@@ -220,7 +220,10 @@ QImage ImageEx::to_qimage( bool dither ){
 		for( unsigned ix=0; ix<it.width(); ix++, it.next_x() ){
 			color p = (it.*pixel)();
 			if( type == YUV )
-				p = p.rec709_to_rgb();
+				if( rec709 )
+					p = p.rec709_to_rgb( gamma );
+				else
+					p = p.rec601_to_rgb( gamma );
 			
 			if( dither )
 				p += line[ix];
