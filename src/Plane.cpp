@@ -16,9 +16,11 @@
 */
 
 #include "Plane.hpp"
-#include <cmath>
+#include <algorithm> //For min
+#include <cstdint> //For abs(int) and uint*_t
 
-using namespace std;
+#include <QtConcurrent>
+#include <QDebug>
 
 const unsigned long Plane::MAX_VAL = 0xFFFFFFFF;
 
@@ -34,7 +36,6 @@ Plane::~Plane(){
 		delete[] data;
 }
 
-#include <QDebug>
 bool Plane::is_interlaced() const{
 	double avg2 = 0;
 	for( unsigned iy=0; iy<get_height()/2*2; ){
@@ -87,9 +88,58 @@ void Plane::combine_line( Plane &p, bool top ){
 }
 
 
+struct Sum{
+	uint64_t total;
+	Sum() : total( 0 ) { }
+	void reduce( const uint64_t add ){ total += add; }
+};
+struct Para{
+	color_type *c1;
+	color_type *c2;
+	unsigned width;
+	unsigned stride;
+	Para( color_type* c1, color_type *c2, unsigned width, unsigned stride )
+		:	c1( c1 ), c2( c2 ), width( width ), stride( stride )
+		{ }
+};
+static uint64_t diff_2_line( Para p ){
+	uint64_t sum = 0;
+	for( color_type* end=p.c1+p.width; p.c1<end; p.c1+=p.stride, p.c2+=p.stride )
+		sum += std::abs( *p.c1 - *p.c2 );
+	
+	return sum;
+}
+
+double Plane::diff( const Plane& p, int x, int y, unsigned stride ) const{
+	//Find edges
+	int p1_top = y < 0 ? 0 : y;
+	int p2_top = y > 0 ? 0 : -y;
+	int p1_left = x < 0 ? 0 : x;
+	int p2_left = x > 0 ? 0 : -x;
+	unsigned width = std::min( get_width() - p1_left, p.get_width() - p2_left );
+	unsigned height = std::min( get_height() - p1_top, p.get_height() - p2_top );
+	
+	//Initial offsets on the two planes
+	color_type* c1 = scan_line( p1_top ) + p1_left;
+	color_type* c2 = p.scan_line( p2_top ) + p2_left;
+	
+	//Calculate all the offsets for QtConcurrent::mappedReduced
+	std::vector<Para> lines;
+	lines.reserve( height );
+	for( unsigned i=0; i<height; i+=stride ){
+		lines.push_back( Para( c1+i%stride, c2+i%stride, width, stride ) );
+		c1 += line_width;
+		c2 += p.line_width;
+	}
+	
+	Sum sum = QtConcurrent::blockingMappedReduced( lines, &diff_2_line, &Sum::reduce );
+	return sum.total / (double)( height * width / (stride*stride) );
+}
+
+
 Plane* Plane::scale_nearest( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const{
-//	if( offset_x <= -1.0 || offset_x >= 1.0 || offset_y <= -1.0 || offset_y >= 1.0 )
-//		return 0;
+	if( offset_x <= -1.0 || offset_x >= 1.0 || offset_y <= -1.0 || offset_y >= 1.0 )
+		return 0;
 	
 	Plane *scaled = new Plane( wanted_width, wanted_height );
 	if( !scaled || scaled->is_invalid() )

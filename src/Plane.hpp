@@ -33,10 +33,12 @@ class Plane{
 		
 		static const unsigned long MAX_VAL;
 		
+	//Status
 		bool is_invalid() const{ return data == 0; }
 		unsigned get_height() const{ return height; }
 		unsigned get_width() const{ return width; }
 		
+	//Pixel/Row query
 		color_type& pixel( unsigned x, unsigned y ) const{ return data[ x + y*line_width ]; }
 		color_type* scan_line( unsigned y ) const{ return data + y*line_width; }
 		
@@ -45,6 +47,10 @@ class Plane{
 		void replace_line( Plane &p, bool top );
 		void combine_line( Plane &p, bool top );
 		
+	//Difference
+		double diff( const Plane& p, int x, int y, unsigned stride=1 ) const;
+		
+	//Scaling
 		Plane* scale_nearest( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const;
 		Plane* scale_linear( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const;
 		Plane* scale_bilinear( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const;

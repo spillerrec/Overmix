@@ -128,7 +128,7 @@ class ImageEx{
 			return best_round( img, level, range, 0, cache );
 		}
 		MergeResult best_round( ImageEx& img, int level, double range_x, double range_y, DiffCache *cache=nullptr );
-		MergeResult best_round_sub( ImageEx& img, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, DiffCache *cache );
+		MergeResult best_round_sub( ImageEx& img, int level, int left, int right, int top, int bottom, DiffCache *cache );
 		
 		PlaneInfo& operator[]( const unsigned index ) const{
 			return *infos[index];

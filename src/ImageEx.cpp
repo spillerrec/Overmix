@@ -86,7 +86,7 @@ bool ImageEx::from_dump( const char* path ){
 	return result;
 }
 
-static int read_chunk_callback_thing( png_structp ptr, png_unknown_chunkp chunk ){
+static int read_chunk_callback_thing( png_structp, png_unknown_chunkp ){
 	return 0;
 }
 bool ImageEx::from_png( const char* path ){
@@ -219,11 +219,12 @@ QImage ImageEx::to_qimage( bool dither, bool gamma, bool rec709 ){
 		QRgb* row = (QRgb*)img.scanLine( iy );
 		for( unsigned ix=0; ix<it.width(); ix++, it.next_x() ){
 			color p = (it.*pixel)();
-			if( type == YUV )
+			if( type == YUV ){
 				if( rec709 )
 					p = p.rec709_to_rgb( gamma );
 				else
 					p = p.rec601_to_rgb( gamma );
+			}
 			
 			if( dither )
 				p += line[ix];
@@ -248,89 +249,13 @@ QImage ImageEx::to_qimage( bool dither, bool gamma, bool rec709 ){
 	return img;
 }
 
-#include <algorithm> //For min
-#include <cstdint> //For abs(int) and uint*_t
-
-struct DiffPara{
-	const Plane& p1;
-	const Plane& p2;
-	unsigned p1_top;
-	unsigned p2_top;
-	unsigned p1_left;
-	unsigned p2_left;
-	unsigned width;
-	
-	DiffPara( const Plane& p1, const Plane& p2 ) : p1( p1 ), p2( p2 ) { }
-	
-	unsigned calculate( int x, int y ){
-		p1_top = y < 0 ? 0 : y;
-		p2_top = y > 0 ? 0 : -y;
-		p1_left = x < 0 ? 0 : x;
-		p2_left = x > 0 ? 0 : -x;
-		width = std::min( p1.get_width() - p1_left, p2.get_width() - p2_left );
-		
-		return std::min( p1.get_height() - p1_top, p2.get_height() - p2_top );
-	}
-};
-
-
-static unsigned diff_2_line( int iy, const DiffPara& p ){
-	color_type *c1 = p.p1.scan_line( iy + p.p1_top ) + p.p1_left;
-	color_type *c2 = p.p2.scan_line( iy + p.p2_top ) + p.p2_left;
-	
-	color_type *end = c1 + p.width;
-	
-	unsigned sum = 0;
-	for( unsigned i=0; i<p.width; ++i ){// c1 < end ){
-		sum += std::abs( *c1 - *c2 );
-		
-		++c1; ++c2;
-	}
-	
-	return sum;
-}
-
-struct Para{
-	int iy;
-	const DiffPara& para;
-	unsigned result;
-	Para( int iy, const DiffPara& para ) : iy( iy ), para( para ) { }
-};
-void wrapper( Para& p ){ p.result = diff_2_line( p.iy, p.para ); }
-
-#include <QtConcurrent>
-static double diff_2( const Plane &p1, const Plane &p2, int x, int y ){
-	DiffPara para( p1, p2 );
-	unsigned height = para.calculate( x, y );
-	
-	//* Write all the lines for QtConcurrent::mapped
-	std::vector<Para> lines;
-	lines.reserve( height );
-	for( unsigned i=0; i<height; ++i )
-		lines.push_back( Para(i,para) );
-	
-	QtConcurrent::blockingMap( lines, wrapper );
-	
-	uint64_t sum = 0;
-	for( auto p : lines )
-		sum += p.result;
-	
-	/*///Do it in linear
-	uint64_t sum = 0;
-	for( unsigned iy=0; iy<height; iy++ )
-		sum += diff_2_line( iy, para );
-	//*/
-	
-	return sum / (double)( height * para.width );
-}
-
 
 double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 	//Check if valid
 	if( !is_valid() || !img.is_valid() )
 		return DOUBLE_MAX;
 	
-	return diff_2( *(planes[0]), img[0].p, x, y );
+	return planes[0]->diff( img[0].p, x, y );
 	
 	//Prepare iterator
 	std::vector<PlaneItInfo> info;
@@ -483,7 +408,7 @@ struct img_comp{
 	
 	MergeResult result( DiffCache *cache ) const{
 		if( level > 0 )
-			return img1->best_round_sub( *img2, level, left, right, h_middle, top, bottom, v_middle, cache );
+			return img1->best_round_sub( *img2, level, left, right, top, bottom, cache );
 		else
 			return MergeResult(QPoint( h_middle, v_middle ),diff);
 	}
@@ -516,14 +441,14 @@ MergeResult ImageEx::best_round( ImageEx& img, int level, double range_x, double
 	
 	return best_round_sub(
 			img, level
-		,	((int)1 - (int)img.get_width()) * range_x, ((int)get_width() - 1) * range_x, x
-		,	((int)1 - (int)img.get_height()) * range_y, ((int)get_height() - 1) * range_y, y
+		,	((int)1 - (int)img.get_width()) * range_x, ((int)get_width() - 1) * range_x
+		,	((int)1 - (int)img.get_height()) * range_y, ((int)get_height() - 1) * range_y
 		,	cache
 		);
 }
 
-MergeResult ImageEx::best_round_sub( ImageEx& img, int level, int left, int right, int h_middle, int top, int bottom, int v_middle, DiffCache *cache ){
-//	qDebug( "Round %d: %d,%d,%d x %d,%d,%d at %.2f", level, left, h_middle, right, top, v_middle, bottom, cache->get_diff( h_middle, v_middle ) );
+MergeResult ImageEx::best_round_sub( ImageEx& img, int level, int left, int right, int top, int bottom, DiffCache *cache ){
+//	qDebug( "Round %d: %d,%d x %d,%d", level, left, right, top, bottom );
 	QList<img_comp> comps;
 	int amount = level*2 + 2;
 	double h_offset = (double)(right - left) / amount;
