@@ -19,11 +19,8 @@
 #define IMAGE_EX_HPP
 
 #include "Plane.hpp"
-#include <cstdio>
-#include <utility>
 #include <QPoint>
 #include <QImage>
-typedef std::pair<QPoint,double> MergeResult;
 
 class image;
 
@@ -40,20 +37,6 @@ struct PlaneInfo{
 			offset_y = off_y;
 			spacing_x = spacing_y = spacing;
 		}
-};
-
-class DiffCache{
-	private:
-		struct Cached{
-			int x;
-			int y;
-			double diff;
-		};
-		QList<Cached> cache;
-		
-	public:
-		double get_diff( int x, int y ) const;
-		void add_diff( int x, int y, double diff );
 };
 
 class ImageEx{
@@ -106,10 +89,10 @@ class ImageEx{
 		
 		QImage to_qimage( bool dither, bool gamma, bool rec709 );
 		
-		unsigned get_width(){
+		unsigned get_width() const{
 			return (*this)[0].p.get_width();
 		}
-		unsigned get_height(){
+		unsigned get_height() const{
 			return (*this)[0].p.get_height();
 		}
 		
@@ -121,14 +104,13 @@ class ImageEx{
 		void replace_line( ImageEx& img, bool top );
 		void combine_line( ImageEx& img, bool top );
 		
-		MergeResult best_vertical( ImageEx& img, int level, double range, DiffCache *cache=nullptr ){
+		MergeResult best_vertical( const ImageEx& img, int level, double range, DiffCache *cache=nullptr ) const{
 			return best_round( img, level, 0, range, cache );
 		}
-		MergeResult best_horizontal( ImageEx& img, int level, double range, DiffCache *cache=nullptr ){
+		MergeResult best_horizontal( const ImageEx& img, int level, double range, DiffCache *cache=nullptr ) const{
 			return best_round( img, level, range, 0, cache );
 		}
-		MergeResult best_round( ImageEx& img, int level, double range_x, double range_y, DiffCache *cache=nullptr );
-		MergeResult best_round_sub( ImageEx& img, int level, int left, int right, int top, int bottom, DiffCache *cache );
+		MergeResult best_round( const ImageEx& img, int level, double range_x, double range_y, DiffCache *cache=nullptr ) const;
 		
 		PlaneInfo& operator[]( const unsigned index ) const{
 			return *infos[index];

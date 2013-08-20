@@ -18,7 +18,27 @@
 #ifndef PLANE_HPP
 #define PLANE_HPP
 
+#include <QPoint>
+#include <QList>
+#include <cstdio>
+#include <utility>
+
 typedef unsigned short color_type;
+typedef std::pair<QPoint,double> MergeResult;
+
+class DiffCache{
+	private:
+		struct Cached{
+			int x;
+			int y;
+			double diff;
+		};
+		QList<Cached> cache;
+		
+	public:
+		double get_diff( int x, int y ) const;
+		void add_diff( int x, int y, double diff );
+};
 
 class Plane{
 	private:
@@ -49,6 +69,7 @@ class Plane{
 		
 	//Difference
 		double diff( const Plane& p, int x, int y, unsigned stride=1 ) const;
+		MergeResult best_round_sub( const Plane& p, int level, int left, int right, int top, int bottom, DiffCache *cache ) const;
 		
 	//Scaling
 		Plane* scale_nearest( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const;
