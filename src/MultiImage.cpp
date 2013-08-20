@@ -243,9 +243,13 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 	QTime t;
 	t.start();
 	
+	//Abort if no images
+	if( imgs.size() == 0 ){
+		qWarning( "No images to render!" );
+		return nullptr;
+	}
 	qDebug( "render_image: image count: %d", (int)imgs.size() );
 	
-	//TODO: check for first image!
 	
 	//Do iterator
 	QRect box = get_size();
@@ -360,6 +364,9 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 
 QImage MultiImage::render( filters filter, bool dither, bool gamma, bool rec709 ) const{
 	ImageEx *img_org = render_image( filter );
+	if( !img_org )
+		return QImage();
+	
 	QTime t;
 	t.start();
 	QImage img = img_org->to_qimage( dither, gamma, rec709 );
