@@ -19,6 +19,7 @@
 #include <algorithm> //For min
 #include <cstdint> //For abs(int) and uint*_t
 #include <limits>
+#include <vector>
 
 #include <QtConcurrent>
 #include <QDebug>
@@ -185,7 +186,29 @@ Plane* Plane::scale_bilinear( unsigned wanted_width, unsigned wanted_height, dou
 }
 
 
+static double cubic( double b, double c, double x ){
+	x = std::abs( x );
+	
+	if( x < 1 )
+		return
+				(12 - 9*b - 6*c)/6 * x*x*x
+			+	(-18 + 12*b + 6*c)/6 * x*x
+			+	(6 - 2*b)/6
+			;
+	else if( x < 2 )
+		return
+				(-b - 6*c)/6 * x*x*x
+			+	(6*b + 30*c)/6 * x*x
+			+	(-12*b - 48*c)/6 * x
+			+	(8*b + 24*c)/6
+			;
+	else
+		return 0;
+}
+
 Plane* Plane::scale_cubic( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const{
+	using namespace std;
+	
 	if( offset_x <= -1.0 || offset_x >= 1.0 || offset_y <= -1.0 || offset_y >= 1.0 )
 		return 0;
 	
@@ -193,7 +216,43 @@ Plane* Plane::scale_cubic( unsigned wanted_width, unsigned wanted_height, double
 	if( !scaled || scaled->is_invalid() )
 		return 0;
 	
-	return 0; //Not implemented
+	//NOTE: Upscale only!
+	
+	for( unsigned iy=0; iy<wanted_height; iy++ ){
+		color_type* row = scaled->scan_line( iy );
+		for( unsigned ix=0; ix<wanted_width; ix++ ){
+			double pos_x = ((double)ix / (wanted_width-1)) * (width-1);
+			double pos_y = ((double)iy / (wanted_height-1)) * (height-1);
+			
+			unsigned left   = (unsigned)max( (int)ceil( pos_x-2 ), 0 );
+			unsigned top    = (unsigned)max( (int)ceil( pos_y-2 ), 0 );
+			unsigned right  = min( (unsigned)floor( pos_x+2 ), width-1 );
+			unsigned bottom = min( (unsigned)floor( pos_y+2 ), height-1 );
+			
+			double amount = 0;
+			double avg = 0;
+			
+		//	qDebug( "%dx%d -> %dx%d", left,top, right,bottom );
+			for( unsigned jy=top; jy<=bottom; ++jy ){
+				double weight_y = cubic( 1.0/3, 1.0/3, pos_y - jy );
+				
+				for( unsigned jx=left; jx<=right; ++jx ){
+					double weight_x = cubic( 1.0/3, 1.0/3, pos_x - jx );
+					double weight = weight_x * weight_y;
+					
+					avg += pixel( jx, jy ) * weight;
+					amount += weight;
+				}
+			}
+			
+			if( amount )
+				row[ix] = min( int( avg / amount + 0.5 ), 0xFFFF );
+			else
+				row[ix] = 0;
+		}
+	}
+	
+	return scaled;
 }
 
 
@@ -269,10 +328,9 @@ struct img_comp{
 static void do_diff_center( img_comp& comp ){
 	comp.do_diff( comp.h_middle, comp.v_middle );
 }
-
 MergeResult Plane::best_round_sub( const Plane& p, int level, int left, int right, int top, int bottom, DiffCache *cache ) const{
 //	qDebug( "Round %d: %d,%d x %d,%d", level, left, right, top, bottom );
-	QList<img_comp> comps;
+	std::vector<img_comp> comps;
 	int amount = level*2 + 2;
 	double h_offset = (double)(right - left) / amount;
 	double v_offset = (double)(bottom - top) / amount;
@@ -285,7 +343,7 @@ MergeResult Plane::best_round_sub( const Plane& p, int level, int left, int righ
 			for( int iy=top; iy<=bottom; iy++ ){
 				img_comp t( *this, p, ix, iy );
 				t.set_diff( cache->get_diff( ix, iy ) );
-				comps << t;
+				comps.push_back( t );
 			}
 	}
 	else{
@@ -312,7 +370,7 @@ MergeResult Plane::best_round_sub( const Plane& p, int level, int left, int righ
 				
 				t.set_diff( cache->get_diff( x, y ) );
 				
-				comps << t;
+				comps.push_back( t );
 			}
 	}
 	
