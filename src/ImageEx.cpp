@@ -186,9 +186,14 @@ bool ImageEx::create( unsigned width, unsigned height ){
 	return initialized = true;
 }
 
-QImage ImageEx::to_qimage( bool dither, bool gamma, bool rec709 ){
+QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ){
 	if( !planes || !planes[0] )
 		return QImage();
+	
+	//Settings
+	bool dither = setting & SETTING_DITHER;
+	bool gamma = setting & SETTING_GAMMA;
+	bool is_yuv = (type == YUV) && (system != SYSTEM_KEEP);
 	
 	//Create iterator
 	std::vector<PlaneItInfo> info;
@@ -219,8 +224,8 @@ QImage ImageEx::to_qimage( bool dither, bool gamma, bool rec709 ){
 		QRgb* row = (QRgb*)img.scanLine( iy );
 		for( unsigned ix=0; ix<it.width(); ix++, it.next_x() ){
 			color p = (it.*pixel)();
-			if( type == YUV ){
-				if( rec709 )
+			if( is_yuv ){
+				if( system == SYSTEM_REC709 )
 					p = p.rec709_to_rgb( gamma );
 				else
 					p = p.rec601_to_rgb( gamma );

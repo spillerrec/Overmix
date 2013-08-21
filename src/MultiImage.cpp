@@ -362,14 +362,14 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 	return img;
 }
 
-QImage MultiImage::render( filters filter, bool dither, bool gamma, bool rec709 ) const{
+QImage MultiImage::render( filters filter, ImageEx::YuvSystem system,  unsigned setting ) const{
 	ImageEx *img_org = render_image( filter );
 	if( !img_org )
 		return QImage();
 	
 	QTime t;
 	t.start();
-	QImage img = img_org->to_qimage( dither, gamma, rec709 );
+	QImage img = img_org->to_qimage( system, setting );
 	delete img_org;
 	
 	qDebug( "to_qimage() took: %d", t.elapsed() );

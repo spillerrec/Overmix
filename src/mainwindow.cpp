@@ -148,12 +148,21 @@ void main_widget::refresh_image(){
 	else if( ui->rbtn_fast_slide->isChecked() )
 		type = MultiImage::FILTER_SIMPLE_SLIDE;
 	
-	temp = new QImage( image.render(
-			type
-		,	ui->cbx_dither->isChecked()
-		,	ui->cbx_gamma->isChecked()
-		,	ui->rbtn_rec709->isChecked()
-		) );
+	//Set color system
+	ImageEx::YuvSystem system = ImageEx::SYSTEM_KEEP;
+	if( ui->rbtn_rec709->isChecked() )
+		system = ImageEx::SYSTEM_REC709;
+	if( ui->rbtn_rec601->isChecked() )
+		system = ImageEx::SYSTEM_REC601;
+	
+	//Set settings
+	unsigned setting = ImageEx::SETTING_NONE;
+	if( ui->cbx_dither->isChecked() )
+		setting = setting | ImageEx::SETTING_DITHER;
+	if( ui->cbx_gamma->isChecked() )
+		setting = setting | ImageEx::SETTING_GAMMA;
+	
+	temp = new QImage( image.render( type, system, setting ) );
 	viewer.change_image( temp, true );
 	refresh_text();
 }

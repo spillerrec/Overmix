@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>458</width>
-    <height>617</height>
+    <height>631</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -238,7 +238,17 @@
          <string>Color</string>
         </property>
         <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="0">
+         <item row="2" column="1">
+          <widget class="QRadioButton" name="rbtn_rec709">
+           <property name="text">
+            <string>Rec. 709</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
           <widget class="QCheckBox" name="cbx_dither">
            <property name="text">
             <string>Dither</string>
@@ -248,30 +258,27 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="2" column="0">
           <widget class="QCheckBox" name="cbx_gamma">
            <property name="text">
-            <string>Gamma</string>
+            <string>sRGB</string>
            </property>
            <property name="checked">
             <bool>true</bool>
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
+         <item row="1" column="1">
           <widget class="QRadioButton" name="rbtn_rec601">
            <property name="text">
             <string>Rec. 601</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QRadioButton" name="rbtn_rec709">
+         <item row="0" column="1">
+          <widget class="QRadioButton" name="cbx_nocolor">
            <property name="text">
-            <string>Rec. 709</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
+            <string>None (debug)</string>
            </property>
           </widget>
          </item>

@@ -45,6 +45,16 @@ class ImageEx{
 			RGB,
 			YUV
 		};
+		enum YuvSystem{
+			SYSTEM_KEEP,
+			SYSTEM_REC601,
+			SYSTEM_REC709
+		};
+		enum Settings{
+			SETTING_NONE = 0x0,
+			SETTING_DITHER = 0x1,
+			SETTING_GAMMA = 0x2
+		};
 	
 	private:
 		bool initialized;
@@ -87,7 +97,7 @@ class ImageEx{
 		bool read_file( const char* path );
 		Plane* alpha_plane() const{ return planes[3]; }
 		
-		QImage to_qimage( bool dither, bool gamma, bool rec709 );
+		QImage to_qimage( YuvSystem system, unsigned setting=SETTING_NONE );
 		
 		unsigned get_width() const{
 			return (*this)[0].p.get_width();
