@@ -294,7 +294,7 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 		else{
 			temp.reserve( imgs.size() );
 			for( unsigned j=0; j<imgs.size(); j++ ){
-				Plane *p = (*imgs[j])[i].p.scale_cubic( width, height, 0, 0 );
+				Plane *p = (*imgs[j])[i].p.scale_cubic( width, height );
 				if( !p )
 					qDebug( "No plane :\\" );
 				temp.push_back( p );
