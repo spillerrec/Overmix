@@ -42,7 +42,6 @@ main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidg
 	connect( ui->btn_refresh, SIGNAL( clicked() ), this, SLOT( refresh_image() ) );
 	connect( ui->btn_save, SIGNAL( clicked() ), this, SLOT( save_image() ) );
 	connect( ui->btn_subpixel, SIGNAL( clicked() ), this, SLOT( subpixel_align_image() ) );
-	//TODO: undo
 	
 	//Checkboxes
 	change_use_average();
@@ -57,9 +56,8 @@ main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidg
 	
 	//Merge method
 	change_merge_method();
-	connect( ui->merge_both, SIGNAL( clicked() ), this, SLOT( change_merge_method() ) );
-	connect( ui->merge_h, SIGNAL( clicked() ), this, SLOT( change_merge_method() ) );
-	connect( ui->merge_v, SIGNAL( clicked() ), this, SLOT( change_merge_method() ) );
+	connect( ui->cbx_merge_h, SIGNAL( toggled(bool) ), this, SLOT( toggled_hor() ) );
+	connect( ui->cbx_merge_v, SIGNAL( toggled(bool) ), this, SLOT( toggled_ver() ) );
 	
 	//Add images
 	qRegisterMetaType<QList<QUrl> >( "QList<QUrl>" );
@@ -132,20 +130,20 @@ void main_widget::process_urls( QList<QUrl> urls ){
 
 void main_widget::refresh_text(){
 	QRect s = image.get_size();
-	ui->lbl_height->setText( tr( "Size: " ) + QString::number(s.width()) + "x" + QString::number(s.height()) );
-	ui->lbl_amount->setText( tr( "Images: " ) + QString::number( image.get_count() ) );
+	ui->lbl_info->setText(
+			tr( "Size: " )
+		+	QString::number(s.width()) + "x"
+		+	QString::number(s.height()) + " ("
+		+	QString::number( image.get_count() ) + ")"
+	);
 }
 
 void main_widget::refresh_image(){
 	//Select filter
 	MultiImage::filters type = MultiImage::FILTER_AVERAGE;
-	if( ui->rbtn_simple->isChecked() )
-		type = MultiImage::FILTER_SIMPLE;
-	else if( ui->rbtn_diff->isChecked() )
+	if( ui->rbtn_diff->isChecked() )
 		type = MultiImage::FILTER_DIFFERENCE;
-	else if( ui->rbtn_slow_slide->isChecked() )
-		type = MultiImage::FILTER_SIMPLE_SLIDE;
-	else if( ui->rbtn_fast_slide->isChecked() )
+	else if( ui->rbtn_windowed->isChecked() )
 		type = MultiImage::FILTER_SIMPLE_SLIDE;
 	
 	//Set color system
@@ -187,13 +185,28 @@ void main_widget::change_threshould(){
 
 void main_widget::change_merge_method(){
 	int selected = 0;
-	if( ui->merge_both->isChecked() )
-		selected = 0;
-	else if( ui->merge_h->isChecked() )
+	if( ui->cbx_merge_v->isChecked() )
 		selected = 1;
-	else if( ui->merge_v->isChecked() )
-		selected = 2;
+	if( ui->cbx_merge_h->isChecked() ){
+		if( ui->cbx_merge_v->isChecked() )
+			selected = 0;
+		else
+			selected = 2;
+	}
 	image.set_merge_method( selected );
+}
+
+void main_widget::toggled_hor(){
+	//Always have one checked
+	if( !(ui->cbx_merge_h->isChecked()) )
+		ui->cbx_merge_v->setChecked( true );
+	change_merge_method();
+}
+void main_widget::toggled_ver(){
+	//Always have one checked
+	if( !(ui->cbx_merge_v->isChecked()) )
+		ui->cbx_merge_h->setChecked( true );
+	change_merge_method();
 }
 
 void main_widget::clear_image(){

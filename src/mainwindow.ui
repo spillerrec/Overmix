@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>458</width>
-    <height>631</height>
+    <width>512</width>
+    <height>492</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,10 +21,45 @@
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
       <item>
-       <widget class="QLabel" name="lbl_height"/>
+       <widget class="QLabel" name="lbl_info"/>
       </item>
       <item>
-       <widget class="QLabel" name="lbl_amount"/>
+       <widget class="QGroupBox" name="groupBox_4">
+        <property name="title">
+         <string>Preprocecss</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_4">
+         <property name="leftMargin">
+          <number>3</number>
+         </property>
+         <property name="topMargin">
+          <number>3</number>
+         </property>
+         <property name="rightMargin">
+          <number>3</number>
+         </property>
+         <property name="bottomMargin">
+          <number>6</number>
+         </property>
+         <property name="spacing">
+          <number>3</number>
+         </property>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="cbx_interlaced">
+           <property name="text">
+            <string>De-telecine</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="cbx_de_vlc">
+           <property name="text">
+            <string>De-VLC</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </item>
       <item>
        <widget class="QGroupBox" name="groupBox">
@@ -35,29 +70,51 @@
          <property name="spacing">
           <number>3</number>
          </property>
+         <property name="leftMargin">
+          <number>3</number>
+         </property>
+         <property name="topMargin">
+          <number>3</number>
+         </property>
+         <property name="rightMargin">
+          <number>3</number>
+         </property>
+         <property name="bottomMargin">
+          <number>6</number>
+         </property>
          <item>
-          <widget class="QRadioButton" name="merge_h">
-           <property name="text">
-            <string>Horizontal</string>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <property name="spacing">
+            <number>3</number>
            </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="merge_v">
-           <property name="text">
-            <string>Vertical</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="merge_both">
-           <property name="text">
-            <string>Both</string>
-           </property>
-          </widget>
+           <item row="4" column="1">
+            <widget class="QCheckBox" name="cbx_merge_v">
+             <property name="text">
+              <string>Horizontal</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QCheckBox" name="cbx_merge_h">
+             <property name="text">
+              <string>Vertical</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QCheckBox" name="cbx_average">
+             <property name="text">
+              <string>Use average</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -113,28 +170,14 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="cbx_average">
-           <property name="text">
-            <string>Use average for merging</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="cbx_interlaced">
-           <property name="text">
-            <string>Interlaced</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <property name="spacing">
+            <number>3</number>
+           </property>
            <item>
-            <widget class="QPushButton" name="btn_undo">
+            <widget class="QPushButton" name="btn_subpixel">
              <property name="text">
-              <string>Undo</string>
+              <string>Sub-pixel align</string>
              </property>
             </widget>
            </item>
@@ -147,13 +190,6 @@
            </item>
           </layout>
          </item>
-         <item>
-          <widget class="QPushButton" name="btn_subpixel">
-           <property name="text">
-            <string>Sub-pixel align</string>
-           </property>
-          </widget>
-         </item>
         </layout>
        </widget>
       </item>
@@ -165,49 +201,47 @@
         <property name="title">
          <string>Filter</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
+        <layout class="QGridLayout" name="gridLayout_3">
+         <property name="leftMargin">
+          <number>3</number>
+         </property>
+         <property name="topMargin">
+          <number>3</number>
+         </property>
+         <property name="rightMargin">
+          <number>3</number>
+         </property>
+         <property name="bottomMargin">
+          <number>6</number>
+         </property>
          <property name="spacing">
           <number>3</number>
          </property>
-         <item>
-          <widget class="QRadioButton" name="rbtn_avg">
-           <property name="text">
-            <string>Average</string>
-           </property>
-          </widget>
-         </item>
-         <item>
+         <item row="0" column="1">
           <widget class="QRadioButton" name="rbtn_diff">
            <property name="text">
             <string>Difference</string>
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QRadioButton" name="rbtn_simple">
+         <item row="0" column="0">
+          <widget class="QRadioButton" name="rbtn_avg">
            <property name="text">
-            <string>Simple filter</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="rbtn_slow_slide">
-           <property name="text">
-            <string>Slow sliding window</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="rbtn_fast_slide">
-           <property name="text">
-            <string>Fast sliding window</string>
+            <string>Average</string>
            </property>
            <property name="checked">
             <bool>true</bool>
            </property>
           </widget>
          </item>
-         <item>
+         <item row="4" column="0">
+          <widget class="QRadioButton" name="rbtn_windowed">
+           <property name="text">
+            <string>Windowed</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
           <widget class="QSlider" name="sld_threshould">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -238,6 +272,21 @@
          <string>Color</string>
         </property>
         <layout class="QGridLayout" name="gridLayout">
+         <property name="leftMargin">
+          <number>3</number>
+         </property>
+         <property name="topMargin">
+          <number>3</number>
+         </property>
+         <property name="rightMargin">
+          <number>3</number>
+         </property>
+         <property name="bottomMargin">
+          <number>6</number>
+         </property>
+         <property name="spacing">
+          <number>3</number>
+         </property>
          <item row="2" column="1">
           <widget class="QRadioButton" name="rbtn_rec709">
            <property name="text">
@@ -287,6 +336,9 @@
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
+        <property name="spacing">
+         <number>3</number>
+        </property>
         <item>
          <widget class="QPushButton" name="btn_refresh">
           <property name="text">
