@@ -72,11 +72,22 @@ class Plane{
 		MergeResult best_round_sub( const Plane& p, int level, int left, int right, int top, int bottom, DiffCache *cache ) const;
 		
 	//Scaling
-		Plane* scale_nearest( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const;
-		Plane* scale_linear( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const;
-		Plane* scale_bilinear( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const;
-		Plane* scale_cubic( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const;
-		Plane* scale_lanczos( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const;
+	public:
+		typedef double (*Filter)( double );
+	private:
+		static double cubic( double b, double c, double x );
+		static double linear( double x );
+		static double mitchell( double x ){ return cubic( 1.0/3, 1.0/3, x ); }
+		Plane* scale_generic( unsigned wanted_width, unsigned wanted_height, double window, Filter f ) const;
+	public:
+		Plane* scale_nearest( unsigned wanted_width, unsigned wanted_height ) const;
+		Plane* scale_linear( unsigned wanted_width, unsigned wanted_height ) const{
+			return scale_generic( wanted_width, wanted_height, 1, linear );
+		}
+		Plane* scale_cubic( unsigned wanted_width, unsigned wanted_height ) const{
+			return scale_generic( wanted_width, wanted_height, 2, mitchell );
+		}
+		Plane* scale_lanczos( unsigned wanted_width, unsigned wanted_height ) const;
 };
 
 #endif

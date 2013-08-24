@@ -58,6 +58,7 @@ bool Plane::is_interlaced() const{
 	
 	qDebug( "interlace factor: %f", avg2 );
 	return avg2 > 0.0015; //NOTE: Based on experiments, not reliable!
+	//TODO: diff even with even and compare againts that?
 }
 
 void Plane::replace_line( Plane &p, bool top ){
@@ -140,10 +141,8 @@ double Plane::diff( const Plane& p, int x, int y, unsigned stride ) const{
 }
 
 
-Plane* Plane::scale_nearest( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const{
-	if( offset_x <= -1.0 || offset_x >= 1.0 || offset_y <= -1.0 || offset_y >= 1.0 )
-		return 0;
-	
+#include <QTime>
+Plane* Plane::scale_nearest( unsigned wanted_width, unsigned wanted_height ) const{
 	Plane *scaled = new Plane( wanted_width, wanted_height );
 	if( !scaled || scaled->is_invalid() )
 		return 0;
@@ -151,42 +150,24 @@ Plane* Plane::scale_nearest( unsigned wanted_width, unsigned wanted_height, doub
 	for( unsigned iy=0; iy<wanted_height; iy++ ){
 		color_type* row = scaled->scan_line( iy );
 		for( unsigned ix=0; ix<wanted_width; ix++ ){
-			double pos_x = ((double)ix / wanted_width) * width;
-			double pos_y = ((double)iy / wanted_height) * height;
+			double pos_x = ((double)ix / (wanted_width-1)) * (width-1);
+			double pos_y = ((double)iy / (wanted_height-1)) * (height-1);
 			
-			row[ix] = pixel( floor( pos_x ), floor( pos_y ) );
+			row[ix] = pixel( round( pos_x ), round( pos_y ) );
 		}
 	}
 	
 	return scaled;
 }
 
-
-Plane* Plane::scale_linear( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const{
-	if( offset_x <= -1.0 || offset_x >= 1.0 || offset_y <= -1.0 || offset_y >= 1.0 )
-		return 0;
-	
-	Plane *scaled = new Plane( wanted_width, wanted_height );
-	if( !scaled || scaled->is_invalid() )
-		return 0;
-	
-	return 0; //Not implemented
+double Plane::linear( double x ){
+	x = std::abs( x );
+	if( x <= 1.0 )
+		return x;
+	return 0;
 }
 
-
-Plane* Plane::scale_bilinear( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const{
-	if( offset_x <= -1.0 || offset_x >= 1.0 || offset_y <= -1.0 || offset_y >= 1.0 )
-		return 0;
-	
-	Plane *scaled = new Plane( wanted_width, wanted_height );
-	if( !scaled || scaled->is_invalid() )
-		return 0;
-	
-	return 0; //Not implemented
-}
-
-
-static double cubic( double b, double c, double x ){
+double Plane::cubic( double b, double c, double x ){
 	x = std::abs( x );
 	
 	if( x < 1 )
@@ -206,65 +187,96 @@ static double cubic( double b, double c, double x ){
 		return 0;
 }
 
-Plane* Plane::scale_cubic( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const{
-	using namespace std;
+
+struct ScalePoint{
+	unsigned start;
+	std::vector<double> weights; //Size of this is end
 	
-	if( offset_x <= -1.0 || offset_x >= 1.0 || offset_y <= -1.0 || offset_y >= 1.0 )
-		return 0;
+	ScalePoint( unsigned index, unsigned width, unsigned wanted_width, double window, Plane::Filter f ){
+		using namespace std;
+		
+		double pos = ((double)index / (wanted_width-1)) * (width-1);
+		start = (unsigned)max( (int)ceil( pos-window ), 0 );
+		unsigned end = min( (unsigned)floor( pos+window ), width-1 );
+		
+		weights.reserve( end - start + 1 );
+		for( unsigned j=start; j<=end; ++j )
+			weights.push_back( f( pos - j ) );
+	}
+};
+
+struct ScaleLine{
+	std::vector<ScalePoint>& points;
+	Plane& wanted;
+	unsigned index;
+	unsigned width;
 	
-	Plane *scaled = new Plane( wanted_width, wanted_height );
-	if( !scaled || scaled->is_invalid() )
-		return 0;
+	color_type* row; //at (0,index)
+	unsigned line_width;
+	double window;
+	Plane::Filter f;
 	
-	//NOTE: Upscale only!
+	ScaleLine( std::vector<ScalePoint>& points, Plane &wanted, unsigned index, unsigned width )
+		:	points(points), wanted(wanted), index(index), width(width) { }
+};
+
+void do_line( const ScaleLine& line ){
+	color_type *out = line.wanted.scan_line( line.index );
+	ScalePoint ver( line.index, line.width, line.wanted.get_height(), line.window, line.f );
 	
-	for( unsigned iy=0; iy<wanted_height; iy++ ){
-		color_type* row = scaled->scan_line( iy );
-		for( unsigned ix=0; ix<wanted_width; ix++ ){
-			double pos_x = ((double)ix / (wanted_width-1)) * (width-1);
-			double pos_y = ((double)iy / (wanted_height-1)) * (height-1);
-			
-			unsigned left   = (unsigned)max( (int)ceil( pos_x-2 ), 0 );
-			unsigned top    = (unsigned)max( (int)ceil( pos_y-2 ), 0 );
-			unsigned right  = min( (unsigned)floor( pos_x+2 ), width-1 );
-			unsigned bottom = min( (unsigned)floor( pos_y+2 ), height-1 );
-			
-			double amount = 0;
-			double avg = 0;
-			
-		//	qDebug( "%dx%d -> %dx%d", left,top, right,bottom );
-			for( unsigned jy=top; jy<=bottom; ++jy ){
-				double weight_y = cubic( 1.0/3, 1.0/3, pos_y - jy );
-				
-				for( unsigned jx=left; jx<=right; ++jx ){
-					double weight_x = cubic( 1.0/3, 1.0/3, pos_x - jx );
-					double weight = weight_x * weight_y;
-					
-					avg += pixel( jx, jy ) * weight;
-					amount += weight;
-				}
+	for( auto x : line.points ){
+		double avg = 0;
+		double amount = 0;
+		color_type* row = line.row - (line.index-ver.start)*line.line_width + x.start;
+		
+		for( auto wy : ver.weights ){
+			color_type* row2 = row;
+			for( auto wx : x.weights ){
+				double weight = wy * wx;
+				avg += *(row2++) * weight;
+				amount += weight;
 			}
 			
-			if( amount )
-				row[ix] = min( int( avg / amount + 0.5 ), 0xFFFF );
-			else
-				row[ix] = 0;
+			row += line.line_width;
 		}
+		
+		//TODO: limit negative numbers
+		*(out++) = amount ? std::min( unsigned( avg / amount + 0.5 ), 0xFFFFu ) : 0;
+		
 	}
-	
-	return scaled;
 }
 
-
-Plane* Plane::scale_lanczos( unsigned wanted_width, unsigned wanted_height, double offset_x, double offset_y ) const{
-	if( offset_x <= -1.0 || offset_x >= 1.0 || offset_y <= -1.0 || offset_y >= 1.0 )
-		return 0;
-	
+Plane* Plane::scale_generic( unsigned wanted_width, unsigned wanted_height, double window, Plane::Filter f ) const{
 	Plane *scaled = new Plane( wanted_width, wanted_height );
 	if( !scaled || scaled->is_invalid() )
 		return 0;
 	
-	return 0; //Not implemented
+	QTime t;
+	t.start();
+	
+	//Calculate all x-weights
+	std::vector<ScalePoint> points;
+	points.reserve( wanted_width );
+	for( unsigned ix=0; ix<wanted_width; ++ix ){
+		ScalePoint p( ix, width, wanted_width, window, f );
+		points.push_back( p );
+	}
+	
+	//Calculate all y-lines
+	std::vector<ScaleLine> lines;
+	for( unsigned iy=0; iy<wanted_height; ++iy ){
+		ScaleLine line( points, *scaled, iy, height );
+		line.row = scan_line( iy );
+		line.line_width = line_width;
+		line.window = window;
+		line.f = f;
+		lines.push_back( line );
+	}
+	
+	QtConcurrent::blockingMap( lines, &do_line );
+	
+	qDebug( "Resize took: %d msec", t.restart() );
+	return scaled;
 }
 
 
