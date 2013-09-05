@@ -238,6 +238,74 @@ void MultiImage::subalign_images(){
 	f.close();
 }
 
+static void render_average( MultiPlaneIterator &it ){
+	if( it.iterate_all() ){
+	//Do average and store in [0]
+	it.for_all_pixels( [](MultiPlaneLineIterator &it){
+			unsigned avg = 0;
+			for( unsigned i=2; i<it.size(); i++ )
+				avg += it[i];
+			
+			if( it.size() > 2 )
+				it[0] = avg / (it.size() - 2); //NOTE: Will crash if image contains empty parts
+			else
+				it[0] = 0;
+		} );
+	}
+	else{
+	//Do average and store in [0]
+	it.for_all_pixels( [](MultiPlaneLineIterator &it){
+			unsigned avg = 0, amount = 0;
+
+			for( unsigned i=2; i<it.size(); i++ ){
+				if( it.valid( i ) ){
+					avg += it[i];
+					amount++;
+				}
+			}
+			
+			if( amount )
+				it[0] = avg / amount;
+			else
+				it[1] = 0;
+		} );
+	}
+}
+
+static void render_diff( MultiPlaneIterator &it ){
+	it.iterate_all(); //No need to optimize this filter
+	
+	//Do average and store in [0]
+	it.for_all_pixels( [](MultiPlaneLineIterator &it){
+			//Calculate sum
+			unsigned sum = 0, amount = 0;
+			for( unsigned i=2; i<it.size(); i++ ){
+				if( it.valid( i ) ){
+					sum += it[i];
+					amount++;
+				}
+			}
+			
+			if( amount ){
+				color_type avg = sum / amount;
+				
+				//Calculate sum of the difference from average
+				unsigned diff_sum = 0;
+				for( unsigned i=2; i<it.size(); i++ ){
+					if( it.valid( i ) ){
+						unsigned d = abs( avg - it[i] );
+						diff_sum += d;
+					}
+				}
+				
+				//Use an exaggerated gamma to make the difference stand out
+				double diff = (double)diff_sum / amount / (255*256);
+				it[0] = pow( diff, 0.3 ) * (255*256) + 0.5;
+			}
+			else
+				it[1] = 0;
+		} );
+}
 
 ImageEx* MultiImage::render_image( filters filter ) const{
 	QTime t;
@@ -268,6 +336,8 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 	unsigned planes_amount = 3; //TODO: alpha?
 	if( filter == FILTER_FOR_MERGING && imgs[0]->get_system() == ImageEx::YUV )
 		planes_amount = 1;
+	if( filter == FILTER_DIFFERENCE )
+		planes_amount = 1; //TODO: take the best plane
 	
 	ImageEx &first( *imgs[0] );
 	unsigned width = first.get_width();
@@ -303,37 +373,10 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 		
 		MultiPlaneIterator it( info );
 		
-		if( it.iterate_all() ){
-		//Do average and store in [0]
-		it.for_all_pixels( [](MultiPlaneLineIterator &it){
-				unsigned avg = 0;
-				for( unsigned i=2; i<it.size(); i++ )
-					avg += it[i];
-				
-				if( it.size() > 2 )
-					it[0] = avg / (it.size() - 2); //NOTE: Will crash if image contains empty parts
-				else
-					it[0] = 0;
-			} );
-		}
-		else{
-		//Do average and store in [0]
-		it.for_all_pixels( [](MultiPlaneLineIterator &it){
-				unsigned avg = 0, amount = 0;
-	
-				for( unsigned i=2; i<it.size(); i++ ){
-					if( it.valid( i ) ){
-						avg += it[i];
-						amount++;
-					}
-				}
-				
-				if( amount )
-					it[0] = avg / amount;
-				else
-					it[1] = 0;
-			} );
-		}
+		if( filter == FILTER_DIFFERENCE )
+			render_diff( it );
+		else
+			render_average( it );
 		
 		//Remove scaled planes
 		for( unsigned j=0; j<temp.size(); j++ )
