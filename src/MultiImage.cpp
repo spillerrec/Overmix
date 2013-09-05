@@ -341,7 +341,7 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 	
 	// Testing code
 //	if( !filter == FILTER_FOR_MERGING )
-//		img->scale( 0.5 );
+//		img->scale( 0.95 );
 	
 	/* 
 	color (MultiImageIterator::*function)();
@@ -353,13 +353,18 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 	return img;
 }
 
-QImage MultiImage::render( filters filter, ImageEx::YuvSystem system,  unsigned setting ) const{
+QImage MultiImage::render( filters filter, ImageEx::YuvSystem system,  unsigned setting, double scale_width ) const{
 	ImageEx *img_org = render_image( filter );
 	if( !img_org )
 		return QImage();
 	
 	QTime t;
 	t.start();
+	
+	//Fix aspect ratio
+	if( scale_width <= 0.9999 || scale_width >= 1.0001 )
+		img_org->scale( img_org->get_width() * scale_width + 0.5, img_org->get_height() );
+	
 	QImage img = img_org->to_qimage( system, setting );
 	delete img_org;
 	

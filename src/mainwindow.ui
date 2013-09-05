@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>512</width>
-    <height>492</height>
+    <height>593</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -53,6 +53,9 @@
          </item>
          <item row="0" column="0">
           <widget class="QCheckBox" name="cbx_de_vlc">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>De-VLC</string>
            </property>
@@ -297,6 +300,58 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="1">
+          <widget class="QRadioButton" name="rbtn_rec601">
+           <property name="text">
+            <string>Rec. 601</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="cbx_gamma">
+           <property name="text">
+            <string>sRGB</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QRadioButton" name="cbx_nocolor">
+           <property name="text">
+            <string>None (debug)</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox_5">
+        <property name="title">
+         <string>Output</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_5">
+         <item row="0" column="1">
+          <widget class="QDoubleSpinBox" name="dsbx_scale_width">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="decimals">
+            <number>4</number>
+           </property>
+           <property name="maximum">
+            <double>10.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.010000000000000</double>
+           </property>
+           <property name="value">
+            <double>1.000000000000000</double>
+           </property>
+          </widget>
+         </item>
          <item row="1" column="0">
           <widget class="QCheckBox" name="cbx_dither">
            <property name="text">
@@ -307,27 +362,36 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QCheckBox" name="cbx_gamma">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_4">
            <property name="text">
-            <string>sRGB</string>
+            <string>Scale width:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="cbx_chroma">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Chroma-upscale</string>
            </property>
            <property name="checked">
             <bool>true</bool>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QRadioButton" name="rbtn_rec601">
-           <property name="text">
-            <string>Rec. 601</string>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="cbx_16bit">
+           <property name="enabled">
+            <bool>false</bool>
            </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QRadioButton" name="cbx_nocolor">
            <property name="text">
-            <string>None (debug)</string>
+            <string>16-bit</string>
+           </property>
+           <property name="tristate">
+            <bool>true</bool>
            </property>
           </widget>
          </item>

@@ -160,7 +160,10 @@ void main_widget::refresh_image(){
 	if( ui->cbx_gamma->isChecked() )
 		setting = setting | ImageEx::SETTING_GAMMA;
 	
-	temp = new QImage( image.render( type, system, setting ) );
+	//Aspect
+	double scale_width = ui->dsbx_scale_width->value();
+	
+	temp = new QImage( image.render( type, system, setting, scale_width ) );
 	viewer.change_image( temp, true );
 	refresh_text();
 }
