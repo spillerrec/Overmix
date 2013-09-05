@@ -35,16 +35,8 @@ bool ImageEx::read_dump_plane( FILE *f, unsigned index ){
 	fread( &width, sizeof(unsigned), 1, f );
 	fread( &height, sizeof(unsigned), 1, f );
 	
-	Plane* p = new Plane( width, height );
-	planes[index] = p;
+	Plane* p = planes[index] = new Plane( width, height );
 	if( !p )
-		return false;
-	
-	if( index < 1 )
-		infos[index] = new PlaneInfo( *p, 0,0, 1 );
-	else
-		infos[index] = new PlaneInfo( *p, 1,1, 2 );
-	if( !infos )
 		return false;
 	
 	unsigned depth;
@@ -140,9 +132,6 @@ bool ImageEx::from_png( const char* path ){
 	planes[0] = new Plane( width, height );
 	planes[1] = new Plane( width, height );
 	planes[2] = new Plane( width, height );
-	infos[0] = new PlaneInfo( *planes[0], 0,0, 1 );
-	infos[1] = new PlaneInfo( *planes[1], 0,0, 1 );
-	infos[2] = new PlaneInfo( *planes[2], 0,0, 1 );
 	
 	if( !planes[0] || !planes[1] || !planes[2] )
 		return false;
@@ -176,12 +165,9 @@ bool ImageEx::create( unsigned width, unsigned height ){
 	if( initialized )
 		return false;
 	
-	for( int i=0; i<4; i++ ){
+	for( unsigned i=0; i<MAX_PLANES; i++ )
 		if( !( planes[i] = new Plane( width, height ) ) )
 			return false;
-		if( !( infos[i] = new PlaneInfo( *planes[i], 0,0,1 ) ) )
-			return false;
-	}
 	
 	return initialized = true;
 }
@@ -260,12 +246,12 @@ double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 	if( !is_valid() || !img.is_valid() )
 		return DOUBLE_MAX;
 	
-	return planes[0]->diff( img[0].p, x, y );
+	return planes[0]->diff( *(img[0]), x, y );
 	
 	//Prepare iterator
 	std::vector<PlaneItInfo> info;
 	info.push_back( PlaneItInfo( planes[0], 0,0 ) );
-	info.push_back( PlaneItInfo( &img[0].p, x,y ) );
+	info.push_back( PlaneItInfo( img[0], x,y ) );
 	if( alpha_plane() )
 		info.push_back( PlaneItInfo( alpha_plane(), 0,0 ) );
 	if( img.alpha_plane() )
@@ -347,17 +333,17 @@ double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 }
 
 bool ImageEx::is_interlaced() const{
-	return (*this)[0].p.is_interlaced();
+	return planes[0]->is_interlaced();
 }
 void ImageEx::replace_line( ImageEx& img, bool top ){
 	for( unsigned i=0; i<4; ++i )
 		if( planes[i] ) //TODO: check if img has plane
-			planes[i]->replace_line( img[i].p, top );
+			planes[i]->replace_line( *(img[i]), top );
 }
 void ImageEx::combine_line( ImageEx& img, bool top ){
 	for( unsigned i=0; i<4; ++i )
 		if( planes[i] ) //TODO: check if img has plane
-			planes[i]->combine_line( img[i].p, top );
+			planes[i]->combine_line( *(img[i]), top );
 }
 
 
@@ -377,7 +363,7 @@ MergeResult ImageEx::best_round( const ImageEx& img, int level, double range_x, 
 		cache = &temp;
 	
 	return planes[0]->best_round_sub(
-			img[0].p, level
+			*(img[0]), level
 		,	((int)1 - (int)img.get_width()) * range_x, ((int)get_width() - 1) * range_x
 		,	((int)1 - (int)img.get_height()) * range_y, ((int)get_height() - 1) * range_y
 		,	cache

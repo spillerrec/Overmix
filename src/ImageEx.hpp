@@ -19,28 +19,12 @@
 #define IMAGE_EX_HPP
 
 #include "Plane.hpp"
-#include <QPoint>
 #include <QImage>
-
-class image;
-
-struct PlaneInfo{
-	public:
-		Plane &p;
-		double offset_x;
-		double offset_y;
-		unsigned spacing_x;
-		unsigned spacing_y;
-		
-		PlaneInfo( Plane &p, double off_x, double off_y, unsigned spacing ) : p( p ){
-			offset_x = off_x;
-			offset_y = off_y;
-			spacing_x = spacing_y = spacing;
-		}
-};
+#include <algorithm>
 
 class ImageEx{
 	public:
+		const static unsigned MAX_PLANES = 4;
 		enum system{
 			RGB,
 			YUV
@@ -58,10 +42,8 @@ class ImageEx{
 	
 	private:
 		bool initialized;
-		Plane **planes;
-		PlaneInfo **infos;
+		Plane *planes[MAX_PLANES];
 		system type;
-		bool initialize_size( unsigned size );
 		bool read_dump_plane( FILE *f, unsigned index );
 		bool from_dump( const char* path );
 		bool from_png( const char* path );
@@ -69,25 +51,13 @@ class ImageEx{
 	public:
 		ImageEx( system type = RGB ) : type( type ){
 			initialized = false;
-			planes = new Plane*[4];
-			infos = new PlaneInfo*[4];
-			for( int i=0; i<4; i++ ){
+			for( unsigned i=0; i<MAX_PLANES; i++ )
 				planes[i] = 0;
-				infos[i] = 0;
-			}
 		}
 		~ImageEx(){
-			for( int i=0; i<4; i++ ){
+			for( unsigned i=0; i<MAX_PLANES; i++ )
 				if( planes[i] )
 					delete planes[i];
-				if( infos[i] )
-					delete infos[i];
-			}
-			
-			if( planes )
-				delete[] planes;
-			if( infos )
-				delete[] infos;
 		}
 		
 		bool create( unsigned width, unsigned height );
@@ -100,10 +70,18 @@ class ImageEx{
 		QImage to_qimage( YuvSystem system, unsigned setting=SETTING_NONE );
 		
 		unsigned get_width() const{
-			return (*this)[0].p.get_width();
+			unsigned width = 0;
+			for( unsigned i=0; i<MAX_PLANES; ++i )
+				if( planes[i] )
+					width = std::max( planes[i]->get_width(), width );
+			return width;
 		}
 		unsigned get_height() const{
-			return (*this)[0].p.get_height();
+			unsigned height = 0;
+			for( unsigned i=0; i<MAX_PLANES; ++i )
+				if( planes[i] )
+					height = std::max( planes[i]->get_height(), height );
+			return height;
 		}
 		
 		system get_system() const{ return type; }
@@ -114,6 +92,23 @@ class ImageEx{
 		void replace_line( ImageEx& img, bool top );
 		void combine_line( ImageEx& img, bool top );
 		
+		void scale_plane( unsigned index, unsigned width, unsigned height ){
+			if( planes[index] ){
+				Plane* prev = planes[index];
+				planes[index] = prev->scale_cubic( width, height );
+				delete prev;
+			}
+		}
+		void scale( unsigned width, unsigned height ){
+			for( unsigned i=0; i<MAX_PLANES; ++i )
+				scale_plane( i, width, height );
+		}
+		void scale( double factor ){
+			unsigned width = get_width() * factor + 0.5;
+			unsigned height = get_height() * factor + 0.5;
+			scale( width, height );
+		}
+		
 		MergeResult best_vertical( const ImageEx& img, int level, double range, DiffCache *cache=nullptr ) const{
 			return best_round( img, level, 0, range, cache );
 		}
@@ -122,8 +117,8 @@ class ImageEx{
 		}
 		MergeResult best_round( const ImageEx& img, int level, double range_x, double range_y, DiffCache *cache=nullptr ) const;
 		
-		PlaneInfo& operator[]( const unsigned index ) const{
-			return *infos[index];
+		Plane* operator[]( const unsigned index ) const{
+			return planes[index];
 		}
 };
 

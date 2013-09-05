@@ -267,12 +267,12 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 		planes_amount = 1;
 	
 	ImageEx &first( *imgs[0] );
-	int width = first[0].p.get_width();
-	int height = first[0].p.get_height();
+	int width = first[0]->get_width();
+	int height = first[0]->get_height();
 	
 	for( unsigned i=0; i<planes_amount; i++ ){
 		//Clear output plane
-		Plane& p( (*img)[i].p );
+		Plane& p( *((*img)[i]) );
 		for( unsigned iy=0; iy<p.get_height(); ++iy ){
 			color_type* row = p.scan_line( iy );
 			for( unsigned ix=0; ix<p.get_width(); ++ix )
@@ -282,19 +282,19 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 		vector<PlaneItInfo> info;
 		info.push_back( PlaneItInfo( &p, box.x(),box.y() ) );
 		
-		int local_width = first[i].p.get_width();
-		int local_height = first[i].p.get_height();
+		int local_width = first[i]->get_width();
+		int local_height = first[i]->get_height();
 		vector<Plane*> temp;
 		
 		
 		if( local_width == width && local_height == height ){
 			for( unsigned j=0; j<imgs.size(); j++ )
-				info.push_back( PlaneItInfo( &(*imgs[j])[i].p, pos[j].x(),pos[j].y() ) );
+				info.push_back( PlaneItInfo( (*imgs[j])[i], pos[j].x(),pos[j].y() ) );
 		}
 		else{
 			temp.reserve( imgs.size() );
 			for( unsigned j=0; j<imgs.size(); j++ ){
-				Plane *p = (*imgs[j])[i].p.scale_cubic( width, height );
+				Plane *p = (*imgs[j])[i]->scale_cubic( width, height );
 				if( !p )
 					qDebug( "No plane :\\" );
 				temp.push_back( p );
@@ -311,7 +311,10 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 				for( unsigned i=1; i<it.size(); i++ )
 					avg += it[i];
 				
-				it[0] = avg / (it.size() - 1); //NOTE: Will crash if image contains empty parts
+				if( it.size() > 1 )
+					it[0] = avg / (it.size() - 1); //NOTE: Will crash if image contains empty parts
+				else
+					it[0] = 0;
 			} );
 		}
 		else{
@@ -336,27 +339,15 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 			delete temp[j];
 	}
 	
+	// Testing code
+//	if( !filter == FILTER_FOR_MERGING )
+//		img->scale( 0.5 );
 	
 	/* 
-	MultiImageIterator it( imgs, pos, box.x(),box.y() );
-	it.set_threshould( threshould );
-	//Pointer to the function we want to use
 	color (MultiImageIterator::*function)();
-	switch( filter ){
-		case FILTER_DIFFERENCE:   function = &MultiImageIterator::difference; break;
-		case FILTER_SIMPLE:       function = &MultiImageIterator::simple_filter; break;
-		case FILTER_SIMPLE_SLIDE: function = &MultiImageIterator::simple_slide; break;
-		default:
-		case FILTER_AVERAGE:      function = &MultiImageIterator::average; break;
-	}
-	
-	image *img = new image( box.width(), box.height() );
-	qDebug( "render init took: %d", t.elapsed() );
-	for( int iy = 0; iy < box.height(); iy++, it.next_line() ){
-		color* row = img->scan_line( iy );
-		for( int ix = 0; ix < box.width(); ++ix, it.next_x(), ++row )
-			*row = (it.*function)();
-	} */
+	function = &MultiImageIterator::average;
+	*row = (it.*function)();
+	*/
 	qDebug( "render rest took: %d", t.elapsed() );
 	
 	return img;
