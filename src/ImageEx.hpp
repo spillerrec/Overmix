@@ -26,6 +26,7 @@ class ImageEx{
 	public:
 		const static unsigned MAX_PLANES = 4;
 		enum system{
+			GRAY,
 			RGB,
 			YUV
 		};
@@ -60,12 +61,12 @@ class ImageEx{
 					delete planes[i];
 		}
 		
-		bool create( unsigned width, unsigned height );
+		bool create( unsigned width, unsigned height, bool alpha=false );
 		
 		bool is_valid() const{ return initialized; }
 		
 		bool read_file( const char* path );
-		Plane* alpha_plane() const{ return planes[3]; }
+		Plane* alpha_plane() const{ return planes[MAX_PLANES-1]; }
 		
 		QImage to_qimage( YuvSystem system, unsigned setting=SETTING_NONE );
 		

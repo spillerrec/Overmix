@@ -260,6 +260,15 @@ class MultiPlaneIterator{
 			return *infos[index].row;
 		}
 		
+		color gray() const{
+			color_type g = (*this)[0];
+			return color( g, g, g );
+		}
+		color gray_alpha() const{
+			color_type g = (*this)[0];
+			return color( g, g, g, (*this)[1] );
+		}
+		
 		color pixel() const{
 			return color( (*this)[0], (*this)[1], (*this)[2] );
 		}

@@ -318,26 +318,25 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 	}
 	qDebug( "render_image: image count: %d", (int)imgs.size() );
 	
-	
-	//Do iterator
-	QRect box = get_size();
-	ImageEx *img = new ImageEx( imgs[0]->get_system() );
-	if( !img )
-		return NULL;
-	if( !img->create( box.width(), box.height() ) ){
-		delete img;
-		return NULL;
-	}
-	
-	//Fill alpha
-	img->alpha_plane()->fill( 255*256 );
-	
 	//TODO: determine amount of planes!
 	unsigned planes_amount = 3; //TODO: alpha?
 	if( filter == FILTER_FOR_MERGING && imgs[0]->get_system() == ImageEx::YUV )
 		planes_amount = 1;
 	if( filter == FILTER_DIFFERENCE )
 		planes_amount = 1; //TODO: take the best plane
+	
+	//Do iterator
+	QRect box = get_size();
+	ImageEx *img = new ImageEx( (planes_amount==1) ? ImageEx::GRAY : imgs[0]->get_system() );
+	if( !img )
+		return NULL;
+	if( !img->create( box.width(), box.height(), true ) ){
+		delete img;
+		return NULL;
+	}
+	
+	//Fill alpha
+	img->alpha_plane()->fill( 255*256 );
 	
 	ImageEx &first( *imgs[0] );
 	unsigned width = first.get_width();

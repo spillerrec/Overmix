@@ -161,12 +161,25 @@ bool ImageEx::read_file( const char* path ){
 	return initialized = true;
 }
 
-bool ImageEx::create( unsigned width, unsigned height ){
+bool ImageEx::create( unsigned width, unsigned height, bool alpha ){
 	if( initialized )
 		return false;
 	
-	for( unsigned i=0; i<MAX_PLANES; i++ )
+	unsigned amount;
+	switch( type ){
+		case GRAY: amount = 1; break;
+		case RGB:
+		case YUV: amount = 3; break;
+		
+		default: return false;
+	}
+	
+	for( unsigned i=0; i<amount; i++ )
 		if( !( planes[i] = new Plane( width, height ) ) )
+			return false;
+	
+	if( alpha )
+		if( !( planes[MAX_PLANES-1] = new Plane( width, height ) ) )
 			return false;
 	
 	return initialized = true;
@@ -184,16 +197,22 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ){
 	//Create iterator
 	std::vector<PlaneItInfo> info;
 	info.push_back( PlaneItInfo( planes[0], 0,0 ) );
-	info.push_back( PlaneItInfo( planes[1], 0,0 ) );
-	info.push_back( PlaneItInfo( planes[2], 0,0 ) );
+	if( type != GRAY ){
+		info.push_back( PlaneItInfo( planes[1], 0,0 ) );
+		info.push_back( PlaneItInfo( planes[2], 0,0 ) );
+	}
 	if( alpha_plane() )
 		info.push_back( PlaneItInfo( alpha_plane(), 0,0 ) );
 	MultiPlaneIterator it( info );
 	it.iterate_all();
 	
 	//Fetch with alpha
-	color (MultiPlaneIterator::*pixel)() const = ( alpha_plane() )
-		?	&MultiPlaneIterator::pixel_alpha : &MultiPlaneIterator::pixel;
+	color (MultiPlaneIterator::*pixel)() const = NULL;
+	
+	if( type == GRAY )
+		pixel = ( alpha_plane() ) ? &MultiPlaneIterator::gray_alpha : &MultiPlaneIterator::gray;
+	else
+		pixel = ( alpha_plane() ) ? &MultiPlaneIterator::pixel_alpha : &MultiPlaneIterator::pixel;
 	
 	
 	color *line = new color[ get_width()+1 ];
