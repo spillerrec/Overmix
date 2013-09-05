@@ -40,25 +40,32 @@ Plane::~Plane(){
 }
 
 bool Plane::is_interlaced() const{
-	double avg2 = 0;
-	for( unsigned iy=0; iy<get_height()/2*2; ){
+	double avg2_uneven = 0, avg2_even = 0;
+	for( unsigned iy=0; iy<get_height()/4*4; ){
 		color_type *row1 = scan_line( iy++ );
 		color_type *row2 = scan_line( iy++ );
+		color_type *row3 = scan_line( iy++ );
+		color_type *row4 = scan_line( iy++ );
 		
-		unsigned long line_avg = 0;
+		unsigned long long line_avg_uneven = 0, line_avg_even = 0;
 		for( unsigned ix=0; ix<get_width(); ++ix ){
-			color_type diff = row2[ix] > row1[ix] ? row2[ix] - row1[ix] : row1[ix] - row2[ix];
-			line_avg += (unsigned long)diff*diff;
+			color_type diff_uneven = abs( row2[ix]-row1[ix] ) + abs( row4[ix]-row3[ix] );
+			color_type diff_even = abs( row3[ix]-row1[ix] ) + abs( row4[ix]-row2[ix] );
+			line_avg_uneven += (unsigned long long)diff_uneven*diff_uneven;
+			line_avg_even += (unsigned long long)diff_even*diff_even;
 		}
-		avg2 += (double)line_avg / get_width();
+		avg2_uneven += (double)line_avg_uneven / get_width();
+		avg2_even   += (double)line_avg_even   / get_width();
 	}
-	avg2 /= get_height()/2;
-	avg2 /= 0xFFFF;
-	avg2 /= 0xFFFF;
+	avg2_uneven /= get_height()/2;
+	avg2_uneven /= 0xFFFF;
+	avg2_uneven /= 0xFFFF;
+	avg2_even /= get_height()/2;
+	avg2_even /= 0xFFFF;
+	avg2_even /= 0xFFFF;
 	
-	qDebug( "interlace factor: %f", avg2 );
-	return avg2 > 0.0015; //NOTE: Based on experiments, not reliable!
-	//TODO: diff even with even and compare againts that?
+	qDebug( "interlace factor: %f > %f", avg2_uneven, avg2_even );
+	return avg2_uneven > avg2_even;
 }
 
 void Plane::replace_line( Plane &p, bool top ){
