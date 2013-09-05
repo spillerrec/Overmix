@@ -261,29 +261,28 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 		return NULL;
 	}
 	
+	//Fill alpha
+	img->alpha_plane()->fill( 255*256 );
+	
 	//TODO: determine amount of planes!
 	unsigned planes_amount = 3; //TODO: alpha?
 	if( filter == FILTER_FOR_MERGING && imgs[0]->get_system() == ImageEx::YUV )
 		planes_amount = 1;
 	
 	ImageEx &first( *imgs[0] );
-	int width = first[0]->get_width();
-	int height = first[0]->get_height();
+	unsigned width = first.get_width();
+	unsigned height = first.get_height();
 	
 	for( unsigned i=0; i<planes_amount; i++ ){
 		//Clear output plane
-		Plane& p( *((*img)[i]) );
-		for( unsigned iy=0; iy<p.get_height(); ++iy ){
-			color_type* row = p.scan_line( iy );
-			for( unsigned ix=0; ix<p.get_width(); ++ix )
-				row[ix] = 0;
-		}
+		(*img)[i]->fill( 0 );
 		
 		vector<PlaneItInfo> info;
-		info.push_back( PlaneItInfo( &p, box.x(),box.y() ) );
+		info.push_back( PlaneItInfo( (*img)[i], box.x(),box.y() ) );
+		info.push_back( PlaneItInfo( img->alpha_plane(), box.x(),box.y() ) );
 		
-		int local_width = first[i]->get_width();
-		int local_height = first[i]->get_height();
+		unsigned local_width = first[i]->get_width();
+		unsigned local_height = first[i]->get_height();
 		vector<Plane*> temp;
 		
 		
@@ -308,11 +307,11 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 		//Do average and store in [0]
 		it.for_all_pixels( [](MultiPlaneLineIterator &it){
 				unsigned avg = 0;
-				for( unsigned i=1; i<it.size(); i++ )
+				for( unsigned i=2; i<it.size(); i++ )
 					avg += it[i];
 				
-				if( it.size() > 1 )
-					it[0] = avg / (it.size() - 1); //NOTE: Will crash if image contains empty parts
+				if( it.size() > 2 )
+					it[0] = avg / (it.size() - 2); //NOTE: Will crash if image contains empty parts
 				else
 					it[0] = 0;
 			} );
@@ -322,7 +321,7 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 		it.for_all_pixels( [](MultiPlaneLineIterator &it){
 				unsigned avg = 0, amount = 0;
 	
-				for( unsigned i=1; i<it.size(); i++ ){
+				for( unsigned i=2; i<it.size(); i++ ){
 					if( it.valid( i ) ){
 						avg += it[i];
 						amount++;
@@ -331,6 +330,8 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 				
 				if( amount )
 					it[0] = avg / amount;
+				else
+					it[1] = 0;
 			} );
 		}
 		

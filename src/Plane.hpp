@@ -62,6 +62,9 @@ class Plane{
 		color_type& pixel( unsigned x, unsigned y ) const{ return data[ x + y*line_width ]; }
 		color_type* scan_line( unsigned y ) const{ return data + y*line_width; }
 		
+	//Drawing methods
+		void fill( color_type value );
+		
 	//Interlacing methods
 		bool is_interlaced() const;
 		void replace_line( Plane &p, bool top );

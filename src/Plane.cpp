@@ -39,6 +39,14 @@ Plane::~Plane(){
 		delete[] data;
 }
 
+void Plane::fill( color_type value ){
+	for( unsigned iy=0; iy<get_height(); ++iy ){
+		color_type* row = scan_line( iy );
+		for( unsigned ix=0; ix<get_width(); ++ix )
+			row[ix] = value;
+	}
+}
+
 bool Plane::is_interlaced() const{
 	double avg2_uneven = 0, avg2_even = 0;
 	for( unsigned iy=0; iy<get_height()/4*4; ){

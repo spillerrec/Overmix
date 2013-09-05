@@ -193,7 +193,7 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ){
 	
 	//Fetch with alpha
 	color (MultiPlaneIterator::*pixel)() const = ( alpha_plane() )
-		?	&MultiPlaneIterator::pixel : &MultiPlaneIterator::pixel_alpha;
+		?	&MultiPlaneIterator::pixel_alpha : &MultiPlaneIterator::pixel;
 	
 	
 	color *line = new color[ get_width()+1 ];
