@@ -1,6 +1,7 @@
 /debug
 /release
 /Makefile
-/Makefile.*
+/*.Debug
+/*.Release
 /out
 /*.pro.user
