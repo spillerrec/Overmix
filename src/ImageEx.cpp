@@ -20,12 +20,25 @@
 #include "MultiPlaneIterator.hpp"
 #include "color.hpp"
 
+#include <stdint.h>
 #include <limits>
 #include <png.h>
+#include <zlib.h>
 #include <QtConcurrentMap>
 
+using namespace std;
 
 static const double DOUBLE_MAX = std::numeric_limits<double>::max();
+
+void process_dump_line( color_type *out, unsigned char* in, unsigned width, uint16_t depth ){
+	unsigned byte_count = (depth + 7) / 8;
+	if( byte_count == 1 )
+		for( unsigned ix=0; ix<width; ++ix, ++out )
+			*out = (color_type)(in[ix]) << (16 - depth);
+	else
+		for( unsigned ix=0; ix<width; ++ix, ++out )
+			*out = (color_type)((uint16_t*)in)[ix] << (16 - depth);
+}
 
 bool ImageEx::read_dump_plane( FILE *f, unsigned index ){
 	if( !f )
@@ -39,25 +52,57 @@ bool ImageEx::read_dump_plane( FILE *f, unsigned index ){
 	if( !p )
 		return false;
 	
-	unsigned depth;
-	fread( &depth, sizeof(unsigned), 1, f );
+	uint16_t depth;
+	uint16_t config;
+	fread( &depth, sizeof(uint16_t), 1, f );
+	fread( &config, sizeof(uint16_t), 1, f );
 	unsigned byte_count = (depth + 7) / 8;
 	
-	unsigned char* buffer = new unsigned char[ width*byte_count ];
+	qDebug( "Size: %dx%d (%d-%d)", width, height, depth, config );
 	
-	
-	for( unsigned iy=0; iy<height; iy++ ){
-		color_type *row = p->scan_line( iy );
-		fread( buffer, byte_count, width, f );
-		if( byte_count == 1 )
-			for( unsigned ix=0; ix<width; ++ix, ++row )
-				*row = (color_type)(buffer[ix]) << (16 - depth);
-		else
-			for( unsigned ix=0; ix<width; ++ix, ++row )
-				*row = (color_type)((short int*)buffer)[ix] << (16 - depth);
+	if( config & 0x1 ){
+		//Compression is used
+		qDebug( "Compression is used" );
+		uint32_t lenght;
+		fread( &lenght, sizeof(uint32_t), 1, f );
+		qDebug( "Read lenght: %d", lenght );
+		
+		unsigned char* input = new unsigned char[ lenght ];
+		fread( input, 1, lenght, f );
+		
+		uLongf total = height*width*byte_count;
+		unsigned char* buffer = new unsigned char[ total ];
+		uLongf lenght_2 = lenght;
+		if( uncompress( (Bytef*)buffer, &total, (Bytef*)input, lenght_2 ) != Z_OK ){
+			qDebug( "uncompress failed :\\" );
+			delete[] input;
+			delete[] buffer;
+			return false;
+		}
+		qDebug( "uncompressed data" );
+		
+		//Convert data
+		for( unsigned iy=0; iy<height; ++iy ){
+			unsigned char* line_buf = buffer + width * byte_count * iy;
+			color_type *row = p->scan_line( iy );
+			process_dump_line( row, line_buf, width, depth );
+		}
+		
+		delete[] input;
+		delete[] buffer;
+	}
+	else{
+		unsigned char* buffer = new unsigned char[ width*byte_count ];
+		
+		for( unsigned iy=0; iy<height; iy++ ){
+			color_type *row = p->scan_line( iy );
+			fread( buffer, byte_count, width, f );
+			process_dump_line( row, buffer, width, depth );
+		}
+		
+		delete[] buffer;
 	}
 	
-	delete[] buffer;
 	return true;
 }
 
