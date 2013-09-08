@@ -48,6 +48,7 @@ class ImageEx{
 		bool read_dump_plane( FILE *f, unsigned index );
 		bool from_dump( const char* path );
 		bool from_png( const char* path );
+		bool from_qimage( const char* path );
 		
 	public:
 		ImageEx( system type = RGB ) : type( type ){

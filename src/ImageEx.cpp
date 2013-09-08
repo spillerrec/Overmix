@@ -26,6 +26,8 @@
 #include <zlib.h>
 #include <QtConcurrentMap>
 
+#include <QFileInfo>
+
 using namespace std;
 
 static const double DOUBLE_MAX = std::numeric_limits<double>::max();
@@ -200,10 +202,51 @@ bool ImageEx::from_png( const char* path ){
 }
 
 
+bool ImageEx::from_qimage( const char* path ){
+	QImage img( path );
+	if( img.isNull() )
+		return false;
+	
+	type = RGB;
+	int width = img.width();
+	int height = img.height();
+	bool alpha = img.hasAlphaChannel();
+	int amount = alpha ? 4 : 3;
+	
+	for( int i=0; i<amount; i++ )
+		if( !(planes[i] = new Plane( width, height )) )
+			return false;
+	
+	for( int iy=0; iy<height; ++iy ){
+		color_type* r = planes[0]->scan_line( iy );
+		color_type* g = planes[1]->scan_line( iy );
+		color_type* b = planes[2]->scan_line( iy );
+		color_type* a = nullptr;
+		if( alpha )
+			a = planes[3]->scan_line( iy );
+		
+		const QRgb* in = (const QRgb*)img.constScanLine( iy );
+		
+		for( int ix=0; ix<width; ++ix, ++in ){
+			*(r++) = qRed( *in ) * 256;
+			*(g++) = qGreen( *in ) * 256;
+			*(b++) = qBlue( *in ) * 256;
+			if( alpha )
+				*(a++) = qAlpha( *in ) * 256;
+		}
+	}
+	
+	return true;
+}
+
 bool ImageEx::read_file( const char* path ){
-	if( !from_png( path ) )
+	QString ext = QFileInfo( path ).suffix();
+	if( ext == "dump" )
 		return initialized = from_dump( path );
-	return initialized = true;
+	if( ext == "png" )
+		return initialized = from_png( path );
+	
+	return initialized = from_qimage( path );
 }
 
 bool ImageEx::create( unsigned width, unsigned height, bool alpha ){
