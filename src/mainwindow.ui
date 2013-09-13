@@ -625,9 +625,6 @@
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
            <widget class="QCheckBox" name="cbx_sharpen">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
             <property name="text">
              <string>Enabled</string>
             </property>

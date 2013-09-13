@@ -515,3 +515,48 @@ Plane* Plane::edge_dm_generic( int *weights_x, int *weights_y, unsigned size ) c
 	return out;
 }
 
+
+struct SimplePixel{
+	color_type *row1;
+	color_type *row2;
+	unsigned width;
+	void (*f)( const SimplePixel& );
+	void *data;
+};
+
+static void do_pixel_line( SimplePixel pix ){
+	for( unsigned i=0; i<pix.width; ++i ){
+		pix.f( pix );
+		++pix.row1;
+		++pix.row2;
+	}
+}
+
+
+static void substract_pixel( const SimplePixel& pix ){
+	*pix.row1 = std::max( (int)*pix.row2 - (int)*pix.row1, 0 );
+}
+
+
+void Plane::substract( Plane &p ){
+	if( get_height() != p.get_height() || get_width() != p.get_width() ){
+		qWarning( "replace_line: Planes not equaly sized!" );
+		return;
+	}
+	
+	std::vector<SimplePixel> lines;
+	for( unsigned iy=0; iy<get_height(); ++iy ){
+		SimplePixel pix = { scan_line( iy )
+			,	p.scan_line( iy )
+			,	get_width()
+			,	&substract_pixel
+			,	0
+			};
+		lines.push_back( pix );
+	}
+	
+	QtConcurrent::blockingMap( lines, &do_pixel_line );
+}
+
+
+

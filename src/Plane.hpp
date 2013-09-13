@@ -70,6 +70,9 @@ class Plane{
 		void replace_line( Plane &p, bool top );
 		void combine_line( Plane &p, bool top );
 		
+	//Overlays
+		void substract( Plane &p );
+		
 	//Difference
 		double diff( const Plane& p, int x, int y, unsigned stride=1 ) const;
 		MergeResult best_round_sub( const Plane& p, int level, int left, int right, int top, int bottom, DiffCache *cache ) const;
