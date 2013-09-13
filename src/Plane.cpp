@@ -264,7 +264,7 @@ void do_line( const ScaleLine& line ){
 Plane* Plane::scale_generic( unsigned wanted_width, unsigned wanted_height, double window, Plane::Filter f ) const{
 	Plane *scaled = new Plane( wanted_width, wanted_height );
 	if( !scaled || scaled->is_invalid() )
-		return 0;
+		return scaled;
 	
 	QTime t;
 	t.start();

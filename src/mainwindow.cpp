@@ -162,6 +162,7 @@ void main_widget::refresh_image(){
 	
 	//Aspect
 	double scale_width = ui->dsbx_scale_width->value();
+	double scale_height = ui->dsbx_scale_height->value();
 	
 	//Render image
 	ImageEx *img_org = image.render_image( type, ui->cbx_chroma->isChecked() );
@@ -170,8 +171,17 @@ void main_widget::refresh_image(){
 		t.start();
 		
 		//Fix aspect ratio
-		if( scale_width <= 0.9999 || scale_width >= 1.0001 )
-			img_org->scale( img_org->get_width() * scale_width + 0.5, img_org->get_height() );
+		if( scale_width <= 0.9999 || scale_width >= 1.0001
+			|| scale_height <= 0.9999 || scale_height >= 1.0001 )
+			img_org->scale( img_org->get_width() * scale_width + 0.5, img_org->get_height() * scale_height + 0.5 );
+		
+		//Edge detection
+		switch( ui->cbx_edge_filter->currentIndex() ){
+			case 1: img_org->replace_plane( 0, (*img_org)[0]->edge_robert() ); break;
+			case 2: img_org->replace_plane( 0, (*img_org)[0]->edge_sobel() ); break;
+			case 3: img_org->replace_plane( 0, (*img_org)[0]->edge_prewitt() ); break;
+			default: break;
+		};
 		
 		temp = new QImage( img_org->to_qimage( system, setting ) );
 		delete img_org;
