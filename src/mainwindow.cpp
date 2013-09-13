@@ -163,7 +163,24 @@ void main_widget::refresh_image(){
 	//Aspect
 	double scale_width = ui->dsbx_scale_width->value();
 	
-	temp = new QImage( image.render( type, system, setting, scale_width ) );
+	//Render image
+	ImageEx *img_org = image.render_image( type, ui->cbx_chroma->isChecked() );
+	if( img_org ){	
+		QTime t;
+		t.start();
+		
+		//Fix aspect ratio
+		if( scale_width <= 0.9999 || scale_width >= 1.0001 )
+			img_org->scale( img_org->get_width() * scale_width + 0.5, img_org->get_height() );
+		
+		temp = new QImage( img_org->to_qimage( system, setting ) );
+		delete img_org;
+		
+		qDebug( "to_qimage() took: %d", t.elapsed() );
+	}
+	else
+		temp = new QImage();
+	
 	viewer.change_image( temp, true );
 	refresh_text();
 }

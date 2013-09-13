@@ -80,8 +80,7 @@ class MultiImage{
 			FILTER_SIMPLE,
 			FILTER_SIMPLE_SLIDE
 		};
-		ImageEx* render_image( filters filter ) const;
-		QImage render( filters filter, ImageEx::YuvSystem system, unsigned setting, double scale_width=1.0000 ) const;
+		ImageEx* render_image( filters filter, bool upscale_chroma=false ) const;
 		
 		unsigned get_count() const{ return imgs.size(); }
 		QRect get_size() const{ return size_cache; }

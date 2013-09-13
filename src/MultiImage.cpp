@@ -238,16 +238,20 @@ void MultiImage::subalign_images(){
 	f.close();
 }
 
-static void render_average( MultiPlaneIterator &it ){
+static void render_average( MultiPlaneIterator &it, bool alpha_used ){
+	unsigned start_plane = alpha_used ? 2 : 1;
+	it.data = (void*)&start_plane;
+	
 	if( it.iterate_all() ){
 	//Do average and store in [0]
 	it.for_all_pixels( [](MultiPlaneLineIterator &it){
+			unsigned start_plane = *(unsigned*)it.data;
 			unsigned avg = 0;
-			for( unsigned i=2; i<it.size(); i++ )
+			for( unsigned i=start_plane; i<it.size(); i++ )
 				avg += it[i];
 			
-			if( it.size() > 2 )
-				it[0] = avg / (it.size() - 2); //NOTE: Will crash if image contains empty parts
+			if( it.size() > start_plane )
+				it[0] = avg / (it.size() - start_plane); //NOTE: Will crash if image contains empty parts
 			else
 				it[0] = 0;
 		} );
@@ -255,9 +259,10 @@ static void render_average( MultiPlaneIterator &it ){
 	else{
 	//Do average and store in [0]
 	it.for_all_pixels( [](MultiPlaneLineIterator &it){
+			unsigned start_plane = *(unsigned*)it.data;
 			unsigned avg = 0, amount = 0;
 
-			for( unsigned i=2; i<it.size(); i++ ){
+			for( unsigned i=start_plane; i<it.size(); i++ ){
 				if( it.valid( i ) ){
 					avg += it[i];
 					amount++;
@@ -266,20 +271,24 @@ static void render_average( MultiPlaneIterator &it ){
 			
 			if( amount )
 				it[0] = avg / amount;
-			else
+			else if( start_plane == 2 )
 				it[1] = 0;
 		} );
 	}
 }
 
-static void render_diff( MultiPlaneIterator &it ){
+static void render_diff( MultiPlaneIterator &it, bool alpha_used ){
+	unsigned start_plane = alpha_used ? 2 : 1;
+	it.data = (void*)&start_plane;
+	
 	it.iterate_all(); //No need to optimize this filter
 	
 	//Do average and store in [0]
 	it.for_all_pixels( [](MultiPlaneLineIterator &it){
+			unsigned start_plane = *(unsigned*)it.data;
 			//Calculate sum
 			unsigned sum = 0, amount = 0;
-			for( unsigned i=2; i<it.size(); i++ ){
+			for( unsigned i=start_plane; i<it.size(); i++ ){
 				if( it.valid( i ) ){
 					sum += it[i];
 					amount++;
@@ -291,7 +300,7 @@ static void render_diff( MultiPlaneIterator &it ){
 				
 				//Calculate sum of the difference from average
 				unsigned diff_sum = 0;
-				for( unsigned i=2; i<it.size(); i++ ){
+				for( unsigned i=start_plane; i<it.size(); i++ ){
 					if( it.valid( i ) ){
 						unsigned d = abs( avg - it[i] );
 						diff_sum += d;
@@ -302,12 +311,12 @@ static void render_diff( MultiPlaneIterator &it ){
 				double diff = (double)diff_sum / amount / (255*256);
 				it[0] = pow( diff, 0.3 ) * (255*256) + 0.5;
 			}
-			else
+			else if( start_plane == 2 )
 				it[1] = 0;
 		} );
 }
 
-ImageEx* MultiImage::render_image( filters filter ) const{
+ImageEx* MultiImage::render_image( filters filter, bool upscale_chroma ) const{
 	QTime t;
 	t.start();
 	
@@ -326,43 +335,61 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 		planes_amount = 1; //TODO: take the best plane
 	
 	//Do iterator
-	QRect box = get_size();
+	QRect full = get_size();
 	ImageEx *img = new ImageEx( (planes_amount==1) ? ImageEx::GRAY : imgs[0]->get_system() );
 	if( !img )
 		return NULL;
-	if( !img->create( box.width(), box.height(), true ) ){
-		delete img;
-		return NULL;
-	}
+	img->create( 1, 1 ); //TODO: set as initialized
 	
 	//Fill alpha
-	img->alpha_plane()->fill( 255*256 );
-	
-	ImageEx &first( *imgs[0] );
-	unsigned width = first.get_width();
-	unsigned height = first.get_height();
+	Plane* alpha = new Plane( full.width(), full.height() );
+	alpha->fill( 255*256 );
+	img->replace_plane( 3, alpha );
 	
 	for( unsigned i=0; i<planes_amount; i++ ){
-		//Clear output plane
-		(*img)[i]->fill( 0 );
+		//Determine local size
+		double scale_x = (double)(*imgs[0])[i]->get_width() / imgs[0]->get_width();
+		double scale_y = (double)(*imgs[0])[i]->get_height() / imgs[0]->get_height();
+		
+		//TODO: something is wrong with the rounding, chroma-channels are slightly off
+		QRect local( 
+				(int)round( full.x()*scale_x )
+			,	(int)round( full.y()*scale_y )
+			,	(int)round( full.width()*scale_x )
+			,	(int)round( full.height()*scale_y )
+			);
+		QRect out_size( upscale_chroma ? full : local );
+		
+		//Create output plane
+		Plane* out = new Plane( out_size.width(), out_size.height() );
+		out->fill( 0 );
+		img->replace_plane( i, out );
 		
 		vector<PlaneItInfo> info;
-		info.push_back( PlaneItInfo( (*img)[i], box.x(),box.y() ) );
-		info.push_back( PlaneItInfo( img->alpha_plane(), box.x(),box.y() ) );
+		info.push_back( PlaneItInfo( out, out_size.x(),out_size.y() ) );
 		
-		unsigned local_width = first[i]->get_width();
-		unsigned local_height = first[i]->get_height();
+		bool use_alpha = false;
+		if( out_size == full ){
+			info.push_back( PlaneItInfo( alpha, out_size.x(),out_size.y() ) );
+			use_alpha = true;
+			//TODO: we still have issues with the chroma planes as the
+			//up-scaled layers doesn't always cover all pixels in the Y plane.
+		}
+		
 		vector<Plane*> temp;
 		
-		
-		if( local_width == width && local_height == height ){
+		if( out_size == local ){
 			for( unsigned j=0; j<imgs.size(); j++ )
-				info.push_back( PlaneItInfo( (*imgs[j])[i], pos[j].x(),pos[j].y() ) );
+				info.push_back( PlaneItInfo(
+						(*imgs[j])[i]
+					,	round( pos[j].x()*scale_x )
+					,	round( pos[j].y()*scale_y )
+					) );
 		}
 		else{
 			temp.reserve( imgs.size() );
 			for( unsigned j=0; j<imgs.size(); j++ ){
-				Plane *p = (*imgs[j])[i]->scale_cubic( width, height );
+				Plane *p = (*imgs[j])[i]->scale_cubic( imgs[j]->get_width(), imgs[j]->get_height() );
 				if( !p )
 					qDebug( "No plane :\\" );
 				temp.push_back( p );
@@ -373,18 +400,18 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 		MultiPlaneIterator it( info );
 		
 		if( filter == FILTER_DIFFERENCE )
-			render_diff( it );
+			render_diff( it, use_alpha );
 		else
-			render_average( it );
+			render_average( it, use_alpha );
+		
+		//Upscale plane if necessary
+		if( full != out_size )
+			img->replace_plane( i, out->scale_cubic( full.width(), full.height() ) );
 		
 		//Remove scaled planes
 		for( unsigned j=0; j<temp.size(); j++ )
 			delete temp[j];
 	}
-	
-	// Testing code
-//	if( !filter == FILTER_FOR_MERGING )
-//		img->scale( 0.95 );
 	
 	/* 
 	color (MultiImageIterator::*function)();
@@ -396,25 +423,6 @@ ImageEx* MultiImage::render_image( filters filter ) const{
 	return img;
 }
 
-QImage MultiImage::render( filters filter, ImageEx::YuvSystem system,  unsigned setting, double scale_width ) const{
-	ImageEx *img_org = render_image( filter );
-	if( !img_org )
-		return QImage();
-	
-	QTime t;
-	t.start();
-	
-	//Fix aspect ratio
-	if( scale_width <= 0.9999 || scale_width >= 1.0001 )
-		img_org->scale( img_org->get_width() * scale_width + 0.5, img_org->get_height() );
-	
-	QImage img = img_org->to_qimage( system, setting );
-	delete img_org;
-	
-	qDebug( "to_qimage() took: %d", t.elapsed() );
-	
-	return img;
-}
 
 
 void MultiImage::calculate_size(){

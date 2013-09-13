@@ -63,6 +63,15 @@ class ImageEx{
 		}
 		
 		bool create( unsigned width, unsigned height, bool alpha=false );
+		void replace_plane( unsigned index, Plane* p ){
+			if( index > 3 )
+				delete p;
+			else{
+				if( planes[index] )
+					delete planes[index];
+				planes[index] = p;
+			}
+		}
 		
 		bool is_valid() const{ return initialized; }
 		

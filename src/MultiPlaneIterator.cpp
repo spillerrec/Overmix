@@ -24,9 +24,9 @@
 
 
 MultiPlaneLineIterator::MultiPlaneLineIterator(
-		int y, int left, int right, const std::vector<PlaneItInfo> &infos
+		int y, int left, int right, const std::vector<PlaneItInfo> &infos, void *data
 	)
-	:	x( left ), right( right ){
+	:	x( left ), right( right ), data( data ){
 		
 		//TODO: estimated reserve for vector?
 		lines.reserve( infos.size() );

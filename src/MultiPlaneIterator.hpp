@@ -70,10 +70,11 @@ class MultiPlaneLineIterator{
 		int x;
 		const int right;
 		std::vector<PlaneLine> lines;
+		void *data;
 		
 	public:
 		MultiPlaneLineIterator(
-				int y, int left, int right, const std::vector<PlaneItInfo> &infos
+				int y, int left, int right, const std::vector<PlaneItInfo> &infos, void *data
 			);
 		
 		unsigned left() const{
@@ -161,6 +162,8 @@ class MultiPlaneIterator{
 			right = bottom = -1;
 		}
 		
+		void *data;
+		
 		bool valid() const{ return y <= bottom && x <= right; }
 		unsigned width(){ return right - left + 1; }
 		unsigned height(){ return bottom - top + 1; }
@@ -189,7 +192,7 @@ class MultiPlaneIterator{
 				its.push_back( iy );
 			
 			QtConcurrent::blockingMap( its, [func,this](int iy){
-					MultiPlaneLineIterator it( iy, this->left, this->right, this->infos );
+					MultiPlaneLineIterator it( iy, this->left, this->right, this->infos, data );
 					func( it );
 				} );
 		}
@@ -202,7 +205,7 @@ class MultiPlaneIterator{
 				its.push_back( iy );
 			
 			QtConcurrent::blockingMap( its, [func,this](int iy){
-					MultiPlaneLineIterator it( iy, this->left, this->right, this->infos );
+					MultiPlaneLineIterator it( iy, this->left, this->right, this->infos, data );
 					it.for_all( func );
 				} );
 		}
@@ -221,7 +224,7 @@ class MultiPlaneIterator{
 				its.push_back( Working( iy, init ) );
 			
 			QtConcurrent::blockingMap( its, [func,combine,this](Working &val){
-					MultiPlaneLineIterator it( val.first, this->left, this->right, this->infos );
+					MultiPlaneLineIterator it( val.first, this->left, this->right, this->infos, data );
 					val.second = it.for_all_combine( func, combine );
 				} );
 			
@@ -245,7 +248,7 @@ class MultiPlaneIterator{
 				its.push_back( Working( iy, init ) );
 			
 			QtConcurrent::blockingMap( its, [func,combine,this](Working &val){
-					MultiPlaneLineIterator it( val.first, this->left, this->right, this->infos );
+					MultiPlaneLineIterator it( val.first, this->left, this->right, this->infos, data );
 					val.second = func( it );
 				} );
 			
