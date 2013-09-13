@@ -428,4 +428,90 @@ MergeResult Plane::best_round_sub( const Plane& p, int level, int left, int righ
 }
 
 
+struct EdgeLine{
+	//Output
+	color_type* out;
+	unsigned width;
+	
+	//Kernels
+	unsigned size;
+	int *weights_x;
+	int *weights_y;
+	
+	//Input, with line_width as we need several lines
+	color_type* in;
+	unsigned line_width;
+};
+
+static int calculate_kernel( int *kernel, unsigned size, color_type* in, unsigned line_width ){
+	int sum = 0;
+	for( unsigned iy=0; iy<size; ++iy ){
+		color_type *row = in + iy*line_width;
+		for( unsigned ix=0; ix<size; ++ix, ++kernel, ++row )
+			sum += *kernel * *row;
+	}
+	return sum;
+}
+
+static color_type calculate_edge( const EdgeLine& line, color_type* in ){
+	using namespace std;
+	
+	int sum_x = calculate_kernel( line.weights_x, line.size, in, line.line_width );
+	int sum_y = calculate_kernel( line.weights_y, line.size, in, line.line_width );
+	int sum = abs( sum_x ) + abs( sum_y );
+	return min( max( sum, 0 ), 256*256-1 );
+}
+
+static void edge_line( const EdgeLine& line ){
+	color_type *in = line.in;
+	color_type *out = line.out;
+	unsigned size_half = line.size/2;
+	
+	//Fill the start of the row with the same value
+	color_type first = calculate_edge( line, in );
+	for( unsigned ix=0; ix<=size_half; ++ix )
+		*(out++) = first;
+	
+	unsigned end = line.width - (line.size-size_half);
+	for( unsigned ix=size_half; ix<end; ++ix, ++in )
+		*(out++) = calculate_edge( line, in );
+	
+	//Repeat the end with the same value
+	color_type last = *(out-1);
+	for( unsigned ix=end; ix<line.width; ++ix )
+		*(out++) = last;
+}
+
+Plane* Plane::edge_dm_generic( int *weights_x, int *weights_y, unsigned size ) const{
+	using namespace std;
+	
+	Plane *out = new Plane( width, height );
+	if( !out || out->is_invalid() )
+		return out;
+	
+	QTime t;
+	t.start();
+	
+	//Calculate all y-lines
+	std::vector<EdgeLine> lines;
+	for( unsigned iy=0; iy<height; ++iy ){
+		EdgeLine line;
+		line.out = out->scan_line( iy );
+		line.width = width;
+		
+		line.size = size;
+		line.weights_x = weights_x;
+		line.weights_y = weights_y;
+		
+		line.in = scan_line( min( max( iy-size/2, 0U ), height-size-1 ) ); //Always stay inside
+		line.line_width = line_width;
+		
+		lines.push_back( line );
+	}
+	
+	QtConcurrent::blockingMap( lines, &edge_line );
+	
+	qDebug( "Edge dm took: %d msec", t.restart() );
+	return out;
+}
 

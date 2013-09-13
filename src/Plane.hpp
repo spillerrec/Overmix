@@ -91,6 +91,27 @@ class Plane{
 			return scale_generic( wanted_width, wanted_height, 2, mitchell );
 		}
 		Plane* scale_lanczos( unsigned wanted_width, unsigned wanted_height ) const;
+		
+	//Edge-detection
+	private:
+		Plane* edge_dm_generic( int *weights_x, int *weights_y, unsigned size ) const;
+		
+	public:
+		Plane* edge_robert() const{
+			int kx[] = { 0,1, -1,0 };
+			int ky[] = { 1,0, 0,-1 };
+			return edge_dm_generic( kx, ky, 2 );
+		}
+		Plane* edge_sobel() const{
+			int kx[] = { -1,0,1, -2,0,2, -1,0,1 };
+			int ky[] = { 1,2,1, 0,0,0, -1,-2,-1 };
+			return edge_dm_generic( kx, ky, 3 );
+		}
+		Plane* edge_prewitt() const{
+			int kx[] = { -1,0,1, -1,0,1, -1,0,1 };
+			int ky[] = { 1,1,1, 0,0,0, -1,-1,-1 };
+			return edge_dm_generic( kx, ky, 3 );
+		}
 };
 
 #endif
