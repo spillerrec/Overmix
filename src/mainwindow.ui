@@ -549,20 +549,14 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QSpinBox" name="spx_limit_min">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
+           <widget class="QSpinBox" name="sbx_limit_min">
             <property name="maximum">
              <number>255</number>
             </property>
            </widget>
           </item>
           <item row="0" column="2">
-           <widget class="QSpinBox" name="spx_limit_max">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
+           <widget class="QSpinBox" name="sbx_limit_max">
             <property name="maximum">
              <number>255</number>
             </property>
@@ -573,9 +567,6 @@
           </item>
           <item row="1" column="1">
            <widget class="QDoubleSpinBox" name="dsbx_gamma">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
             <property name="decimals">
              <number>4</number>
             </property>
@@ -595,9 +586,6 @@
           </item>
           <item row="2" column="1">
            <widget class="QSpinBox" name="sbx_out_min">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
             <property name="maximum">
              <number>255</number>
             </property>
@@ -605,9 +593,6 @@
           </item>
           <item row="2" column="2">
            <widget class="QSpinBox" name="sbx_out_max">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
             <property name="maximum">
              <number>255</number>
             </property>

@@ -72,6 +72,10 @@ class Plane{
 		
 	//Overlays
 		void substract( Plane &p );
+		void level( color_type limit_min, color_type limit_max
+			,	color_type output_min, color_type output_max
+			,	double gamma
+			);
 		
 	//Difference
 		double diff( const Plane& p, int x, int y, unsigned stride=1 ) const;

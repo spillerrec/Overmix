@@ -559,4 +559,76 @@ void Plane::substract( Plane &p ){
 }
 
 
+struct LevelOptions{
+	color_type limit_min;
+	color_type limit_max;
+	color_type output_min;
+	color_type output_max;
+	double gamma;
+};
+
+static void level_pixel( const SimplePixel& pix ){
+	LevelOptions *opt = (LevelOptions*)pix.data;
+	
+	//Limit
+	double scale = 1.0 / ( opt->limit_max - opt->limit_min );
+	double val = ( (int)*pix.row1 - opt->limit_min ) * scale;
+	val = std::min( std::max( val, 0.0 ), 1.0 );
+	
+	//Gamma
+	if( opt->gamma != 1.0 )
+		val = std::pow( val, opt->gamma );
+	
+	//Output
+	scale = opt->output_max - opt->output_min;
+	*pix.row1 = opt->output_min + std::round( val * scale );
+}
+
+void Plane::level(
+		color_type limit_min
+	,	color_type limit_max
+	,	color_type output_min
+	,	color_type output_max
+	,	double gamma
+	){
+	//Don't do anything if nothing will change
+	if( limit_min == output_min
+		&&	limit_max == output_max
+		&&	limit_min == 0
+		&&	limit_max == (256*256-1)
+		&&	gamma == 1.0
+		)
+		return;
+	
+	
+	QTime t;
+	t.start();
+	
+	
+	LevelOptions options = {
+				limit_min
+			,	limit_max
+			,	output_min
+			,	output_max
+			,	gamma
+		};
+	
+	std::vector<SimplePixel> lines;
+	for( unsigned iy=0; iy<get_height(); ++iy ){
+		SimplePixel pix = { scan_line( iy )
+			,	NULL
+			,	get_width()
+			,	&level_pixel
+			,	&options
+			};
+		lines.push_back( pix );
+	}
+	
+	QtConcurrent::blockingMap( lines, &do_pixel_line );
+	
+	
+	qDebug( "Level took: %d msec", t.restart() );
+}
+
+
 

@@ -187,6 +187,16 @@ void main_widget::refresh_image(){
 			default: break;
 		};
 		
+		//Level
+		double scale = (256*256-1) / 255.0;
+		int limit_min = round( ui->sbx_limit_min->value() * scale );
+		int limit_max = round( ui->sbx_limit_max->value() * scale );
+		int out_min = round( ui->sbx_out_min->value() * scale );
+		int out_max = round( ui->sbx_out_max->value() * scale );
+		double gamma = ui->dsbx_gamma->value();
+		filtered->level( limit_min, limit_max, out_min, out_max, gamma );
+		
+		
 		//Sharpen
 		if( ui->cbx_sharpen->isChecked() )
 			filtered->substract( *(*img_org)[0] );
