@@ -480,6 +480,16 @@
               <string>Prewitt</string>
              </property>
             </item>
+            <item>
+             <property name="text">
+              <string>Laplacian (3)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Laplacian (5)</string>
+             </property>
+            </item>
            </widget>
           </item>
           <item>

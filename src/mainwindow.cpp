@@ -184,6 +184,8 @@ void main_widget::refresh_image(){
 			case 1: filtered = filtered->edge_robert(); break;
 			case 2: filtered = filtered->edge_sobel(); break;
 			case 3: filtered = filtered->edge_prewitt(); break;
+			case 4: filtered = filtered->edge_laplacian(); break;
+			case 5: filtered = filtered->edge_laplacian_large(); break;
 			default: break;
 		};
 		

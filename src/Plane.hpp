@@ -101,23 +101,38 @@ class Plane{
 		
 	//Edge-detection
 	private:
-		Plane* edge_dm_generic( int *weights_x, int *weights_y, unsigned size ) const;
+		Plane* edge_zero_generic( int *weights, unsigned size, unsigned div ) const;
+		Plane* edge_dm_generic( int *weights_x, int *weights_y, unsigned size, unsigned div ) const;
 		
 	public:
 		Plane* edge_robert() const{
 			int kx[] = { 0,1, -1,0 };
 			int ky[] = { 1,0, 0,-1 };
-			return edge_dm_generic( kx, ky, 2 );
+			return edge_dm_generic( kx, ky, 2, 1 );
 		}
 		Plane* edge_sobel() const{
 			int kx[] = { -1,0,1, -2,0,2, -1,0,1 };
 			int ky[] = { 1,2,1, 0,0,0, -1,-2,-1 };
-			return edge_dm_generic( kx, ky, 3 );
+			return edge_dm_generic( kx, ky, 3, 4 );
 		}
 		Plane* edge_prewitt() const{
 			int kx[] = { -1,0,1, -1,0,1, -1,0,1 };
 			int ky[] = { 1,1,1, 0,0,0, -1,-1,-1 };
-			return edge_dm_generic( kx, ky, 3 );
+			return edge_dm_generic( kx, ky, 3, 3 );
+		}
+		Plane* edge_laplacian() const{
+			int k[] = { -1,-1,-1, -1,8,-1, -1,-1,-1 };
+			return edge_zero_generic( k, 3, 1 );
+		}
+		Plane* edge_laplacian_large() const{
+			int k[] = {
+					 0, 0,-1, 0, 0,
+					 0,-1,-2,-1, 0,
+					-1,-2,16,-2,-1, 
+					 0,-1,-2,-1, 0,
+					 0, 0,-1, 0, 0
+				};
+			return edge_zero_generic( k, 5, 2 );
 		}
 };
 
