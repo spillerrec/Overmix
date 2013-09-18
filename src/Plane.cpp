@@ -428,6 +428,7 @@ MergeResult Plane::best_round_sub( const Plane& p, int level, int left, int righ
 }
 
 
+template<typename T>
 struct EdgeLine{
 	//Output
 	color_type* out;
@@ -435,20 +436,22 @@ struct EdgeLine{
 	
 	//Kernels
 	unsigned size;
-	int *weights_x;
-	int *weights_y;
+	T *weights_x;
+	T *weights_y;
 	unsigned div;
 	
 	//Operator
-	color_type (*func)( const EdgeLine&, color_type* );
+	typedef color_type (*func_t)( const EdgeLine<T>&, color_type* );
+	func_t func;
 	
 	//Input, with line_width as we need several lines
 	color_type* in;
 	unsigned line_width;
 };
 
-static int calculate_kernel( int *kernel, unsigned size, color_type* in, unsigned line_width ){
-	int sum = 0;
+template<typename T>
+static T calculate_kernel( T *kernel, unsigned size, color_type* in, unsigned line_width ){
+	T sum = 0;
 	for( unsigned iy=0; iy<size; ++iy ){
 		color_type *row = in + iy*line_width;
 		for( unsigned ix=0; ix<size; ++ix, ++kernel, ++row )
@@ -457,7 +460,8 @@ static int calculate_kernel( int *kernel, unsigned size, color_type* in, unsigne
 	return sum;
 }
 
-static color_type calculate_edge( const EdgeLine& line, color_type* in ){
+template<typename T>
+static color_type calculate_edge( const EdgeLine<T>& line, color_type* in ){
 	using namespace std;
 	
 	int sum_x = calculate_kernel( line.weights_x, line.size, in, line.line_width );
@@ -467,7 +471,8 @@ static color_type calculate_edge( const EdgeLine& line, color_type* in ){
 	return min( max( sum, 0 ), 256*256-1 );
 }
 
-static color_type calculate_zero_edge( const EdgeLine& line, color_type* in ){
+template<typename T>
+static color_type calculate_zero_edge( const EdgeLine<T>& line, color_type* in ){
 	using namespace std;
 	//TODO: improve
 	int sum = max( calculate_kernel( line.weights_x, line.size, in, line.line_width ), 0 );
@@ -475,14 +480,15 @@ static color_type calculate_zero_edge( const EdgeLine& line, color_type* in ){
 	return min( max( sum, 0 ), 256*256-1 );
 }
 
-static void edge_line( const EdgeLine& line ){
+template<typename T>
+static void edge_line( const EdgeLine<T>& line ){
 	color_type *in = line.in;
 	color_type *out = line.out;
 	unsigned size_half = line.size/2;
 	
 	//Fill the start of the row with the same value
 	color_type first = line.func( line, in );
-	for( unsigned ix=0; ix<=size_half; ++ix )
+	for( unsigned ix=0; ix<size_half; ++ix )
 		*(out++) = first;
 	
 	unsigned end = line.width - (line.size-size_half);
@@ -496,75 +502,42 @@ static void edge_line( const EdgeLine& line ){
 }
 
 
-Plane* Plane::edge_zero_generic( int *weights, unsigned size, unsigned div ) const{
-	using namespace std;
-	
-	Plane *out = new Plane( width, height );
+template<typename T, typename T2>
+Plane* parallel_edge_line( const Plane& p, T* weights_x, T* weights_y, unsigned size, unsigned div, T2 func ){
+	Plane *out = new Plane( p.get_width(), p.get_height() );
 	if( !out || out->is_invalid() )
 		return out;
 	
-	QTime t;
-	t.start();
-	
 	//Calculate all y-lines
-	std::vector<EdgeLine> lines;
-	for( unsigned iy=0; iy<height; ++iy ){
-		EdgeLine line;
+	std::vector<EdgeLine<T> > lines;
+	for( unsigned iy=0; iy<p.get_height(); ++iy ){
+		EdgeLine<T> line;
 		line.out = out->scan_line( iy );
-		line.width = width;
-		
-		line.size = size;
-		line.weights_x = weights;
-		line.div = div;
-		
-		line.func = &calculate_zero_edge;
-		
-		line.in = scan_line( min( max( iy-size/2, 0U ), height-size-1 ) ); //Always stay inside
-		line.line_width = line_width;
-		
-		lines.push_back( line );
-	}
-	
-	QtConcurrent::blockingMap( lines, &edge_line );
-	
-	qDebug( "Edge zero took: %d msec", t.restart() );
-	return out;
-}
-
-Plane* Plane::edge_dm_generic( int *weights_x, int *weights_y, unsigned size, unsigned div ) const{
-	using namespace std;
-	
-	Plane *out = new Plane( width, height );
-	if( !out || out->is_invalid() )
-		return out;
-	
-	QTime t;
-	t.start();
-	
-	//Calculate all y-lines
-	std::vector<EdgeLine> lines;
-	for( unsigned iy=0; iy<height; ++iy ){
-		EdgeLine line;
-		line.out = out->scan_line( iy );
-		line.width = width;
+		line.width = p.get_width();
 		
 		line.size = size;
 		line.weights_x = weights_x;
 		line.weights_y = weights_y;
 		line.div = div;
 		
-		line.func = &calculate_edge;
+		line.func = func;
 		
-		line.in = scan_line( min( max( iy-size/2, 0U ), height-size-1 ) ); //Always stay inside
-		line.line_width = line_width;
+		line.in = p.scan_line( std::min( std::max( int(iy-size/2), 0 ), int(p.get_height()-size-1) ) ); //Always stay inside
+		line.line_width = p.get_line_width();
 		
 		lines.push_back( line );
 	}
 	
-	QtConcurrent::blockingMap( lines, &edge_line );
-	
-	qDebug( "Edge dm took: %d msec", t.restart() );
+	QtConcurrent::blockingMap( lines, &edge_line<T> );
 	return out;
+}
+
+Plane* Plane::edge_zero_generic( int *weights, unsigned size, unsigned div ) const{
+	return parallel_edge_line( *this, weights, (int*)NULL, size, div, calculate_zero_edge<int> );
+}
+
+Plane* Plane::edge_dm_generic( int *weights_x, int *weights_y, unsigned size, unsigned div ) const{
+	return parallel_edge_line( *this, weights_x, weights_y, size, div, calculate_edge<int> );
 }
 
 
@@ -682,5 +655,164 @@ void Plane::level(
 	qDebug( "Level took: %d msec", t.restart() );
 }
 
+
+struct WeightedSumLine{
+	color_type *out;	//Output row
+	color_type *in; //Input row, must be the top row weights affects
+	unsigned width;
+	unsigned line_width; //For input row
+	
+	//Only bounds-checked in the horizontal direction!
+	double *weights;
+	unsigned w_width;
+	unsigned w_height; //How many input lines should be weighted, must not overflow!
+	double full_sum;
+	
+	double calculate_sum( unsigned start=0 ) const{
+		double sum = 0;
+		for( unsigned iy=0; iy<w_height; ++iy )
+			for( unsigned ix=start; ix<w_width; ++ix )
+				sum += weights[ ix + iy*w_width ];
+		return sum;
+	}
+	
+	color_type weighted_sum( color_type* in ) const{
+		double sum = 0;
+		for( unsigned iy=0; iy<w_height; ++iy ){
+			color_type *line = in + iy*line_width;
+			for( unsigned ix=0; ix<w_width; ++ix, ++line )
+				sum += weights[ ix + iy*w_width ] * (*line);
+		}
+		
+		sum /= full_sum;
+		return std::round( std::max( sum, 0.0 ) );
+		
+	}
+	color_type weighted_sum( color_type* in, int cutting ) const{
+		unsigned start = cutting > 0 ? 0 : -cutting;
+		unsigned end = cutting > 0 ? w_width-cutting : w_width;
+		
+		double sum = 0;
+		double w_sum = 0;
+		for( unsigned iy=0; iy<w_height; ++iy ){
+			color_type *line = in + iy*line_width;
+			for( unsigned ix=start; ix<end; ++ix, ++line ){
+				double w = weights[ ix + iy*w_width ];
+				sum += w * (*line);
+				w_sum += w;
+			}
+		}
+		
+		sum /= w_sum;
+		return std::round( std::max( sum, 0.0 ) );
+	}
+};
+
+void sum_line( const WeightedSumLine& line ){
+	color_type *in = line.in;
+	color_type *out = line.out;
+	unsigned size_half = line.w_width/2;
+	
+	//Fill the start of the row with the same value
+	for( unsigned ix=0; ix<size_half; ++ix )
+		*(out++) = line.weighted_sum( in, size_half-ix );
+	
+	unsigned end = line.width - (line.w_width-size_half);
+	for( unsigned ix=size_half; ix<=end; ++ix, ++in )
+		*(out++) = line.weighted_sum( in );
+	
+	//Repeat the end with the same value
+	for( unsigned ix=end+1; ix<line.width; ++ix, ++in )
+		*(out++) = line.weighted_sum( in, (int)end-ix );
+}
+
+Plane* Plane::weighted_sum( double *kernel, unsigned w_width, unsigned w_height ) const{
+	if( !kernel || w_width == 0 || w_height == 0 )
+		return NULL;
+	
+	Plane *out = create_compatiable();
+	if( out ){
+		//Set default settings
+		WeightedSumLine default_line;
+		default_line.width = width;
+		default_line.line_width = out->get_line_width();
+		default_line.weights = kernel;
+		default_line.w_width = w_width;
+		default_line.w_height = w_height;
+		default_line.full_sum = default_line.calculate_sum();
+		
+		int half_size = w_height / 2;
+		std::vector<WeightedSumLine> lines;
+		for( unsigned iy=0; iy<height; ++iy ){
+			WeightedSumLine line = default_line;
+			line.out = out->scan_line( iy );
+			
+			int top = iy - half_size;
+			if( top < 0 ){
+				//Cut stuff from top
+				line.w_height += top; //Subtracts!
+				line.weights += -top * line.w_width;
+				line.in = scan_line( 0 );
+				line.full_sum = line.calculate_sum();
+			}
+			else if( top+w_height >= height ){
+				//Cut stuff from bottom
+				line.in = scan_line( top );
+				line.w_height = height - top;
+				line.full_sum = line.calculate_sum();
+			}
+			else //Use defaults
+				line.in = scan_line( top );
+			
+			lines.push_back( line );
+		}
+		
+		QtConcurrent::blockingMap( lines, &sum_line );
+	}
+	
+	return out;
+}
+
+Plane* Plane::blur_box( unsigned amount_x, unsigned amount_y ) const{
+	unsigned size = ++amount_x * ++amount_y;
+	double *kernel = new double[ size ];
+	if( !kernel )
+		return NULL;
+	
+	for( unsigned iy=0; iy<amount_y; ++iy )
+		for( unsigned ix=0; ix<amount_x; ++ix )
+			kernel[ ix + iy*amount_x ] = 1.0;
+	
+	Plane *p = weighted_sum( kernel, amount_x, amount_y );
+	delete[] kernel;
+	return p;
+}
+
+const double PI = std::atan(1)*4;
+static double gaussian( double dx, double dy, double devi ){
+	double base = 1.0 / ( 2*PI*devi*devi );
+	double power = -( dx*dx + dy*dy ) / ( 2*devi*devi );
+	return base * exp( power );
+}
+
+Plane* Plane::blur_gaussian( unsigned amount_x, unsigned amount_y ) const{
+	unsigned size = ++amount_x * ++amount_y;
+	double *kernel = new double[ size ];
+	if( !kernel )
+		return NULL;
+	
+	//Estimate deviation
+	double devi = std::max( amount_x, amount_y ) / 6;
+	
+	double half_x = amount_x/2.0;
+	double half_y = amount_y/2.0;
+	for( unsigned iy=0; iy<amount_y; ++iy )
+		for( unsigned ix=0; ix<amount_x; ++ix )
+			kernel[ ix + iy*amount_x ] = gaussian( ix-half_x, iy-half_y, devi );
+	
+	Plane *p = weighted_sum( kernel, amount_x, amount_y );
+	delete[] kernel;
+	return p;
+}
 
 

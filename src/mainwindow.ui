@@ -387,9 +387,6 @@
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
            <widget class="QComboBox" name="cbx_blur">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
             <item>
              <property name="text">
               <string>None</string>

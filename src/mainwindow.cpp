@@ -175,19 +175,30 @@ void main_widget::refresh_image(){
 			|| scale_height <= 0.9999 || scale_height >= 1.0001 )
 			img_org->scale( img_org->get_width() * scale_width + 0.5, img_org->get_height() * scale_height + 0.5 );
 		
-		Plane *filtered = (*img_org)[0];
+		Plane *org = (*img_org)[0];
 		
-		//TODO: bluring
+		//Blurring
+		Plane* blurred = org;
+		unsigned blur_x = ui->spbx_blur_x->value();
+		unsigned blur_y = ui->spbx_blur_y->value();
+		switch( ui->cbx_blur->currentIndex() ){
+			case 1: blurred = blurred->blur_box( blur_x, blur_y ); break;
+			case 2: blurred = blurred->blur_gaussian( blur_x, blur_y ); break;
+			default: break;
+		}
 		
 		//Edge detection
+		Plane *edge = blurred;
 		switch( ui->cbx_edge_filter->currentIndex() ){
-			case 1: filtered = filtered->edge_robert(); break;
-			case 2: filtered = filtered->edge_sobel(); break;
-			case 3: filtered = filtered->edge_prewitt(); break;
-			case 4: filtered = filtered->edge_laplacian(); break;
-			case 5: filtered = filtered->edge_laplacian_large(); break;
+			case 1: edge = edge->edge_robert(); break;
+			case 2: edge = edge->edge_sobel(); break;
+			case 3: edge = edge->edge_prewitt(); break;
+			case 4: edge = edge->edge_laplacian(); break;
+			case 5: edge = edge->edge_laplacian_large(); break;
 			default: break;
 		};
+		if( (edge != blurred) && (blurred != org) )
+			delete blurred;
 		
 		//Level
 		double scale = (256*256-1) / 255.0;
@@ -196,15 +207,16 @@ void main_widget::refresh_image(){
 		int out_min = round( ui->sbx_out_min->value() * scale );
 		int out_max = round( ui->sbx_out_max->value() * scale );
 		double gamma = ui->dsbx_gamma->value();
-		filtered->level( limit_min, limit_max, out_min, out_max, gamma );
+		//TODO: make sure it is a copy!
+		edge->level( limit_min, limit_max, out_min, out_max, gamma );
 		
 		
 		//Sharpen
 		if( ui->cbx_sharpen->isChecked() )
-			filtered->substract( *(*img_org)[0] );
+			edge->substract( *(*img_org)[0] );
 		
-		if( filtered != (*img_org)[0] )
-			img_org->replace_plane( 0, filtered );
+		if( edge != (*img_org)[0] )
+			img_org->replace_plane( 0, edge );
 		
 		temp = new QImage( img_org->to_qimage( system, setting ) );
 		delete img_org;

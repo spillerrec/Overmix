@@ -53,10 +53,24 @@ class Plane{
 		
 		static const unsigned long MAX_VAL;
 		
+	//Plane handling
+		//TODO: copy constructor
+		Plane* create_compatiable() const{
+			Plane* p = new Plane( width, height );
+			if( !p )
+				return NULL;
+			if( p->is_invalid() ){
+				delete p;
+				return NULL;
+			}
+			return p;
+		}
+		
 	//Status
 		bool is_invalid() const{ return data == 0; }
 		unsigned get_height() const{ return height; }
 		unsigned get_width() const{ return width; }
+		unsigned get_line_width() const{ return line_width; }
 		
 	//Pixel/Row query
 		color_type& pixel( unsigned x, unsigned y ) const{ return data[ x + y*line_width ]; }
@@ -134,6 +148,13 @@ class Plane{
 				};
 			return edge_zero_generic( k, 5, 2 );
 		}
+		
+	//Blurring
+	private:
+		Plane* weighted_sum( double *kernel, unsigned width, unsigned height ) const;
+	public:
+		Plane* blur_box( unsigned amount_x, unsigned amount_y ) const;
+		Plane* blur_gaussian( unsigned amount_x, unsigned amount_y ) const;
 };
 
 #endif
