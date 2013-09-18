@@ -62,6 +62,8 @@ class ImageEx{
 					delete planes[i];
 		}
 		
+		ImageEx( const ImageEx& img );
+		
 		bool create( unsigned width, unsigned height, bool alpha=false );
 		void replace_plane( unsigned index, Plane* p ){
 			if( index > 3 )
@@ -70,6 +72,17 @@ class ImageEx{
 				if( planes[index] )
 					delete planes[index];
 				planes[index] = p;
+			}
+		}
+		
+		template<typename... Args>
+		void apply_operation( Plane* (Plane::*func)( Args... ) const, Args... args ){
+			if( type == YUV || type == GRAY )
+				replace_plane( 0, (planes[0]->*func)( args... ) );
+			else{
+				for( unsigned i=0; i<MAX_PLANES-1; ++i )
+					if( planes[i] )
+						replace_plane( i, (planes[i]->*func)( args... ) );
 			}
 		}
 		

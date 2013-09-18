@@ -170,56 +170,50 @@ void main_widget::refresh_image(){
 		QTime t;
 		t.start();
 		
+		
 		//Fix aspect ratio
 		if( scale_width <= 0.9999 || scale_width >= 1.0001
 			|| scale_height <= 0.9999 || scale_height >= 1.0001 )
 			img_org->scale( img_org->get_width() * scale_width + 0.5, img_org->get_height() * scale_height + 0.5 );
 		
 		Plane *org = (*img_org)[0];
+		ImageEx img_temp( *img_org );
 		
 		//Blurring
-		Plane* blurred = org;
 		unsigned blur_x = ui->spbx_blur_x->value();
 		unsigned blur_y = ui->spbx_blur_y->value();
 		switch( ui->cbx_blur->currentIndex() ){
-			case 1: blurred = blurred->blur_box( blur_x, blur_y ); break;
-			case 2: blurred = blurred->blur_gaussian( blur_x, blur_y ); break;
+			case 1: img_temp.apply_operation( &Plane::blur_box, blur_x, blur_y ); break;
+			case 2: img_temp.apply_operation( &Plane::blur_gaussian, blur_x, blur_y ); break;
 			default: break;
 		}
 		
 		//Edge detection
-		Plane *edge = blurred;
 		switch( ui->cbx_edge_filter->currentIndex() ){
-			case 1: edge = edge->edge_robert(); break;
-			case 2: edge = edge->edge_sobel(); break;
-			case 3: edge = edge->edge_prewitt(); break;
-			case 4: edge = edge->edge_laplacian(); break;
-			case 5: edge = edge->edge_laplacian_large(); break;
+			case 1: img_temp.apply_operation( &Plane::edge_robert ); break;
+			case 2: img_temp.apply_operation( &Plane::edge_sobel ); break;
+			case 3: img_temp.apply_operation( &Plane::edge_prewitt ); break;
+			case 4: img_temp.apply_operation( &Plane::edge_laplacian ); break;
+			case 5: img_temp.apply_operation( &Plane::edge_laplacian_large ); break;
 			default: break;
 		};
-		if( (edge != blurred) && (blurred != org) )
-			delete blurred;
 		
 		//Level
 		double scale = (256*256-1) / 255.0;
-		int limit_min = round( ui->sbx_limit_min->value() * scale );
-		int limit_max = round( ui->sbx_limit_max->value() * scale );
-		int out_min = round( ui->sbx_out_min->value() * scale );
-		int out_max = round( ui->sbx_out_max->value() * scale );
+		color_type limit_min = round( ui->sbx_limit_min->value() * scale );
+		color_type limit_max = round( ui->sbx_limit_max->value() * scale );
+		color_type out_min = round( ui->sbx_out_min->value() * scale );
+		color_type out_max = round( ui->sbx_out_max->value() * scale );
 		double gamma = ui->dsbx_gamma->value();
-		//TODO: make sure it is a copy!
-		edge->level( limit_min, limit_max, out_min, out_max, gamma );
+		img_temp.apply_operation( &Plane::level, limit_min, limit_max, out_min, out_max, gamma );
 		
 		
 		//Sharpen
-		if( ui->cbx_sharpen->isChecked() )
-			edge->substract( *(*img_org)[0] );
-		
-		if( edge != (*img_org)[0] )
-			img_org->replace_plane( 0, edge );
-		
-		temp = new QImage( img_org->to_qimage( system, setting ) );
+	//	if( ui->cbx_sharpen->isChecked() )
+	//		edge->substract( *(*img_org)[0] );
 		delete img_org;
+		
+		temp = new QImage( img_temp.to_qimage( system, setting ) );
 		
 		qDebug( "to_qimage() took: %d", t.elapsed() );
 	}

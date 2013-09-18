@@ -20,12 +20,15 @@
 #include <cstdint> //For abs(int) and uint*_t
 #include <limits>
 #include <vector>
+#include <cstring> //For memcpy
 
 #include <QtConcurrent>
 #include <QDebug>
 
+using namespace std;
+
 const unsigned long Plane::MAX_VAL = 0xFFFFFFFF;
-static const double DOUBLE_MAX = std::numeric_limits<double>::max();
+static const double DOUBLE_MAX = numeric_limits<double>::max();
 
 Plane::Plane( unsigned w, unsigned h ){
 	height = h;
@@ -37,6 +40,16 @@ Plane::Plane( unsigned w, unsigned h ){
 Plane::~Plane(){
 	if( data )
 		delete[] data;
+}
+
+Plane::Plane( const Plane& p ){
+	height = p.height;
+	width = p.width;
+	line_width = p.line_width;
+	
+	unsigned size = height * line_width;
+	data = new color_type[ size ];
+	memcpy( data, p.data, sizeof(color_type)*size );
 }
 
 void Plane::fill( color_type value ){
@@ -124,7 +137,7 @@ struct Para{
 static uint64_t diff_2_line( Para p ){
 	uint64_t sum = 0;
 	for( color_type* end=p.c1+p.width; p.c1<end; p.c1+=p.stride, p.c2+=p.stride )
-		sum += std::abs( *p.c1 - *p.c2 );
+		sum += abs( *p.c1 - *p.c2 );
 	
 	return sum;
 }
@@ -135,15 +148,15 @@ double Plane::diff( const Plane& p, int x, int y, unsigned stride ) const{
 	int p2_top = y > 0 ? 0 : -y;
 	int p1_left = x < 0 ? 0 : x;
 	int p2_left = x > 0 ? 0 : -x;
-	unsigned width = std::min( get_width() - p1_left, p.get_width() - p2_left );
-	unsigned height = std::min( get_height() - p1_top, p.get_height() - p2_top );
+	unsigned width = min( get_width() - p1_left, p.get_width() - p2_left );
+	unsigned height = min( get_height() - p1_top, p.get_height() - p2_top );
 	
 	//Initial offsets on the two planes
 	color_type* c1 = scan_line( p1_top ) + p1_left;
 	color_type* c2 = p.scan_line( p2_top ) + p2_left;
 	
 	//Calculate all the offsets for QtConcurrent::mappedReduced
-	std::vector<Para> lines;
+	vector<Para> lines;
 	lines.reserve( height );
 	for( unsigned i=0; i<height; i+=stride ){
 		lines.push_back( Para( c1+i%stride, c2+i%stride, width, stride ) );
@@ -176,14 +189,14 @@ Plane* Plane::scale_nearest( unsigned wanted_width, unsigned wanted_height ) con
 }
 
 double Plane::linear( double x ){
-	x = std::abs( x );
+	x = abs( x );
 	if( x <= 1.0 )
 		return x;
 	return 0;
 }
 
 double Plane::cubic( double b, double c, double x ){
-	x = std::abs( x );
+	x = abs( x );
 	
 	if( x < 1 )
 		return
@@ -205,10 +218,9 @@ double Plane::cubic( double b, double c, double x ){
 
 struct ScalePoint{
 	unsigned start;
-	std::vector<double> weights; //Size of this is end
+	vector<double> weights; //Size of this is end
 	
 	ScalePoint( unsigned index, unsigned width, unsigned wanted_width, double window, Plane::Filter f ){
-		using namespace std;
 		
 		double pos = ((double)index / (wanted_width-1)) * (width-1);
 		start = (unsigned)max( (int)ceil( pos-window ), 0 );
@@ -609,13 +621,17 @@ static void level_pixel( const SimplePixel& pix ){
 	*pix.row1 = opt->output_min + std::round( val * scale );
 }
 
-void Plane::level(
+Plane* Plane::level(
 		color_type limit_min
 	,	color_type limit_max
 	,	color_type output_min
 	,	color_type output_max
 	,	double gamma
-	){
+	) const{
+	Plane *out = new Plane( *this );
+	if( !out )
+		return out;
+	
 	//Don't do anything if nothing will change
 	if( limit_min == output_min
 		&&	limit_max == output_max
@@ -623,8 +639,7 @@ void Plane::level(
 		&&	limit_max == (256*256-1)
 		&&	gamma == 1.0
 		)
-		return;
-	
+		return out;
 	
 	QTime t;
 	t.start();
@@ -639,10 +654,10 @@ void Plane::level(
 		};
 	
 	std::vector<SimplePixel> lines;
-	for( unsigned iy=0; iy<get_height(); ++iy ){
-		SimplePixel pix = { scan_line( iy )
+	for( unsigned iy=0; iy<out->get_height(); ++iy ){
+		SimplePixel pix = { out->scan_line( iy )
 			,	NULL
-			,	get_width()
+			,	out->get_width()
 			,	&level_pixel
 			,	&options
 			};
@@ -653,6 +668,7 @@ void Plane::level(
 	
 	
 	qDebug( "Level took: %d msec", t.restart() );
+	return out;
 }
 
 

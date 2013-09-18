@@ -32,6 +32,19 @@ using namespace std;
 
 static const double DOUBLE_MAX = std::numeric_limits<double>::max();
 
+ImageEx::ImageEx( const ImageEx& img ){
+	initialized = img.initialized;
+	type = img.type;
+	
+	//Copy planes
+	for( unsigned i=0; i<MAX_PLANES; ++i ){
+		if( img[i] )
+			planes[i] = new Plane( *img[i] );
+		else
+			planes[i] = NULL;
+	}
+}
+
 void process_dump_line( color_type *out, unsigned char* in, unsigned width, uint16_t depth ){
 	unsigned byte_count = (depth + 7) / 8;
 	if( byte_count == 1 )

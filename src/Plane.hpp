@@ -54,7 +54,7 @@ class Plane{
 		static const unsigned long MAX_VAL;
 		
 	//Plane handling
-		//TODO: copy constructor
+		Plane( const Plane& p );
 		Plane* create_compatiable() const{
 			Plane* p = new Plane( width, height );
 			if( !p )
@@ -86,10 +86,10 @@ class Plane{
 		
 	//Overlays
 		void substract( Plane &p );
-		void level( color_type limit_min, color_type limit_max
+		Plane* level( color_type limit_min, color_type limit_max
 			,	color_type output_min, color_type output_max
 			,	double gamma
-			);
+			) const;
 		
 	//Difference
 		double diff( const Plane& p, int x, int y, unsigned stride=1 ) const;
