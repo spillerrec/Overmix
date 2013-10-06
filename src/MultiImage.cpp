@@ -18,6 +18,7 @@
 
 #include "MultiImage.hpp"
 #include "ImageEx.hpp"
+#include "ImageAligner.hpp"
 
 #include <cmath>
 #include <queue>
@@ -180,7 +181,7 @@ MultiImage::ImageMatches MultiImage::overlaps_image( unsigned index ) const{
 		QRect common = current.intersected( get_rect( i ) );
 		if( common.width() > 0 && common.height() > 0 ){
 			double common_area = common.width() * common.height();
-			if( common_area/area > 0.75 )
+			if( common_area/area > 0.1 )
 				matches.push_back( ImageMatch( i, common_area / area ) );
 		}
 	}
@@ -188,8 +189,42 @@ MultiImage::ImageMatches MultiImage::overlaps_image( unsigned index ) const{
 	return matches;
 }
 
-
+#include <QProgressDialog>
+#include <QCoreApplication>
 void MultiImage::subalign_images(){
+	ImageAligner::AlignMethod method;
+	switch( merge_method ){
+		case 1: method = ImageAligner::ALIGN_HOR; break;
+		case 2: method = ImageAligner::ALIGN_VER; break;
+		
+		case 0:
+		default: method = ImageAligner::ALIGN_BOTH; break;
+	}
+	
+	QProgressDialog progress( "Mixing images", "Stop", 0, imgs.size(), NULL );
+	ImageAligner align( method, 10.0 );
+	for( unsigned i=0; i<imgs.size(); ++i ){
+		align.add_image( imgs[i] );
+		progress.setValue( i );
+		QCoreApplication::processEvents();
+		
+		if( progress.wasCanceled() )
+			return;
+	}
+	align.align();
+	
+	//Debug positions
+	fstream f( "positions.txt", fstream::out );
+	for( unsigned i=0; i<imgs.size(); i++ )
+		f << "Image " << i << ": " << pos[i].x() << "x" << pos[i].y() << "\n";
+	f.close();
+	
+	for( unsigned i=0; i<pos.size(); i++ )
+		pos[i] = align.pos( i );
+	calculate_size();
+	
+	return;
+	/*
 	//Find all overlapping images
 	vector<ImageMatches> align;
 	align.reserve( get_count() );
@@ -211,16 +246,23 @@ void MultiImage::subalign_images(){
 	}
 	
 	//TODO: Find all relative positions
-	fstream rel( "/home/spiller/Projects/overmix/merges.txt", fstream::out );
+	fstream rel( "merges.txt", fstream::out );
+	QTime t;
+	t.start();
 	for( unsigned i=0; i<imgs.size(); i++ ){
 		for( unsigned j=0; j<align[i].size(); j++ ){
 			unsigned index = align[i][j].first;
-			if( index >= i )
-				rel << "Find distance between " << i << " and " << index << "\n";
+			if( index >= i ){
+				pair<QPoint,double> result = merge_image( *imgs[i], *imgs[index] );
+				rel << "Find distance between " << i << " and " << index << ": ";
+				rel << result.first.x() << "x" << result.first.y() << " (" << result.second << ")";
+				rel << "\n";
+			}
 		//	else
 		//		rel << "Reusing " << index << " and " << i << "\n";
 		}
 	}
+	rel << "\n" << "Took " << t.elapsed() << " msec\n";
 	rel.close();
 	
 	//TODO: adjust all relative positions into aboslute ones
@@ -228,14 +270,15 @@ void MultiImage::subalign_images(){
 	//TODO: align so that most images are on the grid?
 	
 	//Debug positions
-	fstream f( "/home/spiller/Projects/overmix/positions.txt", fstream::out );
+	fstream f( "positions.txt", fstream::out );
 	for( unsigned i=0; i<imgs.size(); i++ ){
 		f << "Image " << i << ": " << pos[i].x() << "x" << pos[i].y() << " (ends at: " << cache[i].second << ") " << align[i].size() << "\n";
-		for( unsigned j=0; j<align[i].size(); j++ ){
-			f << "\t" << align[i][j].first << " " << align[i][j].second << "\n";
-		}
+	//	for( unsigned j=0; j<align[i].size(); j++ ){
+	//		f << "\t" << align[i][j].first << " " << align[i][j].second << "\n";
+	//	}
 	}
 	f.close();
+	*/
 }
 
 static void render_average( MultiPlaneIterator &it, bool alpha_used ){
