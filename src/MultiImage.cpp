@@ -220,7 +220,7 @@ void MultiImage::subalign_images(){
 	f.close();
 	
 	for( unsigned i=0; i<pos.size(); i++ )
-		pos[i] = align.pos( i );
+		pos[i] = align.pos( i ).toPoint();
 	calculate_size();
 	
 	return;

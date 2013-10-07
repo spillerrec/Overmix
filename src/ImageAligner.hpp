@@ -18,61 +18,23 @@
 #ifndef IMAGE_ALIGNER_HPP
 #define IMAGE_ALIGNER_HPP
 
-#include "ImageEx.hpp"
+#include "AImageAligner.hpp"
 
-#include <vector>
-#include <QPoint>
-
-class ImageAligner{
-	public:
-		enum AlignMethod{
-			ALIGN_BOTH,
-			ALIGN_VER,
-			ALIGN_HOR
-		};
-		
-	private:
-		struct ImagePosition{
-			const ImageEx* const original;
-			ImageEx* image;
-			double pos_x;
-			double pos_y;
-			
-			ImagePosition( const ImageEx* const img, double scale_x, double scale_y );
-		};
-		
-		struct ImageOffset{
-			double distance_x;
-			double distance_y;
-			double error;
-			double overlap;
-		};
-	
-	private:
-		AlignMethod method;
-		const double scale;
-		std::vector<ImagePosition> images;
+class ImageAligner : public AImageAligner{
+	protected:
 		std::vector<ImageOffset> offsets;
 		
 		ImageOffset get_offset( unsigned img1, unsigned img2 ) const;
-		ImageOffset find_offset( const ImageEx& img1, const ImageEx& img2 ) const;
-		
-		double x_scale() const;
-		double y_scale() const;
 		
 		void rough_align();
 		
 		double total_error() const;
+		virtual void on_add( ImagePosition& pos );
 	
 	public:
-		ImageAligner( AlignMethod method, double scale=1.0 );
-		~ImageAligner();
-		
-		void add_image( const ImageEx* const img );
+		ImageAligner( AlignMethod method, double scale=1.0 ) : AImageAligner( method, scale ){ }
 		
 		void align();
-		
-		QPoint pos( unsigned index ) const;
 	
 };
 

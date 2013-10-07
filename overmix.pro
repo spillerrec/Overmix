@@ -14,8 +14,8 @@ Release:QMAKE_LFLAGS += -flto -O3 #-mtune=native -ftree-vectorize -ftree-slp-vec
 
 # Input
 FORMS += src/mainwindow.ui
-HEADERS += src/mainwindow.hpp src/MultiImage.hpp src/imageViewer.hpp src/MultiPlaneIterator.hpp src/color.hpp src/Plane.hpp src/ImageEx.hpp src/ImageAligner.hpp
-SOURCES += src/mainwindow.cpp src/MultiImage.cpp src/imageViewer.cpp src/MultiPlaneIterator.cpp src/color.cpp src/Plane.cpp src/ImageEx.cpp src/ImageAligner.cpp src/main.cpp
+HEADERS += src/mainwindow.hpp src/MultiImage.hpp src/imageViewer.hpp src/MultiPlaneIterator.hpp src/color.hpp src/Plane.hpp src/ImageEx.hpp src/ImageAligner.hpp src/AImageAligner.hpp
+SOURCES += src/mainwindow.cpp src/MultiImage.cpp src/imageViewer.cpp src/MultiPlaneIterator.cpp src/color.cpp src/Plane.cpp src/ImageEx.cpp src/ImageAligner.cpp src/AImageAligner.cpp src/main.cpp
 
 # Generate both debug and release on Linux
 CONFIG += debug_and_release
