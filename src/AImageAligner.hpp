@@ -34,11 +34,11 @@ class AImageAligner{
 		
 	protected:
 		struct ImagePosition{
-			const Plane* const original;
+			const ImageEx* const original;
 			const Plane* const image;
 			QPointF pos;
 			
-			ImagePosition( const Plane* const org, const Plane* const img )
+			ImagePosition( const ImageEx* const org, const Plane* const img )
 				:	original(org), image(img) { }
 		};
 		
@@ -67,6 +67,10 @@ class AImageAligner{
 		virtual ~AImageAligner();
 		
 		void add_image( const ImageEx* const img );
+		
+		QRect size() const;
+		unsigned count() const{ return images.size(); }
+		const ImageEx* image( unsigned index ) const{ return images[index].original; }
 		QPointF pos( unsigned index ) const{
 			return QPointF( images[index].pos.x() / x_scale(), images[index].pos.y() / y_scale() );
 		}

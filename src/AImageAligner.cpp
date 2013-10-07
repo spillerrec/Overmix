@@ -21,7 +21,7 @@
 AImageAligner::~AImageAligner(){
 	//Remove scaled images
 	for( unsigned i=0; i<images.size(); ++i )
-		if( images[i].original != images[i].image )
+		if( (*(images[i].original))[0] != images[i].image )
 			delete images[i].image;
 }
 
@@ -57,9 +57,25 @@ void AImageAligner::add_image( const ImageEx* const img ){
 	else
 		prepared = prepare_plane( use );
 	
-	images.push_back( ImagePosition( use, prepared ) );
+	images.push_back( ImagePosition( img, prepared ) );
 	
 	on_add( images[ images.size()-1 ] );
+}
+
+QRect AImageAligner::size() const{
+	QRectF total;
+	
+	for( unsigned i=0; i<count(); i++ )
+		total = total.united( QRectF( pos(i), QSizeF( image(i)->get_width(), image(i)->get_height() ) ) );
+	
+	//Round so that we only increase size
+	total.setLeft( floor( total.left() ) );
+	total.setTop( floor( total.top() ) );
+	total.setRight( ceil( total.right() ) );
+	total.setBottom( ceil( total.bottom() ) );
+	//TODO: just return a QRectF and let the caller deal with the rounding
+	
+	return total.toRect();
 }
 
 double AImageAligner::calculate_overlap( QPoint offset, const Plane& img1, const Plane& img2 ){

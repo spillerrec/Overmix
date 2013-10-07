@@ -191,6 +191,7 @@ MultiImage::ImageMatches MultiImage::overlaps_image( unsigned index ) const{
 
 #include <QProgressDialog>
 #include <QCoreApplication>
+#include "AverageAligner.hpp"
 void MultiImage::subalign_images(){
 	ImageAligner::AlignMethod method;
 	switch( merge_method ){
@@ -202,7 +203,7 @@ void MultiImage::subalign_images(){
 	}
 	
 	QProgressDialog progress( "Mixing images", "Stop", 0, imgs.size(), NULL );
-	ImageAligner align( method, 10.0 );
+	AverageAligner align( method, 2.0 );
 	for( unsigned i=0; i<imgs.size(); ++i ){
 		align.add_image( imgs[i] );
 		progress.setValue( i );
