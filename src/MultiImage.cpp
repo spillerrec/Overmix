@@ -203,7 +203,7 @@ void MultiImage::subalign_images(){
 	}
 	
 	QProgressDialog progress( "Mixing images", "Stop", 0, imgs.size(), NULL );
-	AverageAligner align( method, 2.0 );
+	AverageAligner align( method, 10.0 );
 	for( unsigned i=0; i<imgs.size(); ++i ){
 		align.add_image( imgs[i] );
 		progress.setValue( i );
@@ -217,7 +217,7 @@ void MultiImage::subalign_images(){
 	//Debug positions
 	fstream f( "positions.txt", fstream::out );
 	for( unsigned i=0; i<imgs.size(); i++ )
-		f << "Image " << i << ": " << pos[i].x() << "x" << pos[i].y() << "\n";
+		f << "Image " << i << ": " << align.pos(i).x() << "x" << align.pos(i).y() << "\n";
 	f.close();
 	
 	for( unsigned i=0; i<pos.size(); i++ )

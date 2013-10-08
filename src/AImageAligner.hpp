@@ -35,10 +35,10 @@ class AImageAligner{
 	protected:
 		struct ImagePosition{
 			const ImageEx* const original;
-			const Plane* const image;
+			/*const*/ Plane* const image;
 			QPointF pos;
 			
-			ImagePosition( const ImageEx* const org, const Plane* const img )
+			ImagePosition( const ImageEx* const org, /*const*/ Plane* const img )
 				:	original(org), image(img) { }
 		};
 		
@@ -55,25 +55,25 @@ class AImageAligner{
 		const AlignMethod method;
 		const double scale;
 		std::vector<ImagePosition> images;
+		bool raw;
 		
 		double x_scale() const;
 		double y_scale() const;
 		
-		virtual const Plane* prepare_plane( const Plane* p ){ return p; }
+		virtual /*const*/ Plane* prepare_plane( /*const*/ Plane* p ){ return p; }
 		virtual void on_add( ImagePosition& ){ }
 	
 	public:
-		AImageAligner( AlignMethod method, double scale=1.0 ) : method(method), scale(scale){ }
+		AImageAligner( AlignMethod method, double scale=1.0 ) : method(method), scale(scale), raw(false){ }
 		virtual ~AImageAligner();
 		
-		void add_image( const ImageEx* const img );
+		void add_image( /*const*/ ImageEx* const img );
 		
 		QRect size() const;
 		unsigned count() const{ return images.size(); }
 		const ImageEx* image( unsigned index ) const{ return images[index].original; }
-		QPointF pos( unsigned index ) const{
-			return QPointF( images[index].pos.x() / x_scale(), images[index].pos.y() / y_scale() );
-		}
+		/*const*/ Plane* plane( unsigned img_index, unsigned p_index ) const;
+		QPointF pos( unsigned index ) const;
 		
 		virtual void align() = 0;
 };

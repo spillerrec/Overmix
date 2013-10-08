@@ -141,8 +141,8 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count 
 	
 	for( unsigned i=0; i<planes_amount; i++ ){
 		//Determine local size
-		double scale_x = (double)(*aligner.image(0))[i]->get_width() / aligner.image(0)->get_width();
-		double scale_y = (double)(*aligner.image(0))[i]->get_height() / aligner.image(0)->get_height();
+		double scale_x = (double)aligner.plane(0,i)->get_width() / aligner.plane(0,0)->get_width();
+		double scale_y = (double)aligner.plane(0,i)->get_height() / aligner.plane(0,0)->get_height();
 		
 		//TODO: something is wrong with the rounding, chroma-channels are slightly off
 		QRect local( 
@@ -174,7 +174,7 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count 
 		if( out_size == local ){
 			for( unsigned j=0; j<max_count; j++ )
 				info.push_back( PlaneItInfo(
-						(*aligner.image(j))[i]
+						aligner.plane( j, i )
 					,	round( aligner.pos(j).x()*scale_x )
 					,	round( aligner.pos(j).y()*scale_y )
 					) );
@@ -182,7 +182,7 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count 
 		else{
 			temp.reserve( max_count );
 			for( unsigned j=0; j<max_count; j++ ){
-				Plane *p = (*aligner.image(j))[i]->scale_cubic( aligner.image(j)->get_width(), aligner.image(j)->get_height() );
+				Plane *p = aligner.plane( j, i )->scale_cubic( aligner.plane(j,0)->get_width(), aligner.plane(j,0)->get_height() );
 				if( !p )
 					qDebug( "No plane :\\" );
 				temp.push_back( p );

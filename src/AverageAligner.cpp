@@ -26,6 +26,8 @@ void AverageAligner::align(){
 	SimpleRender render;
 	render.set_filter( SimpleRender::FOR_MERGING );
 	
+	raw = true;
+	
  	images[0].pos = QPointF( 0,0 );
 	for( unsigned i=1; i<count(); i++ ){
 		ImageEx* img = render.render( *this, i );
@@ -37,5 +39,7 @@ void AverageAligner::align(){
 		
 		delete img;
 	}
+	
+	raw = false;
 }
 

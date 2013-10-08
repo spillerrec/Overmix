@@ -38,10 +38,10 @@ double AImageAligner::y_scale() const{
 		return 1.0;
 }
 
-void AImageAligner::add_image( const ImageEx* const img ){
-	const Plane* const use = (*img)[0];
+void AImageAligner::add_image( /*const*/ ImageEx* const img ){
+	/*const*/ Plane* const use = (*img)[0];
 	
-	const Plane* prepared = NULL;
+	/*const*/ Plane* prepared = NULL;
 	
 	if( scale > 1.0 ){
 		Plane *temp = use->scale_cubic(
@@ -66,7 +66,7 @@ QRect AImageAligner::size() const{
 	QRectF total;
 	
 	for( unsigned i=0; i<count(); i++ )
-		total = total.united( QRectF( pos(i), QSizeF( image(i)->get_width(), image(i)->get_height() ) ) );
+		total = total.united( QRectF( pos(i), QSizeF( plane(i,0)->get_width(), plane(i,0)->get_height() ) ) );
 	
 	//Round so that we only increase size
 	total.setLeft( floor( total.left() ) );
@@ -118,5 +118,19 @@ AImageAligner::ImageOffset AImageAligner::find_offset( const Plane& img1, const 
 	offset.overlap = calculate_overlap( result.first, img1, img2 );
 	
 	return offset;
+}
+
+/*const*/ Plane* AImageAligner::plane( unsigned img_index, unsigned p_index ) const{
+	if( raw )
+		return images[img_index].image;
+	else
+		return (*(images[img_index].original))[p_index];
+}
+
+QPointF AImageAligner::pos( unsigned index ) const{
+	if( raw )
+		return images[index].pos;
+	else
+		return QPointF( images[index].pos.x() / x_scale(), images[index].pos.y() / y_scale() );
 }
 
