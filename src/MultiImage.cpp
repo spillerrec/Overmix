@@ -192,6 +192,7 @@ MultiImage::ImageMatches MultiImage::overlaps_image( unsigned index ) const{
 #include <QProgressDialog>
 #include <QCoreApplication>
 #include "AverageAligner.hpp"
+#include "FloatRender.hpp"
 void MultiImage::subalign_images(){
 	ImageAligner::AlignMethod method;
 	switch( merge_method ){
@@ -223,6 +224,12 @@ void MultiImage::subalign_images(){
 	for( unsigned i=0; i<pos.size(); i++ )
 		pos[i] = align.pos( i ).toPoint();
 	calculate_size();
+	
+	FloatRender render;
+	ImageEx* super = render.render( align );
+	super->to_qimage( ImageEx::SYSTEM_KEEP ).save( "super.keep.png" );
+	super->to_qimage( ImageEx::SYSTEM_REC709 ).save( "super.png" );
+	delete super;
 	
 	return;
 	/*
