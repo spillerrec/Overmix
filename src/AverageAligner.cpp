@@ -19,6 +19,21 @@
 #include "AverageAligner.hpp"
 #include "SimpleRender.hpp"
 
+QPointF AverageAligner::min_point() const{
+	if( images.size() == 0 )
+		return QPointF(0,0);
+	
+	QPointF min = images[0].pos;
+	for( auto img : images ){
+		if( img.pos.x() < min.x() )
+			min.setX( img.pos.x() );
+		if( img.pos.y() < min.y() )
+			min.setY( img.pos.y() );
+	}
+	
+	return min;
+}
+
 void AverageAligner::align(){
 	if( count() == 0 )
 		return;
@@ -35,7 +50,7 @@ void AverageAligner::align(){
 			qFatal( "NoOOO" );
 		
 		ImageOffset offset = find_offset( *((*img)[0]), *(images[i].image) );
-		images[i].pos = QPointF( offset.distance_x, offset.distance_y );
+		images[i].pos = QPointF( offset.distance_x, offset.distance_y ) + min_point();
 		
 		delete img;
 	}

@@ -21,6 +21,8 @@
 #include "AImageAligner.hpp"
 
 class AverageAligner : public AImageAligner{
+	protected:
+		QPointF min_point() const;
 	public:
 		AverageAligner( AlignMethod method, double scale=1.0 ) : AImageAligner( method, scale ){ }
 		virtual void align();
