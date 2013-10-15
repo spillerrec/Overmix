@@ -109,6 +109,55 @@ class PointRender{
 		}
 };
 
+class PointRender2{
+	public:
+		struct Point{
+			double distance;
+			color_type value;
+			bool operator<(const Point& other) const{
+				return distance < other.distance;
+			}
+		};
+	protected:
+		QPoint pos;
+		double sum = 0.0;
+		double weight = 0.0;
+		
+	public:
+		PointRender2( int x, int y ) : pos( QPoint( x, y ) ), sum(0), weight(0) { }
+		
+		color_type value(){
+			return (weight!=0.0) ? round(sum / weight) : 0;
+		}
+		
+		void add_points( const Plane* img, QPointF offset, double scale ){
+			QRectF relative( offset, QSizeF( img->get_width()*scale, img->get_height()*scale ) );
+			QRectF window( pos - QPointF( 2,2 )*scale, QSizeF( 4,4 )*scale );
+			QRectF usable = window.intersected(relative);
+			
+			QPointF fstart = toRelative( usable.topLeft(), offset, scale );
+			QPointF fend = toRelative( usable.bottomRight(), offset, scale );
+			for( int iy=ceil(fstart.y()); iy<floor(fend.y()); ++iy )
+				for( int ix=ceil(fstart.x()); ix<floor(fend.x()); ++ix ){
+					QPointF distance = toAbsolute( QPointF( ix, iy ), offset, scale ) - pos;
+					double w = mitchell( distance.x() / scale ) * mitchell( distance.y() / scale );
+					sum += img->pixel(ix,iy) * w;
+					weight += w;
+				}
+		}
+		
+		QPointF toAbsolute( QPointF img_pos, QPointF offset, double scale ) const{
+			return img_pos * scale + offset;
+		}
+		QPointF toRelative( QPointF pos, QPointF offset, double scale ) const{
+			return (pos - offset) / scale;
+		}
+		
+		double get_weight( QPointF offset ){
+			return mitchell( abs(offset.x()) ) * mitchell( abs(offset.y()) );
+		}
+};
+
 
 ImageEx* FloatRender::render( const AImageAligner& aligner, unsigned max_count ) const{
 	QTime t;
@@ -140,14 +189,14 @@ ImageEx* FloatRender::render( const AImageAligner& aligner, unsigned max_count )
 	alpha->fill( 255*256 );
 	img->replace_plane( 3, alpha );
 	
-	vector<PointRender::Point> points;
+//	vector<PointRender::Point> points;
 	for( unsigned i=0; i<planes_amount; i++ ){
 		Plane* out = (*img)[i];
 		
 		for( unsigned iy=0; iy<out->get_height(); ++iy ){
 			color_type* row = out->scan_line( iy );
 			for( unsigned ix=0; ix<out->get_width(); ++ix ){
-				PointRender p( ix + full.x()*scale, iy + full.y()*scale, points );
+				PointRender2 p( ix + full.x()*scale, iy + full.y()*scale/*, points*/ );
 				
 				for( unsigned j=0; j<max_count; ++j ){
 					double scale2 = (double)aligner.plane( j, 0 )->get_width() / aligner.plane( j, i )->get_width() * scale;
