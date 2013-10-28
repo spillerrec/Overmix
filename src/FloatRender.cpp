@@ -127,7 +127,7 @@ class PointRender2{
 		PointRender2( int x, int y ) : pos( QPoint( x, y ) ), sum(0), weight(0) { }
 		
 		color_type value(){
-			return (weight!=0.0) ? round(sum / weight) : 0;
+			return (weight!=0.0) ? min(max((int)round(sum / weight),0),256*256-1) : 0;
 		}
 		
 		void add_points( const Plane* img, QPointF offset, double scale ){
