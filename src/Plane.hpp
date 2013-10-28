@@ -23,7 +23,7 @@
 #include <cstdio>
 #include <utility>
 
-typedef unsigned short color_type;
+typedef int color_type;
 typedef std::pair<QPoint,double> MergeResult;
 
 class DiffCache{
@@ -86,6 +86,8 @@ class Plane{
 		
 	//Overlays
 		void substract( Plane &p );
+		void divide( Plane &p );
+		void multiply( Plane &p );
 		Plane* level( color_type limit_min, color_type limit_max
 			,	color_type output_min, color_type output_max
 			,	double gamma
@@ -152,9 +154,13 @@ class Plane{
 	//Blurring
 	private:
 		Plane* weighted_sum( double *kernel, unsigned width, unsigned height ) const;
+		double* gaussian_kernel( unsigned amount_x, unsigned amount_y ) const;
 	public:
 		Plane* blur_box( unsigned amount_x, unsigned amount_y ) const;
 		Plane* blur_gaussian( unsigned amount_x, unsigned amount_y ) const;
+		
+	//De-blurring
+		Plane* deconvolve_rl( double amount, unsigned iterations ) const;
 };
 
 #endif

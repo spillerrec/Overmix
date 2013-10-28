@@ -22,7 +22,7 @@
 #include <QColor>
 #include <cmath>
 
-typedef unsigned short color_type;
+typedef int color_type;
 
 struct color{
 	color_type r;

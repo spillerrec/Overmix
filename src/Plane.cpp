@@ -811,7 +811,7 @@ static double gaussian( double dx, double dy, double devi ){
 	return base * exp( power );
 }
 
-Plane* Plane::blur_gaussian( unsigned amount_x, unsigned amount_y ) const{
+double* Plane::gaussian_kernel( unsigned amount_x, unsigned amount_y ) const{
 	unsigned size = ++amount_x * ++amount_y;
 	double *kernel = new double[ size ];
 	if( !kernel )
@@ -826,9 +826,96 @@ Plane* Plane::blur_gaussian( unsigned amount_x, unsigned amount_y ) const{
 		for( unsigned ix=0; ix<amount_x; ++ix )
 			kernel[ ix + iy*amount_x ] = gaussian( ix-half_x, iy-half_y, devi );
 	
-	Plane *p = weighted_sum( kernel, amount_x, amount_y );
+	return kernel;
+}
+
+Plane* Plane::blur_gaussian( unsigned amount_x, unsigned amount_y ) const{
+	double *kernel = gaussian_kernel( amount_x, amount_y );
+	if( !kernel )
+		return nullptr;
+	
+	Plane *p = weighted_sum( kernel, amount_x+1, amount_y+1 );
 	delete[] kernel;
 	return p;
+}
+
+
+static void divide_pixel( const SimplePixel& pix ){
+	double val1 = (double)*pix.row1 / (double)(256*256-1);
+	double val2 = (double)*pix.row2 / (double)(256*256-1);
+	*pix.row1 = std::round( val2 / val1 * (256*256-1) );
+}
+static void multiply_pixel( const SimplePixel& pix ){
+	double val1 = (double)*pix.row1 / (double)(256*256-1);
+	double val2 = (double)*pix.row2 / (double)(256*256-1);
+	*pix.row1 = std::round( val1 * val2 * (256*256-1) );
+}
+void Plane::divide( Plane &p ){
+	if( get_height() != p.get_height() || get_width() != p.get_width() ){
+		qWarning( "replace_line: Planes not equaly sized!" );
+		return;
+	}
+	
+	std::vector<SimplePixel> lines;
+	for( unsigned iy=0; iy<get_height(); ++iy ){
+		SimplePixel pix = { scan_line( iy )
+			,	p.scan_line( iy )
+			,	get_width()
+			,	&divide_pixel
+			,	0
+			};
+		lines.push_back( pix );
+	}
+	
+	QtConcurrent::blockingMap( lines, &do_pixel_line );
+}
+void Plane::multiply( Plane &p ){
+	if( get_height() != p.get_height() || get_width() != p.get_width() ){
+		qWarning( "replace_line: Planes not equaly sized!" );
+		return;
+	}
+	
+	std::vector<SimplePixel> lines;
+	for( unsigned iy=0; iy<get_height(); ++iy ){
+		SimplePixel pix = { scan_line( iy )
+			,	p.scan_line( iy )
+			,	get_width()
+			,	&multiply_pixel
+			,	0
+			};
+		lines.push_back( pix );
+	}
+	
+	QtConcurrent::blockingMap( lines, &do_pixel_line );
+}
+
+Plane* Plane::deconvolve_rl( double amount, unsigned iterations ) const{
+	Plane* estimate = new Plane( *this ); //NOTE: some use just plain 0.5 as initial estimate
+	if( !estimate )
+		return nullptr;
+	Plane* copy = new Plane( *this ); //TODO: make subtract/divide/etc take const input
+	
+	//Create point spread function
+	//NOTE: It is symmetric, so we don't need a flipped one
+	double *psf = gaussian_kernel( amount, amount );
+	if( !psf ){
+		delete estimate;
+		return nullptr;
+	}
+	
+	for( unsigned i=0; i<iterations; ++i ){
+		Plane* est_psf = estimate->weighted_sum( psf, amount+1, amount+1 );
+		est_psf->divide( *copy ); //This is observed / est_psf
+		Plane* error_est = est_psf->weighted_sum( psf, amount+1, amount+1 );
+		estimate->multiply( *est_psf );
+		delete est_psf;
+		delete error_est;
+		//TODO: make better checking
+	}
+	
+	delete copy;
+	delete psf;
+	return estimate;
 }
 
 
