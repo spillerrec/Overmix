@@ -831,37 +831,44 @@ Plane* Plane::blur_box( unsigned amount_x, unsigned amount_y ) const{
 }
 
 const double PI = std::atan(1)*4;
-static double gaussian( double dx, double dy, double devi ){
-	double base = 1.0 / ( 2*PI*devi*devi );
-	double power = -( dx*dx + dy*dy ) / ( 2*devi*devi );
+static double gaussian( double dx, double dy, double devi_x, double devi_y ){
+	double base = 1.0 / ( 2*PI*devi_x*devi_y );
+	double power = -( dx*dx + dy*dy ) / ( 2*devi_x*devi_y );
 	return base * exp( power );
 }
 
-double* Plane::gaussian_kernel( unsigned amount_x, unsigned amount_y ) const{
-	unsigned size = ++amount_x * ++amount_y;
-	double *kernel = new double[ size ];
-	if( !kernel )
-		return NULL;
+Kernel Plane::gaussian_kernel( double deviation_x, double deviation_y ) const{
+	//TODO: make sure deviation is positive
 	
-	//Estimate deviation
-	double devi = std::max( amount_x, amount_y ) / 6;
+	//Init kernel
+	Kernel kernel;
+	kernel.width = std::ceil( 12*deviation_x );
+	kernel.height = std::ceil( 12*deviation_y );
+	kernel.values = new double[ kernel.width * kernel.height ];
 	
-	double half_x = amount_x/2.0;
-	double half_y = amount_y/2.0;
-	for( unsigned iy=0; iy<amount_y; ++iy )
-		for( unsigned ix=0; ix<amount_x; ++ix )
-			kernel[ ix + iy*amount_x ] = gaussian( ix-half_x, iy-half_y, devi );
+	if( !kernel.values ){
+		kernel.values = nullptr;
+		return kernel;
+	}
+	
+	//Fill kernel
+	double half_x = kernel.width/2.0;
+	double half_y = kernel.height/2.0;
+	for( unsigned iy=0; iy<kernel.height; ++iy )
+		for( unsigned ix=0; ix<kernel.width; ++ix )
+			kernel.values[ ix + iy*kernel.width ] = gaussian( ix-half_x, iy-half_y, deviation_x, deviation_y );
 	
 	return kernel;
 }
 
 Plane* Plane::blur_gaussian( unsigned amount_x, unsigned amount_y ) const{
-	double *kernel = gaussian_kernel( amount_x, amount_y );
-	if( !kernel )
+	const double scaling = 0.33; //TODO: pixel to deviation
+	Kernel kernel = gaussian_kernel( amount_x*scaling, amount_y*scaling );
+	if( !kernel.values )
 		return nullptr;
 	
-	Plane *p = weighted_sum( kernel, amount_x+1, amount_y+1 );
-	delete[] kernel;
+	Plane *p = weighted_sum( kernel.values, kernel.width, kernel.height );
+	delete[] kernel.values;
 	return p;
 }
 
@@ -874,16 +881,16 @@ Plane* Plane::deconvolve_rl( double amount, unsigned iterations ) const{
 	
 	//Create point spread function
 	//NOTE: It is symmetric, so we don't need a flipped one
-	double *psf = gaussian_kernel( amount, amount );
-	if( !psf ){
+	Kernel psf = gaussian_kernel( amount, amount );
+	if( !psf.values ){
 		delete estimate;
 		return nullptr;
 	}
 	
 	for( unsigned i=0; i<iterations; ++i ){
-		Plane* est_psf = estimate->weighted_sum( psf, amount+1, amount+1 );
+		Plane* est_psf = estimate->weighted_sum( psf.values, psf.width, psf.height );
 		est_psf->divide( *copy ); //This is observed / est_psf
-		Plane* error_est = est_psf->weighted_sum( psf, amount+1, amount+1 );
+		Plane* error_est = est_psf->weighted_sum( psf.values, psf.width, psf.height );
 		estimate->multiply( *est_psf );
 		delete est_psf;
 		delete error_est;
@@ -891,7 +898,7 @@ Plane* Plane::deconvolve_rl( double amount, unsigned iterations ) const{
 	}
 	
 	delete copy;
-	delete psf;
+	delete psf.values;
 	return estimate;
 }
 

@@ -46,6 +46,12 @@ struct SimplePixel{
 	void (*f)( const SimplePixel& );
 	void *data;
 };
+struct Kernel{
+	//TODO: This should be a plane
+	unsigned width;
+	unsigned height;
+	double* values;
+};
 
 class Plane{
 	private:
@@ -167,8 +173,8 @@ class Plane{
 		
 	//Blurring
 	private:
-		Plane* weighted_sum( double *kernel, unsigned width, unsigned height ) const;
-		double* gaussian_kernel( unsigned amount_x, unsigned amount_y ) const;
+		Plane* weighted_sum( double *kernel, unsigned w_width, unsigned w_height ) const; //TODO: change to kernel
+		Kernel gaussian_kernel( double deviation_x, double deviation_y ) const;
 	public:
 		Plane* blur_box( unsigned amount_x, unsigned amount_y ) const;
 		Plane* blur_gaussian( unsigned amount_x, unsigned amount_y ) const;
