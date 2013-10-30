@@ -97,6 +97,9 @@ class Plane{
 		double diff( const Plane& p, int x, int y, unsigned stride=1 ) const;
 		MergeResult best_round_sub( const Plane& p, int level, int left, int right, int top, int bottom, DiffCache *cache ) const;
 		
+	//Cropping
+		Plane* crop( unsigned x, unsigned y, unsigned width, unsigned height ) const;
+		
 	//Scaling
 	public:
 		typedef double (*Filter)( double );
