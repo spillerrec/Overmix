@@ -568,15 +568,6 @@ Plane* Plane::edge_dm_generic( int *weights_x, int *weights_y, unsigned size, un
 	return parallel_edge_line( *this, weights_x, weights_y, size, div, calculate_edge<int> );
 }
 
-
-struct SimplePixel{
-	color_type *row1;
-	color_type *row2;
-	unsigned width;
-	void (*f)( const SimplePixel& );
-	void *data;
-};
-
 static void do_pixel_line( SimplePixel pix ){
 	for( unsigned i=0; i<pix.width; ++i ){
 		pix.f( pix );
@@ -585,15 +576,9 @@ static void do_pixel_line( SimplePixel pix ){
 	}
 }
 
-
-static void substract_pixel( const SimplePixel& pix ){
-	*pix.row1 = std::max( (int)*pix.row2 - (int)*pix.row1, 0 );
-}
-
-
-void Plane::substract( Plane &p ){
+void Plane::for_each_pixel( Plane &p, void (*f)( const SimplePixel& ), void *data ){
 	if( get_height() != p.get_height() || get_width() != p.get_width() ){
-		qWarning( "replace_line: Planes not equaly sized!" );
+		qWarning( "Plane::for_each_pixel: Planes not equally sized, operation skipped!" );
 		return;
 	}
 	
@@ -602,13 +587,38 @@ void Plane::substract( Plane &p ){
 		SimplePixel pix = { scan_line( iy )
 			,	p.scan_line( iy )
 			,	get_width()
-			,	&substract_pixel
-			,	0
+			,	f
+			,	data
 			};
 		lines.push_back( pix );
 	}
 	
 	QtConcurrent::blockingMap( lines, &do_pixel_line );
+}
+
+
+static void substract_pixel( const SimplePixel& pix ){
+	*pix.row1 = std::max( (int)*pix.row2 - (int)*pix.row1, 0 );
+}
+static void divide_pixel( const SimplePixel& pix ){
+	double val1 = (double)*pix.row1 / (double)(256*256-1);
+	double val2 = (double)*pix.row2 / (double)(256*256-1);
+	*pix.row1 = std::round( val2 / val1 * (256*256-1) );
+}
+static void multiply_pixel( const SimplePixel& pix ){
+	double val1 = (double)*pix.row1 / (double)(256*256-1);
+	double val2 = (double)*pix.row2 / (double)(256*256-1);
+	*pix.row1 = std::round( val1 * val2 * (256*256-1) );
+}
+
+void Plane::substract( Plane &p ){
+	for_each_pixel( p, &substract_pixel );
+}
+void Plane::divide( Plane &p ){
+	for_each_pixel( p, &divide_pixel );
+}
+void Plane::multiply( Plane &p ){
+	for_each_pixel( p, &multiply_pixel );
 }
 
 
@@ -855,55 +865,6 @@ Plane* Plane::blur_gaussian( unsigned amount_x, unsigned amount_y ) const{
 	return p;
 }
 
-
-static void divide_pixel( const SimplePixel& pix ){
-	double val1 = (double)*pix.row1 / (double)(256*256-1);
-	double val2 = (double)*pix.row2 / (double)(256*256-1);
-	*pix.row1 = std::round( val2 / val1 * (256*256-1) );
-}
-static void multiply_pixel( const SimplePixel& pix ){
-	double val1 = (double)*pix.row1 / (double)(256*256-1);
-	double val2 = (double)*pix.row2 / (double)(256*256-1);
-	*pix.row1 = std::round( val1 * val2 * (256*256-1) );
-}
-void Plane::divide( Plane &p ){
-	if( get_height() != p.get_height() || get_width() != p.get_width() ){
-		qWarning( "replace_line: Planes not equaly sized!" );
-		return;
-	}
-	
-	std::vector<SimplePixel> lines;
-	for( unsigned iy=0; iy<get_height(); ++iy ){
-		SimplePixel pix = { scan_line( iy )
-			,	p.scan_line( iy )
-			,	get_width()
-			,	&divide_pixel
-			,	0
-			};
-		lines.push_back( pix );
-	}
-	
-	QtConcurrent::blockingMap( lines, &do_pixel_line );
-}
-void Plane::multiply( Plane &p ){
-	if( get_height() != p.get_height() || get_width() != p.get_width() ){
-		qWarning( "replace_line: Planes not equaly sized!" );
-		return;
-	}
-	
-	std::vector<SimplePixel> lines;
-	for( unsigned iy=0; iy<get_height(); ++iy ){
-		SimplePixel pix = { scan_line( iy )
-			,	p.scan_line( iy )
-			,	get_width()
-			,	&multiply_pixel
-			,	0
-			};
-		lines.push_back( pix );
-	}
-	
-	QtConcurrent::blockingMap( lines, &do_pixel_line );
-}
 
 Plane* Plane::deconvolve_rl( double amount, unsigned iterations ) const{
 	Plane* estimate = new Plane( *this ); //NOTE: some use just plain 0.5 as initial estimate

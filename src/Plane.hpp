@@ -39,6 +39,13 @@ class DiffCache{
 		double get_diff( int x, int y ) const;
 		void add_diff( int x, int y, double diff );
 };
+struct SimplePixel{
+	color_type *row1;
+	color_type *row2;
+	unsigned width;
+	void (*f)( const SimplePixel& );
+	void *data;
+};
 
 class Plane{
 	private:
@@ -85,6 +92,9 @@ class Plane{
 		void combine_line( Plane &p, bool top );
 		
 	//Overlays
+	private:
+		void for_each_pixel( Plane &p, void (*f)( const SimplePixel& ), void *data=nullptr );
+	public:
 		void substract( Plane &p );
 		void divide( Plane &p );
 		void multiply( Plane &p );
@@ -107,6 +117,7 @@ class Plane{
 		static double cubic( double b, double c, double x );
 		static double linear( double x );
 		static double mitchell( double x ){ return cubic( 1.0/3, 1.0/3, x ); }
+		static double spline( double x ){ return cubic( 1.0, 1.0, x ); }
 		Plane* scale_generic( unsigned wanted_width, unsigned wanted_height, double window, Filter f ) const;
 	public:
 		Plane* scale_nearest( unsigned wanted_width, unsigned wanted_height ) const;
