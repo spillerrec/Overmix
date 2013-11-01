@@ -179,6 +179,12 @@ void main_widget::refresh_image(){
 		Plane *org = (*img_org)[0];
 		ImageEx img_temp( *img_org );
 		
+		//Deconvolve
+		double deviation = ui->dsbx_deviation->value();
+		unsigned iterations = ui->sbx_iterations->value();
+		if( deviation > 0.0009 && iterations > 0 )
+			img_temp.apply_operation( &Plane::deconvolve_rl, deviation, iterations );
+		
 		//Blurring
 		unsigned blur_x = ui->spbx_blur_x->value();
 		unsigned blur_y = ui->spbx_blur_y->value();
