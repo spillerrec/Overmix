@@ -757,7 +757,7 @@ void sum_line( const WeightedSumLine& line ){
 	
 	//Fill the start of the row with the same value
 	for( unsigned ix=0; ix<size_half; ++ix )
-		*(out++) = line.weighted_sum( in, size_half-ix );
+		*(out++) = line.weighted_sum( in, (int)ix-size_half );
 	
 	unsigned end = line.width - (line.w_width-size_half);
 	for( unsigned ix=size_half; ix<=end; ++ix, ++in )
@@ -765,7 +765,7 @@ void sum_line( const WeightedSumLine& line ){
 	
 	//Repeat the end with the same value
 	for( unsigned ix=end+1; ix<line.width; ++ix, ++in )
-		*(out++) = line.weighted_sum( in, (int)end-ix );
+		*(out++) = line.weighted_sum( in, ix-end );
 }
 
 Plane* Plane::weighted_sum( double *kernel, unsigned w_width, unsigned w_height ) const{
