@@ -831,10 +831,13 @@ Plane* Plane::blur_box( unsigned amount_x, unsigned amount_y ) const{
 }
 
 const double PI = std::atan(1)*4;
-static double gaussian( double dx, double dy, double devi_x, double devi_y ){
-	double base = 1.0 / ( 2*PI*devi_x*devi_y );
-	double power = -( dx*dx + dy*dy ) / ( 2*devi_x*devi_y );
+static double gaussian1d( double dx, double devi ){
+	double base = 1.0 / ( sqrt( 2*PI ) * devi );
+	double power = -( dx*dx ) / ( 2*devi*devi );
 	return base * exp( power );
+}
+static double gaussian2d( double dx, double dy, double devi_x, double devi_y ){
+	return gaussian1d( dx, devi_x ) * gaussian1d( dy, devi_y );
 }
 
 Kernel Plane::gaussian_kernel( double deviation_x, double deviation_y ) const{
@@ -856,7 +859,7 @@ Kernel Plane::gaussian_kernel( double deviation_x, double deviation_y ) const{
 	double half_y = kernel.height/2.0;
 	for( unsigned iy=0; iy<kernel.height; ++iy )
 		for( unsigned ix=0; ix<kernel.width; ++ix )
-			kernel.values[ ix + iy*kernel.width ] = gaussian( ix-half_x, iy-half_y, deviation_x, deviation_y );
+			kernel.values[ ix + iy*kernel.width ] = gaussian2d( ix-half_x, iy-half_y, deviation_x, deviation_y );
 	
 	return kernel;
 }
@@ -877,7 +880,6 @@ Plane* Plane::deconvolve_rl( double amount, unsigned iterations ) const{
 	Plane* estimate = new Plane( *this ); //NOTE: some use just plain 0.5 as initial estimate
 	if( !estimate )
 		return nullptr;
-	Plane* copy = new Plane( *this ); //TODO: make subtract/divide/etc take const input
 	
 	//Create point spread function
 	//NOTE: It is symmetric, so we don't need a flipped one
@@ -886,7 +888,19 @@ Plane* Plane::deconvolve_rl( double amount, unsigned iterations ) const{
 		delete estimate;
 		return nullptr;
 	}
+	/*
+	double half_x = psf.height/2.0;
+	for( unsigned iy=0; iy<psf.height; iy++ )
+		for( unsigned ix=0; ix<psf.width; ix++ ){
+			psf.values[iy*psf.width + ix] = 1.0;// gaussian1d( iy-half_x, 8.0/12 );
+		}*/
+//	for( unsigned i=0; i<psf.width*psf.height; i++ )
+//		psf.values[i] = 1.0 / (psf.width*psf.height);
+	//return estimate->weighted_sum( psf.values, psf.width, psf.height );
 	
+	Plane* blurred = this->weighted_sum( psf.values, psf.width, psf.height );
+	estimate = blurred;
+	Plane* copy = new Plane( /* / *blurred );/*/ *this ); //*///TODO: make subtract/divide/etc take const input
 	for( unsigned i=0; i<iterations; ++i ){
 		Plane* est_psf = estimate->weighted_sum( psf.values, psf.width, psf.height );
 		est_psf->divide( *copy ); //This is observed / est_psf
@@ -897,6 +911,7 @@ Plane* Plane::deconvolve_rl( double amount, unsigned iterations ) const{
 		//TODO: make better checking
 	}
 	
+//	delete blurred;
 	delete copy;
 	delete psf.values;
 	return estimate;
