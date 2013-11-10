@@ -22,8 +22,10 @@
 #include <QImage>
 #include <QUrl>
 
-#include "MultiImage.hpp"
+#include "ImageEx.hpp"
 #include "imageViewer.hpp"
+
+class AImageAligner;
 
 class main_widget: public QMainWindow{
 	Q_OBJECT
@@ -31,8 +33,9 @@ class main_widget: public QMainWindow{
 	private:
 		class Ui_main_widget *ui;
 		imageViewer viewer;
-		MultiImage image;
-		QImage *temp;
+		std::vector<ImageEx*> images;
+		QImage *temp{ nullptr };
+		AImageAligner *aligner{ nullptr };
 	
 	public:
 		explicit main_widget();
@@ -54,7 +57,6 @@ class main_widget: public QMainWindow{
 		void change_use_average();
 		void change_threshould();
 		void change_movement();
-		void change_merge_method();
 		void toggled_hor();
 		void toggled_ver();
 		void change_interlace();

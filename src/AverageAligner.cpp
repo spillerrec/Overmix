@@ -38,14 +38,11 @@ void AverageAligner::align(){
 	if( count() == 0 )
 		return;
 	
-	SimpleRender render;
-	render.set_filter( SimpleRender::FOR_MERGING );
-	
 	raw = true;
 	
  	images[0].pos = QPointF( 0,0 );
 	for( unsigned i=1; i<count(); i++ ){
-		ImageEx* img = render.render( *this, i );
+		ImageEx* img = SimpleRender( SimpleRender::FOR_MERGING ).render( *this, i );
 		if( !img )
 			qFatal( "NoOOO" );
 		

@@ -19,6 +19,9 @@
 #include "ui_mainwindow.h"
 #include "mainwindow.hpp"
 
+#include "SimpleRender.hpp"
+#include "AverageAligner.hpp"
+
 #include <vector>
 
 #include <QFileInfo>
@@ -55,7 +58,6 @@ main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidg
 	connect( ui->sld_movement, SIGNAL( valueChanged(int) ), this, SLOT( change_movement() ) );
 	
 	//Merge method
-	change_merge_method();
 	connect( ui->cbx_merge_h, SIGNAL( toggled(bool) ), this, SLOT( toggled_hor() ) );
 	connect( ui->cbx_merge_v, SIGNAL( toggled(bool) ), this, SLOT( toggled_ver() ) );
 	
@@ -114,7 +116,7 @@ void main_widget::process_urls( QList<QUrl> urls ){
 			img_loader = QtConcurrent::run( load, urls[i+1] );
 		loading_delay += delay.elapsed();
 		
-		image.add_image( img );
+		images.push_back( img );
 		if( progress.wasCanceled() && i+1 < urls.count() ){
 			delete img_loader.result();
 			break;
@@ -129,22 +131,32 @@ void main_widget::process_urls( QList<QUrl> urls ){
 
 
 void main_widget::refresh_text(){
-	QRect s = image.get_size();
+	QRect s = (aligner) ? aligner->size() : QRect();
 	ui->lbl_info->setText(
 			tr( "Size: " )
 		+	QString::number(s.width()) + "x"
 		+	QString::number(s.height()) + " ("
-		+	QString::number( image.get_count() ) + ")"
+		+	QString::number( images.size() ) + ")"
 	);
 }
 
 void main_widget::refresh_image(){
+	if( !aligner )
+		return;
+	
 	//Select filter
-	MultiImage::filters type = MultiImage::FILTER_AVERAGE;
-	if( ui->rbtn_diff->isChecked() )
-		type = MultiImage::FILTER_DIFFERENCE;
+	ImageEx *img_org{ nullptr };
+	bool chroma_upscale = ui->cbx_chroma->isChecked();
+	
+	#undef DIFFERENCE //TODO: where the heck did this macro come from? And why does it prevent my code from compiling?
+	if( ui->rbtn_diff->isChecked() )	//TODO: missing renderer
+		img_org = SimpleRender( SimpleRender::DIFFERENCE, chroma_upscale ).render( *aligner );
 	else if( ui->rbtn_windowed->isChecked() )
-		type = MultiImage::FILTER_SIMPLE_SLIDE;
+		img_org = SimpleRender( SimpleRender::SIMPLE_SLIDE, chroma_upscale ).render( *aligner );
+	else
+		img_org = SimpleRender( SimpleRender::AVERAGE, chroma_upscale ).render( *aligner );
+	
+	
 	
 	//Set color system
 	ImageEx::YuvSystem system = ImageEx::SYSTEM_KEEP;
@@ -165,7 +177,7 @@ void main_widget::refresh_image(){
 	double scale_height = ui->dsbx_scale_height->value();
 	
 	//Render image
-	ImageEx *img_org = image.render_image( type, ui->cbx_chroma->isChecked() );
+//	ImageEx *img_org = image.render_image( type, ui->cbx_chroma->isChecked() );
 	if( img_org ){	
 		QTime t;
 		t.start();
@@ -237,58 +249,70 @@ void main_widget::save_image(){
 }
 
 void main_widget::change_use_average(){
-	image.set_use_average( ui->cbx_average->isChecked() );
+//	image.set_use_average( ui->cbx_average->isChecked() );
 }
 
 void main_widget::change_movement(){
-	image.set_movement( (double)ui->sld_movement->value()/(double)ui->sld_movement->maximum() );
+//	image.set_movement( (double)ui->sld_movement->value()/(double)ui->sld_movement->maximum() );
 }
 
 void main_widget::change_threshould(){
-	image.set_threshould( ui->sld_threshould->value() );
-}
-
-void main_widget::change_merge_method(){
-	int selected = 0;
-	if( ui->cbx_merge_v->isChecked() )
-		selected = 1;
-	if( ui->cbx_merge_h->isChecked() ){
-		if( ui->cbx_merge_v->isChecked() )
-			selected = 0;
-		else
-			selected = 2;
-	}
-	image.set_merge_method( selected );
+//	image.set_threshould( ui->sld_threshould->value() );
 }
 
 void main_widget::toggled_hor(){
 	//Always have one checked
 	if( !(ui->cbx_merge_h->isChecked()) )
 		ui->cbx_merge_v->setChecked( true );
-	change_merge_method();
 }
 void main_widget::toggled_ver(){
 	//Always have one checked
 	if( !(ui->cbx_merge_v->isChecked()) )
 		ui->cbx_merge_h->setChecked( true );
-	change_merge_method();
 }
 
 void main_widget::clear_image(){
-	image.clear();
-	temp = NULL;
+	for( auto img : images )
+		delete img;
+	images.clear();
+	
+	delete aligner;
+	aligner = nullptr;
+	
+	temp = NULL; //TODO: huh?
 	viewer.change_image( NULL, true );
 	refresh_text();
 }
 
 
 void main_widget::subpixel_align_image(){
-	image.subalign_images();
+	//Select movement type
+	AImageAligner::AlignMethod method{ AImageAligner::ALIGN_BOTH };
+	if( ui->cbx_merge_v->isChecked() )
+		method = AImageAligner::ALIGN_HOR;
+	if( ui->cbx_merge_h->isChecked() ){
+		if( ui->cbx_merge_v->isChecked() )
+			method = AImageAligner::ALIGN_BOTH;
+		else
+			method = AImageAligner::ALIGN_VER;
+	}
+	
+	//TODO: show progress
+	if( aligner )
+		delete aligner;
+	aligner = new AverageAligner( method, 1.0 ); //TODO: some way of setting size
+	
+	for( auto img : images )
+		aligner->add_image( img );
+	aligner->align();
+	
+	refresh_text();
 }
 
 void main_widget::change_interlace(){
 	bool value = ui->cbx_interlaced->isChecked();
-	if( image.set_interlaceing( value ) != value )
-		ui->cbx_interlaced->setChecked( !value );
+//	if( image.set_interlaceing( value ) != value )
+//		ui->cbx_interlaced->setChecked( !value );
+//TODO:
 }
 

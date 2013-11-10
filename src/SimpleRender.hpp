@@ -31,11 +31,11 @@ class SimpleRender : public ARender{
 		};
 	
 	protected:
-		bool upscale_chroma;
 		Filters filter;
+		bool upscale_chroma;
 		
 	public:
-		SimpleRender() : upscale_chroma(true), filter( AVERAGE ) { }
+		SimpleRender( Filters filter=AVERAGE, bool upscale_chroma=true ) : filter( filter ), upscale_chroma( upscale_chroma ) { }
 		
 		virtual ImageEx* render( const AImageAligner& aligner, unsigned max_count=-1 ) const;
 		

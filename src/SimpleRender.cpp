@@ -109,7 +109,7 @@ static void render_diff( MultiPlaneIterator &it, bool alpha_used ){
 ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count ) const{
 	QTime t;
 	t.start();
-	
+	#undef DIFFERENCE
 	if( max_count > aligner.count() )
 		max_count = aligner.count();
 	
