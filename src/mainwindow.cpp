@@ -117,6 +117,23 @@ void main_widget::process_urls( QList<QUrl> urls ){
 			img_loader = QtConcurrent::run( load, urls[i+1] );
 		loading_delay += delay.elapsed();
 		
+		//TODO: de-interlace
+		
+		//TODO: crop
+		
+		//Deconvolve
+		double deviation = ui->pre_deconvolve_deviation->value();
+		unsigned iterations = ui->pre_deconvolve_iterations->value();
+		if( deviation > 0.0009 && iterations > 0 )
+			img->apply_operation( &Plane::deconvolve_rl, deviation, iterations );
+		
+		//Scale
+		double scale_width = ui->pre_scale_width->value();
+		double scale_height = ui->pre_scale_height->value();
+		if( scale_width <= 0.9999 || scale_width >= 1.0001
+			|| scale_height <= 0.9999 || scale_height >= 1.0001 )
+			img->scale( img->get_width() * scale_width + 0.5, img->get_height() * scale_height + 0.5 );
+		
 		images.push_back( img );
 		if( progress.wasCanceled() && i+1 < urls.count() ){
 			delete img_loader.result();
