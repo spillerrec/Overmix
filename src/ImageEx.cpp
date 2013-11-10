@@ -350,7 +350,7 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ){
 					line[ix-1] += err / 4;
 			}
 			
-			//rounded.trunc( 255 );
+			rounded.trunc( 255 );
 			row[ix] = qRgba( rounded.r, rounded.g, rounded.b, rounded.a );
 		}
 	}
@@ -466,6 +466,21 @@ void ImageEx::combine_line( ImageEx& img, bool top ){
 			planes[i]->combine_line( *(img[i]), top );
 }
 
+void ImageEx::crop( unsigned left, unsigned top, unsigned right, unsigned bottom ){
+	unsigned width = right + left;
+	unsigned height = top + bottom;
+	if( type == YUV ){
+		replace_plane( 0, planes[0]->crop( left*2, top*2, planes[0]->get_width()-width*2, planes[0]->get_height()-height*2 ) );
+		replace_plane( 1, planes[1]->crop( left, top, planes[1]->get_width()-width, planes[1]->get_height()-height ) );
+		replace_plane( 2, planes[2]->crop( left, top, planes[2]->get_width()-width, planes[2]->get_height()-height ) );
+	}
+	else{
+		for( unsigned i=0; i<MAX_PLANES; i++ ){
+			if( planes[i] )
+				replace_plane( i, planes[i]->crop( left, top, planes[i]->get_width()-width, planes[i]->get_height()-height ) );
+		}
+	}
+};
 
 MergeResult ImageEx::best_round( const ImageEx& img, int level, double range_x, double range_y, DiffCache *cache ) const{
 	//Bail if invalid settings

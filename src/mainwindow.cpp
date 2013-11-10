@@ -119,7 +119,13 @@ void main_widget::process_urls( QList<QUrl> urls ){
 		
 		//TODO: de-interlace
 		
-		//TODO: crop
+		//Crop
+		int left = ui->crop_left->value();
+		int right = ui->crop_right->value();
+		int top = ui->crop_top->value();
+		int bottom = ui->crop_bottom->value();
+		if( left > 0 || right > 0 || top > 0 || bottom > 0 )
+			img->crop( left, top, right, bottom );
 		
 		//Deconvolve
 		double deviation = ui->pre_deconvolve_deviation->value();
