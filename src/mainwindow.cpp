@@ -20,6 +20,7 @@
 #include "mainwindow.hpp"
 
 #include "SimpleRender.hpp"
+#include "FloatRender.hpp"
 #include "AverageAligner.hpp"
 
 #include <vector>
@@ -153,6 +154,8 @@ void main_widget::refresh_image(){
 		img_org = SimpleRender( SimpleRender::DIFFERENCE, chroma_upscale ).render( *aligner );
 	else if( ui->rbtn_windowed->isChecked() )
 		img_org = SimpleRender( SimpleRender::SIMPLE_SLIDE, chroma_upscale ).render( *aligner );
+	else if( ui->rbtn_subpixel->isChecked() )
+		img_org = FloatRender().render( *aligner );
 	else
 		img_org = SimpleRender( SimpleRender::AVERAGE, chroma_upscale ).render( *aligner );
 	
