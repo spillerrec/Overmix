@@ -46,7 +46,7 @@ static double cubic( double b, double c, double x ){
 	else
 		return 0;
 }
-static double mitchell( double x ){ return cubic( 1.0/3, 1.0/3, x ); }
+static double spline( double x ){ return cubic( 1.0, 0.0, x ); }
 //TODO: reuse implementation in Plane
 
 class PointRender{
@@ -73,7 +73,7 @@ class PointRender{
 			double sum = 0.0;
 			double weight = 0.0;
 			for( unsigned i=0; i<min(points.size(),(long long unsigned)16); ++i ){
-				double w = mitchell( points[i].distance );
+				double w = spline( points[i].distance );
 				sum += points[i].value * w;
 				weight += w;
 			}
@@ -105,7 +105,7 @@ class PointRender{
 		}
 		
 		double get_weight( QPointF offset ){
-			return mitchell( abs(offset.x()) ) * mitchell( abs(offset.y()) );
+			return spline( abs(offset.x()) ) * spline( abs(offset.y()) );
 		}
 };
 
@@ -140,7 +140,7 @@ class PointRender2{
 			for( int iy=ceil(fstart.y()); iy<floor(fend.y()); ++iy )
 				for( int ix=ceil(fstart.x()); ix<floor(fend.x()); ++ix ){
 					QPointF distance = toAbsolute( QPointF( ix, iy ), offset, scale ) - pos;
-					double w = mitchell( distance.x() / scale ) * mitchell( distance.y() / scale );
+					double w = spline( distance.x() / scale ) * spline( distance.y() / scale );
 					sum += img->pixel(ix,iy) * w;
 					weight += w;
 				}
@@ -154,7 +154,7 @@ class PointRender2{
 		}
 		
 		double get_weight( QPointF offset ){
-			return mitchell( abs(offset.x()) ) * mitchell( abs(offset.y()) );
+			return spline( abs(offset.x()) ) * spline( abs(offset.y()) );
 		}
 };
 
@@ -178,7 +178,7 @@ ImageEx* FloatRender::render( const AImageAligner& aligner, unsigned max_count )
 	
 	//Do iterator
 	QRect full = aligner.size();
-	double scale = 2.0;
+	double scale = 1.0;
 	ImageEx *img = new ImageEx( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0)->get_system() );
 	if( !img )
 		return NULL;
