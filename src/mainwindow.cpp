@@ -22,6 +22,7 @@
 #include "SimpleRender.hpp"
 #include "FloatRender.hpp"
 #include "AverageAligner.hpp"
+#include "Deteleciner.hpp"
 
 #include <vector>
 
@@ -48,15 +49,8 @@ main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidg
 	connect( ui->btn_subpixel, SIGNAL( clicked() ), this, SLOT( subpixel_align_image() ) );
 	
 	//Checkboxes
-	change_use_average();
-	connect( ui->cbx_average, SIGNAL( toggled(bool) ), this, SLOT( change_use_average() ) );
 	connect( ui->cbx_interlaced, SIGNAL( toggled(bool) ), this, SLOT( change_interlace() ) );
-	
-	//Sliders
-	change_threshould();
-	change_movement();
-	connect( ui->sld_threshould, SIGNAL( valueChanged(int) ), this, SLOT( change_threshould() ) );
-	connect( ui->sld_movement, SIGNAL( valueChanged(int) ), this, SLOT( change_movement() ) );
+	change_interlace();
 	
 	//Merge method
 	connect( ui->cbx_merge_h, SIGNAL( toggled(bool) ), this, SLOT( toggled_hor() ) );
@@ -72,6 +66,10 @@ main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidg
 	setAcceptDrops( true );
 	ui->main_layout->addWidget( &viewer );
 	viewer.setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
+}
+
+main_widget::~main_widget(){
+	delete detelecine;
 }
 
 
@@ -117,30 +115,35 @@ void main_widget::process_urls( QList<QUrl> urls ){
 			img_loader = QtConcurrent::run( load, urls[i+1] );
 		loading_delay += delay.elapsed();
 		
-		//TODO: de-interlace
+		//De-telecine
+		if( detelecine )
+			img = detelecine->process( img );
 		
-		//Crop
-		int left = ui->crop_left->value();
-		int right = ui->crop_right->value();
-		int top = ui->crop_top->value();
-		int bottom = ui->crop_bottom->value();
-		if( left > 0 || right > 0 || top > 0 || bottom > 0 )
-			img->crop( left, top, right, bottom );
+		if( img ){
+			//Crop
+			int left = ui->crop_left->value();
+			int right = ui->crop_right->value();
+			int top = ui->crop_top->value();
+			int bottom = ui->crop_bottom->value();
+			if( left > 0 || right > 0 || top > 0 || bottom > 0 )
+				img->crop( left, top, right, bottom );
+			
+			//Deconvolve
+			double deviation = ui->pre_deconvolve_deviation->value();
+			unsigned iterations = ui->pre_deconvolve_iterations->value();
+			if( deviation > 0.0009 && iterations > 0 )
+				img->apply_operation( &Plane::deconvolve_rl, deviation, iterations );
+			
+			//Scale
+			double scale_width = ui->pre_scale_width->value();
+			double scale_height = ui->pre_scale_height->value();
+			if( scale_width <= 0.9999 || scale_width >= 1.0001
+				|| scale_height <= 0.9999 || scale_height >= 1.0001 )
+				img->scale( img->get_width() * scale_width + 0.5, img->get_height() * scale_height + 0.5 );
+			
+			images.push_back( img );
+		}
 		
-		//Deconvolve
-		double deviation = ui->pre_deconvolve_deviation->value();
-		unsigned iterations = ui->pre_deconvolve_iterations->value();
-		if( deviation > 0.0009 && iterations > 0 )
-			img->apply_operation( &Plane::deconvolve_rl, deviation, iterations );
-		
-		//Scale
-		double scale_width = ui->pre_scale_width->value();
-		double scale_height = ui->pre_scale_height->value();
-		if( scale_width <= 0.9999 || scale_width >= 1.0001
-			|| scale_height <= 0.9999 || scale_height >= 1.0001 )
-			img->scale( img->get_width() * scale_width + 0.5, img->get_height() * scale_height + 0.5 );
-		
-		images.push_back( img );
 		if( progress.wasCanceled() && i+1 < urls.count() ){
 			delete img_loader.result();
 			break;
@@ -274,17 +277,6 @@ void main_widget::save_image(){
 		temp->save( filename );
 }
 
-void main_widget::change_use_average(){
-//	image.set_use_average( ui->cbx_average->isChecked() );
-}
-
-void main_widget::change_movement(){
-//	image.set_movement( (double)ui->sld_movement->value()/(double)ui->sld_movement->maximum() );
-}
-
-void main_widget::change_threshould(){
-//	image.set_threshould( ui->sld_threshould->value() );
-}
 
 void main_widget::toggled_hor(){
 	//Always have one checked
@@ -298,12 +290,15 @@ void main_widget::toggled_ver(){
 }
 
 void main_widget::clear_image(){
+	delete aligner;
+	aligner = nullptr;
+	
+	if( detelecine )
+		detelecine->clear();
+	
 	for( auto img : images )
 		delete img;
 	images.clear();
-	
-	delete aligner;
-	aligner = nullptr;
 	
 	temp = NULL; //TODO: huh?
 	viewer.change_image( NULL, true );
@@ -337,8 +332,23 @@ void main_widget::subpixel_align_image(){
 
 void main_widget::change_interlace(){
 	bool value = ui->cbx_interlaced->isChecked();
-//	if( image.set_interlaceing( value ) != value )
-//		ui->cbx_interlaced->setChecked( !value );
-//TODO:
+	if( value ){
+		if( !detelecine )
+			detelecine = new Deteleciner();
+		ui->cbx_interlaced->setChecked( true );
+	}
+	else{
+		if( detelecine ){
+			if( !detelecine->empty() ){
+				ui->cbx_interlaced->setChecked( true );
+				return; //We can't change, detelecining still in progress
+			}
+				
+			delete detelecine;
+			detelecine = nullptr;
+		}
+		
+		ui->cbx_interlaced->setChecked( false );
+	}
 }
 

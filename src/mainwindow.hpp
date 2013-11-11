@@ -26,6 +26,7 @@
 #include "imageViewer.hpp"
 
 class AImageAligner;
+class Deteleciner;
 
 class main_widget: public QMainWindow{
 	Q_OBJECT
@@ -35,10 +36,13 @@ class main_widget: public QMainWindow{
 		imageViewer viewer;
 		std::vector<ImageEx*> images;
 		QImage *temp{ nullptr };
+		
 		AImageAligner *aligner{ nullptr };
+		Deteleciner *detelecine{ nullptr };
 	
 	public:
 		explicit main_widget();
+		~main_widget();
 	
 	protected:
 		void dragEnterEvent( QDragEnterEvent *event );
@@ -54,9 +58,6 @@ class main_widget: public QMainWindow{
 		void save_image();
 		void clear_image();
 		void subpixel_align_image();
-		void change_use_average();
-		void change_threshould();
-		void change_movement();
 		void toggled_hor();
 		void toggled_ver();
 		void change_interlace();
