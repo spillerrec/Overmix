@@ -35,9 +35,10 @@ ImageEx* Deteleciner::addInterlaced( ImageEx* image ){
 	}
 	else{
 		frame->combine_line( *image, true );
+		ImageEx* temp = frame;
 		frame = image;
 		interlaced = true;
-		return nullptr;
+		return temp;
 	}
 }
 
@@ -50,14 +51,13 @@ ImageEx* Deteleciner::addProgressive( ImageEx* image ){
 	
 	if( interlaced ){
 		image->combine_line( *frame, false );
-	//	delete frame;
-		frame = nullptr;
+		clear();
 		return image;
 	}
 	else{
-		ImageEx* done = frame;
+		ImageEx* temp = frame;
 		frame = image;
-		return done;
+		return temp;
 	}
 }
 
