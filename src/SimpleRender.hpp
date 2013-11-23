@@ -27,7 +27,8 @@ class SimpleRender : public ARender{
 			AVERAGE,
 			DIFFERENCE,
 			SIMPLE,
-			SIMPLE_SLIDE
+			SIMPLE_SLIDE,
+			DARK_SELECT
 		};
 	
 	protected:

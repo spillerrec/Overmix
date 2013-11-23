@@ -529,20 +529,20 @@
          <property name="spacing">
           <number>3</number>
          </property>
+         <item row="6" column="0">
+          <widget class="QCheckBox" name="cbx_chroma">
+           <property name="text">
+            <string>Chroma-upscale</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
          <item row="4" column="1">
           <widget class="QRadioButton" name="rbtn_subpixel">
            <property name="text">
             <string>Subpixel</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QRadioButton" name="rbtn_windowed">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="text">
-            <string>Windowed</string>
            </property>
           </widget>
          </item>
@@ -556,14 +556,7 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
-          <widget class="QRadioButton" name="rbtn_diff">
-           <property name="text">
-            <string>Difference</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="1">
+         <item row="6" column="1">
           <widget class="QSlider" name="sld_threshould">
            <property name="enabled">
             <bool>false</bool>
@@ -588,13 +581,27 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="0">
-          <widget class="QCheckBox" name="cbx_chroma">
-           <property name="text">
-            <string>Chroma-upscale</string>
+         <item row="4" column="0">
+          <widget class="QRadioButton" name="rbtn_windowed">
+           <property name="enabled">
+            <bool>false</bool>
            </property>
-           <property name="checked">
-            <bool>true</bool>
+           <property name="text">
+            <string>Windowed</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QRadioButton" name="rbtn_diff">
+           <property name="text">
+            <string>Difference</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QRadioButton" name="rbtn_dehumidifier">
+           <property name="text">
+            <string>Dehumidifier</string>
            </property>
           </widget>
          </item>

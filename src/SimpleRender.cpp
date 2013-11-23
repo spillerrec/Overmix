@@ -106,6 +106,28 @@ static void render_diff( MultiPlaneIterator &it, bool alpha_used ){
 		} );
 }
 
+static void render_dark_select( MultiPlaneIterator &it, bool alpha_used ){
+	unsigned start_plane = alpha_used ? 2 : 1;
+	it.data = (void*)&start_plane;
+	
+	it.iterate_all(); //No need to optimize this filter
+	
+	//Do average and store in [0]
+	it.for_all_pixels( [](MultiPlaneLineIterator &it){
+			unsigned start_plane = *(unsigned*)it.data;
+			//Calculate sum
+			color_type min = (256*256-1);
+			for( unsigned i=start_plane; i<it.size(); i++ ){
+				if( it.valid( i ) ){
+					if( min > it[i] )
+						min = it[i];
+				}
+			}
+			
+			it[0] = min;
+		} );
+}
+
 ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count ) const{
 	QTime t;
 	t.start();
@@ -195,6 +217,8 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count 
 		
 		if( filter == DIFFERENCE )
 			render_diff( it, use_alpha );
+		else if( filter == DARK_SELECT && i == 0 )
+			render_dark_select( it, use_alpha );
 		else
 			render_average( it, use_alpha );
 		

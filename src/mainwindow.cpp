@@ -180,6 +180,8 @@ void main_widget::refresh_image(){
 		img_org = SimpleRender( SimpleRender::DIFFERENCE, chroma_upscale ).render( *aligner );
 	else if( ui->rbtn_windowed->isChecked() )
 		img_org = SimpleRender( SimpleRender::SIMPLE_SLIDE, chroma_upscale ).render( *aligner );
+	else if( ui->rbtn_dehumidifier->isChecked() )
+		img_org = SimpleRender( SimpleRender::DARK_SELECT, chroma_upscale ).render( *aligner );
 	else if( ui->rbtn_subpixel->isChecked() )
 		img_org = FloatRender().render( *aligner );
 	else
