@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>998</width>
-    <height>693</height>
+    <height>713</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -141,6 +141,9 @@
                  <property name="suffix">
                   <string> px</string>
                  </property>
+                 <property name="maximum">
+                  <number>99999</number>
+                 </property>
                 </widget>
                </item>
                <item>
@@ -168,6 +171,9 @@
                  <property name="suffix">
                   <string> px</string>
                  </property>
+                 <property name="maximum">
+                  <number>99999</number>
+                 </property>
                 </widget>
                </item>
                <item>
@@ -177,6 +183,9 @@
                  </property>
                  <property name="suffix">
                   <string> px</string>
+                 </property>
+                 <property name="maximum">
+                  <number>99999</number>
                  </property>
                 </widget>
                </item>
@@ -210,6 +219,9 @@
                  </property>
                  <property name="suffix">
                   <string> px</string>
+                 </property>
+                 <property name="maximum">
+                  <number>99999</number>
                  </property>
                 </widget>
                </item>

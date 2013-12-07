@@ -183,7 +183,7 @@ bool ImageEx::from_png( const char* path ){
 	png_set_read_user_chunk_fn( png_ptr, NULL, read_chunk_callback_thing );
 	
 	//Finally start reading
-	png_read_png( png_ptr, info_ptr, PNG_TRANSFORM_STRIP_16 | PNG_TRANSFORM_EXPAND, NULL );
+	png_read_png( png_ptr, info_ptr, PNG_TRANSFORM_STRIP_16  | PNG_TRANSFORM_STRIP_ALPHA | PNG_TRANSFORM_EXPAND, NULL );
 	png_bytep *row_pointers = png_get_rows( png_ptr, info_ptr );
 	
 	unsigned height = png_get_image_height( png_ptr, info_ptr );
