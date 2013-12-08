@@ -91,6 +91,7 @@ class Plane{
 		
 	//Drawing methods
 		void fill( color_type value );
+		void copy( int x, int y, const Plane& from );
 		
 	//Interlacing methods
 		bool is_interlaced() const;

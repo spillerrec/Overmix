@@ -60,6 +60,18 @@ void Plane::fill( color_type value ){
 	}
 }
 
+void Plane::copy( int x, int y, const Plane& from ){
+	//TODO: check ranges
+	unsigned range_x = min( width, from.width+x );
+	unsigned range_y = min( height, from.height+y );
+	for( unsigned iy=y; iy < range_y; iy++ ){
+		color_type* dest = scan_line( iy );
+		const color_type* source = from.scan_line( iy - y );
+		for( unsigned ix=x; ix < range_x; ix++ )
+			dest[ix] = source[ix-x];
+	}
+}
+
 Plane* Plane::crop( unsigned x, unsigned y, unsigned width, unsigned height ) const{
 	//TODO: do input validation and error checking!
 	//TODO: reduce loops?
