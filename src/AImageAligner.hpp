@@ -49,6 +49,8 @@ class AImageAligner{
 			double overlap;
 		};
 		static double calculate_overlap( QPoint offset, const Plane& img1, const Plane& img2 );
+		
+	public: //TODO:
 		ImageOffset find_offset( const Plane& img1, const Plane& img2 ) const;
 	
 	protected:
@@ -66,6 +68,9 @@ class AImageAligner{
 	public:
 		AImageAligner( AlignMethod method, double scale=1.0 ) : method(method), scale(scale), raw(false){ }
 		virtual ~AImageAligner();
+		
+		AlignMethod get_method() const{ return method; }
+		double get_scale() const{ return scale; }
 		
 		void add_image( /*const*/ ImageEx* const img );
 		
