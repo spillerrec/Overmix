@@ -511,7 +511,18 @@
             <number>3</number>
            </property>
            <item>
-            <widget class="QComboBox" name="comboBox_2">
+            <widget class="QComboBox" name="merge_method">
+             <property name="toolTip">
+              <string>The algorithm used for aligning</string>
+             </property>
+             <property name="currentIndex">
+              <number>1</number>
+             </property>
+             <item>
+              <property name="text">
+               <string>None (stills)</string>
+              </property>
+             </item>
              <item>
               <property name="text">
                <string>Ordered</string>
@@ -519,7 +530,12 @@
              </item>
              <item>
               <property name="text">
-               <string>Ordered Scaled</string>
+               <string>Layered</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Animated</string>
               </property>
              </item>
             </widget>

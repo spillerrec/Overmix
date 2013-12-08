@@ -23,6 +23,7 @@
 #include "FloatRender.hpp"
 #include "AverageAligner.hpp"
 #include "AnimatedAligner.hpp"
+#include "LayeredAligner.hpp"
 #include "FakeAligner.hpp"
 #include "Deteleciner.hpp"
 
@@ -327,9 +328,18 @@ void main_widget::subpixel_align_image(){
 	//TODO: show progress
 	if( aligner )
 		delete aligner;
-	//aligner = new FakeAligner();
-	aligner = new AverageAligner( method, scale );
-	//aligner = new AnimatedAligner( method, scale );
+	
+	int merge_index = ui->merge_method->currentIndex();
+	switch( merge_index ){
+		case 0: //Fake
+			aligner = new FakeAligner(); break;
+		case 1: //Ordered
+			aligner = new AverageAligner( method, scale ); break;
+		case 2: //Layered
+			aligner = new LayeredAligner( method, scale ); break;
+		case 3: //Animated
+			aligner = new AnimatedAligner( method, scale ); break;
+	}
 	
 	for( auto img : images )
 		aligner->add_image( img );
