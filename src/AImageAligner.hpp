@@ -56,6 +56,7 @@ class AImageAligner{
 	protected:
 		const AlignMethod method;
 		const double scale;
+		double movement{ 0.75 };
 		std::vector<ImagePosition> images;
 		bool raw;
 		
@@ -69,8 +70,11 @@ class AImageAligner{
 		AImageAligner( AlignMethod method, double scale=1.0 ) : method(method), scale(scale), raw(false){ }
 		virtual ~AImageAligner();
 		
+		void set_movement( double movement ){ this->movement = movement; }
+		
 		AlignMethod get_method() const{ return method; }
 		double get_scale() const{ return scale; }
+		double get_movement() const{ return movement; }
 		
 		void add_image( /*const*/ ImageEx* const img );
 		

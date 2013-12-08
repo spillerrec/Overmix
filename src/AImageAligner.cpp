@@ -89,8 +89,7 @@ double AImageAligner::calculate_overlap( QPoint offset, const Plane& img1, const
 
 AImageAligner::ImageOffset AImageAligner::find_offset( const Plane& img1, const Plane& img2 ) const{
 	//Keep repeating with higher levels until it drops
-	//below threshould
-	double movement = 0.75; //TODO:
+	//below threshold
 	int level = 6;
 	std::pair<QPoint,double> result;
 	DiffCache cache;

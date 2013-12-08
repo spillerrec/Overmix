@@ -341,6 +341,9 @@ void main_widget::subpixel_align_image(){
 			aligner = new AnimatedAligner( method, scale ); break;
 	}
 	
+	double movement = ui->merge_movement->value() / 100.0;
+	aligner->set_movement( movement );
+	
 	for( auto img : images )
 		aligner->add_image( img );
 	aligner->align();

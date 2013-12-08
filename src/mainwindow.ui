@@ -484,7 +484,7 @@
           </layout>
          </item>
          <item>
-          <widget class="QSlider" name="sld_movement">
+          <widget class="QSlider" name="merge_movement">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -498,7 +498,7 @@
             <number>5</number>
            </property>
            <property name="value">
-            <number>50</number>
+            <number>75</number>
            </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
