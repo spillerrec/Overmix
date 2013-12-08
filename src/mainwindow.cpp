@@ -22,6 +22,8 @@
 #include "SimpleRender.hpp"
 #include "FloatRender.hpp"
 #include "AverageAligner.hpp"
+#include "AnimatedAligner.hpp"
+#include "FakeAligner.hpp"
 #include "Deteleciner.hpp"
 
 #include <vector>
@@ -320,10 +322,14 @@ void main_widget::subpixel_align_image(){
 			method = AImageAligner::ALIGN_VER;
 	}
 	
+	int scale = ui->merge_scale->value();
+	
 	//TODO: show progress
 	if( aligner )
 		delete aligner;
-	aligner = new AverageAligner( method, 1.0 ); //TODO: some way of setting size
+	//aligner = new FakeAligner();
+	aligner = new AverageAligner( method, scale );
+	//aligner = new AnimatedAligner( method, scale );
 	
 	for( auto img : images )
 		aligner->add_image( img );
