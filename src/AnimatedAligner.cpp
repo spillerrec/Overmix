@@ -20,6 +20,13 @@
 #include "AverageAligner.hpp"
 #include "SimpleRender.hpp"
 
+static QString numberZeroFill( int number, int digits ){
+	QString str = QString::number( number );
+	while( str.count() < digits )
+		str = "0" + str;
+	return str;
+}
+
 class AnimFrame{
 	public:
 		const AverageAligner& aligner;
@@ -56,9 +63,9 @@ class AnimFrame{
 			delete img;
 			
 			//Save all the frames
-			raw.save( "AnimatedAligner-Raw/Frame (" + QString::number( frame ) + ").png" );
+			raw.save( "AnimatedAligner-Raw/Frame (" + numberZeroFill( frame+1, 4 ) + ").png" );
 			for( int index : indexes )
-				converted.save( "AnimatedAligner/Frame " + QString::number( index ) + " (" + QString::number( frame ) + ").png" );
+				converted.save( "AnimatedAligner/Frame " + numberZeroFill( index+1, 4 ) + " (" + numberZeroFill( frame+1, 2 ) + ").png" );
 		}
 };
 
