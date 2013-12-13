@@ -19,6 +19,7 @@
 #include "ui_mainwindow.h"
 #include "mainwindow.hpp"
 
+#include "color.hpp"
 #include "SimpleRender.hpp"
 #include "FloatRender.hpp"
 #include "AverageAligner.hpp"
@@ -251,7 +252,7 @@ void main_widget::refresh_image(){
 		};
 		
 		//Level
-		double scale = (256*256-1) / 255.0;
+		double scale = (color::MAX_VAL) / 255.0; //TODO: don't round if color_type is double
 		color_type limit_min = round( ui->sbx_limit_min->value() * scale );
 		color_type limit_max = round( ui->sbx_limit_max->value() * scale );
 		color_type out_min = round( ui->sbx_out_min->value() * scale );
@@ -263,6 +264,17 @@ void main_widget::refresh_image(){
 		//Sharpen
 	//	if( ui->cbx_sharpen->isChecked() )
 	//		edge->substract( *(*img_org)[0] );
+		
+		color_type threshold = round( ui->threshold_threshold->value() * scale );
+		switch( ui->threshold_method->currentIndex() ){
+			case 1:{
+				//TODO: convert to grayscale
+				img_temp[0]->binarize_threshold( threshold );
+				break;
+			}
+			default: break;
+		}
+		
 		delete img_org;
 		
 		temp = new QImage( img_temp.to_qimage( system, setting ) );

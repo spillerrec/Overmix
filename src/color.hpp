@@ -30,6 +30,9 @@ struct color{
 	color_type b;
 	color_type a;
 	
+	const static color_type MAX_VAL = 256*256-1;
+	const static color_type MIN_VAL = 0;
+	
 	public:
 		//TODO: we do not handle the case of preallocated storage!
 		void* operator new( size_t size ){

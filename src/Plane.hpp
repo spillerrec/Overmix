@@ -100,6 +100,7 @@ class Plane{
 		
 	//Overlays
 	private:
+		void for_each_pixel( void (*f)( const SimplePixel& ), void *data=nullptr );
 		void for_each_pixel( Plane &p, void (*f)( const SimplePixel& ), void *data=nullptr );
 	public:
 		void substract( Plane &p );
@@ -116,6 +117,11 @@ class Plane{
 		
 	//Cropping
 		Plane* crop( unsigned x, unsigned y, unsigned width, unsigned height ) const;
+		
+	//Binarization
+		//TODO: find threshold methods: average, otsu?
+		void binarize_threshold( color_type threshold );
+		//TODO: adaptive
 		
 	//Scaling
 	public:

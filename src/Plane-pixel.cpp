@@ -27,12 +27,33 @@
 
 using namespace std;
 
-static void do_pixel_line( SimplePixel pix ){
+static void do_pixel_line_single( SimplePixel pix ){
+	for( unsigned i=0; i<pix.width; ++i ){
+		pix.f( pix );
+		++pix.row1;
+	}
+}
+static void do_pixel_line_double( SimplePixel pix ){
 	for( unsigned i=0; i<pix.width; ++i ){
 		pix.f( pix );
 		++pix.row1;
 		++pix.row2;
 	}
+}
+
+void Plane::for_each_pixel( void (*f)( const SimplePixel& ), void *data ){
+	std::vector<SimplePixel> lines;
+	for( unsigned iy=0; iy<get_height(); ++iy ){
+		SimplePixel pix = { scan_line( iy )
+			,	nullptr
+			,	get_width()
+			,	f
+			,	data
+			};
+		lines.push_back( pix );
+	}
+	
+	QtConcurrent::blockingMap( lines, &do_pixel_line_single );
 }
 
 void Plane::for_each_pixel( Plane &p, void (*f)( const SimplePixel& ), void *data ){
@@ -52,7 +73,7 @@ void Plane::for_each_pixel( Plane &p, void (*f)( const SimplePixel& ), void *dat
 		lines.push_back( pix );
 	}
 	
-	QtConcurrent::blockingMap( lines, &do_pixel_line );
+	QtConcurrent::blockingMap( lines, &do_pixel_line_double );
 }
 
 
@@ -126,10 +147,6 @@ Plane* Plane::level(
 		)
 		return out;
 	
-	QTime t;
-	t.start();
-	
-	
 	LevelOptions options = {
 				limit_min
 			,	limit_max
@@ -138,21 +155,8 @@ Plane* Plane::level(
 			,	gamma
 		};
 	
-	std::vector<SimplePixel> lines;
-	for( unsigned iy=0; iy<out->get_height(); ++iy ){
-		SimplePixel pix = { out->scan_line( iy )
-			,	NULL
-			,	out->get_width()
-			,	&level_pixel
-			,	&options
-			};
-		lines.push_back( pix );
-	}
+	out->for_each_pixel( &level_pixel, &options );
 	
-	QtConcurrent::blockingMap( lines, &do_pixel_line );
-	
-	
-	qDebug( "Level took: %d msec", t.restart() );
 	return out;
 }
 
