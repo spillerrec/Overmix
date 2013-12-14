@@ -19,7 +19,7 @@ SOURCES += src/mainwindow.cpp src/imageViewer.cpp src/main.cpp
 # Core logic
 HEADERS += src/MultiPlaneIterator.hpp src/color.hpp src/Plane.hpp src/ImageEx.hpp src/Deteleciner.hpp
 SOURCES += src/MultiPlaneIterator.cpp src/color.cpp src/Plane.cpp src/ImageEx.cpp src/Deteleciner.cpp
-SOURCES += src/Plane-scaling.cpp src/Plane-edgedetection.cpp src/Plane-blurring.cpp src/Plane-diff.cpp src/Plane-pixel.cpp
+SOURCES += src/Plane-scaling.cpp src/Plane-edgedetection.cpp src/Plane-blurring.cpp src/Plane-diff.cpp src/Plane-pixel.cpp src/Plane-binarize.cpp
 # Aligners
 HEADERS += src/AImageAligner.hpp src/AverageAligner.hpp src/AnimatedAligner.hpp src/ImageAligner.hpp src/LayeredAligner.hpp
 SOURCES += src/AImageAligner.cpp src/AverageAligner.cpp src/AnimatedAligner.cpp src/ImageAligner.cpp src/LayeredAligner.cpp
