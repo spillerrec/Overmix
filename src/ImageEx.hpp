@@ -64,6 +64,8 @@ class ImageEx{
 		
 		ImageEx( const ImageEx& img );
 		
+		void to_grayscale();
+		
 		bool create( unsigned width, unsigned height, bool alpha=false );
 		void replace_plane( unsigned index, Plane* p ){
 			if( index > 3 )

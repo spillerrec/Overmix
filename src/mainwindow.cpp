@@ -267,11 +267,14 @@ void main_widget::refresh_image(){
 		
 		color_type threshold = round( ui->threshold_threshold->value() * scale );
 		switch( ui->threshold_method->currentIndex() ){
-			case 1:{
-				//TODO: convert to grayscale
-				img_temp[0]->binarize_threshold( threshold );
+			case 1:
+					img_temp.to_grayscale();
+					img_temp[0]->binarize_threshold( threshold );
 				break;
-			}
+			case 2:
+					img_temp.to_grayscale();
+					img_temp[0]->binarize_dither();
+				break;
 			default: break;
 		}
 		

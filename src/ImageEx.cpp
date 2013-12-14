@@ -45,6 +45,25 @@ ImageEx::ImageEx( const ImageEx& img ){
 	}
 }
 
+void ImageEx::to_grayscale(){
+	switch( type ){
+		case GRAY: break;
+		case RGB:
+				//TODO: properly convert to grayscale
+				delete planes[0];
+				delete planes[2];
+				planes[0] = planes[1];
+				planes[1] = planes[2] = nullptr;
+			break;
+		case YUV:
+				delete planes[1];
+				delete planes[2];
+				planes[1] = planes[2] = nullptr;
+			break;
+	}
+	type = GRAY;
+}
+
 void process_dump_line( color_type *out, unsigned char* in, unsigned width, uint16_t depth ){
 	unsigned byte_count = (depth + 7) / 8;
 	if( byte_count == 1 )
