@@ -32,3 +32,23 @@ void Plane::binarize_threshold( color_type threshold ){
 	for_each_pixel( &apply_threshold, &threshold );
 }
 
+void Plane::binarize_dither(){
+	color_type threshold = (color::MAX_VAL - color::MIN_VAL) / 2;
+	
+	vector<color_type> errors( width+1, 0 );
+	for( unsigned iy=0; iy<get_height(); ++iy ){
+		color_type* row = scan_line( iy );
+		for( unsigned ix=0; ix<get_width(); ++ix ){
+			color_type wanted = row[ix] + errors[ix];
+			color_type binary = wanted > threshold ? color::MAX_VAL : color::MIN_VAL;
+			
+			color_type error = wanted - binary;
+			errors[ix] = error / 4;
+			errors[ix+1] += error / 2;
+			if( ix )
+				errors[ix-1] += error / 2;
+			row[ix] = binary;
+		}
+	}
+}
+
