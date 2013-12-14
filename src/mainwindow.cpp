@@ -171,6 +171,10 @@ void main_widget::refresh_text(){
 	);
 }
 
+static color_type color_from_spinbox( QSpinBox* spinbox ){
+	return color::from_double( spinbox->value() / (double)spinbox->maximum() );
+}
+
 void main_widget::refresh_image(){
 	if( !aligner )
 		return;
@@ -252,11 +256,10 @@ void main_widget::refresh_image(){
 		};
 		
 		//Level
-		double scale = (color::MAX_VAL) / 255.0; //TODO: don't round if color_type is double
-		color_type limit_min = round( ui->sbx_limit_min->value() * scale );
-		color_type limit_max = round( ui->sbx_limit_max->value() * scale );
-		color_type out_min = round( ui->sbx_out_min->value() * scale );
-		color_type out_max = round( ui->sbx_out_max->value() * scale );
+		color_type limit_min = color_from_spinbox( ui->sbx_limit_min );
+		color_type limit_max = color_from_spinbox( ui->sbx_limit_max );
+		color_type out_min = color_from_spinbox( ui->sbx_out_min );
+		color_type out_max = color_from_spinbox( ui->sbx_out_max );
 		double gamma = ui->dsbx_gamma->value();
 		img_temp.apply_operation( &Plane::level, limit_min, limit_max, out_min, out_max, gamma );
 		
@@ -265,7 +268,7 @@ void main_widget::refresh_image(){
 	//	if( ui->cbx_sharpen->isChecked() )
 	//		edge->substract( *(*img_org)[0] );
 		
-		color_type threshold = round( ui->threshold_threshold->value() * scale );
+		color_type threshold = color_from_spinbox( ui->threshold_threshold );
 		switch( ui->threshold_method->currentIndex() ){
 			case 1:
 					img_temp.to_grayscale();

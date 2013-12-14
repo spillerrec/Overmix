@@ -66,12 +66,13 @@ void ImageEx::to_grayscale(){
 
 void process_dump_line( color_type *out, unsigned char* in, unsigned width, uint16_t depth ){
 	unsigned byte_count = (depth + 7) / 8;
+	double scale = pow( 2.0, depth ) - 1.0;
 	if( byte_count == 1 )
 		for( unsigned ix=0; ix<width; ++ix, ++out )
-			*out = (color_type)(in[ix]) << (16 - depth);
+			*out = color::from_double( (in[ix]) / scale );
 	else
 		for( unsigned ix=0; ix<width; ++ix, ++out )
-			*out = (color_type)((uint16_t*)in)[ix] << (16 - depth);
+			*out = color::from_double( ((uint16_t*)in)[ix] / scale );
 }
 
 bool ImageEx::read_dump_plane( FILE *f, unsigned index ){
@@ -220,9 +221,9 @@ bool ImageEx::from_png( const char* path ){
 		color_type* g = planes[1]->scan_line( iy );
 		color_type* b = planes[2]->scan_line( iy );
 		for( unsigned ix=0; ix<width; ix++ ){
-			r[ix] = row_pointers[iy][ix*3 + 0] * 256;
-			g[ix] = row_pointers[iy][ix*3 + 1] * 256;
-			b[ix] = row_pointers[iy][ix*3 + 2] * 256;
+			r[ix] = color::from_8bit( row_pointers[iy][ix*3 + 0] );
+			g[ix] = color::from_8bit( row_pointers[iy][ix*3 + 1] );
+			b[ix] = color::from_8bit( row_pointers[iy][ix*3 + 2] );
 		}
 	}
 	
@@ -260,11 +261,11 @@ bool ImageEx::from_qimage( const char* path ){
 		const QRgb* in = (const QRgb*)img.constScanLine( iy );
 		
 		for( int ix=0; ix<width; ++ix, ++in ){
-			*(r++) = qRed( *in ) * 256;
-			*(g++) = qGreen( *in ) * 256;
-			*(b++) = qBlue( *in ) * 256;
+			*(r++) = color::from_8bit( qRed( *in ) );
+			*(g++) = color::from_8bit( qGreen( *in ) );
+			*(b++) = color::from_8bit( qBlue( *in ) );
 			if( alpha )
-				*(a++) = qAlpha( *in ) * 256;
+				*(a++) = color::from_8bit( qAlpha( *in ) );
 		}
 	}
 	
@@ -359,10 +360,11 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ){
 			if( dither )
 				p += line[ix];
 			
-			color rounded = (p) / 256;
+			const double scale = color::WHITE / 255.0;
+			color rounded = p / scale;
 			
 			if( dither ){
-				color err = p - ( rounded * 256 );
+				color err = p - ( rounded * scale );
 				line[ix] = err / 4;
 				line[ix+1] += err / 2;
 				if( ix )
@@ -410,21 +412,6 @@ double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 	
 	
 	if( info.size() == 3 ){
-		/*
-		avg = it.for_all_pixels_combine<Average>(
-				[](MultiPlaneLineIterator &it) -> Average{
-					Average avg( 0, 1 );
-					
-					//if( it[2] > 127*256 ){
-						avg.first += abs( (int)it[0] - it[1] );//it.diff( 0, 1 );
-					//	avg.second++;
-					//}
-					
-					return avg;
-				}
-			,	avg, sum
-			);
-		/*/
 		avg = it.for_all_lines_combine<Average>(
 				[](MultiPlaneLineIterator &it) -> Average{
 					Average avg( 0, it.left() + 1 );
@@ -432,10 +419,10 @@ double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 					color_type *i1 = &it[0];
 					color_type *i2 = &it[1];
 				//	color_type *i3 = &it[2];
-					avg.first += abs( (int_fast16_t)(*i1 - *i2) );
+					avg.first += abs( (*i1 - *i2) );
 					while( it.valid() ){
 						i1++; i2++;// i3++;
-						avg.first += abs( (int_fast16_t)(*i1 - *i2) );
+						avg.first += abs( (*i1 - *i2) );
 					}
 					
 					return avg;
@@ -449,7 +436,7 @@ double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 				[](MultiPlaneLineIterator &it) -> Average{
 					Average avg( 0, 0 );
 					
-					if( it[2] > 127*256 && it[3] > 127*256 ){
+					if( it[2] > 0.5*color::WHITE && it[3] > 0.5*color::WHITE ){
 						avg.first += it.diff( 0, 1 );
 						avg.second++;
 					}

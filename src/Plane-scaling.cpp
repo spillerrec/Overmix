@@ -16,6 +16,7 @@
 */
 
 #include "Plane.hpp"
+#include "color.hpp"
 
 #include <QtConcurrent>
 #include <QDebug>
@@ -120,8 +121,8 @@ void do_line( const ScaleLine& line ){
 			row += line.line_width;
 		}
 		
-		//TODO: limit negative numbers
-		*(out++) = amount ? std::min( unsigned( avg / amount + 0.5 ), 0xFFFFu ) : 0;
+		//TODO: fix
+		*(out++) = amount ? std::min( precision_color_type( avg / amount + 0.5 ), (precision_color_type)color::WHITE ) : (precision_color_type)color::BLACK;
 		
 	}
 }

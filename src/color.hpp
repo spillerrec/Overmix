@@ -21,8 +21,10 @@
 #include <QCoreApplication>
 #include <QColor>
 #include <cmath>
+#include <limits>
 
 typedef int color_type;
+typedef long long precision_color_type;
 
 struct color{
 	color_type r;
@@ -30,8 +32,23 @@ struct color{
 	color_type b;
 	color_type a;
 	
-	const static color_type MAX_VAL = 256*256-1;
-	const static color_type MIN_VAL = 0;
+	const static color_type WHITE = std::numeric_limits<color_type>::max()/2;
+	const static color_type BLACK = 0;
+	const static color_type MIN_VAL = std::numeric_limits<color_type>::min();
+	const static color_type MAX_VAL = std::numeric_limits<color_type>::max();
+	
+	static double as_double( color_type value ){
+		return value / (double)WHITE;
+	}
+	static color_type from_double( double value ){
+		return value * WHITE;
+	}
+	static unsigned char as_8bit( color_type value ){
+		return as_double( value ) * 255;
+	}
+	static color_type from_8bit( unsigned char value ){
+		return from_double( value / 255.0 );
+	}
 	
 	public:
 		//TODO: we do not handle the case of preallocated storage!
@@ -46,7 +63,7 @@ struct color{
 		
 	
 		color() { } //Initialized by new/delete
-		color( color_type r, color_type g, color_type b, color_type a = 255*256 ){
+		color( color_type r, color_type g, color_type b, color_type a = WHITE ){
 			this->r = r;
 			this->g = g;
 			this->b = b;
@@ -59,23 +76,23 @@ struct color{
 			a = c->a;
 		}
 		color( QRgb c ){
-			r = qRed( c ) * 256;
-			g = qGreen( c ) * 256;
-			b = qBlue( c ) * 256;
-			a = qAlpha( c ) * 256;
+			r = from_8bit( qRed( c ) );
+			g = from_8bit( qGreen( c ) );
+			b = from_8bit( qBlue( c ) );
+			a = from_8bit( qAlpha( c ) );
 		//	linearize();
 		}
 	
 	private:
 		static color_type sRgb2linear( color_type value ){
-			double v = value / (double)(255*256);
+			double v = as_double( value );
 			v = ( v <= 0.04045 ) ? v / 12.92 : std::pow( (v+0.055)/1.055, 2.4 );
-			return (color_type)( v *255*256 +0.5 );
+			return from_double( v );
 		}
 		static color_type linear2sRgb( color_type value ){
-			double v = value / (double)(255*256);
+			double v = as_double( value );
 			v = ( v <= 0.0031308 ) ? 12.92 * v : 1.055*std::pow( v, 1.0/2.4 ) - 0.055;
-			return (color_type)( v *255*256 +0.5 );
+			return from_double( v );
 		}
 		static double ycbcr2srgb( double v ){
 			//rec. 601 and 709
@@ -97,14 +114,6 @@ struct color{
 			g = linear2sRgb( g );
 			b = linear2sRgb( b );
 			a = linear2sRgb( a );
-		}
-		
-		static void test(){
-			for( int i=0; i<=255*256; i++ ){
-				color_type i2 = linear2sRgb( sRgb2linear( i ) );
-				if( i != i2 )
-					qDebug( "didn't match: %d %d", i, i2 );
-			}
 		}
 		
 		color yuv_to_rgb( double kr, double kg, double kb, bool gamma );
@@ -225,10 +234,10 @@ struct color{
 
 class ColorAvg{
 	private:
-		unsigned r;
-		unsigned g;
-		unsigned b;
-		unsigned a;
+		precision_color_type r;
+		precision_color_type g;
+		precision_color_type b;
+		precision_color_type a;
 		unsigned amount;
 		
 	public:

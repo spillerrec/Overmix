@@ -25,7 +25,7 @@ using namespace std;
 
 static void apply_threshold( const SimplePixel& pixel ){
 	color_type threshold = *(color_type*)pixel.data;
-	*pixel.row1 = *pixel.row1 > threshold ? color::MAX_VAL : color::MIN_VAL;
+	*pixel.row1 = *pixel.row1 > threshold ? color::WHITE : color::BLACK;
 }
 
 void Plane::binarize_threshold( color_type threshold ){
@@ -33,14 +33,14 @@ void Plane::binarize_threshold( color_type threshold ){
 }
 
 void Plane::binarize_dither(){
-	color_type threshold = (color::MAX_VAL - color::MIN_VAL) / 2;
+	color_type threshold = (color::WHITE - color::BLACK) / 2 + color::BLACK;
 	
 	vector<double> errors( width+1, 0 );
 	for( unsigned iy=0; iy<get_height(); ++iy ){
 		color_type* row = scan_line( iy );
 		for( unsigned ix=0; ix<get_width(); ++ix ){
 			double wanted = row[ix] + errors[ix];
-			color_type binary = wanted > threshold ? color::MAX_VAL : color::MIN_VAL;
+			color_type binary = wanted > threshold ? color::WHITE : color::BLACK;
 			
 			double error = wanted - binary;
 			errors[ix] = error / 4;

@@ -19,9 +19,9 @@
 
 
 color color::yuv_to_rgb( double kr, double kg, double kb, bool gamma ){
-	double y = r / (255*256.0);
-	double cb = g / (255*256.0);
-	double cr = b / (255*256.0);
+	double y  = as_double( r );
+	double cb = as_double( g );
+	double cr = as_double( b );
 	
 	//Remove foot- and head-room
 	y = (y - (16 / 255.0)) * ( 1 + 16.0 / 255.0 + (256-235) / 255.0 );
@@ -55,11 +55,6 @@ color color::yuv_to_rgb( double kr, double kg, double kb, bool gamma ){
 		rb = ycbcr2srgb( rb );
 	}
 	
-	//Transform range
-	rr = (rr) * 255*256;
-	rg = (rg) * 255*256;
-	rb = (rb) * 255*256;
-	
-	return color( rr, rg, rb, a );
+	return color( from_double(rr), from_double(rg), from_double(rb), a );
 }
 

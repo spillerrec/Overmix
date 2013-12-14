@@ -16,16 +16,9 @@
 */
 
 #include "Plane.hpp"
-#include <algorithm> //For min
-#include <cstdint> //For abs(int) and uint*_t
-#include <limits>
-#include <vector>
-#include <cstring> //For memcpy
+#include "color.hpp"
 
 #include <QtConcurrent>
-#include <QDebug>
-
-using namespace std;
 
 static void do_pixel_line_single( SimplePixel pix ){
 	for( unsigned i=0; i<pix.width; ++i ){
@@ -81,14 +74,14 @@ static void substract_pixel( const SimplePixel& pix ){
 	*pix.row1 = std::max( (int)*pix.row2 - (int)*pix.row1, 0 );
 }
 static void divide_pixel( const SimplePixel& pix ){
-	double val1 = (double)*pix.row1 / (double)(256*256-1);
-	double val2 = (double)*pix.row2 / (double)(256*256-1);
-	*pix.row1 = std::round( val2 / val1 * (256*256-1) );
+	double val1 = color::as_double( *pix.row1 );
+	double val2 = color::as_double( *pix.row2 );
+	*pix.row1 = color::from_double( val2 / val1 );
 }
 static void multiply_pixel( const SimplePixel& pix ){
-	double val1 = (double)*pix.row1 / (double)(256*256-1);
-	double val2 = (double)*pix.row2 / (double)(256*256-1);
-	*pix.row1 = std::round( val1 * val2 * (256*256-1) );
+	double val1 = color::as_double( *pix.row1 );
+	double val2 = color::as_double( *pix.row2 );
+	*pix.row1 = color::from_double( val2 * val1 );
 }
 
 void Plane::substract( Plane &p ){
@@ -141,8 +134,8 @@ Plane* Plane::level(
 	//Don't do anything if nothing will change
 	if( limit_min == output_min
 		&&	limit_max == output_max
-		&&	limit_min == 0
-		&&	limit_max == (256*256-1)
+		&&	limit_min == color::BLACK
+		&&	limit_max == color::WHITE
 		&&	gamma == 1.0
 		)
 		return out;

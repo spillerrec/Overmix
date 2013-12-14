@@ -15,8 +15,8 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 #include "AImageAligner.hpp"
+#include "color.hpp"
 
 AImageAligner::~AImageAligner(){
 	//Remove scaled images
@@ -90,7 +90,7 @@ double AImageAligner::calculate_overlap( QPoint offset, const Plane& img1, const
 AImageAligner::ImageOffset AImageAligner::find_offset( const Plane& img1, const Plane& img2 ) const{
 	//Keep repeating with higher levels until it drops
 	//below threshold
-	int level = 6;
+	int level = 6; //TODO: magic number
 	std::pair<QPoint,double> result;
 	DiffCache cache;
 	
@@ -108,7 +108,7 @@ AImageAligner::ImageOffset AImageAligner::find_offset( const Plane& img1, const 
 			,	((int)1 - (int)img2.get_height()) * movement_y, ((int)img1.get_height() - 1) * movement_y
 			,	&cache
 			);
-	}while( result.second > 24*256 && level++ < 6 );
+	}while( result.second > 0.24*color::WHITE && level++ < 6 ); //TODO: magic number!
 	
 	ImageOffset offset;
 	offset.distance_x = result.first.x();

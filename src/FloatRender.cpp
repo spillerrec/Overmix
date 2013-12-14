@@ -20,6 +20,7 @@
 #include "AImageAligner.hpp"
 #include "Plane.hpp"
 #include "ImageEx.hpp"
+#include "color.hpp"
 
 #include <QTime>
 #include <float.h>
@@ -127,7 +128,7 @@ class PointRender2{
 		PointRender2( int x, int y ) : pos( QPoint( x, y ) ), sum(0), weight(0) { }
 		
 		color_type value(){
-			return (weight!=0.0) ? min(max((int)round(sum / weight),0),256*256-1) : 0;
+			return (weight!=0.0) ? min(max((int)round(sum / weight),0),color::WHITE) : 0;
 		}
 		
 		void add_points( const Plane* img, QPointF offset, double scale ){
@@ -233,7 +234,7 @@ ImageEx* FloatRender::render( const AImageAligner& aligner, unsigned max_count )
 	
 	//Fill alpha
 	Plane* alpha = new Plane( full.width()*scale, full.height()*scale );
-	alpha->fill( 255*256 );
+	alpha->fill( color::WHITE );
 	img->replace_plane( 3, alpha );
 	
 //	vector<PointRender::Point> points;

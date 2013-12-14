@@ -20,6 +20,7 @@
 #include "AImageAligner.hpp"
 #include "Plane.hpp"
 #include "ImageEx.hpp"
+#include "color.hpp"
 
 #include "MultiPlaneIterator.hpp"
 
@@ -36,7 +37,7 @@ static void render_average( MultiPlaneIterator &it, bool alpha_used ){
 	//Do average and store in [0]
 	it.for_all_pixels( [](MultiPlaneLineIterator &it){
 			unsigned start_plane = *(unsigned*)it.data;
-			unsigned avg = 0;
+			precision_color_type avg = 0;
 			for( unsigned i=start_plane; i<it.size(); i++ )
 				avg += it[i];
 			
@@ -50,7 +51,8 @@ static void render_average( MultiPlaneIterator &it, bool alpha_used ){
 	//Do average and store in [0]
 	it.for_all_pixels( [](MultiPlaneLineIterator &it){
 			unsigned start_plane = *(unsigned*)it.data;
-			unsigned avg = 0, amount = 0;
+			precision_color_type avg = 0;
+			unsigned amount = 0;
 
 			for( unsigned i=start_plane; i<it.size(); i++ ){
 				if( it.valid( i ) ){
@@ -77,7 +79,8 @@ static void render_diff( MultiPlaneIterator &it, bool alpha_used ){
 	it.for_all_pixels( [](MultiPlaneLineIterator &it){
 			unsigned start_plane = *(unsigned*)it.data;
 			//Calculate sum
-			unsigned sum = 0, amount = 0;
+			unsigned amount = 0;
+			precision_color_type sum = 0;
 			for( unsigned i=start_plane; i<it.size(); i++ ){
 				if( it.valid( i ) ){
 					sum += it[i];
@@ -86,20 +89,18 @@ static void render_diff( MultiPlaneIterator &it, bool alpha_used ){
 			}
 			
 			if( amount ){
-				color_type avg = sum / amount;
+				precision_color_type avg = sum / amount;
 				
 				//Calculate sum of the difference from average
-				unsigned diff_sum = 0;
+				precision_color_type diff_sum = 0;
 				for( unsigned i=start_plane; i<it.size(); i++ ){
 					if( it.valid( i ) ){
-						unsigned d = abs( avg - it[i] );
+						unsigned long d = abs( avg - it[i] );
 						diff_sum += d;
 					}
 				}
 				
-				//Use an exaggerated gamma to make the difference stand out
-				double diff = (double)diff_sum / amount / (255*256);
-				it[0] = pow( diff, 0.3 ) * (255*256) + 0.5;
+				it[0] = diff_sum / amount;
 			}
 			else if( start_plane == 2 )
 				it[1] = 0;
@@ -116,7 +117,7 @@ static void render_dark_select( MultiPlaneIterator &it, bool alpha_used ){
 	it.for_all_pixels( [](MultiPlaneLineIterator &it){
 			unsigned start_plane = *(unsigned*)it.data;
 			//Calculate sum
-			color_type min = (256*256-1);
+			color_type min = color::MAX_VAL;
 			for( unsigned i=start_plane; i<it.size(); i++ ){
 				if( it.valid( i ) ){
 					if( min > it[i] )
@@ -158,7 +159,7 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count 
 	
 	//Fill alpha
 	Plane* alpha = new Plane( full.width(), full.height() );
-	alpha->fill( 255*256 );
+	alpha->fill( color::WHITE );
 	img->replace_plane( 3, alpha );
 	
 	for( unsigned i=0; i<planes_amount; i++ ){
