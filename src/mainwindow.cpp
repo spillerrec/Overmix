@@ -276,6 +276,10 @@ void main_widget::refresh_image(){
 				break;
 			case 2:
 					img_temp.to_grayscale();
+					img_temp[0]->binarize_adaptive( ui->threshold_size->value(), threshold );
+				break;
+			case 3:
+					img_temp.to_grayscale();
 					img_temp[0]->binarize_dither();
 				break;
 			default: break;

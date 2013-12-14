@@ -32,22 +32,26 @@ struct color{
 	color_type b;
 	color_type a;
 	
-	const static color_type WHITE = std::numeric_limits<color_type>::max()/2;
-	const static color_type BLACK = 0;
-	const static color_type MIN_VAL = std::numeric_limits<color_type>::min();
-	const static color_type MAX_VAL = std::numeric_limits<color_type>::max();
+	constexpr static color_type WHITE = std::numeric_limits<color_type>::max()/2;
+	constexpr static color_type BLACK = 0;
+	constexpr static color_type MIN_VAL = std::numeric_limits<color_type>::min();
+	constexpr static color_type MAX_VAL = std::numeric_limits<color_type>::max();
 	
-	static double as_double( color_type value ){
+	constexpr static double as_double( color_type value ){
 		return value / (double)WHITE;
 	}
-	static color_type from_double( double value ){
+	constexpr static color_type from_double( double value ){
 		return value * WHITE;
 	}
-	static unsigned char as_8bit( color_type value ){
+	constexpr static unsigned char as_8bit( color_type value ){
 		return as_double( value ) * 255;
 	}
-	static color_type from_8bit( unsigned char value ){
+	constexpr static color_type from_8bit( unsigned char value ){
 		return from_double( value / 255.0 );
+	}
+	
+	static color_type truncate( precision_color_type value ){
+		return std::min( std::max( value, (precision_color_type)color::MIN_VAL ), (precision_color_type)color::MAX_VAL );
 	}
 	
 	public:
@@ -168,7 +172,7 @@ struct color{
 		return *this;
 	}
 	
-	color& operator+=( const int &rhs ){
+	color& operator+=( const color_type &rhs ){
 		r += rhs;
 		g += rhs;
 		b += rhs;
@@ -176,7 +180,7 @@ struct color{
 		return *this;
 	}
 	
-	color& operator*=( const int &rhs ){
+	color& operator*=( const color_type &rhs ){
 		r *= rhs;
 		g *= rhs;
 		b *= rhs;
@@ -184,7 +188,7 @@ struct color{
 		return *this;
 	}
 	
-	color& operator/=( const int &rhs ){
+	color& operator/=( const color_type &rhs ){
 		r /= rhs;
 		g /= rhs;
 		b /= rhs;
@@ -192,42 +196,20 @@ struct color{
 		return *this;
 	}
 	
-	color& operator<<=( const int &rhs ){
-		r <<= rhs;
-		g <<= rhs;
-		b <<= rhs;
-		a <<= rhs;
-		return *this;
-	}
-	
-	color& operator>>=( const int &rhs ){
-		r >>= rhs;
-		g >>= rhs;
-		b >>= rhs;
-		a >>= rhs;
-		return *this;
-	}
-	
 	const color operator+( const color &other ) const{
 		return color(*this) += other;
 	}
-	const color operator+( const int &other ) const{
+	const color operator+( const color_type &other ) const{
 		return color(*this) += other;
 	}
 	const color operator-( const color &other ) const{
 		return color(*this) -= other;
 	}
-	const color operator*( const int &other ) const{
+	const color operator*( const color_type &other ) const{
 		return color(*this) *= other;
 	}
-	const color operator/( const int &other ) const{
+	const color operator/( const color_type &other ) const{
 		return color(*this) /= other;
-	}
-	const color operator<<( const int &other ) const{
-		return color(*this) <<= other;
-	}
-	const color operator>>( const int &other ) const{
-		return color(*this) >>= other;
 	}
 };
 

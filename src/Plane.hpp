@@ -121,7 +121,7 @@ class Plane{
 	//Binarization
 		//TODO: find threshold methods: average, otsu?
 		void binarize_threshold( color_type threshold );
-		//TODO: adaptive
+		void binarize_adaptive( unsigned amount, color_type threshold );
 		void binarize_dither();
 		
 	//Scaling

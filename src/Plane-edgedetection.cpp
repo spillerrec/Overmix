@@ -64,7 +64,7 @@ static color_type calculate_edge( const EdgeLine<T>& line, color_type* in ){
 	int sum_y = calculate_kernel( line.weights_y, line.size, in, line.line_width );
 	int sum = abs( sum_x ) + abs( sum_y );
 	sum /= line.div;
-	return min( max( sum, color::MIN_VAL ), color::MAX_VAL );
+	return color::truncate( sum );
 }
 
 template<typename T>
@@ -73,7 +73,7 @@ static color_type calculate_zero_edge( const EdgeLine<T>& line, color_type* in )
 	//TODO: improve
 	int sum = max( calculate_kernel( line.weights_x, line.size, in, line.line_width ), 0 );
 	sum /= line.div;
-	return min( max( sum, color::MIN_VAL ), color::MAX_VAL );
+	return color::truncate( sum );
 }
 
 template<typename T>

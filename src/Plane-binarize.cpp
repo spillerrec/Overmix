@@ -32,6 +32,17 @@ void Plane::binarize_threshold( color_type threshold ){
 	for_each_pixel( &apply_threshold, &threshold );
 }
 
+static void adaptive_threshold( const SimplePixel& pixel ){
+	color_type c = *(color_type*)pixel.data;
+	color_type threshold = *pixel.row2 - c;
+	*pixel.row1 = *pixel.row1 > threshold ? color::WHITE : color::BLACK;
+}
+void Plane::binarize_adaptive( unsigned amount, color_type threshold ){
+	Plane* blurred = blur_box( amount, amount );
+	for_each_pixel( *blurred, &adaptive_threshold, &threshold );
+	delete blurred;
+}
+
 void Plane::binarize_dither(){
 	color_type threshold = (color::WHITE - color::BLACK) / 2 + color::BLACK;
 	
