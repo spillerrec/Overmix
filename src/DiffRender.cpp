@@ -75,10 +75,8 @@ ImageEx* DiffRender::render( const AImageAligner& aligner, unsigned max_count ) 
 	//Find the smallest shared size
 	QSize size = aligner.size().size(); //No image is larger than the final result
 	for( unsigned i=0; i<max_count; i++ ){
-		if( (unsigned)size.width() > aligner.image(i)->get_width() )
-			size.setWidth( aligner.image(i)->get_width() );
-		if( (unsigned)size.height() > aligner.image(i)->get_height() )
-			size.setHeight( aligner.image(i)->get_height() );
+		size.setWidth( min( (unsigned)size.width(), aligner.image(i)->get_width() ) );
+		size.setHeight( min( (unsigned)size.height(), aligner.image(i)->get_height() ) );
 	}
 	
 	//Create final output image based on the smallest size
