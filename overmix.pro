@@ -24,8 +24,8 @@ SOURCES += src/Plane-scaling.cpp src/Plane-edgedetection.cpp src/Plane-blurring.
 HEADERS += src/AImageAligner.hpp src/AverageAligner.hpp src/AnimatedAligner.hpp src/ImageAligner.hpp src/LayeredAligner.hpp
 SOURCES += src/AImageAligner.cpp src/AverageAligner.cpp src/AnimatedAligner.cpp src/ImageAligner.cpp src/LayeredAligner.cpp
 # Renders
-HEADERS += src/SimpleRender.hpp src/FloatRender.hpp src/ARender.hpp
-SOURCES += src/SimpleRender.cpp src/FloatRender.cpp
+HEADERS += src/SimpleRender.hpp src/FloatRender.hpp src/DiffRender.hpp src/ARender.hpp
+SOURCES += src/SimpleRender.cpp src/FloatRender.cpp src/DiffRender.cpp
 
 # Generate both debug and release on Linux
 CONFIG += debug_and_release

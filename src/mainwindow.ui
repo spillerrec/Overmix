@@ -649,6 +649,13 @@
            </property>
           </widget>
          </item>
+         <item row="5" column="1">
+          <widget class="QRadioButton" name="rbtn_static_diff">
+           <property name="text">
+            <string>Static Difference</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
@@ -679,7 +686,7 @@
             </sizepolicy>
            </property>
            <property name="currentIndex">
-            <number>6</number>
+            <number>0</number>
            </property>
            <widget class="QWidget" name="tab">
             <attribute name="title">
@@ -1132,6 +1139,9 @@
              </item>
              <item row="1" column="2">
               <widget class="QSpinBox" name="threshold_threshold">
+               <property name="minimum">
+                <number>-127</number>
+               </property>
                <property name="maximum">
                 <number>255</number>
                </property>
