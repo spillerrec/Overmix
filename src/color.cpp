@@ -24,9 +24,9 @@ color color::yuv_to_rgb( double kr, double kg, double kb, bool gamma ){
 	double cr = as_double( b );
 	
 	//Remove foot- and head-room
-	y = (y - (16 / 255.0)) * ( 1 + 16.0 / 255.0 + (256-235) / 255.0 );
-	cb = (cb - (16 / 255.0)) * ( 1 + 16.0 / 255.0 + (256-240) / 255.0 );
-	cr = (cr - (16 / 255.0)) * ( 1 + 16.0 / 255.0 + (256-240) / 255.0 );
+	y = (y - (16 / 255.0)) / ( (255 - 16 - (255-235)) / 255.0 );
+	cb = (cb - (16 / 255.0)) / ( (255 - 16 - (255-240)) / 255.0 );
+	cr = (cr - (16 / 255.0)) / ( (255 - 16 - (255-240)) / 255.0 );
 	
 	//Don't let it outside the allowed range
 	y = (y < 0 ) ? 0 : (y > 1 ) ? 1 : y;
