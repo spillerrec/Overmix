@@ -52,6 +52,8 @@ main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidg
 	connect( ui->btn_refresh, SIGNAL( clicked() ), this, SLOT( refresh_image() ) );
 	connect( ui->btn_save, SIGNAL( clicked() ), this, SLOT( save_image() ) );
 	connect( ui->btn_subpixel, SIGNAL( clicked() ), this, SLOT( subpixel_align_image() ) );
+	connect( ui->pre_alpha_mask, SIGNAL( clicked() ), this, SLOT( set_alpha_mask() ) );
+	connect( ui->pre_clear_mask, SIGNAL( clicked() ), this, SLOT( clear_mask() ) );
 	
 	//Checkboxes
 	connect( ui->cbx_interlaced, SIGNAL( toggled(bool) ), this, SLOT( change_interlace() ) );
@@ -75,6 +77,7 @@ main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidg
 
 main_widget::~main_widget(){
 	delete detelecine;
+	delete alpha_mask;
 }
 
 
@@ -125,6 +128,10 @@ void main_widget::process_urls( QList<QUrl> urls ){
 			img = detelecine->process( img );
 		
 		if( img ){
+			//Overwrite alpha
+			if( alpha_mask )
+				img->replace_plane( 3, new Plane( *alpha_mask ) );
+			
 			//Crop
 			int left = ui->crop_left->value();
 			int right = ui->crop_right->value();
@@ -230,7 +237,6 @@ void main_widget::refresh_image(){
 			|| scale_height <= 0.9999 || scale_height >= 1.0001 )
 			img_org->scale( img_org->get_width() * scale_width + 0.5, img_org->get_height() * scale_height + 0.5 );
 		
-		Plane *org = (*img_org)[0];
 		ImageEx img_temp( *img_org );
 		
 		//Deconvolve
@@ -412,3 +418,21 @@ void main_widget::make_slide(){
 	}
 }
 
+void main_widget::set_alpha_mask(){
+	//TODO:
+	QString filename = QFileDialog::getOpenFileName( this, tr("Open alpha mask"), "", tr("PNG files (*.png)") );
+	
+	ImageEx img;
+	img.read_file( filename.toLocal8Bit().constData() );
+	img.to_grayscale();
+	
+	delete alpha_mask;
+	alpha_mask = new Plane( *img[0] );
+	ui->pre_clear_mask->setEnabled( true );
+}
+
+void main_widget::clear_mask(){
+	delete alpha_mask;
+	alpha_mask = nullptr;
+	ui->pre_clear_mask->setEnabled( false );
+}

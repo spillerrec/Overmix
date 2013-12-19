@@ -27,6 +27,7 @@
 
 class AImageAligner;
 class Deteleciner;
+class Plane;
 
 class main_widget: public QMainWindow{
 	Q_OBJECT
@@ -39,6 +40,8 @@ class main_widget: public QMainWindow{
 		
 		AImageAligner *aligner{ nullptr };
 		Deteleciner *detelecine{ nullptr };
+		
+		Plane *alpha_mask{ nullptr };
 	
 	public:
 		explicit main_widget();
@@ -63,6 +66,9 @@ class main_widget: public QMainWindow{
 		void toggled_hor();
 		void toggled_ver();
 		void change_interlace();
+		
+		void set_alpha_mask();
+		void clear_mask();
 };
 
 #endif
