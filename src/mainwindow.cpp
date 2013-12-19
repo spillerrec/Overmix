@@ -419,16 +419,17 @@ void main_widget::make_slide(){
 }
 
 void main_widget::set_alpha_mask(){
-	//TODO:
 	QString filename = QFileDialog::getOpenFileName( this, tr("Open alpha mask"), "", tr("PNG files (*.png)") );
 	
-	ImageEx img;
-	img.read_file( filename.toLocal8Bit().constData() );
-	img.to_grayscale();
-	
-	delete alpha_mask;
-	alpha_mask = new Plane( *img[0] );
-	ui->pre_clear_mask->setEnabled( true );
+	if( !filename.isEmpty() ){
+		ImageEx img;
+		img.read_file( filename.toLocal8Bit().constData() );
+		img.to_grayscale();
+		
+		delete alpha_mask;
+		alpha_mask = new Plane( *img[0] );
+		ui->pre_clear_mask->setEnabled( true );
+	}
 }
 
 void main_widget::clear_mask(){
