@@ -47,6 +47,8 @@ class main_widget: public QMainWindow{
 	protected:
 		void dragEnterEvent( QDragEnterEvent *event );
 		void dropEvent( QDropEvent *event );
+		
+		void make_slide();
 	
 	signals:
 		void urls_retrived( QList<QUrl> urls );

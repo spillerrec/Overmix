@@ -302,9 +302,13 @@ void main_widget::refresh_image(){
 }
 
 void main_widget::save_image(){
+	/*
+	make_slide();
+	/*/
 	QString filename = QFileDialog::getSaveFileName( this, tr("Save image"), "", tr("PNG files (*.png)") );
 	if( !filename.isEmpty() && temp )
 		temp->save( filename );
+	//*/
 }
 
 
@@ -395,6 +399,16 @@ void main_widget::change_interlace(){
 		}
 		
 		ui->cbx_interlaced->setChecked( false );
+	}
+}
+
+void main_widget::make_slide(){
+	int height = temp->height() - 720;
+	double scale = 1/0.8;
+	
+	for( int iy=0; iy<height; iy+=6 ){
+		QImage current = temp->copy( 0, iy, temp->width(), 720 ).scaled( round(temp->width()*scale), round(720*scale), Qt::IgnoreAspectRatio, Qt::SmoothTransformation );
+		current.save( QString("createdslide/upscale/%1.png" ).arg( iy/6 + 1, 4, 10, QChar('0')) );
 	}
 }
 
