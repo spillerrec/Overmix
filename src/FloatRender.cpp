@@ -73,7 +73,7 @@ class PointRender{
 			sort( points.begin(), points.end() );
 			double sum = 0.0;
 			double weight = 0.0;
-			for( unsigned i=0; i<min(points.size(),(long long unsigned)16); ++i ){
+			for( unsigned i=0; i<min(points.size(),(vector<Point>::size_type)16); ++i ){
 				double w = spline( points[i].distance );
 				sum += points[i].value * w;
 				weight += w;
