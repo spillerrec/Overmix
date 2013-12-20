@@ -24,9 +24,12 @@
        <widget class="QLabel" name="lbl_info"/>
       </item>
       <item>
-       <widget class="QGroupBox" name="groupBox_4">
+       <widget class="QGroupBox" name="preprocess_group">
         <property name="title">
          <string>Preprocess</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_10">
          <property name="spacing">
@@ -399,9 +402,12 @@
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="groupBox">
+       <widget class="QGroupBox" name="merge_group">
         <property name="title">
          <string>Merging</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <property name="spacing">
@@ -570,9 +576,12 @@
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="groupBox_3">
+       <widget class="QGroupBox" name="render_group">
         <property name="title">
          <string>Render</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
         </property>
         <layout class="QGridLayout" name="gridLayout_3">
          <property name="leftMargin">
@@ -677,9 +686,12 @@
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="groupBox_5">
+       <widget class="QGroupBox" name="postprocess_group">
         <property name="title">
          <string>Postprocess</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_6">
          <property name="leftMargin">
@@ -1225,85 +1237,88 @@
            </widget>
           </widget>
          </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox_2">
-        <property name="title">
-         <string>Color</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout">
-         <property name="leftMargin">
-          <number>3</number>
-         </property>
-         <property name="topMargin">
-          <number>3</number>
-         </property>
-         <property name="rightMargin">
-          <number>3</number>
-         </property>
-         <property name="bottomMargin">
-          <number>6</number>
-         </property>
-         <property name="spacing">
-          <number>3</number>
-         </property>
-         <item row="1" column="1">
-          <widget class="QRadioButton" name="rbtn_rec601">
-           <property name="text">
-            <string>Rec. 601</string>
+         <item>
+          <widget class="QGroupBox" name="color_group">
+           <property name="title">
+            <string>Color</string>
            </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QRadioButton" name="rbtn_rec709">
-           <property name="text">
-            <string>Rec. 709</string>
-           </property>
-           <property name="checked">
+           <property name="checkable">
             <bool>true</bool>
            </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QRadioButton" name="cbx_nocolor">
-           <property name="text">
-            <string>None (debug)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="cbx_16bit">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="text">
-            <string>16-bit</string>
-           </property>
-           <property name="tristate">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="cbx_gamma">
-           <property name="text">
-            <string>sRGB</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QCheckBox" name="cbx_dither">
-           <property name="text">
-            <string>Dither</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
+           <layout class="QGridLayout" name="gridLayout">
+            <property name="leftMargin">
+             <number>3</number>
+            </property>
+            <property name="topMargin">
+             <number>3</number>
+            </property>
+            <property name="rightMargin">
+             <number>3</number>
+            </property>
+            <property name="bottomMargin">
+             <number>6</number>
+            </property>
+            <property name="spacing">
+             <number>3</number>
+            </property>
+            <item row="1" column="1">
+             <widget class="QRadioButton" name="rbtn_rec601">
+              <property name="text">
+               <string>Rec. 601</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QRadioButton" name="rbtn_rec709">
+              <property name="text">
+               <string>Rec. 709</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QRadioButton" name="cbx_nocolor">
+              <property name="text">
+               <string>None (debug)</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="cbx_16bit">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>16-bit</string>
+              </property>
+              <property name="tristate">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="cbx_gamma">
+              <property name="text">
+               <string>sRGB</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="cbx_dither">
+              <property name="text">
+               <string>Dither</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
         </layout>

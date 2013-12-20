@@ -28,6 +28,7 @@
 class AImageAligner;
 class Deteleciner;
 class Plane;
+class QGroupBox;
 
 class main_widget: public QMainWindow{
 	Q_OBJECT
@@ -51,10 +52,18 @@ class main_widget: public QMainWindow{
 		void dragEnterEvent( QDragEnterEvent *event );
 		void dropEvent( QDropEvent *event );
 		
+		void resize_groupbox( QGroupBox* box );
 		void make_slide();
 	
 	signals:
 		void urls_retrived( QList<QUrl> urls );
+		
+	private slots:
+		void resize_preprocess();
+		void resize_merge();
+		void resize_render();
+		void resize_postprogress();
+		void resize_color();
 	
 	private slots:
 		void process_urls( QList<QUrl> urls );

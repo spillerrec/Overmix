@@ -59,6 +59,13 @@ main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidg
 	connect( ui->cbx_interlaced, SIGNAL( toggled(bool) ), this, SLOT( change_interlace() ) );
 	change_interlace();
 	
+	//Groupboxes
+	connect( ui->preprocess_group, SIGNAL(clicked(bool)), this, SLOT(resize_preprocess()) );
+	connect( ui->merge_group, SIGNAL(clicked(bool)), this, SLOT(resize_merge()) );
+	connect( ui->render_group, SIGNAL(clicked(bool)), this, SLOT(resize_render()) );
+	connect( ui->postprocess_group, SIGNAL(clicked(bool)), this, SLOT(resize_postprogress()) );
+	connect( ui->color_group, SIGNAL(clicked(bool)), this, SLOT(resize_color()) );
+	
 	//Merge method
 	connect( ui->cbx_merge_h, SIGNAL( toggled(bool) ), this, SLOT( toggled_hor() ) );
 	connect( ui->cbx_merge_v, SIGNAL( toggled(bool) ), this, SLOT( toggled_ver() ) );
@@ -74,6 +81,11 @@ main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidg
 	ui->main_layout->addWidget( &viewer );
 	viewer.setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
 }
+void main_widget::resize_preprocess(){   resize_groupbox( ui->preprocess_group ); }
+void main_widget::resize_merge(){        resize_groupbox( ui->merge_group ); }
+void main_widget::resize_render(){       resize_groupbox( ui->render_group ); }
+void main_widget::resize_postprogress(){ resize_groupbox( ui->postprocess_group ); }
+void main_widget::resize_color(){        resize_groupbox( ui->color_group ); }
 
 main_widget::~main_widget(){
 	delete detelecine;
@@ -93,6 +105,14 @@ void main_widget::dropEvent( QDropEvent *event ){
 		
 		event->accept();
 	}
+}
+
+
+void main_widget::resize_groupbox( QGroupBox* box ){
+	if( box->isChecked() )
+		box->setMaximumSize( QWIDGETSIZE_MAX, QWIDGETSIZE_MAX ); //TODO: max value
+	else
+		box->setMaximumHeight( 20 );
 }
 
 //Load an image for mapped, doesn't work with lambdas appearently...
