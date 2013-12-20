@@ -157,7 +157,7 @@ void imageViewer::change_image( QImage *new_image, bool delete_old ){
 #include <QBrush>
 
 
-void imageViewer::paintEvent( QPaintEvent *event ){
+void imageViewer::paintEvent( QPaintEvent* ){
 	if( !image_cache )
 		return;
 	
@@ -215,7 +215,7 @@ void imageViewer::mouseMoveEvent( QMouseEvent *event ){
 }
 
 
-void imageViewer::mouseReleaseEvent( QMouseEvent *event ){
+void imageViewer::mouseReleaseEvent( QMouseEvent* ){
 	if( mouse_active )
 		setCursor( Qt::OpenHandCursor );
 	

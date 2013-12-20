@@ -54,7 +54,7 @@ class AnimFrame{
 			ImageEx* img = SimpleRender().render( render );
 			ImageEx merged( background );
 			auto offset = aligner.find_offset( *merged[0], *(*img)[0] );
-			QPoint pos = ( aligner.pos( indexes[indexes.size()-1] ) - aligner.pos(aligner.count()-1) ).toPoint();
+			//QPoint pos = ( aligner.pos( indexes[indexes.size()-1] ) - aligner.pos(aligner.count()-1) ).toPoint();
 			merged[0]->copy( offset.distance_x, offset.distance_y, *(*img)[0] );
 			merged[1]->copy( offset.distance_x, offset.distance_y, *(*img)[1] );
 			merged[2]->copy( offset.distance_x, offset.distance_y, *(*img)[2] );

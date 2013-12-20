@@ -49,7 +49,7 @@ void LayeredAligner::align(){
 		aligner.add_image( (ImageEx* const)image.original );
 	aligner.align();
 	
-	for( int i=0; i<images.size(); i++ )
+	for( unsigned i=0; i<images.size(); i++ )
 		images[i].pos = aligner.pos(i);
 }
 
