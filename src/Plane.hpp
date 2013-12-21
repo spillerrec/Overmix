@@ -89,6 +89,11 @@ class Plane{
 		color_type& pixel( unsigned x, unsigned y ) const{ return data[ x + y*line_width ]; }
 		color_type* scan_line( unsigned y ) const{ return data + y*line_width; }
 		
+	//Queries
+		color_type min_value() const;
+		color_type max_value() const;
+		color_type mean_value() const;
+		
 	//Drawing methods
 		void fill( color_type value );
 		void copy( int x, int y, const Plane& from );
@@ -110,6 +115,7 @@ class Plane{
 			,	color_type output_min, color_type output_max
 			,	double gamma
 			) const;
+		Plane* normalize() const;
 		
 	//Difference
 		double diff( const Plane& p, int x, int y, unsigned stride=1 ) const;

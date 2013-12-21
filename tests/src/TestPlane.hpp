@@ -30,6 +30,11 @@ class TestPlane : public QObject{
 		void testPixel_data();
 		void testPixel();
 		
+		void testMin_data();
+		void testMin();
+		void testMax_data();
+		void testMax();
+		
 		void testFill_data();
 		void testFill();
 };

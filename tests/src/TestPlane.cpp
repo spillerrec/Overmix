@@ -82,6 +82,56 @@ void TestPlane::testPixel(){
 	}
 }
 
+void TestPlane::testMin_data(){
+	QTest::addColumn<unsigned>( "width" );
+	QTest::addColumn<unsigned>( "height" );
+	QTest::addColumn<unsigned>( "x" );
+	QTest::addColumn<unsigned>( "y" );
+	QTest::addColumn<color_type>( "value" );
+	
+	QTest::newRow( "0,0" ) << 23u << 65u << 0u << 0u << (color_type)color::WHITE;
+	QTest::newRow( "0,0" ) << 23u << 65u << 22u << 64u <<(color_type)color::BLACK;
+	QTest::newRow( "0,0" ) << 23u << 65u << 22u << 2u << color::from_8bit( 25 );
+}
+void TestPlane::testMin(){
+	QFETCH(unsigned, width);
+	QFETCH(unsigned, height);
+	QFETCH(unsigned, x);
+	QFETCH(unsigned, y);
+	QFETCH(color_type, value);
+	
+	Plane p( width, height );
+	p.fill( color::MAX_VAL );
+	p.pixel( x, y ) = value;
+	
+	QCOMPARE( p.min_value(), value );
+}
+
+void TestPlane::testMax_data(){
+	QTest::addColumn<unsigned>( "width" );
+	QTest::addColumn<unsigned>( "height" );
+	QTest::addColumn<unsigned>( "x" );
+	QTest::addColumn<unsigned>( "y" );
+	QTest::addColumn<color_type>( "value" );
+	
+	QTest::newRow( "0,0" ) << 23u << 65u << 0u << 0u << (color_type)color::WHITE;
+	QTest::newRow( "0,0" ) << 23u << 65u << 22u << 64u <<(color_type)color::BLACK;
+	QTest::newRow( "0,0" ) << 23u << 65u << 22u << 2u << color::from_8bit( 25 );
+}
+void TestPlane::testMax(){
+	QFETCH(unsigned, width);
+	QFETCH(unsigned, height);
+	QFETCH(unsigned, x);
+	QFETCH(unsigned, y);
+	QFETCH(color_type, value);
+	
+	Plane p( width, height );
+	p.fill( color::MIN_VAL );
+	p.pixel( x, y ) = value;
+	
+	QCOMPARE( p.max_value(), value );
+}
+
 void TestPlane::testFill_data(){
 	QTest::addColumn<unsigned>( "width" );
 	QTest::addColumn<unsigned>( "height" );

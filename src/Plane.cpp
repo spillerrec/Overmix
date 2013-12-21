@@ -25,6 +25,8 @@
 #include <QtConcurrent>
 #include <QDebug>
 
+#include "color.hpp"
+
 using namespace std;
 
 const unsigned long Plane::MAX_VAL = 0xFFFFFFFF;
@@ -49,6 +51,39 @@ Plane::Plane( const Plane& p ){
 	unsigned size = height * line_width;
 	data = new color_type[ size ];
 	memcpy( data, p.data, sizeof(color_type)*size );
+}
+
+
+color_type Plane::min_value() const{
+	color_type min = color::MAX_VAL;
+	for( unsigned iy=0; iy<get_height(); ++iy ){
+		color_type* row = scan_line( iy );
+		for( unsigned ix=0; ix<get_width(); ++ix )
+			if( row[ix] < min )
+				min = row[ix];
+	}
+	return min;
+}
+color_type Plane::max_value() const{
+	color_type max = color::MIN_VAL;
+	for( unsigned iy=0; iy<get_height(); ++iy ){
+		color_type* row = scan_line( iy );
+		for( unsigned ix=0; ix<get_width(); ++ix )
+			if( row[ix] > max )
+				max = row[ix];
+	}
+	return max;
+}
+color_type Plane::mean_value() const{
+	/*color_type min = color::MAX_VAL;
+	for( unsigned iy=0; iy<get_height(); ++iy ){
+		color_type* row = scan_line( iy );
+		for( unsigned ix=0; ix<get_width(); ++ix )
+			if( row[ix] < min )
+				min = row[ix];
+	}
+	*/
+	return color::WHITE;
 }
 
 void Plane::fill( color_type value ){
@@ -146,5 +181,7 @@ void Plane::combine_line( Plane &p, bool top ){
 	}
 }
 
-
+Plane* Plane::normalize() const{
+	return level( min_value(), max_value(), color::BLACK, color::WHITE, 1.0 );
+}
 
