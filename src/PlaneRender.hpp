@@ -15,32 +15,21 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SIMPLE_RENDER_HPP
-#define SIMPLE_RENDER_HPP
+#ifndef PLANE_RENDER_HPP
+#define PLANE_RENDER_HPP
 
 #include "ARender.hpp"
 
-class SimpleRender : public ARender{
-	public:
-		enum Filters{
-			FOR_MERGING,
-			AVERAGE,
-			SIMPLE,
-			SIMPLE_SLIDE,
-			DARK_SELECT
-		};
-	
+#include "MultiPlaneIterator.hpp"
+
+class PlaneRender : public ARender{
 	protected:
-		Filters filter;
-		bool upscale_chroma;
-		
+		virtual void* data() const{ return nullptr; }
+		typedef void pixel_func( MultiPlaneLineIterator &it );
+		virtual pixel_func* pixel() const = 0;
 	public:
-		SimpleRender( Filters filter=AVERAGE, bool upscale_chroma=true ) : filter( filter ), upscale_chroma( upscale_chroma ) { }
+		virtual ImageEx* render( const AImageAligner& aligner, unsigned max_count=-1 ) const override;
 		
-		virtual ImageEx* render( const AImageAligner& aligner, unsigned max_count=-1 ) const;
-		
-		void set_filter( Filters f ){ filter = f; }
-		void set_chroma_upscale( bool upscale ){ upscale_chroma = upscale; }
 };
 
 #endif

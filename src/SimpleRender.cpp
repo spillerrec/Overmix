@@ -69,44 +69,6 @@ static void render_average( MultiPlaneIterator &it, bool alpha_used ){
 	}
 }
 
-static void render_diff( MultiPlaneIterator &it, bool alpha_used ){
-	unsigned start_plane = alpha_used ? 2 : 1;
-	it.data = (void*)&start_plane;
-	
-	it.iterate_all(); //No need to optimize this filter
-	
-	//Do average and store in [0]
-	it.for_all_pixels( [](MultiPlaneLineIterator &it){
-			unsigned start_plane = *(unsigned*)it.data;
-			//Calculate sum
-			unsigned amount = 0;
-			precision_color_type sum = 0;
-			for( unsigned i=start_plane; i<it.size(); i++ ){
-				if( it.valid( i ) ){
-					sum += it[i];
-					amount++;
-				}
-			}
-			
-			if( amount ){
-				precision_color_type avg = sum / amount;
-				
-				//Calculate sum of the difference from average
-				precision_color_type diff_sum = 0;
-				for( unsigned i=start_plane; i<it.size(); i++ ){
-					if( it.valid( i ) ){
-						unsigned long d = abs( avg - it[i] );
-						diff_sum += d;
-					}
-				}
-				
-				it[0] = diff_sum / amount;
-			}
-			else if( start_plane == 2 )
-				it[1] = 0;
-		} );
-}
-
 static void render_dark_select( MultiPlaneIterator &it, bool alpha_used ){
 	unsigned start_plane = alpha_used ? 2 : 1;
 	it.data = (void*)&start_plane;
@@ -147,8 +109,6 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count 
 	unsigned planes_amount = 3; //TODO: alpha?
 	if( filter == FOR_MERGING && aligner.image(0)->get_system() == ImageEx::YUV )
 		planes_amount = 1;
-	if( filter == DIFFERENCE )
-		planes_amount = 1; //TODO: take the best plane
 	
 	//Do iterator
 	QRect full = aligner.size();
@@ -216,9 +176,7 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count 
 		
 		MultiPlaneIterator it( info );
 		
-		if( filter == DIFFERENCE )
-			render_diff( it, use_alpha );
-		else if( filter == DARK_SELECT && i == 0 )
+		if( filter == DARK_SELECT && i == 0 )
 			render_dark_select( it, use_alpha );
 		else
 			render_average( it, use_alpha );

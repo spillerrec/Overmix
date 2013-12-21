@@ -13,5 +13,5 @@ SOURCES += $$PWD/src/Plane-scaling.cpp $$PWD/src/Plane-edgedetection.cpp $$PWD/s
 HEADERS += $$PWD/src/AImageAligner.hpp $$PWD/src/AverageAligner.hpp $$PWD/src/AnimatedAligner.hpp $$PWD/src/ImageAligner.hpp $$PWD/src/LayeredAligner.hpp
 SOURCES += $$PWD/src/AImageAligner.cpp $$PWD/src/AverageAligner.cpp $$PWD/src/AnimatedAligner.cpp $$PWD/src/ImageAligner.cpp $$PWD/src/LayeredAligner.cpp
 # Renders
-HEADERS += $$PWD/src/SimpleRender.hpp $$PWD/src/FloatRender.hpp $$PWD/src/DiffRender.hpp $$PWD/src/ARender.hpp
-SOURCES += $$PWD/src/SimpleRender.cpp $$PWD/src/FloatRender.cpp $$PWD/src/DiffRender.cpp
+HEADERS += $$PWD/src/SimpleRender.hpp $$PWD/src/FloatRender.hpp $$PWD/src/DiffRender.hpp $$PWD/src/PlaneRender.hpp $$PWD/src/DifferenceRender.hpp $$PWD/src/ARender.hpp
+SOURCES += $$PWD/src/SimpleRender.cpp $$PWD/src/FloatRender.cpp $$PWD/src/DiffRender.cpp $$PWD/src/PlaneRender.cpp $$PWD/src/DifferenceRender.cpp

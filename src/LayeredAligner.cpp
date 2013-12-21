@@ -19,6 +19,7 @@
 #include "LayeredAligner.hpp"
 #include "AverageAligner.hpp"
 #include "SimpleRender.hpp"
+#include "DifferenceRender.hpp"
 
 class InternAligner : public AverageAligner{
 	protected:
@@ -27,7 +28,7 @@ class InternAligner : public AverageAligner{
 	public:
 		InternAligner( AImageAligner& normal, AlignMethod method, double scale=1.0 )
 			:	AverageAligner( method, scale ), normal(normal){
-			diff = SimpleRender( SimpleRender::DIFFERENCE ).render( normal );
+			diff = DifferenceRender().render( normal );
 		}
 		virtual /*const*/ Plane* prepare_plane( /*const*/ Plane* p ) override{
 			//TODO: randomize repeating errors

@@ -24,6 +24,7 @@
 #include "DiffRender.hpp"
 #include "FloatRender.hpp"
 #include "AverageAligner.hpp"
+#include "DifferenceRender.hpp"
 #include "AnimatedAligner.hpp"
 #include "LayeredAligner.hpp"
 #include "FakeAligner.hpp"
@@ -213,7 +214,7 @@ void main_widget::refresh_image(){
 	
 	#undef DIFFERENCE //TODO: where the heck did this macro come from? And why does it prevent my code from compiling?
 	if( ui->rbtn_diff->isChecked() )	//TODO: missing renderer
-		img_org = SimpleRender( SimpleRender::DIFFERENCE, chroma_upscale ).render( *aligner );
+		img_org = DifferenceRender().render( *aligner );
 	else if( ui->rbtn_static_diff->isChecked() )
 		img_org = DiffRender().render( *aligner );
 	else if( ui->rbtn_windowed->isChecked() )

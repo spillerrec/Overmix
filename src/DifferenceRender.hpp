@@ -15,32 +15,14 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SIMPLE_RENDER_HPP
-#define SIMPLE_RENDER_HPP
+#ifndef DIFFERENCE_RENDER_HPP
+#define DIFFERENCE_RENDER_HPP
 
-#include "ARender.hpp"
+#include "PlaneRender.hpp"
 
-class SimpleRender : public ARender{
-	public:
-		enum Filters{
-			FOR_MERGING,
-			AVERAGE,
-			SIMPLE,
-			SIMPLE_SLIDE,
-			DARK_SELECT
-		};
-	
+class DifferenceRender : public PlaneRender{
 	protected:
-		Filters filter;
-		bool upscale_chroma;
-		
-	public:
-		SimpleRender( Filters filter=AVERAGE, bool upscale_chroma=true ) : filter( filter ), upscale_chroma( upscale_chroma ) { }
-		
-		virtual ImageEx* render( const AImageAligner& aligner, unsigned max_count=-1 ) const;
-		
-		void set_filter( Filters f ){ filter = f; }
-		void set_chroma_upscale( bool upscale ){ upscale_chroma = upscale; }
+		virtual pixel_func* pixel() const override;
 };
 
 #endif
