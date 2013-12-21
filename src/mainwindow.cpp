@@ -123,7 +123,7 @@ static ImageEx* load( QUrl url ){
 }
 
 void main_widget::process_urls( QList<QUrl> urls ){
-	QProgressDialog progress( "Mixing images", "Stop", 0, urls.count(), this );
+	QProgressDialog progress( tr("Loading images"), tr("Stop"), 0, urls.count(), this );
 	progress.setWindowModality( Qt::WindowModal );
 	
 	QTime t;
