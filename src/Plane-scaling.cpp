@@ -76,7 +76,7 @@ struct ScalePoint{
 	
 	ScalePoint( unsigned index, unsigned width, unsigned wanted_width, double window, Plane::Filter f ){
 		
-		double pos = ((double)index / (wanted_width-1)) * (width-1);
+      double pos = ((double)index / (wanted_width-1)) * (width-1);
 		start = (unsigned)max( (int)ceil( pos-window ), 0 );
 		unsigned end = min( (unsigned)floor( pos+window ), width-1 );
 		
@@ -108,7 +108,8 @@ void do_line( const ScaleLine& line ){
 	for( auto x : line.points ){
 		double avg = 0;
 		double amount = 0;
-		color_type* row = line.row - (line.index-ver.start)*line.line_width + x.start;
+      int offset = ((int)line.index-ver.start)*line.line_width;
+      color_type* row = line.row - offset + x.start;
 		
 		for( auto wy : ver.weights ){
 			color_type* row2 = row;
@@ -122,7 +123,7 @@ void do_line( const ScaleLine& line ){
 		}
 		
 		//TODO: fix
-		*(out++) = amount ? std::min( precision_color_type( avg / amount + 0.5 ), (precision_color_type)color::WHITE ) : (precision_color_type)color::BLACK;
+		*(out++) = amount != 0.0 ? std::min( precision_color_type( avg / amount + 0.5 ), (precision_color_type)color::WHITE ) : (precision_color_type)color::BLACK;
 		
 	}
 }
@@ -154,7 +155,9 @@ Plane* Plane::scale_generic( unsigned wanted_width, unsigned wanted_height, doub
 		lines.push_back( line );
 	}
 	
-	QtConcurrent::blockingMap( lines, &do_line );
+   //QtConcurrent::blockingMap( lines, &do_line );
+   for( auto l : lines )
+      do_line( l );
 	
 	qDebug( "Resize took: %d msec", t.restart() );
 	return scaled;
