@@ -33,31 +33,38 @@ static void render_average( MultiPlaneIterator &it, bool alpha_used ){
 	unsigned start_plane = alpha_used ? 2 : 1;
 	it.data = (void*)&start_plane;
 	
-	if( it.iterate_all() ){
+	/*if(*/ it.iterate_all();/* ){
 	//Do average and store in [0]
 	it.for_all_pixels( [](MultiPlaneLineIterator &it){
 			unsigned start_plane = *(unsigned*)it.data;
 			precision_color_type avg = 0;
-			for( unsigned i=start_plane; i<it.size(); i++ )
+			for( unsigned i=start_plane; i<it.size(); i+=2 )
 				avg += it[i];
 			
 			if( it.size() > start_plane )
-				it[0] = avg / (it.size() - start_plane); //NOTE: Will crash if image contains empty parts
+				it[0] = avg / ((it.size() - start_plane)*2); //NOTE: Will crash if image contains empty parts
 			else
 				it[0] = 0;
 		} );
 	}
-	else{
+	else*/{
 	//Do average and store in [0]
 	it.for_all_pixels( [](MultiPlaneLineIterator &it){
 			unsigned start_plane = *(unsigned*)it.data;
 			precision_color_type avg = 0;
-			unsigned amount = 0;
+			double amount = 0;
 
-			for( unsigned i=start_plane; i<it.size(); i++ ){
+			for( unsigned i=start_plane; i<it.size(); i+=2 ){
 				if( it.valid( i ) ){
-					avg += it[i];
-					amount++;
+					if( it.valid( i+1 ) ){
+						double w = color::as_double( it[i+1] );
+						avg += it[i] * w;
+						amount += w;
+					}
+					else{
+						avg += it[i];
+						amount += 1.0;
+					}
 				}
 			}
 			
@@ -122,6 +129,10 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count 
 	alpha->fill( color::WHITE );
 	img->replace_plane( 3, alpha );
 	
+	//Fake alpha
+	Plane* fake_alpha = new Plane( aligner.plane(0,0)->get_width(), aligner.plane(0,0)->get_height() );
+	fake_alpha->fill( color::WHITE );
+	
 	for( unsigned i=0; i<planes_amount; i++ ){
 		//Determine local size
 		double scale_x = (double)aligner.plane(0,i)->get_width() / aligner.plane(0,0)->get_width();
@@ -155,12 +166,23 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count 
 		vector<Plane*> temp;
 		
 		if( out_size == local ){
-			for( unsigned j=0; j<max_count; j++ )
+			for( unsigned j=0; j<max_count; j++ ){
 				info.push_back( PlaneItInfo(
 						aligner.plane( j, i )
 					,	round( aligner.pos(j).x()*scale_x )
 					,	round( aligner.pos(j).y()*scale_y )
 					) );
+				
+				Plane* current_alpha = aligner.image( j )->alpha_plane();
+				if( !current_alpha )
+					current_alpha = fake_alpha;
+				
+				info.push_back( PlaneItInfo(
+						current_alpha
+					,	round( aligner.pos(j).x()*scale_x )
+					,	round( aligner.pos(j).y()*scale_y )
+					) );
+			}
 		}
 		else{
 			temp.reserve( max_count );
@@ -171,6 +193,13 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count 
 				temp.push_back( p );
 				QPoint pos = aligner.pos(j).toPoint();
 				info.push_back( PlaneItInfo( p, pos.x(),pos.y() ) );
+				
+				//Alpha
+				Plane* current_alpha = aligner.image( j )->alpha_plane();
+				if( !current_alpha )
+					current_alpha = fake_alpha;
+				
+				info.push_back( PlaneItInfo( current_alpha, pos.x(),pos.y() ) );
 			}
 		}
 		
@@ -190,11 +219,6 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count 
 			delete temp[j];
 	}
 	
-	/* 
-	color (MultiImageIterator::*function)();
-	function = &MultiImageIterator::average;
-	*row = (it.*function)();
-	*/
 	qDebug( "render rest took: %d", t.elapsed() );
 	
 	return img;

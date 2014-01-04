@@ -98,6 +98,8 @@ ImageEx* DiffRender::render( const AImageAligner& aligner, unsigned max_count ) 
 		}
 	}
 	
+	img->apply_operation( &Plane::normalize );
+	
 	delete avg;
 	return img;
 }
