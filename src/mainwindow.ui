@@ -350,6 +350,9 @@
                </item>
                <item>
                 <widget class="QDoubleSpinBox" name="pre_scale_height">
+                 <property name="decimals">
+                  <number>3</number>
+                 </property>
                  <property name="singleStep">
                   <double>0.010000000000000</double>
                  </property>
