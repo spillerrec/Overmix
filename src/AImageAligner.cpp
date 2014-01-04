@@ -18,6 +18,8 @@
 #include "AImageAligner.hpp"
 #include "color.hpp"
 
+#include <fstream>
+
 AImageAligner::~AImageAligner(){
 	//Remove scaled images
 	for( unsigned i=0; i<images.size(); ++i )
@@ -131,5 +133,38 @@ QPointF AImageAligner::pos( unsigned index ) const{
 		return images[index].pos;
 	else
 		return QPointF( images[index].pos.x() / x_scale(), images[index].pos.y() / y_scale() );
+}
+
+void AImageAligner::debug( QString csv_file ) const{
+	//Open output file
+	const char* path = csv_file.toLocal8Bit().constData();
+	std::fstream rel( path, std::fstream::out );
+	if( !rel.is_open() ){
+		qWarning( "AImageAligner::debug( \"%s\" ), couldn't open file", path );
+		return;
+	}
+	
+	//Write header
+	rel << "\"Scale: " << scale << "\", ";
+	rel << "\"x\", ";
+	rel << "\"y\", ";
+	rel << "\"dx\", ";
+	rel << "\"dy\"\n";
+	
+	//Write alignment info
+	for( unsigned i=0; i<count(); i++ ){
+		rel << i+1 << ", ";
+		rel << pos(i).x() << ", ";
+		rel << pos(i).y() << ", ";
+		
+		if( i > 0 ){
+			QPointF diff = pos(i) - pos(i-1);
+			rel << diff.x() << ", ";
+			rel << diff.y();
+		}
+		rel << "\n";
+	}
+	
+	rel.close();
 }
 

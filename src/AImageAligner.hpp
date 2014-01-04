@@ -85,6 +85,8 @@ class AImageAligner{
 		QPointF pos( unsigned index ) const;
 		
 		virtual void align() = 0;
+		
+		void debug( QString csv_file ) const;
 };
 
 #endif
