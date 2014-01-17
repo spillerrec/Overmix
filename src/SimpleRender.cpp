@@ -219,6 +219,7 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count 
 			delete temp[j];
 	}
 	
+	delete fake_alpha;
 	qDebug( "render rest took: %d", t.elapsed() );
 	
 	return img;
