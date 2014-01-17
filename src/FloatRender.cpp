@@ -50,7 +50,7 @@ static double cubic( double b, double c, double x ){
 static double spline( double x ){ return cubic( 1.0, 0.0, x ); }
 //TODO: reuse implementation in Plane
 
-class PointRender{
+class PointRenderBase{
 	public:
 		struct Point{
 			double distance;
@@ -59,13 +59,45 @@ class PointRender{
 				return distance < other.distance;
 			}
 		};
-	protected:
-		QPoint pos;
 		
+	private:
+		QPoint pos;
+
+		QPointF toAbsolute( QPointF img_pos, QPointF offset, double scale ) const{
+			return img_pos * scale + offset;
+		}
+		QPointF toRelative( QPointF pos, QPointF offset, double scale ) const{
+			return (pos - offset) / scale;
+		}
+		
+	public:
+		PointRenderBase( int x, int y ) : pos( x, y ) { }
+		
+		void add_points( const Plane* img, QPointF offset, double scale ){
+			QRectF relative( offset, QSizeF( img->get_width()*scale, img->get_height()*scale ) );
+			QRectF window( pos - QPointF( 2,2 )*scale, QSizeF( 4,4 )*scale );
+			QRectF usable = window.intersected(relative);
+			
+			QPointF fstart = toRelative( usable.topLeft(), offset, scale );
+			QPointF fend = toRelative( usable.bottomRight(), offset, scale );
+			for( int iy=ceil(fstart.y()); iy<floor(fend.y()); ++iy )
+				for( int ix=ceil(fstart.x()); ix<floor(fend.x()); ++ix ){
+					QPointF distance = toAbsolute( QPointF( ix, iy ), offset, scale ) - pos;
+					distance /= scale;
+					Point p{ sqrt(distance.x()*distance.x() + distance.y()*distance.y()), img->pixel(ix,iy) };
+					add_point( p );
+				}
+		}
+		
+		virtual void add_point( Point p ) = 0;
+};
+
+class PointRender : public PointRenderBase{
+	protected:
 		vector<Point>& points;
 		
 	public:
-		PointRender( int x, int y, vector<Point>& points ) : pos( QPoint( x, y ) ), points(points) {
+		PointRender( int x, int y, vector<Point>& points ) : PointRenderBase( x, y ), points(points) {
 			points.clear();
 		}
 		
@@ -81,129 +113,45 @@ class PointRender{
 			return (weight!=0.0) ? round(sum / weight) : 0;
 		}
 		
-		void add_points( const Plane* img, QPointF offset, double scale ){
-			QRectF relative( offset, QSizeF( img->get_width()*scale, img->get_height()*scale ) );
-			QRectF window( pos - QPointF( 2,2 )*scale, QSizeF( 4,4 )*scale );
-			QRectF usable = window.intersected(relative);
-			
-			QPointF fstart = toRelative( usable.topLeft(), offset, scale );
-			QPointF fend = toRelative( usable.bottomRight(), offset, scale );
-			for( int iy=ceil(fstart.y()); iy<floor(fend.y()); ++iy )
-				for( int ix=ceil(fstart.x()); ix<floor(fend.x()); ++ix ){
-					QPointF distance = toAbsolute( QPointF( ix, iy ), offset, scale ) - pos;
-					Point p;
-					p.distance = sqrt( distance.x()*distance.x() + distance.y()*distance.y() ) / scale;
-					p.value = img->pixel( ix, iy );
-					points.push_back( p );
-				}
-		}
-		
-		QPointF toAbsolute( QPointF img_pos, QPointF offset, double scale ) const{
-			return img_pos * scale + offset;
-		}
-		QPointF toRelative( QPointF pos, QPointF offset, double scale ) const{
-			return (pos - offset) / scale;
-		}
-		
-		double get_weight( QPointF offset ){
-			return spline( abs(offset.x()) ) * spline( abs(offset.y()) );
+		virtual void add_point( Point p ) override{
+			points.push_back( p );
 		}
 };
 
-class PointRender2{
-	public:
-		struct Point{
-			double distance;
-			color_type value;
-			bool operator<(const Point& other) const{
-				return distance < other.distance;
-			}
-		};
+class PointRender2 : public PointRenderBase{
 	protected:
-		QPoint pos;
 		double sum = 0.0;
 		double weight = 0.0;
 		
 	public:
-		PointRender2( int x, int y ) : pos( QPoint( x, y ) ), sum(0), weight(0) { }
+		PointRender2( int x, int y ) : PointRenderBase( x, y ), sum(0), weight(0) { }
 		
 		color_type value(){
 			return (weight!=0.0) ? color::truncate(sum / weight) : color::BLACK;
 		}
 		
-		void add_points( const Plane* img, QPointF offset, double scale ){
-			QRectF relative( offset, QSizeF( img->get_width()*scale, img->get_height()*scale ) );
-			QRectF window( pos - QPointF( 2,2 )*scale, QSizeF( 4,4 )*scale );
-			QRectF usable = window.intersected(relative);
-			
-			QPointF fstart = toRelative( usable.topLeft(), offset, scale );
-			QPointF fend = toRelative( usable.bottomRight(), offset, scale );
-			for( int iy=ceil(fstart.y()); iy<floor(fend.y()); ++iy )
-				for( int ix=ceil(fstart.x()); ix<floor(fend.x()); ++ix ){
-					QPointF distance = toAbsolute( QPointF( ix, iy ), offset, scale ) - pos;
-					double w = spline( distance.x() / scale ) * spline( distance.y() / scale );
-					sum += img->pixel(ix,iy) * w;
-					weight += w;
-				}
-		}
-		
-		QPointF toAbsolute( QPointF img_pos, QPointF offset, double scale ) const{
-			return img_pos * scale + offset;
-		}
-		QPointF toRelative( QPointF pos, QPointF offset, double scale ) const{
-			return (pos - offset) / scale;
-		}
-		
-		double get_weight( QPointF offset ){
-			return spline( abs(offset.x()) ) * spline( abs(offset.y()) );
+		virtual void add_point( Point p ) override{
+			double w = spline( p.distance );
+			sum += p.value * w;
+			weight += w;
 		}
 };
 
-class PointRender3{
-	public:
-		struct Point{
-			double distance;
-			color_type value;
-			bool operator<(const Point& other) const{
-				return distance < other.distance;
-			}
-		};
+class PointRender3 : public PointRenderBase{
 	protected:
-		std::vector<Point> points;
-		QPoint pos;
+		Point p{ 99999, 0 };
 		
 	public:
-		PointRender3( int x, int y ) : pos( QPoint( x, y ) ){ }
+		PointRender3( int x, int y ) : PointRenderBase( x, y ) { }
 		
 		color_type value(){
-			Point p{ 99999, 0 };
-			for( auto point : points )
-				if( point < p )
-					p = point;
 			return p.value;
 		}
 		
-		void add_points( const Plane* img, QPointF offset, double scale ){
-			QRectF relative( offset, QSizeF( img->get_width()*scale, img->get_height()*scale ) );
-			QRectF window( pos - QPointF( 2,2 )*scale, QSizeF( 4,4 )*scale );
-			QRectF usable = window.intersected(relative);
-			
-			QPointF fstart = toRelative( usable.topLeft(), offset, scale );
-			QPointF fend = toRelative( usable.bottomRight(), offset, scale );
-			for( int iy=ceil(fstart.y()); iy<floor(fend.y()); ++iy )
-				for( int ix=ceil(fstart.x()); ix<floor(fend.x()); ++ix ){
-					QPointF distance = toAbsolute( QPointF( ix, iy ), offset, scale ) - pos;
-					Point p{ sqrt(distance.x()*distance.x() + distance.y()*distance.y()), img->pixel(ix,iy) };
-					points.push_back( p );
-				}
+		virtual void add_point( Point p ) override{
+			this->p = min( this->p, p );
 		}
 		
-		QPointF toAbsolute( QPointF img_pos, QPointF offset, double scale ) const{
-			return img_pos * scale + offset;
-		}
-		QPointF toRelative( QPointF pos, QPointF offset, double scale ) const{
-			return (pos - offset) / scale;
-		}
 };
 
 
@@ -237,14 +185,14 @@ ImageEx* FloatRender::render( const AImageAligner& aligner, unsigned max_count )
 	alpha->fill( color::WHITE );
 	img->replace_plane( 3, alpha );
 	
-//	vector<PointRender::Point> points;
+	vector<PointRenderBase::Point> points;
 	for( unsigned i=0; i<planes_amount; i++ ){
 		Plane* out = (*img)[i];
 		
 		for( unsigned iy=0; iy<out->get_height(); ++iy ){
 			color_type* row = out->scan_line( iy );
 			for( unsigned ix=0; ix<out->get_width(); ++ix ){
-				PointRender3 p( ix + full.x()*scale, iy + full.y()*scale/*, points*/ );
+				PointRender p( ix + full.x()*scale, iy + full.y()*scale, points );
 				
 				for( unsigned j=0; j<max_count; ++j ){
 					double scale2 = (double)aligner.plane( j, 0 )->get_width() / aligner.plane( j, i )->get_width() * scale;
