@@ -479,6 +479,8 @@ void ImageEx::crop( unsigned left, unsigned top, unsigned right, unsigned bottom
 		replace_plane( 0, planes[0]->crop( left*2, top*2, planes[0]->get_width()-width*2, planes[0]->get_height()-height*2 ) );
 		replace_plane( 1, planes[1]->crop( left, top, planes[1]->get_width()-width, planes[1]->get_height()-height ) );
 		replace_plane( 2, planes[2]->crop( left, top, planes[2]->get_width()-width, planes[2]->get_height()-height ) );
+		if( planes[3] )
+			replace_plane( 3, planes[3]->crop( left*2, top*2, planes[3]->get_width()-width*2, planes[3]->get_height()-height*2 ) );
 	}
 	else{
 		for( unsigned i=0; i<MAX_PLANES; i++ ){
