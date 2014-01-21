@@ -26,6 +26,7 @@ namespace debug{
 	
 	void make_low_res( QImage image, QString dir, unsigned scale, unsigned amount=0 );
 	
+	void output_transfers_functions( QString path );
 }
 
 #endif

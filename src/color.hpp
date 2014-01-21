@@ -87,7 +87,7 @@ struct color{
 		//	linearize();
 		}
 	
-	private:
+	public:
 		static color_type sRgb2linear( color_type value ){
 			double v = as_double( value );
 			v = ( v <= 0.04045 ) ? v / 12.92 : std::pow( (v+0.055)/1.055, 2.4 );

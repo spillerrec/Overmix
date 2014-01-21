@@ -18,6 +18,42 @@
 
 #include "debug.hpp"
 
+#include "color.hpp"
+
+#include <string>
+#include <fstream>
+
+using namespace std;
+
+class CsvFile{
+	private:
+		ofstream file;
+		
+	public:	
+		CsvFile( string filename ) : file( filename ) { }
+		
+		~CsvFile(){
+			file.close();
+		}
+		
+		CsvFile& add( color_type value ){
+			file << value << ",";
+			return *this;
+		}
+		
+		CsvFile& add( const char* const value ){
+			file << "\"" << value << "\",";
+			return *this;
+		}
+		CsvFile& add( string value ){
+			return add( value.c_str() );
+		}
+		
+		void stop(){
+			file << endl;
+		}
+};
+
 void debug::make_slide( QImage image, QString dir, double scale ){
 	int height = image.height() - 720;
 	
@@ -45,5 +81,23 @@ void debug::make_low_res( QImage image, QString dir, unsigned scale, unsigned am
 				;
 			frame.save( (dir + "/%1x%2.png").arg( ix ).arg( iy ) );
 		}
+}
+
+void debug::output_transfers_functions( QString path ){
+	CsvFile out( string{ path.toUtf8().constData() } );
+	
+	out.add( "From" ).add( "sRgb2linear" ).add( "linear2sRgb" ).add( "sRgb2sRgb" ).add( "ycbcr2srgb" ).stop();
+	
+	for( int i=0; i<256; i++ ){
+		color_type val = color::from_8bit( i );
+		
+		out.add( val )
+			.add( color::sRgb2linear( val ) )
+			.add( color::linear2sRgb( val ) )
+			.add( color::sRgb2linear( color::linear2sRgb( val ) ) )
+			.add( color::from_double( color::ycbcr2srgb( color::as_double( val ) ) ) )
+			.stop()
+			;
+	}
 }
 
