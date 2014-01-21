@@ -64,6 +64,8 @@ class main_widget: public QMainWindow{
 		void resize_render();
 		void resize_postprogress();
 		void resize_color();
+		
+		void update_draw();
 	
 	private slots:
 		void process_urls( QList<QUrl> urls );

@@ -57,6 +57,7 @@ main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidg
 	connect( ui->btn_subpixel, SIGNAL( clicked() ), this, SLOT( subpixel_align_image() ) );
 	connect( ui->pre_alpha_mask, SIGNAL( clicked() ), this, SLOT( set_alpha_mask() ) );
 	connect( ui->pre_clear_mask, SIGNAL( clicked() ), this, SLOT( clear_mask() ) );
+	update_draw();
 	
 	//Checkboxes
 	connect( ui->cbx_interlaced, SIGNAL( toggled(bool) ), this, SLOT( change_interlace() ) );
@@ -208,7 +209,7 @@ static color_type color_from_spinbox( QSpinBox* spinbox ){
 
 void main_widget::refresh_image(){
 	if( !aligner )
-		return;
+		subpixel_align_image();
 	
 	//Select filter
 	ImageEx *img_org{ nullptr };
@@ -410,6 +411,7 @@ void main_widget::subpixel_align_image(){
 	aligner->align();
 	
 	refresh_text();
+	update_draw();
 }
 
 void main_widget::change_interlace(){
@@ -452,4 +454,11 @@ void main_widget::clear_mask(){
 	delete alpha_mask;
 	alpha_mask = nullptr;
 	ui->pre_clear_mask->setEnabled( false );
+}
+
+void main_widget::update_draw(){
+	if( !aligner )
+		ui->btn_refresh->setText( tr( "Align&&Draw" ) );
+	else
+		ui->btn_refresh->setText( tr( "Draw" ) );
 }
