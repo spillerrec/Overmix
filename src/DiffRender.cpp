@@ -84,8 +84,14 @@ ImageEx* DiffRender::render( const AImageAligner& aligner, unsigned max_count, A
 	img->create( size.width(), size.height() );
 	Plane* output = (*img)[0];
 	
+	if( watcher )
+		watcher->set_total( 1000 );
+	
 	//Iterate over each pixel in the output image
 	for( unsigned iy=0; iy<output->get_height(); iy++ ){
+		if( watcher )
+			watcher->set_current( iy * 1000 / output->get_height() );
+		
 		color_type* out = output->scan_line( iy );
 		for( unsigned ix=0; ix<output->get_width(); ix++ ){
 			//Set the pixel to the static difference of all the images until max_count

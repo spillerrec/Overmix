@@ -155,7 +155,8 @@ class PointRender3 : public PointRenderBase{
 };
 
 
-ImageEx* FloatRender::render( const AImageAligner& aligner, unsigned max_count ) const{
+#include <QMessageBox>
+ImageEx* FloatRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	QTime t;
 	t.start();
 	
@@ -174,7 +175,7 @@ ImageEx* FloatRender::render( const AImageAligner& aligner, unsigned max_count )
 	
 	//Do iterator
 	QRect full = aligner.size();
-	double scale = 2.0;
+	double scale = 4.0;
 	ImageEx *img = new ImageEx( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0)->get_system() );
 	if( !img )
 		return NULL;
@@ -185,25 +186,35 @@ ImageEx* FloatRender::render( const AImageAligner& aligner, unsigned max_count )
 	alpha->fill( color::WHITE );
 	img->replace_plane( 3, alpha );
 	
+	if( watcher )
+		watcher->set_total( planes_amount*1000 );
+	
 	vector<PointRenderBase::Point> points;
 	for( unsigned i=0; i<planes_amount; i++ ){
 		Plane* out = (*img)[i];
 		
+		//Pre-calculate scales
+		vector<double> scales;
+		for( unsigned j=0; j<max_count; ++j )
+			scales.push_back( (double)aligner.plane( j, 0 )->get_width() / aligner.plane( j, i )->get_width() * scale );
+		
 		for( unsigned iy=0; iy<out->get_height(); ++iy ){
+			if( watcher )
+				watcher->set_current( i*1000 + (iy * 1000 / out->get_height() ) );
+			
 			color_type* row = out->scan_line( iy );
 			for( unsigned ix=0; ix<out->get_width(); ++ix ){
-				PointRender p( ix + full.x()*scale, iy + full.y()*scale, points );
+				PointRender2 p( ix + full.x()*scale, iy + full.y()*scale/*, points*/ );
 				
-				for( unsigned j=0; j<max_count; ++j ){
-					double scale2 = (double)aligner.plane( j, 0 )->get_width() / aligner.plane( j, i )->get_width() * scale;
-					p.add_points( aligner.plane( j, i ), aligner.pos( j )*scale, scale2 );
-				}
+				for( unsigned j=0; j<max_count; ++j )
+					p.add_points( aligner.plane( j, i ), aligner.pos( j )*scale, scales[j] );
 				
 				row[ix] = p.value();
 			}
 		}
 	}
 	
+	//QMessageBox::information( nullptr, QString("Float Render time"), QString(to_string( t.elapsed() ).c_str()) );
 	qDebug( "float render rest took: %d", t.elapsed() );
 	
 	return img;

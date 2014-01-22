@@ -65,11 +65,14 @@ ImageEx* PlaneRender::render( const AImageAligner& aligner, unsigned max_count, 
 			,	round( aligner.pos(i).y() )
 			) );
 	
+	if( watcher )
+		watcher->set_total( 1000 );
+	
 	//Execute
 	MultiPlaneIterator it( info );
 	it.data = data();
 	it.iterate_all();
-	it.for_all_pixels( pixel() );
+	it.for_all_pixels( pixel(), watcher );
 	
 	return img;
 }
