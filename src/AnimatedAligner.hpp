@@ -23,7 +23,7 @@
 class AnimatedAligner : public AImageAligner{
 	public:
 		AnimatedAligner( AlignMethod method, double scale=1.0 ) : AImageAligner( method, scale ){ }
-		virtual void align() override;
+		virtual void align( AProcessWatcher* watcher=nullptr ) override;
 };
 
 #endif

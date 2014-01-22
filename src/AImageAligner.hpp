@@ -24,6 +24,8 @@
 #include <vector>
 #include <QPointF>
 
+class AProcessWatcher;
+
 class AImageAligner{
 	public:
 		enum AlignMethod{
@@ -84,7 +86,7 @@ class AImageAligner{
 		/*const*/ Plane* plane( unsigned img_index, unsigned p_index ) const;
 		QPointF pos( unsigned index ) const;
 		
-		virtual void align() = 0;
+		virtual void align( AProcessWatcher* watcher=nullptr ) = 0;
 		
 		void debug( QString csv_file ) const;
 };

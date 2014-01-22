@@ -25,7 +25,7 @@ class AverageAligner : public AImageAligner{
 		QPointF min_point() const;
 	public:
 		AverageAligner( AlignMethod method, double scale=1.0 ) : AImageAligner( method, scale ){ }
-		virtual void align();
+		virtual void align( AProcessWatcher* watcher=nullptr );
 };
 
 #endif

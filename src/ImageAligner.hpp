@@ -34,7 +34,7 @@ class ImageAligner : public AImageAligner{
 	public:
 		ImageAligner( AlignMethod method, double scale=1.0 ) : AImageAligner( method, scale ){ }
 		
-		void align();
+		void align( AProcessWatcher* watcher=nullptr );
 	
 };
 

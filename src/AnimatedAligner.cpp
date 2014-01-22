@@ -69,7 +69,7 @@ class AnimFrame{
 		}
 };
 
-void AnimatedAligner::align(){
+void AnimatedAligner::align( AProcessWatcher* watcher ){
 	if( count() == 0 )
 		return;
 	

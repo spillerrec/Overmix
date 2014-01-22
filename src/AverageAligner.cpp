@@ -34,14 +34,20 @@ QPointF AverageAligner::min_point() const{
 	return min;
 }
 
-void AverageAligner::align(){
+void AverageAligner::align( AProcessWatcher* watcher ){
 	if( count() == 0 )
 		return;
 	
 	raw = true;
 	
+	if( watcher )
+		watcher->set_total( count() );
+	
  	images[0].pos = QPointF( 0,0 );
 	for( unsigned i=1; i<count(); i++ ){
+		if( watcher )
+			watcher->set_current( i );
+		
 		ImageEx* img = SimpleRender( SimpleRender::FOR_MERGING ).render( *this, i );
 		if( !img )
 			qFatal( "NoOOO" );

@@ -396,6 +396,11 @@ void main_widget::clear_image(){
 
 
 void main_widget::subpixel_align_image(){
+	QProgressDialog progress( this );
+	progress.setLabelText( "Aligning" );
+	progress.setWindowModality( Qt::WindowModal );
+	DialogWatcher watcher( progress );
+	
 	//Select movement type
 	AImageAligner::AlignMethod method{ AImageAligner::ALIGN_BOTH };
 	if( ui->cbx_merge_v->isChecked() )
@@ -430,7 +435,7 @@ void main_widget::subpixel_align_image(){
 	
 	for( auto img : images )
 		aligner->add_image( img );
-	aligner->align();
+	aligner->align( &watcher );
 	
 	refresh_text();
 	update_draw();

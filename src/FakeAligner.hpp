@@ -23,7 +23,7 @@
 class FakeAligner : public AImageAligner{
 	public:
 		FakeAligner() : AImageAligner( ALIGN_BOTH, 1.0 ){ }
-		virtual void align(){
+		virtual void align( AProcessWatcher* ) override{
 			for( auto img : images )
 				img.pos = QPointF( 0.0, 0.0 );
 		}

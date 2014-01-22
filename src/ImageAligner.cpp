@@ -137,7 +137,7 @@ double ImageAligner::total_error() const{
 }
 
 #include <QTime>
-void ImageAligner::align(){
+void ImageAligner::align( AProcessWatcher* watcher ){
 	if( images.size() == 0 ){
 		qWarning( "No images to align" );
 		return;
