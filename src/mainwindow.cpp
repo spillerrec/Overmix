@@ -108,6 +108,7 @@ void main_widget::resize_postprogress(){ resize_groupbox( ui->postprocess_group 
 void main_widget::resize_color(){        resize_groupbox( ui->color_group ); }
 
 main_widget::~main_widget(){
+	clear_image();
 	delete detelecine;
 	delete alpha_mask;
 }
@@ -205,6 +206,7 @@ void main_widget::process_urls( QList<QUrl> urls ){
 	qDebug( "Loading blocked for: %d ms", loading_delay );
 	
 	refresh_text();
+	update_draw();
 	update();
 }
 
@@ -389,6 +391,7 @@ void main_widget::clear_image(){
 	temp = NULL; //TODO: huh?
 	viewer.change_image( NULL, true );
 	refresh_text();
+	update_draw();
 }
 
 
@@ -480,4 +483,6 @@ void main_widget::update_draw(){
 		ui->btn_refresh->setText( tr( "Align&&Draw" ) );
 	else
 		ui->btn_refresh->setText( tr( "Draw" ) );
+	
+	ui->btn_refresh->setEnabled( images.size() > 0 );
 }
