@@ -21,9 +21,15 @@
 class ImageEx;
 class AImageAligner;
 
+class AProcessWatcher{
+	public:
+		virtual void set_total( int total ) = 0;
+		virtual void set_current( int current ) = 0;
+};
+
 class ARender{
 	public:
-		virtual ImageEx* render( const AImageAligner& aligner, unsigned max_count=-1 ) const = 0;
+		virtual ImageEx* render( const AImageAligner& aligner, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const = 0;
 };
 
 #endif

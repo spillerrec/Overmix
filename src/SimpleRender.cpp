@@ -29,7 +29,7 @@
 #include <vector>
 using namespace std;
 
-static void render_average( MultiPlaneIterator &it, bool alpha_used ){
+static void render_average( MultiPlaneIterator &it, bool alpha_used, unsigned offset, AProcessWatcher* watcher ){
 	unsigned start_plane = alpha_used ? 2 : 1;
 	it.data = (void*)&start_plane;
 	
@@ -72,11 +72,13 @@ static void render_average( MultiPlaneIterator &it, bool alpha_used ){
 				it[0] = avg / amount;
 			else if( start_plane == 2 )
 				it[1] = 0;
-		} );
+		}, watcher, offset );
 	}
+	
+	
 }
 
-static void render_dark_select( MultiPlaneIterator &it, bool alpha_used ){
+static void render_dark_select( MultiPlaneIterator &it, bool alpha_used, unsigned offset, AProcessWatcher* watcher ){
 	unsigned start_plane = alpha_used ? 2 : 1;
 	it.data = (void*)&start_plane;
 	
@@ -95,10 +97,10 @@ static void render_dark_select( MultiPlaneIterator &it, bool alpha_used ){
 			}
 			
 			it[0] = min;
-		} );
+		}, watcher, offset );
 }
 
-ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count ) const{
+ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	QTime t;
 	t.start();
 	#undef DIFFERENCE
@@ -133,6 +135,8 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count 
 	Plane* fake_alpha = new Plane( aligner.plane(0,0)->get_width(), aligner.plane(0,0)->get_height() );
 	fake_alpha->fill( color::WHITE );
 	
+	if( watcher )
+		watcher->set_total( planes_amount*2000 );
 	for( unsigned i=0; i<planes_amount; i++ ){
 		//Determine local size
 		double scale_x = (double)aligner.plane(0,i)->get_width() / aligner.plane(0,0)->get_width();
@@ -187,6 +191,9 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count 
 		else{
 			temp.reserve( max_count );
 			for( unsigned j=0; j<max_count; j++ ){
+				if( watcher )
+					watcher->set_current( i*2000 + (j * 1000 / max_count) );
+				
 				Plane *p = aligner.plane( j, i )->scale_cubic( aligner.plane(j,0)->get_width(), aligner.plane(j,0)->get_height() );
 				if( !p )
 					qDebug( "No plane :\\" );
@@ -205,10 +212,11 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count 
 		
 		MultiPlaneIterator it( info );
 		
+		unsigned offset = i*2000 + 1000;
 		if( filter == DARK_SELECT && i == 0 )
-			render_dark_select( it, use_alpha );
+			render_dark_select( it, use_alpha, offset, watcher );
 		else
-			render_average( it, use_alpha );
+			render_average( it, use_alpha, offset, watcher );
 		
 		//Upscale plane if necessary
 		if( full != out_size )

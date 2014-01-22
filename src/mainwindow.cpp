@@ -46,6 +46,22 @@
 #include <QTime>
 #include <QtConcurrent>
 
+class DialogWatcher : public AProcessWatcher{
+	private:
+		QProgressDialog& dialog;
+	public:
+		DialogWatcher( QProgressDialog& dialog ) : dialog(dialog) {
+			dialog.setMinimum( 0 );
+			dialog.setValue( 0 );
+		}
+		virtual void set_total( int total ) override{
+			dialog.setMaximum( total );
+		}
+		virtual void set_current( int current ) override{
+			dialog.setValue( current );
+		}
+};
+
 main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidget*)this){
 	ui->setupUi(this);
 	temp = NULL;
@@ -215,21 +231,24 @@ void main_widget::refresh_image(){
 	ImageEx *img_org{ nullptr };
 	bool chroma_upscale = ui->cbx_chroma->isChecked();
 	
+	QProgressDialog progress( this );
+	progress.setLabelText( "Rendering" );
+	progress.setWindowModality( Qt::WindowModal );
+	DialogWatcher watcher( progress );
+	
 	#undef DIFFERENCE //TODO: where the heck did this macro come from? And why does it prevent my code from compiling?
-	if( ui->rbtn_diff->isChecked() )	//TODO: missing renderer
-		img_org = DifferenceRender().render( *aligner );
+	if( ui->rbtn_diff->isChecked() )
+		img_org = DifferenceRender().render( *aligner, INT_MAX, &watcher );
 	else if( ui->rbtn_static_diff->isChecked() )
-		img_org = DiffRender().render( *aligner );
+		img_org = DiffRender().render( *aligner, INT_MAX, &watcher );
 	else if( ui->rbtn_windowed->isChecked() )
-		img_org = SimpleRender( SimpleRender::SIMPLE_SLIDE, chroma_upscale ).render( *aligner );
+		img_org = SimpleRender( SimpleRender::SIMPLE_SLIDE, chroma_upscale ).render( *aligner, INT_MAX, &watcher );
 	else if( ui->rbtn_dehumidifier->isChecked() )
-		img_org = SimpleRender( SimpleRender::DARK_SELECT, chroma_upscale ).render( *aligner );
+		img_org = SimpleRender( SimpleRender::DARK_SELECT, chroma_upscale ).render( *aligner, INT_MAX, &watcher );
 	else if( ui->rbtn_subpixel->isChecked() )
-		img_org = FloatRender().render( *aligner );
+		img_org = FloatRender().render( *aligner, INT_MAX, &watcher );
 	else
-		img_org = SimpleRender( SimpleRender::AVERAGE, chroma_upscale ).render( *aligner );
-	
-	
+		img_org = SimpleRender( SimpleRender::AVERAGE, chroma_upscale ).render( *aligner, INT_MAX, &watcher );
 	
 	//Set color system
 	ImageEx::YuvSystem system = ImageEx::SYSTEM_KEEP;

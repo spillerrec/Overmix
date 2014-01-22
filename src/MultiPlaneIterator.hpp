@@ -25,6 +25,7 @@
 
 #include "Plane.hpp"
 #include "color.hpp"
+#include "ARender.hpp"
 
 struct PlaneItInfo{
 	Plane *p;
@@ -208,6 +209,28 @@ class MultiPlaneIterator{
 					MultiPlaneLineIterator it( iy, this->left, this->right, this->infos, data );
 					it.for_all( func );
 				} );
+		}
+		
+		void for_all_pixels( void func( MultiPlaneLineIterator &it ), AProcessWatcher* watcher, unsigned offset=0, unsigned count=1000 ){
+			std::vector<int> its;
+			its.reserve( bottom - top );
+			
+			for( int iy=top; iy<=bottom; iy++ )
+				its.push_back( iy );
+			
+			QFuture<void> future = QtConcurrent::map( its, [func,this](int iy){
+					MultiPlaneLineIterator it( iy, this->left, this->right, this->infos, data );
+					it.for_all( func );
+				} );
+			
+			
+			if( watcher )
+				while( future.isRunning() ){
+					watcher->set_current( offset + (future.progressValue() * count / future.progressMaximum()) );
+					//TODO: wait
+				}
+			else
+				future.waitForFinished();
 		}
 		
 		template <class T>

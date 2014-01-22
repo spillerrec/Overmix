@@ -30,7 +30,7 @@
 using namespace std;
 
 
-ImageEx* PlaneRender::render( const AImageAligner& aligner, unsigned max_count ) const{
+ImageEx* PlaneRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	if( max_count > aligner.count() )
 		max_count = aligner.count();
 	

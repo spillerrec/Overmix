@@ -63,7 +63,7 @@ class StaticDiff{
 		}
 };
 
-ImageEx* DiffRender::render( const AImageAligner& aligner, unsigned max_count ) const{
+ImageEx* DiffRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	if( max_count > aligner.count() )
 		max_count = aligner.count();
 	

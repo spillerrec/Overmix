@@ -22,7 +22,7 @@
 
 class DiffRender : public ARender{
 	public:
-		virtual ImageEx* render( const AImageAligner& aligner, unsigned max_count=-1 ) const;
+		virtual ImageEx* render( const AImageAligner& aligner, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const override;
 };
 
 #endif
