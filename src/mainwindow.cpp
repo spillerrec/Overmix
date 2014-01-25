@@ -190,8 +190,10 @@ void main_widget::process_urls( QList<QUrl> urls ){
 			//Scale
 			double scale_width = ui->pre_scale_width->value();
 			double scale_height = ui->pre_scale_height->value();
+			bool scale_chroma = ui->pre_scale_chroma->isChecked();
 			if( scale_width <= 0.9999 || scale_width >= 1.0001
-				|| scale_height <= 0.9999 || scale_height >= 1.0001 )
+				|| scale_height <= 0.9999 || scale_height >= 1.0001
+				|| scale_chroma )
 				img->scale( img->get_width() * scale_width + 0.5, img->get_height() * scale_height + 0.5 );
 			
 			images.push_back( img );
