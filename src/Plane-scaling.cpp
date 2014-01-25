@@ -122,8 +122,7 @@ void do_line( const ScaleLine& line ){
 			row += line.line_width;
 		}
 		
-		//TODO: fix
-		*(out++) = amount != 0.0 ? std::min( precision_color_type( avg / amount + 0.5 ), (precision_color_type)color::WHITE ) : (precision_color_type)color::BLACK;
+		*(out++) = amount != 0.0 ? color::truncate( avg / amount + 0.5 ) : color::BLACK;
 		
 	}
 }
@@ -155,9 +154,9 @@ Plane* Plane::scale_generic( unsigned wanted_width, unsigned wanted_height, doub
 		lines.push_back( line );
 	}
 	
-   //QtConcurrent::blockingMap( lines, &do_line );
-   for( auto l : lines )
-      do_line( l );
+   QtConcurrent::blockingMap( lines, &do_line );
+   //for( auto l : lines )
+   //   do_line( l );
 	
 	qDebug( "Resize took: %d msec", t.restart() );
 	return scaled;
