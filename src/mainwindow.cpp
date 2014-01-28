@@ -245,8 +245,6 @@ void main_widget::refresh_image(){
 		img_org = DifferenceRender().render( *aligner, INT_MAX, &watcher );
 	else if( ui->rbtn_static_diff->isChecked() )
 		img_org = DiffRender().render( *aligner, INT_MAX, &watcher );
-	else if( ui->rbtn_windowed->isChecked() )
-		img_org = SimpleRender( SimpleRender::SIMPLE_SLIDE, chroma_upscale ).render( *aligner, INT_MAX, &watcher );
 	else if( ui->rbtn_dehumidifier->isChecked() )
 		img_org = SimpleRender( SimpleRender::DARK_SELECT, chroma_upscale ).render( *aligner, INT_MAX, &watcher );
 	else if( ui->rbtn_subpixel->isChecked() )
