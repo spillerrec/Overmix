@@ -29,67 +29,103 @@
 #include <vector>
 using namespace std;
 
-static void render_average( MultiPlaneIterator &it, bool alpha_used, unsigned offset, AProcessWatcher* watcher ){
-	unsigned start_plane = alpha_used ? 2 : 1;
-	it.data = (void*)&start_plane;
-	
-	/*if(*/ it.iterate_all();/* ){
-	//Do average and store in [0]
-	it.for_all_pixels( [](MultiPlaneLineIterator &it){
-			unsigned start_plane = *(unsigned*)it.data;
+/* MultiPlane layout
+ * 
+ * extended:
+ * 0:  output
+ * 1:  output alpha - initialized to color::WHITE
+ * 2:  plane 0
+ * 3:  plane 1
+ * 4:  plane 2
+ *   ...
+ * 
+ * alpha:
+ * 0:  output
+ * 1:  output alpha - initialized to color::WHITE
+ * 3:  plane 0
+ * 4:  plane 0 alpha
+ * 5:  plane 1
+ * 6:  plane 1 alpha
+ * 7:  plane 2
+ * 8:  plane 2 alpha
+ *   ...
+ * 
+ */
+
+static void render_average_extended( MultiPlaneIterator &it, unsigned offset, AProcessWatcher* watcher ){
+	if( it.iterate_all() ){
+		it.for_all_pixels( [](MultiPlaneLineIterator &it){
 			precision_color_type avg = 0;
-			for( unsigned i=start_plane; i<it.size(); i+=2 )
+			for( unsigned i=2; i<it.size(); ++i )
 				avg += it[i];
 			
-			if( it.size() > start_plane )
-				it[0] = avg / ((it.size() - start_plane)*2); //NOTE: Will crash if image contains empty parts
+			if( it.size() == 2 )
+				it[1] = color::BLACK;
 			else
-				it[0] = 0;
-		} );
+				it[0] = avg / (it.size() - 2);
+		}, watcher, offset );
 	}
-	else*/{
-	//Do average and store in [0]
-	it.for_all_pixels( [](MultiPlaneLineIterator &it){
-			unsigned start_plane = *(unsigned*)it.data;
+	else{
+		it.for_all_pixels( [](MultiPlaneLineIterator &it){
 			precision_color_type avg = 0;
 			double amount = 0;
-
-			for( unsigned i=start_plane; i<it.size(); i+=2 ){
+			for( unsigned i=2; i<it.size(); ++i )
 				if( it.valid( i ) ){
-					if( it.valid( i+1 ) ){
-						double w = color::as_double( it[i+1] );
-						avg += it[i] * w;
-						amount += w;
-					}
-					else{
-						avg += it[i];
-						amount += 1.0;
-					}
+					avg += it[i];
+					amount++;
 				}
-			}
 			
 			if( amount )
 				it[0] = avg / amount;
-			else if( start_plane == 2 )
-				it[1] = 0;
+			else
+				it[1] = color::BLACK;
 		}, watcher, offset );
 	}
-	
-	
+}
+
+static void render_average_alpha( MultiPlaneIterator &it, unsigned offset, AProcessWatcher* watcher ){
+	it.iterate_all();
+	it.for_all_pixels( [](MultiPlaneLineIterator &it){
+		precision_color_type avg = 0;
+		double amount = 0;
+
+		for( unsigned i=2; i<it.size(); i+=2 ){
+			if( it.valid( i ) ){
+				if( it.valid( i+1 ) ){
+					double w = color::as_double( it[i+1] );
+					avg += it[i] * w;
+					amount += w;
+				}
+				else{
+					avg += it[i];
+					amount += 1.0;
+				}
+			}
+		}
+		
+		if( amount ){
+			it[0] = avg / amount;
+			it[1] = color::WHITE;
+		}
+		else{
+			it[0] = color::BLACK;
+			it[1] = color::BLACK;
+		}
+	}, watcher, offset );
 }
 
 static void render_dark_select( MultiPlaneIterator &it, bool alpha_used, unsigned offset, AProcessWatcher* watcher ){
-	unsigned start_plane = alpha_used ? 2 : 1;
-	it.data = (void*)&start_plane;
+	unsigned plane_stride = alpha_used ? 2 : 1;
+	it.data = (void*)&plane_stride;
 	
 	it.iterate_all(); //No need to optimize this filter
 	
 	//Do average and store in [0]
 	it.for_all_pixels( [](MultiPlaneLineIterator &it){
-			unsigned start_plane = *(unsigned*)it.data;
+			unsigned plane_stride = *(unsigned*)it.data;
 			//Calculate sum
 			color_type min = color::MAX_VAL;
-			for( unsigned i=start_plane; i<it.size(); i++ ){
+			for( unsigned i=2; i<it.size(); i+=plane_stride ){
 				if( it.valid( i ) ){
 					if( min > it[i] )
 						min = it[i];
@@ -103,7 +139,6 @@ static void render_dark_select( MultiPlaneIterator &it, bool alpha_used, unsigne
 ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	QTime t;
 	t.start();
-	#undef DIFFERENCE
 	if( max_count > aligner.count() )
 		max_count = aligner.count();
 	
@@ -115,15 +150,23 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 	qDebug( "render_image: image count: %d", (int)max_count );
 	
 	//TODO: determine amount of planes!
-	unsigned planes_amount = 3; //TODO: alpha?
+	unsigned planes_amount = 3;
 	if( filter == FOR_MERGING && aligner.image(0)->get_system() == ImageEx::YUV )
 		planes_amount = 1;
+	
+	//Determine if we need to care about alpha per plane
+	bool use_plane_alpha = false;
+	for( unsigned i=0; i<max_count; ++i )
+		if( aligner.image( i )->alpha_plane() ){
+			use_plane_alpha = true;
+			break;
+		}
 	
 	//Do iterator
 	QRect full = aligner.size();
 	ImageEx *img = new ImageEx( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0)->get_system() );
 	if( !img )
-		return NULL;
+		return nullptr;
 	img->create( 1, 1 ); //TODO: set as initialized
 	
 	//Fill alpha
@@ -159,13 +202,9 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 		vector<PlaneItInfo> info;
 		info.push_back( PlaneItInfo( out, out_size.x(),out_size.y() ) );
 		
-		bool use_alpha = false;
-		if( out_size == full ){
-			info.push_back( PlaneItInfo( alpha, out_size.x(),out_size.y() ) );
-			use_alpha = true;
+		info.push_back( PlaneItInfo( alpha, out_size.x(),out_size.y() ) );
 			//TODO: we still have issues with the chroma planes as the
 			//up-scaled layers doesn't always cover all pixels in the Y plane.
-		}
 		
 		vector<Plane*> temp;
 		
@@ -177,15 +216,17 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 					,	round( aligner.pos(j).y()*scale_y )
 					) );
 				
-				Plane* current_alpha = aligner.image( j )->alpha_plane();
-				if( !current_alpha )
-					current_alpha = fake_alpha;
-				
-				info.push_back( PlaneItInfo(
-						current_alpha
-					,	round( aligner.pos(j).x()*scale_x )
-					,	round( aligner.pos(j).y()*scale_y )
-					) );
+				if( use_plane_alpha ){
+					Plane* current_alpha = aligner.image( j )->alpha_plane();
+					if( !current_alpha )
+						current_alpha = fake_alpha;
+					
+					info.push_back( PlaneItInfo(
+							current_alpha
+						,	round( aligner.pos(j).x()*scale_x )
+						,	round( aligner.pos(j).y()*scale_y )
+						) );
+				}
 			}
 		}
 		else{
@@ -201,12 +242,14 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 				QPoint pos = aligner.pos(j).toPoint();
 				info.push_back( PlaneItInfo( p, pos.x(),pos.y() ) );
 				
-				//Alpha
-				Plane* current_alpha = aligner.image( j )->alpha_plane();
-				if( !current_alpha )
-					current_alpha = fake_alpha;
-				
-				info.push_back( PlaneItInfo( current_alpha, pos.x(),pos.y() ) );
+				if( use_plane_alpha ){
+					//Alpha
+					Plane* current_alpha = aligner.image( j )->alpha_plane();
+					if( !current_alpha )
+						current_alpha = fake_alpha;
+					
+					info.push_back( PlaneItInfo( current_alpha, pos.x(),pos.y() ) );
+				}
 			}
 		}
 		
@@ -214,9 +257,11 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 		
 		unsigned offset = i*2000 + 1000;
 		if( filter == DARK_SELECT && i == 0 )
-			render_dark_select( it, use_alpha, offset, watcher );
+			render_dark_select( it, use_plane_alpha, offset, watcher );
+		else if( use_plane_alpha )
+			render_average_alpha( it, offset, watcher );
 		else
-			render_average( it, use_alpha, offset, watcher );
+			render_average_extended( it, offset, watcher );
 		
 		//Upscale plane if necessary
 		if( full != out_size )
