@@ -72,6 +72,7 @@ class AImageAligner{
 		AImageAligner( AlignMethod method, double scale=1.0 ) : method(method), scale(scale), raw(false){ }
 		virtual ~AImageAligner();
 		
+		void set_raw( bool value ){ raw = value; }
 		void set_movement( double movement ){ this->movement = movement; }
 		
 		AlignMethod get_method() const{ return method; }
