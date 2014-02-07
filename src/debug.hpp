@@ -20,6 +20,12 @@
 
 #include <QImage>
 
+#include <string>
+#include <fstream>
+
+#include "color.hpp"
+
+
 namespace debug{
 	
 	void make_slide( QImage image, QString dir, double scale );
@@ -27,6 +33,36 @@ namespace debug{
 	void make_low_res( QImage image, QString dir, unsigned scale, unsigned amount=0 );
 	
 	void output_transfers_functions( QString path );
+	
+	
+	class CsvFile{
+		private:
+			std::ofstream file;
+			
+		public:	
+			CsvFile( std::string filename ) : file( filename ) { }
+			
+			~CsvFile(){
+				file.close();
+			}
+			
+			CsvFile& add( color_type value ){
+				file << value << ",";
+				return *this;
+			}
+			
+			CsvFile& add( const char* const value ){
+				file << "\"" << value << "\",";
+				return *this;
+			}
+			CsvFile& add( std::string value ){
+				return add( value.c_str() );
+			}
+			
+			void stop(){
+				file << std::endl;
+			}
+	};
 }
 
 #endif

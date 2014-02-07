@@ -18,41 +18,8 @@
 
 #include "debug.hpp"
 
-#include "color.hpp"
-
-#include <string>
-#include <fstream>
-
 using namespace std;
 
-class CsvFile{
-	private:
-		ofstream file;
-		
-	public:	
-		CsvFile( string filename ) : file( filename ) { }
-		
-		~CsvFile(){
-			file.close();
-		}
-		
-		CsvFile& add( color_type value ){
-			file << value << ",";
-			return *this;
-		}
-		
-		CsvFile& add( const char* const value ){
-			file << "\"" << value << "\",";
-			return *this;
-		}
-		CsvFile& add( string value ){
-			return add( value.c_str() );
-		}
-		
-		void stop(){
-			file << endl;
-		}
-};
 
 void debug::make_slide( QImage image, QString dir, double scale ){
 	int height = image.height() - 720;
