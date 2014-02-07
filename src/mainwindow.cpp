@@ -19,6 +19,8 @@
 #include "ui_mainwindow.h"
 #include "mainwindow.hpp"
 
+#include "viewer/imageCache.h"
+
 #include "color.hpp"
 #include "SimpleRender.hpp"
 #include "DiffRender.hpp"
@@ -45,6 +47,7 @@
 #include <QProgressDialog>
 #include <QTime>
 #include <QtConcurrent>
+#include <QSettings>
 
 class DialogWatcher : public AProcessWatcher{
 	private:
@@ -62,7 +65,15 @@ class DialogWatcher : public AProcessWatcher{
 		}
 };
 
-main_widget::main_widget(): QMainWindow(), ui(new Ui_main_widget), viewer((QWidget*)this){
+main_widget::main_widget()
+	:	QMainWindow()
+	,	ui(new Ui_main_widget)
+#ifdef PORTABLE //Portable settings
+	,	viewer( QSettings( QCoreApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat ), (QWidget*)this )
+#else
+	,	viewer( QSettings( "spillerrec", "overmix" ), (QWidget*)this )
+#endif
+{
 	ui->setupUi(this);
 	temp = NULL;
 	
@@ -348,7 +359,7 @@ void main_widget::refresh_image(){
 	else
 		temp = new QImage();
 	
-	viewer.change_image( temp, true );
+	viewer.change_image( new imageCache( *temp ), true );
 	refresh_text();
 }
 

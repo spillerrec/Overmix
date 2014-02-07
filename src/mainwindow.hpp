@@ -23,7 +23,7 @@
 #include <QUrl>
 
 #include "ImageEx.hpp"
-#include "imageViewer.hpp"
+#include "viewer/imageViewer.h"
 
 class AImageAligner;
 class Deteleciner;

@@ -3,13 +3,27 @@ TARGET = Overmix
 
 # Libraries used
 QT += widgets
+LIBS += -llcms2
 
 include(overmix.pri)
 
 # Interface
 FORMS += src/mainwindow.ui
-HEADERS += src/mainwindow.hpp src/imageViewer.hpp
-SOURCES += src/mainwindow.cpp src/imageViewer.cpp src/main.cpp
+HEADERS += src/mainwindow.hpp
+SOURCES += src/mainwindow.cpp src/main.cpp
+
+#Viewer
+HEADERS += src/viewer/colorManager.h \
+           src/viewer/imageCache.h \
+           src/viewer/imageViewer.h \
+           src/viewer/qrect_extras.h
+SOURCES += src/viewer/colorManager.cpp \
+           src/viewer/imageCache.cpp \
+           src/viewer/imageViewer.cpp \
+           src/viewer/qrect_extras.cpp
+win32{
+	DEFINES += PORTABLE
+}
 
 # Use link-time optimization in release builds
 Release:QMAKE_CXXFLAGS += -flto

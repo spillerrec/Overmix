@@ -29,7 +29,6 @@ Development is now geared towards understanding the more theoretical parts about
 - Detection of zooming and rotation
 - Figuring out how features such as animation detection and separation of fore/back-ground can be combined
 - Support 16-bit PNG for input and output
-- The image viewer component is taken from another project, but I need to be merge the updates to fix controls, color management, etc.
 - Have an output format to save the output of alignment, etc.
 
 ### The Dump format
@@ -54,6 +53,7 @@ Several tools related to the format have been developed, most importantly an app
 - C++11
 - libpng
 - zlib
+- lcms2
 
 *Building*
 
