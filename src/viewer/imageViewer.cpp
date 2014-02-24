@@ -177,6 +177,7 @@ bool imageViewer::toogle_animation(){
 			next_frame();
 		}
 	}
+	emit image_changed();
 	
 	return continue_animating;
 }
@@ -336,6 +337,7 @@ void imageViewer::change_image( imageCache *new_image, bool delete_old ){
 	auto_scale_on = true; //TODO: customize?
 	
 	shown_pos = QPoint( 0,0 );
+	shown_size = QSize( 0,0 );
 	shown_zoom_level = 0;
 	
 	if( image_cache ){
@@ -445,17 +447,17 @@ void imageViewer::paintEvent( QPaintEvent* ){
 QSize imageViewer::sizeHint() const{
 	if( !image_cache || image_cache->loaded() < 1 )
 		return QSize();
-	
+		
+	QSize size;
 	if( image_cache->is_animated() )
-		return image_cache->frame( 0 ).size(); //Just return the first frame
+		size = image_cache->frame( 0 ).size(); //Just return the first frame
 	else{
 		//Iterate over all frames and find the largest
-		QSize combined;
 		for( int i=0; i<image_cache->loaded(); i++ )
-			combined = combined.expandedTo( image_cache->frame( i ).size() );
-		
-		return combined;
+			size = size.expandedTo( image_cache->frame( i ).size() );
 	}
+	
+	return size.expandedTo( shown_size );
 }
 
 
@@ -579,6 +581,7 @@ void imageViewer::mouseReleaseEvent( QMouseEvent *event ){
 		}
 		else if( event->button() == button_context ){
 			//Open context menu
+			mouse_active &= ~event->button(); //Prevents rocker-gestures from activating
 			create_context_event( *event );
 		}
 	}

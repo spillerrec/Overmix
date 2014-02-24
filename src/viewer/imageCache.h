@@ -20,6 +20,7 @@
 
 #include <QObject>
 #include <QImage>
+#include <QStringList>
 #include <vector>
 #include <lcms2.h>
 
@@ -58,8 +59,16 @@ class imageCache: public QObject{
 	private:
 		status current_status;
 	public:
+		void set_status( status new_status ){
+			current_status = new_status;
+			emit info_loaded();
+		}
 		status get_status() const{ return current_status; } //Current status
 		int loaded() const{ return frames_loaded; }	//Amount of currently loaded frames
+		
+		void reset();
+		
+		QStringList error_msgs;
 		
 	public:
 		explicit imageCache(){

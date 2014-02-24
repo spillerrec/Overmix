@@ -42,7 +42,7 @@ using namespace std;
 		xcb_get_property_cookie_t prop_cookie;
 	};
 	
-	vector<color::MonitorIcc> get_x11_icc(){
+	vector<colorManager::MonitorIcc> get_x11_icc(){
 		xcb_connection_t *conn = QX11Info::connection();
 		xcb_window_t window = QX11Info::appRootWindow();
 		int monitor_amount = QApplication::desktop()->screenCount();
@@ -78,12 +78,12 @@ using namespace std;
 			x_mons[i].prop_cookie = xcb_get_property( conn, 0, window, x_mons[i].atom, XCB_ATOM_CARDINAL, 0, UINT_MAX );
 		
 		//Load profiles
-		vector<color::MonitorIcc> iccs;
+		vector<colorManager::MonitorIcc> iccs;
 		iccs.reserve( monitor_amount );
 		for( int i=0; i<monitor_amount; i++ ){
 			xcb_get_property_reply_t *reply = xcb_get_property_reply( conn, x_mons[i].prop_cookie, NULL );
 			
-			color::MonitorIcc icc( NULL );
+			colorManager::MonitorIcc icc( NULL );
 			if( reply ){
 				icc.profile = cmsOpenProfileFromMem( xcb_get_property_value( reply ), reply->length );
 				free( reply );

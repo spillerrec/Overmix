@@ -37,6 +37,19 @@ void imageCache::init(){
 	current_status = EMPTY;
 }
 
+void imageCache::reset(){
+	if( profile )
+		cmsCloseProfile( this->profile );
+	profile = nullptr;
+	frames.clear();
+	frame_delays.clear();
+	error_msgs.clear();
+	frames_loaded = 0;
+	memory_size = 0;
+	current_status = EMPTY;
+	emit info_loaded();
+}
+
 void imageCache::set_profile( cmsHPROFILE profile ){
 	if( profile )
 		cmsCloseProfile( this->profile );

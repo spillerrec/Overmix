@@ -134,6 +134,7 @@ class imageViewer: public QWidget{
 		Qt::MouseButton get_context_button() const{ return button_context; }
 		void create_context_event( const QMouseEvent& event );
 		
+		bool auto_zoom_active() const{ return auto_scale_on; }
 		QSize sizeHint() const;
 	
 	signals:

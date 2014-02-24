@@ -4,6 +4,10 @@ TARGET = Overmix
 # Libraries used
 QT += widgets
 LIBS += -llcms2
+unix{
+	QT += x11extras
+	LIBS += -lxcb
+}
 
 include(overmix.pri)
 
