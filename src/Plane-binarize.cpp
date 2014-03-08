@@ -63,3 +63,15 @@ void Plane::binarize_dither(){
 	}
 }
 
+Plane* Plane::dilate( int size ) const{
+	Plane* blurred = blur_box( size, size );
+	Plane copy(*this);
+	blurred->for_each_pixel( copy, [](const SimplePixel& pixel){
+			if( *pixel.row2 > color::WHITE*0.5 )
+				*pixel.row1 = *pixel.row1 < color::WHITE ? color::BLACK : color::WHITE;
+			else
+				*pixel.row1 = color::BLACK;
+		} );
+	return blurred;
+}
+

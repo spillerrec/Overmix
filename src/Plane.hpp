@@ -129,6 +129,7 @@ class Plane{
 		void binarize_threshold( color_type threshold );
 		void binarize_adaptive( unsigned amount, color_type threshold );
 		void binarize_dither();
+		Plane* dilate( int size ) const;
 		
 	//Scaling
 	public:

@@ -334,14 +334,17 @@ void main_widget::refresh_image(){
 	//		edge->substract( *(*img_org)[0] );
 		
 		color_type threshold = color_from_spinbox( ui->threshold_threshold );
+		int threshold_size = ui->threshold_size->value();
 		switch( ui->threshold_method->currentIndex() ){
 			case 1:
 					img_temp.to_grayscale();
 					img_temp[0]->binarize_threshold( threshold );
+					if( threshold_size > 0 )
+						img_temp.apply_operation( &Plane::dilate, threshold_size );
 				break;
 			case 2:
 					img_temp.to_grayscale();
-					img_temp[0]->binarize_adaptive( ui->threshold_size->value(), threshold );
+					img_temp[0]->binarize_adaptive( threshold_size, threshold );
 				break;
 			case 3:
 					img_temp.to_grayscale();
