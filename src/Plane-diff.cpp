@@ -21,6 +21,8 @@
 #include <QtConcurrent>
 #include <QDebug>
 
+#include "color.hpp"
+
 using namespace std;
 
 static const double DOUBLE_MAX = numeric_limits<double>::max();
@@ -41,8 +43,11 @@ struct Para{
 };
 static uint64_t diff_2_line( Para p ){
 	uint64_t sum = 0;
-	for( color_type* end=p.c1+p.width; p.c1<end; p.c1+=p.stride, p.c2+=p.stride )
-		sum += abs( *p.c1 - *p.c2 );
+	for( color_type* end=p.c1+p.width; p.c1<end; p.c1+=p.stride, p.c2+=p.stride ){
+		auto diff = abs( *p.c1 - *p.c2 );
+		if( diff > (10 / 255.0 * color::WHITE) ) //TODO: Ad-hoc constant
+			sum += diff;
+	}
 	
 	return sum;
 }
