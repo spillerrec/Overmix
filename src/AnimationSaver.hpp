@@ -44,6 +44,7 @@ class AnimationSaver{
 		int frames_per_second{ 25 };
 		
 		bool removeUnneededFrames();
+		QSize normalize();
 		
 	public:
 		AnimationSaver( QString folder );

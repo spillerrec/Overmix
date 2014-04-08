@@ -20,6 +20,7 @@
 
 #include <QDir>
 
+#include <cmath>
 #include <fstream>
 
 using namespace std;
@@ -64,6 +65,28 @@ bool AnimationSaver::removeUnneededFrames(){
 	return false;
 }
 
+QSize AnimationSaver::normalize(){
+	QPoint pos;
+	for( auto frame : frames ){
+		pos.setX( min( pos.x(), frame.second.x ) );
+		pos.setY( min( pos.y(), frame.second.y ) );
+	}
+	
+	for( auto& frame : frames ){
+		frame.second.x -= pos.x();
+		frame.second.y -= pos.y();
+	}
+	
+	QSize size;
+	for( auto& frame : frames ){
+		auto image = images[frame.second.image_id];
+		
+		size.setWidth( max( size.width(), frame.second.x + image.size.width() ) );
+		size.setHeight( max( size.height(), frame.second.y + image.size.height() ) );
+	}
+	return size;
+}
+
 int AnimationSaver::addImage( QImage img ){
 	//Create thumbnail for first frame
 	if( current_id == 1 )
@@ -88,18 +111,22 @@ void AnimationSaver::write(){
 	
 	//Write the file
 	ofstream file( (folder + "/stack.xml").toLocal8Bit().constData() );
-	//TODO: get the actual size, and avoid negative positions
-	//TODO: add complete XML file
+	file << "<?xml version='1.0' encoding='UTF-8'?>\n";
+	
+	//Get the actual size, and avoid negative positions
+	auto size = normalize();
+	file << "<image w=\"" << size.width() << "\" h=\"" << size.height() << "\" loops=\"-1\">\n";
 	
 	//Write all the frames
 	for( auto frame : frames ){
 		auto image = frame.second;
-		file << "<stack " << "delay=\"" << image.delay << "\">";
+		file << "<stack delay=\"" << image.delay << "\">";
 		file << "<layer src=\"" << images[image.image_id].name.toUtf8().constData() << "\" ";
 		file << "x=\"" << image.x << "\" ";
 		file << "y=\"" << image.y << "\"/></stack>\n";
 		//TODO: add option to have average image as background
 	}
 	
+	file << "</image>";
 	file.close();
 }
