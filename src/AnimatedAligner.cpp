@@ -19,8 +19,11 @@
 #include "AnimatedAligner.hpp"
 #include "AverageAligner.hpp"
 #include "SimpleRender.hpp"
+#include "AnimationSaver.hpp"
 
 #include <QInputDialog>
+
+#include <fstream>
 
 #include "debug.hpp"
 
@@ -52,7 +55,7 @@ class AnimFrame{
 			return offset.error;
 		}
 		
-		void save( int frame, const ImageEx& background ){
+		void save( int frame, const ImageEx& background, AnimationSaver& anim ){
 			//Initialize aligner
 			AverageAligner render( aligner.get_method(), aligner.get_scale() );
 			render.set_movement( aligner.get_movement() );
@@ -62,21 +65,27 @@ class AnimFrame{
 			
 			//Render this frame
 			ImageEx* img = SimpleRender().render( render );
-			/*
+			
 			ImageEx merged( background );
 			auto offset = aligner.find_offset( *merged[0], *(*img)[0] );
 			//QPoint pos = ( aligner.pos( indexes[indexes.size()-1] ) - aligner.pos(aligner.count()-1) ).toPoint();
-			merged[0]->copy( offset.distance_x, offset.distance_y, *(*img)[0] );
-			merged[1]->copy( offset.distance_x, offset.distance_y, *(*img)[1] );
-			merged[2]->copy( offset.distance_x, offset.distance_y, *(*img)[2] );
-			QImage converted = merged.to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_DITHER | ImageEx::SETTING_GAMMA );
+		//	merged[0]->copy( offset.distance_x, offset.distance_y, *(*img)[0] );
+		//	merged[1]->copy( offset.distance_x, offset.distance_y, *(*img)[1] );
+		//	merged[2]->copy( offset.distance_x, offset.distance_y, *(*img)[2] );
+		//	QImage converted = merged.to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_DITHER | ImageEx::SETTING_GAMMA );
 			
-			*/
+			
 			QImage raw = img->to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_DITHER | ImageEx::SETTING_GAMMA );
 			delete img;
 			
 			//Save all the frames
-			raw.save( "AnimatedAligner-Raw/Frame (" + numberZeroFill( frame+1, 4 ) + ").png" );
+			QString name = "Frame (" + numberZeroFill( frame+1, 4 ) + ").png";
+			raw.save( "AnimatedAligner-Raw/" + name );
+			
+			int img_index = anim.addImage( offset.distance_x, offset.distance_y, name );
+			for( int index : indexes )
+				anim.addFrame( index, img_index );
+			
 		//	for( int index : indexes )
 		//		converted.save( "AnimatedAligner/Frame " + numberZeroFill( index+1, 4 ) + " (" + numberZeroFill( frame+1, 2 ) + ").png" );
 		}
@@ -125,8 +134,8 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 	average.set_edges( false );
 	for( unsigned i=0; i<count(); i++ )
 		average.add_image( (ImageEx*)image( i ) );
-	//average.align();
-	ImageEx* average_render = nullptr;//SimpleRender().render( average );
+	average.align();
+	ImageEx* average_render = SimpleRender().render( average );
 	
 	//Init
 	std::vector<int> backlog;
@@ -173,6 +182,8 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 	
 	double threshold = find_threshold( backlog );
 	
+	AnimationSaver anim;
+	
 	int iteration = 0;
 		debug::CsvFile frame_error_csv( "AnimatedAligner-Raw/frames.csv" );//s.c_str() );
 		frame_error_csv.add( "error" ).stop();
@@ -205,8 +216,10 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 		if( frame.size() == 0 )
 			break;
 		else
-			frame.save( iteration++, *average_render );
+			frame.save( iteration++, *average_render, anim );
 	}
+	
+	anim.write( "AnimatedAligner-Raw/stack.xml" );
 	
 	delete average_render;
 }
