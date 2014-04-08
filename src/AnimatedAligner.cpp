@@ -29,13 +29,6 @@
 
 using namespace std;
 
-static QString numberZeroFill( int number, int digits ){
-	QString str = QString::number( number );
-	while( str.count() < digits )
-		str = "0" + str;
-	return str;
-}
-
 class AnimFrame{
 	public:
 		AverageAligner& aligner;
@@ -65,29 +58,14 @@ class AnimFrame{
 			
 			//Render this frame
 			ImageEx* img = SimpleRender().render( render );
-			
-			ImageEx merged( background );
-			auto offset = aligner.find_offset( *merged[0], *(*img)[0] );
-			//QPoint pos = ( aligner.pos( indexes[indexes.size()-1] ) - aligner.pos(aligner.count()-1) ).toPoint();
-		//	merged[0]->copy( offset.distance_x, offset.distance_y, *(*img)[0] );
-		//	merged[1]->copy( offset.distance_x, offset.distance_y, *(*img)[1] );
-		//	merged[2]->copy( offset.distance_x, offset.distance_y, *(*img)[2] );
-		//	QImage converted = merged.to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_DITHER | ImageEx::SETTING_GAMMA );
-			
-			
 			QImage raw = img->to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_DITHER | ImageEx::SETTING_GAMMA );
+			auto offset = aligner.find_offset( *background[0], *(*img)[0] );
 			delete img;
 			
-			//Save all the frames
-			QString name = "Frame (" + numberZeroFill( frame+1, 4 ) + ").png";
-			raw.save( "AnimatedAligner-Raw/" + name );
-			
-			int img_index = anim.addImage( offset.distance_x, offset.distance_y, name );
+			//Add it to the file
+			int img_index = anim.addImage( offset.distance_x, offset.distance_y, raw );
 			for( int index : indexes )
 				anim.addFrame( index, img_index );
-			
-		//	for( int index : indexes )
-		//		converted.save( "AnimatedAligner/Frame " + numberZeroFill( index+1, 4 ) + " (" + numberZeroFill( frame+1, 2 ) + ").png" );
 		}
 };
 
@@ -182,7 +160,7 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 	
 	double threshold = find_threshold( backlog );
 	
-	AnimationSaver anim;
+	AnimationSaver anim( "AnimatedAligner-Raw/package" );
 	
 	int iteration = 0;
 		debug::CsvFile frame_error_csv( "AnimatedAligner-Raw/frames.csv" );//s.c_str() );
@@ -219,7 +197,7 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 			frame.save( iteration++, *average_render, anim );
 	}
 	
-	anim.write( "AnimatedAligner-Raw/stack.xml" );
+	anim.write();
 	
 	delete average_render;
 }

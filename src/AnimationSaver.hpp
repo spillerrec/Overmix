@@ -19,6 +19,7 @@
 #define ANIMATION_SAVER_HPP
 
 #include <QString>
+#include <QImage>
 
 #include <vector>
 #include <utility>
@@ -28,21 +29,24 @@ class AnimationSaver{
 		struct FrameInfo{
 			int x, y;
 			QString name;
+			//TODO: add delay
 		};
 		std::vector<FrameInfo> images;
 		std::vector<std::pair<int,int>> frames;
 		
+		QString folder;
+		int current_id{ 1 };
+		
 	public:
-		int addImage( int x, int y, QString filename ){
-			images.push_back( {x, y, filename} );
-			return images.size() - 1;
-		}
+		AnimationSaver( QString folder );
+		
+		int addImage( int x, int y, QImage img );
 		
 		void addFrame( int id, int image ){
 			frames.emplace_back( id, image );
 		}
 		
-		void write( QString output_name );
+		void write();
 };
 
 #endif
