@@ -26,24 +26,32 @@
 
 class AnimationSaver{
 	private:
+		struct ImageInfo{
+			QString name;
+			QSize size;
+		};
 		struct FrameInfo{
 			int x, y;
-			QString name;
-			//TODO: add delay
+			int image_id;
+			int delay;
 		};
-		std::vector<FrameInfo> images;
-		std::vector<std::pair<int,int>> frames;
+		std::vector<ImageInfo> images;
+		std::vector<std::pair<int,FrameInfo>> frames;
 		
 		QString folder;
 		int current_id{ 1 };
 		
+		int frames_per_second{ 25 };
+		
+		bool removeUnneededFrames();
+		
 	public:
 		AnimationSaver( QString folder );
 		
-		int addImage( int x, int y, QImage img );
+		int addImage( QImage img );
 		
-		void addFrame( int id, int image ){
-			frames.emplace_back( id, image );
+		void addFrame( int x, int y, int id, int image ){
+			frames.emplace_back( id, FrameInfo( {x, y, image, 1000/frames_per_second} ) );
 		}
 		
 		void write();

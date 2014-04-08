@@ -63,9 +63,9 @@ class AnimFrame{
 			delete img;
 			
 			//Add it to the file
-			int img_index = anim.addImage( offset.distance_x, offset.distance_y, raw );
+			int img_index = anim.addImage( raw );
 			for( int index : indexes )
-				anim.addFrame( index, img_index );
+				anim.addFrame( offset.distance_x, offset.distance_y, index, img_index );
 		}
 };
 

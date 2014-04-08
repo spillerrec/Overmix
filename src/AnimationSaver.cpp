@@ -24,7 +24,7 @@
 
 using namespace std;
 
-
+//TODO: not needed, can be done with QString directly
 static QString numberZeroFill( int number, int digits ){
 	QString str = QString::number( number );
 	while( str.count() < digits )
@@ -50,7 +50,21 @@ AnimationSaver::AnimationSaver( QString folder ) : folder(folder){
 	mime.close();
 }
 
-int AnimationSaver::addImage( int x, int y, QImage img ){
+bool AnimationSaver::removeUnneededFrames(){
+	for( unsigned i=1; i<frames.size(); i++ ){
+		auto& first = frames[i-1].second;
+		auto& second = frames[i].second;
+		if( first.image_id == second.image_id && first.x == second.x && first.y == second.y ){
+			first.delay += second.delay;
+			frames.erase( frames.begin() + i );
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+int AnimationSaver::addImage( QImage img ){
 	//Create thumbnail for first frame
 	if( current_id == 1 )
 		img.scaled( 256, 256, Qt::KeepAspectRatio )
@@ -59,28 +73,31 @@ int AnimationSaver::addImage( int x, int y, QImage img ){
 	QString filename = "data/" + numberZeroFill( current_id++, 4 ) + ".png"; //TODO: allow file format to be changed?
 	img.save( folder + "/" + filename );
 	
-	images.push_back( {x, y, filename} );
+	images.push_back( {filename, img.size()} );
 	return images.size() - 1;
 }
 
 void AnimationSaver::write(){
 	//Make sure the frames are in the correct order
-	sort( frames.begin(), frames.end(), [](pair<int,int> first, pair<int,int> second){
+	sort( frames.begin(), frames.end(), [](pair<int,FrameInfo> first, pair<int,FrameInfo> second){
 			return first.first < second.first;
 		} );
 	
-	//TODO: Remove unneeded frames
+	//Remove unneeded frames
+	while( removeUnneededFrames() );
 	
 	//Write the file
 	ofstream file( (folder + "/stack.xml").toLocal8Bit().constData() );
-	//TODO: get the actual size
+	//TODO: get the actual size, and avoid negative positions
 	//TODO: add complete XML file
 	
 	//Write all the frames
 	for( auto frame : frames ){
-		file << "<stack><layer src=\"" << images[frame.second].name.toUtf8().constData() << "\" ";
-		file << "x=\"" << images[frame.second].x << "\" ";
-		file << "y=\"" << images[frame.second].y << "\"/></stack>\n";
+		auto image = frame.second;
+		file << "<stack " << "delay=\"" << image.delay << "\">";
+		file << "<layer src=\"" << images[image.image_id].name.toUtf8().constData() << "\" ";
+		file << "x=\"" << image.x << "\" ";
+		file << "y=\"" << image.y << "\"/></stack>\n";
 		//TODO: add option to have average image as background
 	}
 	
