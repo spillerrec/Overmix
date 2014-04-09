@@ -25,6 +25,8 @@
 #include "ImageEx.hpp"
 #include "viewer/imageViewer.h"
 
+#include "RenderOperations.hpp"
+
 class AImageAligner;
 class Deteleciner;
 class Plane;
@@ -40,9 +42,20 @@ class main_widget: public QMainWindow{
 		QImage *temp{ nullptr };
 		
 		AImageAligner *aligner{ nullptr };
+		ImageEx *temp_ex{ nullptr };
 		Deteleciner *detelecine{ nullptr };
 		
 		Plane *alpha_mask{ nullptr };
+		
+		void clear_cache();
+		
+	private:
+		RenderPipeScaling pipe_scaling;
+		RenderPipeDeconvolve pipe_deconvolve;
+		RenderPipeBlurring pipe_blurring;
+		RenderPipeEdgeDetection pipe_edge;
+		RenderPipeLevel pipe_level;
+		RenderPipeThreshold pipe_threshold;
 	
 	public:
 		explicit main_widget();

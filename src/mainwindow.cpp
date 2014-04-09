@@ -218,6 +218,7 @@ void main_widget::process_urls( QList<QUrl> urls ){
 	qDebug( "Adding images took: %d", t.elapsed() );
 	qDebug( "Loading blocked for: %d ms", loading_delay );
 	
+	clear_cache();
 	refresh_text();
 	update_draw();
 	update();
@@ -242,26 +243,26 @@ void main_widget::refresh_image(){
 	if( !aligner )
 		subpixel_align_image();
 	
-	//Select filter
-	ImageEx *img_org{ nullptr };
-	bool chroma_upscale = ui->cbx_chroma->isChecked();
-	
-	QProgressDialog progress( this );
-	progress.setLabelText( "Rendering" );
-	progress.setWindowModality( Qt::WindowModal );
-	DialogWatcher watcher( progress );
-	
-	#undef DIFFERENCE //TODO: where the heck did this macro come from? And why does it prevent my code from compiling?
-	if( ui->rbtn_diff->isChecked() )
-		img_org = DifferenceRender().render( *aligner, INT_MAX, &watcher );
-	else if( ui->rbtn_static_diff->isChecked() )
-		img_org = DiffRender().render( *aligner, INT_MAX, &watcher );
-	else if( ui->rbtn_dehumidifier->isChecked() )
-		img_org = SimpleRender( SimpleRender::DARK_SELECT, chroma_upscale ).render( *aligner, INT_MAX, &watcher );
-	else if( ui->rbtn_subpixel->isChecked() )
-		img_org = FloatRender().render( *aligner, INT_MAX, &watcher );
-	else
-		img_org = SimpleRender( SimpleRender::AVERAGE, chroma_upscale ).render( *aligner, INT_MAX, &watcher );
+	if( !temp_ex ){
+		//Select filter
+		bool chroma_upscale = ui->cbx_chroma->isChecked();
+		
+		QProgressDialog progress( this );
+		progress.setLabelText( "Rendering" );
+		progress.setWindowModality( Qt::WindowModal );
+		DialogWatcher watcher( progress );
+		
+		if( ui->rbtn_diff->isChecked() )
+			temp_ex = DifferenceRender().render( *aligner, INT_MAX, &watcher );
+		else if( ui->rbtn_static_diff->isChecked() )
+			temp_ex = DiffRender().render( *aligner, INT_MAX, &watcher );
+		else if( ui->rbtn_dehumidifier->isChecked() )
+			temp_ex = SimpleRender( SimpleRender::DARK_SELECT, chroma_upscale ).render( *aligner, INT_MAX, &watcher );
+		else if( ui->rbtn_subpixel->isChecked() )
+			temp_ex = FloatRender().render( *aligner, INT_MAX, &watcher );
+		else
+			temp_ex = SimpleRender( SimpleRender::AVERAGE, chroma_upscale ).render( *aligner, INT_MAX, &watcher );
+	}
 	
 	//Set color system
 	ImageEx::YuvSystem system = ImageEx::SYSTEM_KEEP;
@@ -277,84 +278,40 @@ void main_widget::refresh_image(){
 	if( ui->cbx_gamma->isChecked() )
 		setting = setting | ImageEx::SETTING_GAMMA;
 	
-	//Aspect
-	double scale_width = ui->dsbx_scale_width->value();
-	double scale_height = ui->dsbx_scale_height->value();
-	
 	//Render image
-//	ImageEx *img_org = image.render_image( type, ui->cbx_chroma->isChecked() );
-	if( img_org ){	
+	if( temp_ex ){	
 		QTime t;
 		t.start();
 		
+		pipe_scaling.setWidth( ui->dsbx_scale_width->value() );
+		pipe_scaling.setHeight( ui->dsbx_scale_height->value() );
 		
-		//Fix aspect ratio
-		if( scale_width <= 0.9999 || scale_width >= 1.0001
-			|| scale_height <= 0.9999 || scale_height >= 1.0001 )
-			img_org->scale( img_org->get_width() * scale_width + 0.5, img_org->get_height() * scale_height + 0.5 );
+		pipe_deconvolve.setDeviation( ui->dsbx_deviation->value() );
+		pipe_deconvolve.setIterations( ui->sbx_iterations->value() );
 		
-		ImageEx img_temp( *img_org );
+		pipe_blurring.setMethod( ui->cbx_blur->currentIndex() );
+		pipe_blurring.setWidth( ui->spbx_blur_x->value() );
+		pipe_blurring.setHeight( ui->spbx_blur_y->value() );
 		
-		//Deconvolve
-		double deviation = ui->dsbx_deviation->value();
-		unsigned iterations = ui->sbx_iterations->value();
-		if( deviation > 0.0009 && iterations > 0 )
-			img_temp.apply_operation( &Plane::deconvolve_rl, deviation, iterations );
+		pipe_edge.setMethod( ui->cbx_edge_filter->currentIndex() );
 		
-		//Blurring
-		unsigned blur_x = ui->spbx_blur_x->value();
-		unsigned blur_y = ui->spbx_blur_y->value();
-		switch( ui->cbx_blur->currentIndex() ){
-			case 1: img_temp.apply_operation( &Plane::blur_box, blur_x, blur_y ); break;
-			case 2: img_temp.apply_operation( &Plane::blur_gaussian, blur_x, blur_y ); break;
-			default: break;
-		}
+		pipe_level.setLimitMin( color_from_spinbox( ui->sbx_limit_min ) );
+		pipe_level.setLimitMax( color_from_spinbox( ui->sbx_limit_max ) );
+		pipe_level.setOutMin( color_from_spinbox( ui->sbx_out_min ) );
+		pipe_level.setOutMax( color_from_spinbox( ui->sbx_out_max ) );
+		pipe_level.setGamma( ui->dsbx_gamma->value() );
 		
-		//Edge detection
-		switch( ui->cbx_edge_filter->currentIndex() ){
-			case 1: img_temp.apply_operation( &Plane::edge_robert ); break;
-			case 2: img_temp.apply_operation( &Plane::edge_sobel ); break;
-			case 3: img_temp.apply_operation( &Plane::edge_prewitt ); break;
-			case 4: img_temp.apply_operation( &Plane::edge_laplacian ); break;
-			case 5: img_temp.apply_operation( &Plane::edge_laplacian_large ); break;
-			default: break;
-		};
-		
-		//Level
-		color_type limit_min = color_from_spinbox( ui->sbx_limit_min );
-		color_type limit_max = color_from_spinbox( ui->sbx_limit_max );
-		color_type out_min = color_from_spinbox( ui->sbx_out_min );
-		color_type out_max = color_from_spinbox( ui->sbx_out_max );
-		double gamma = ui->dsbx_gamma->value();
-		img_temp.apply_operation( &Plane::level, limit_min, limit_max, out_min, out_max, gamma );
-		
-		
-		//Sharpen
+		//TODO: Sharpen
 	//	if( ui->cbx_sharpen->isChecked() )
-	//		edge->substract( *(*img_org)[0] );
+	//		edge->substract( *(*temp_ex)[0] );
 		
-		color_type threshold = color_from_spinbox( ui->threshold_threshold );
-		int threshold_size = ui->threshold_size->value();
-		switch( ui->threshold_method->currentIndex() ){
-			case 1:
-					img_temp.to_grayscale();
-					img_temp[0]->binarize_threshold( threshold );
-					if( threshold_size > 0 )
-						img_temp.apply_operation( &Plane::dilate, threshold_size );
-				break;
-			case 2:
-					img_temp.to_grayscale();
-					img_temp[0]->binarize_adaptive( threshold_size, threshold );
-				break;
-			case 3:
-					img_temp.to_grayscale();
-					img_temp[0]->binarize_dither();
-				break;
-			default: break;
-		}
+		pipe_threshold.setThreshold( color_from_spinbox( ui->threshold_threshold ) );
+		pipe_threshold.setSize( ui->threshold_size->value() );
+		pipe_threshold.setMethod( ui->threshold_method->currentIndex() );
 		
-		delete img_org;
+		ImageEx img_temp( pipe_threshold.get( pipe_level.get( pipe_edge.get( pipe_blurring.get( pipe_deconvolve.get( pipe_scaling.get( *temp_ex ) ) ) ) ) ) );
 		
+		//TODO: why no const on to_qimage?
 		temp = new QImage( img_temp.to_qimage( system, setting ) );
 		
 		qDebug( "to_qimage() took: %d", t.elapsed() );
@@ -364,6 +321,7 @@ void main_widget::refresh_image(){
 	
 	viewer.change_image( new imageCache( *temp ), true );
 	refresh_text();
+	
 }
 
 void main_widget::save_image(){
@@ -391,9 +349,18 @@ void main_widget::toggled_ver(){
 		ui->cbx_merge_h->setChecked( true );
 }
 
-void main_widget::clear_image(){
+void main_widget::clear_cache(){
 	delete aligner;
 	aligner = nullptr;
+	delete temp_ex;
+	temp_ex = nullptr;
+	
+	temp = NULL; //TODO: huh?
+	viewer.change_image( NULL, true );
+}
+
+void main_widget::clear_image(){
+	clear_cache();
 	
 	if( detelecine )
 		detelecine->clear();
@@ -402,8 +369,6 @@ void main_widget::clear_image(){
 		delete img;
 	images.clear();
 	
-	temp = NULL; //TODO: huh?
-	viewer.change_image( NULL, true );
 	refresh_text();
 	update_draw();
 }
