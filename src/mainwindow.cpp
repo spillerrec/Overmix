@@ -394,9 +394,11 @@ void main_widget::subpixel_align_image(){
 	
 	int scale = ui->merge_scale->value();
 	
-	//TODO: show progress
-	if( aligner )
+	if( aligner ){
 		delete aligner;
+		delete temp_ex;
+		temp_ex = nullptr;
+	}
 	
 	int merge_index = ui->merge_method->currentIndex();
 	switch( merge_index ){
