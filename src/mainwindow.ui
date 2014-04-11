@@ -550,6 +550,11 @@
              </item>
              <item>
               <property name="text">
+               <string>Recursive</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
                <string>Layered</string>
               </property>
              </item>

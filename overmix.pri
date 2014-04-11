@@ -11,8 +11,8 @@ SOURCES += $$PWD/src/MultiPlaneIterator.cpp $$PWD/src/color.cpp $$PWD/src/Plane.
 SOURCES += $$PWD/src/Plane-scaling.cpp $$PWD/src/Plane-edgedetection.cpp $$PWD/src/Plane-blurring.cpp $$PWD/src/Plane-diff.cpp $$PWD/src/Plane-pixel.cpp $$PWD/src/Plane-binarize.cpp
 
 # Aligners
-HEADERS += $$PWD/src/AImageAligner.hpp $$PWD/src/AverageAligner.hpp $$PWD/src/AnimatedAligner.hpp $$PWD/src/ImageAligner.hpp $$PWD/src/LayeredAligner.hpp
-SOURCES += $$PWD/src/AImageAligner.cpp $$PWD/src/AverageAligner.cpp $$PWD/src/AnimatedAligner.cpp $$PWD/src/ImageAligner.cpp $$PWD/src/LayeredAligner.cpp
+HEADERS += $$PWD/src/AImageAligner.hpp $$PWD/src/AverageAligner.hpp $$PWD/src/AnimatedAligner.hpp $$PWD/src/ImageAligner.hpp $$PWD/src/LayeredAligner.hpp $$PWD/src/RecursiveAligner.hpp
+SOURCES += $$PWD/src/AImageAligner.cpp $$PWD/src/AverageAligner.cpp $$PWD/src/AnimatedAligner.cpp $$PWD/src/ImageAligner.cpp $$PWD/src/LayeredAligner.cpp $$PWD/src/RecursiveAligner.cpp
 
 # Renders
 HEADERS += $$PWD/src/SimpleRender.hpp $$PWD/src/FloatRender.hpp $$PWD/src/DiffRender.hpp $$PWD/src/PlaneRender.hpp $$PWD/src/DifferenceRender.hpp $$PWD/src/ARender.hpp

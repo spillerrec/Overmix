@@ -15,22 +15,25 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef FAKE_ALIGNER_HPP
-#define FAKE_ALIGNER_HPP
+#ifndef RECURSIVE_ALIGNER_HPP
+#define RECURSIVE_ALIGNER_HPP
 
 #include "AImageAligner.hpp"
+#include <utility>
 
-class FakeAligner : public AImageAligner{
-	public:
-		FakeAligner() : AImageAligner( ALIGN_BOTH, 1.0 ){ }
-		virtual void align( AProcessWatcher* ) override{
-			for( auto img : images )
-				img.pos = QPointF( 0.0, 0.0 );
-		}
+class RecursiveAligner : public AImageAligner{
+	protected:
+		QPointF min_point() const;
+		bool use_edges{ false };
 		
-		void setPos( unsigned index, QPointF offset = QPointF() ){
-			images[index].pos = offset;
-		}
+		std::pair<Plane*,QPointF> combine( const Plane& first, const Plane& second ) const;
+		Plane* align( AProcessWatcher* watcher, unsigned begin, unsigned end );
+	public:
+		RecursiveAligner( AlignMethod method, double scale=1.0 ) : AImageAligner( method, scale ){ }
+		virtual void align( AProcessWatcher* watcher=nullptr ) override;
+		
+		virtual /*const*/ Plane* prepare_plane( /*const*/ Plane* p ) override;
+		void set_edges( bool enabled ){ use_edges = enabled; }
 };
 
 #endif

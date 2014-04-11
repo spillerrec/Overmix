@@ -26,6 +26,7 @@
 #include "DiffRender.hpp"
 #include "FloatRender.hpp"
 #include "AverageAligner.hpp"
+#include "RecursiveAligner.hpp"
 #include "DifferenceRender.hpp"
 #include "AnimatedAligner.hpp"
 #include "LayeredAligner.hpp"
@@ -403,9 +404,11 @@ void main_widget::subpixel_align_image(){
 			aligner = new FakeAligner(); break;
 		case 1: //Ordered
 			aligner = new AverageAligner( method, scale ); break;
-		case 2: //Layered
+		case 2: //Recursive
+			aligner = new RecursiveAligner( method, scale ); break;
+		case 3: //Layered
 			aligner = new LayeredAligner( method, scale ); break;
-		case 3: //Animated
+		case 4: //Animated
 			aligner = new AnimatedAligner( method, scale ); break;
 	}
 	
