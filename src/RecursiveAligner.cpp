@@ -75,6 +75,11 @@ Plane* RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsign
 	switch( amount ){
 		case 0: qFatal( "No images to align!" );
 		case 1: return new Plane( *(images[begin].image) ); //Just return this one
+		case 2: { //Optimization for two images
+				auto offset = combine( *(images[begin].image), *(images[begin+1].image) );
+				images[begin+1].pos = offset.second;
+				return offset.first;
+			}
 		default: { //More than two images
 				//Solve sub-areas recursively
 				unsigned middle = amount / 2 + begin;
