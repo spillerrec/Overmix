@@ -156,9 +156,9 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 	}
 	//*/
 	
-	//double threshold = QInputDialog::getDouble( nullptr, "Specify threshold", "Threshold", 0.5, 0.0, 9999.0, 6 ) * color::WHITE;
+	double factor = QInputDialog::getDouble( nullptr, "Specify threshold", "Threshold", 1.0, 0.01, 9.99, 2 );
 	
-	double threshold = find_threshold( backlog );
+	double threshold = find_threshold( backlog ) * factor;
 	
 	AnimationSaver anim( "AnimatedAligner-Raw/package" );
 	

@@ -32,12 +32,13 @@ class DiffCache{
 			int x;
 			int y;
 			double diff;
+			unsigned precision;
 		};
 		QList<Cached> cache;
 		
 	public:
-		double get_diff( int x, int y ) const;
-		void add_diff( int x, int y, double diff );
+		double get_diff( int x, int y, unsigned precision ) const;
+		void add_diff( int x, int y, double diff, unsigned precision );
 };
 struct SimplePixel{
 	color_type *row1;
