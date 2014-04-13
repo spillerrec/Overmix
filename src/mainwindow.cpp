@@ -374,7 +374,6 @@ void main_widget::clear_image(){
 	update_draw();
 }
 
-#include <QMessageBox>
 void main_widget::subpixel_align_image(){
 	QProgressDialog progress( this );
 	progress.setLabelText( "Aligning" );
@@ -417,14 +416,9 @@ void main_widget::subpixel_align_image(){
 	double movement = ui->merge_movement->value() / 100.0;
 	aligner->set_movement( movement );
 	
-	QTime t;
-	t.start();
-	
 	for( auto img : images )
 		aligner->add_image( img );
 	aligner->align( &watcher );
-	
-	QMessageBox::information( this, "Time to align", QString::number( t.elapsed() ) );
 	
 	refresh_text();
 	update_draw();
