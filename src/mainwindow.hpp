@@ -78,6 +78,8 @@ class main_widget: public QMainWindow{
 		void resize_postprogress();
 		void resize_color();
 		
+		void resetAligner();
+		void resetImage();
 		void update_draw();
 	
 	private slots:

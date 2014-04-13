@@ -102,6 +102,13 @@ main_widget::main_widget()
 	connect( ui->cbx_merge_h, SIGNAL( toggled(bool) ), this, SLOT( toggled_hor() ) );
 	connect( ui->cbx_merge_v, SIGNAL( toggled(bool) ), this, SLOT( toggled_ver() ) );
 	
+	//Reset aligner cache
+	connect( ui->rbtn_avg,          SIGNAL( toggled(bool) ), this, SLOT( resetAligner() ) );
+	connect( ui->rbtn_dehumidifier, SIGNAL( toggled(bool) ), this, SLOT( resetAligner() ) );
+	connect( ui->rbtn_diff,         SIGNAL( toggled(bool) ), this, SLOT( resetAligner() ) );
+	connect( ui->rbtn_static_diff,  SIGNAL( toggled(bool) ), this, SLOT( resetAligner() ) );
+	connect( ui->rbtn_subpixel,     SIGNAL( toggled(bool) ), this, SLOT( resetAligner() ) );
+	
 	//Add images
 	qRegisterMetaType<QList<QUrl> >( "QList<QUrl>" );
 	connect( this, SIGNAL( urls_retrived(QList<QUrl>) ), this, SLOT( process_urls(QList<QUrl>) ), Qt::QueuedConnection );
@@ -123,6 +130,17 @@ main_widget::~main_widget(){
 	clear_image();
 	delete detelecine;
 	delete alpha_mask;
+}
+
+
+void main_widget::resetAligner(){
+	delete aligner;
+	aligner = nullptr;
+	resetImage();
+}
+void main_widget::resetImage(){
+	delete temp_ex;
+	temp_ex = nullptr;
 }
 
 
@@ -351,11 +369,7 @@ void main_widget::toggled_ver(){
 }
 
 void main_widget::clear_cache(){
-	delete aligner;
-	aligner = nullptr;
-	delete temp_ex;
-	temp_ex = nullptr;
-	
+	resetAligner();
 	temp = NULL; //TODO: huh?
 	viewer.change_image( NULL, true );
 }
@@ -393,11 +407,8 @@ void main_widget::subpixel_align_image(){
 	
 	int scale = ui->merge_scale->value();
 	
-	if( aligner ){
-		delete aligner;
-		delete temp_ex;
-		temp_ex = nullptr;
-	}
+	if( aligner )
+		resetAligner();
 	
 	int merge_index = ui->merge_method->currentIndex();
 	switch( merge_index ){
