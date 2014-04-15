@@ -53,6 +53,18 @@ Plane::Plane( const Plane& p ){
 	memcpy( data, p.data, sizeof(color_type)*size );
 }
 
+Plane& Plane::operator=( Plane& p ){
+	delete data; //TODO: optimize if all sizes are equal
+	height = p.height;
+	width = p.width;
+	line_width = p.line_width;
+	
+	unsigned size = height * line_width;
+	data = new color_type[ size ];
+	memcpy( data, p.data, sizeof(color_type)*size );
+	return *this;
+}
+
 
 color_type Plane::min_value() const{
 	color_type min = color::MAX_VAL;

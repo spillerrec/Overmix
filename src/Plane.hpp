@@ -65,6 +65,21 @@ class Plane{
 		Plane( unsigned w, unsigned h );
 		~Plane();
 		
+		Plane( Plane&& p )
+			:	height(p.height), width(p.width), line_width(p.line_width), data(p.data)
+			{ p.data = nullptr; }
+		
+		Plane& operator=( Plane& p );
+		Plane& operator=( Plane&& p ){
+			if( this == &p ){
+				delete data;
+				height = p.height;
+				width = p.width;
+				line_width = p.line_width;
+			}
+			return *this;
+		}
+		
 		static const unsigned long MAX_VAL;
 		
 	//Plane handling
