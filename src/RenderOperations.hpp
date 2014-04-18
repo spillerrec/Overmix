@@ -141,17 +141,17 @@ class RenderPipeThreshold : public ARenderPipe{
 			switch( method ){
 				case 1:
 						temp->to_grayscale();
-						(*temp)[0]->binarize_threshold( threshold );
+						(*temp)[0].binarize_threshold( threshold );
 						if( size > 0 )
 							temp->apply_operation( &Plane::dilate, size );
 					break;
 				case 2:
 						temp->to_grayscale();
-						(*temp)[0]->binarize_adaptive( size, threshold );
+						(*temp)[0].binarize_adaptive( size, threshold );
 					break;
 				case 3:
 						temp->to_grayscale();
-						(*temp)[0]->binarize_dither();
+						(*temp)[0].binarize_dither();
 					break;
 				default: break;
 			}

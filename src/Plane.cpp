@@ -49,19 +49,27 @@ Plane::Plane( const Plane& p ){
 	line_width = p.line_width;
 	
 	unsigned size = height * line_width;
-	data = new color_type[ size ];
-	memcpy( data, p.data, sizeof(color_type)*size );
+	if( size > 0 ){
+		data = new color_type[ size ];
+		memcpy( data, p.data, sizeof(color_type)*size );
+	}
+	else
+		data = nullptr;
 }
 
-Plane& Plane::operator=( Plane& p ){
+Plane& Plane::operator=( const Plane& p ){
 	delete data; //TODO: optimize if all sizes are equal
 	height = p.height;
 	width = p.width;
 	line_width = p.line_width;
 	
 	unsigned size = height * line_width;
-	data = new color_type[ size ];
-	memcpy( data, p.data, sizeof(color_type)*size );
+	if( size > 0 ){
+		data = new color_type[ size ];
+		memcpy( data, p.data, sizeof(color_type)*size );
+	}
+	else
+		data = nullptr;
 	return *this;
 }
 
@@ -163,7 +171,7 @@ bool Plane::is_interlaced() const{
 	return avg2_uneven > avg2_even;
 }
 
-void Plane::replace_line( Plane &p, bool top ){
+void Plane::replace_line( const Plane &p, bool top ){
 	if( get_height() != p.get_height() || get_width() != p.get_width() ){
 		qWarning( "replace_line: Planes not equaly sized!" );
 		return;
@@ -171,14 +179,14 @@ void Plane::replace_line( Plane &p, bool top ){
 	
 	for( unsigned iy=(top ? 0 : 1); iy<get_height(); iy+=2 ){
 		color_type *row1 = scan_line( iy );
-		color_type *row2 = p.scan_line( iy );
+		const color_type *row2 = p.const_scan_line( iy );
 		
 		for( unsigned ix=0; ix<get_width(); ++ix )
 			row1[ix] = row2[ix];
 	}
 }
 
-void Plane::combine_line( Plane &p, bool top ){
+void Plane::combine_line( const Plane &p, bool top ){
 	if( get_height() != p.get_height() || get_width() != p.get_width() ){
 		qWarning( "combine_line: Planes not equaly sized!" );
 		return;
@@ -186,7 +194,7 @@ void Plane::combine_line( Plane &p, bool top ){
 	
 	for( unsigned iy=(top ? 0 : 1); iy<get_height(); iy+=2 ){
 		color_type *row1 = scan_line( iy );
-		color_type *row2 = p.scan_line( iy );
+		const color_type *row2 = p.const_scan_line( iy );
 		
 		for( unsigned ix=0; ix<get_width(); ++ix )
 			row1[ix] = ( (unsigned)row1[ix] + row2[ix] ) / 2;

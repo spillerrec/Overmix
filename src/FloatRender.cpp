@@ -73,8 +73,8 @@ class PointRenderBase{
 	public:
 		PointRenderBase( int x, int y ) : pos( x, y ) { }
 		
-		void add_points( const Plane* img, QPointF offset, double scale ){
-			QRectF relative( offset, QSizeF( img->get_width()*scale, img->get_height()*scale ) );
+		void add_points( const Plane& img, QPointF offset, double scale ){
+			QRectF relative( offset, QSizeF( img.get_width()*scale, img.get_height()*scale ) );
 			QRectF window( pos - QPointF( 2,2 )*scale, QSizeF( 4,4 )*scale );
 			QRectF usable = window.intersected(relative);
 			
@@ -84,7 +84,7 @@ class PointRenderBase{
 				for( int ix=ceil(fstart.x()); ix<floor(fend.x()); ++ix ){
 					QPointF distance = toAbsolute( QPointF( ix, iy ), offset, scale ) - pos;
 					distance /= scale;
-					Point p{ sqrt(distance.x()*distance.x() + distance.y()*distance.y()), img->pixel(ix,iy) };
+					Point p{ sqrt(distance.x()*distance.x() + distance.y()*distance.y()), img.pixel(ix,iy) };
 					add_point( p );
 				}
 		}
@@ -176,34 +176,34 @@ ImageEx* FloatRender::render( const AImageAligner& aligner, unsigned max_count, 
 	//Do iterator
 	QRect full = aligner.size();
 	double scale = 4.0;
-	ImageEx *img = new ImageEx( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0)->get_system() );
+	ImageEx *img = new ImageEx( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
 	if( !img )
 		return NULL;
 	img->create( full.width()*scale, full.height()*scale );
 	
 	//Fill alpha
-	Plane* alpha = new Plane( full.width()*scale, full.height()*scale );
-	alpha->fill( color::WHITE );
-	img->replace_plane( 3, alpha );
+	Plane alpha( full.width()*scale, full.height()*scale );
+	alpha.fill( color::WHITE );
+	img->alpha_plane() = alpha;
 	
 	if( watcher )
 		watcher->set_total( planes_amount*1000 );
 	
 	vector<PointRenderBase::Point> points;
 	for( unsigned i=0; i<planes_amount; i++ ){
-		Plane* out = (*img)[i];
+		const Plane& out = (*img)[i];
 		
 		//Pre-calculate scales
 		vector<double> scales;
 		for( unsigned j=0; j<max_count; ++j )
-			scales.push_back( (double)aligner.plane( j, 0 )->get_width() / aligner.plane( j, i )->get_width() * scale );
+			scales.push_back( (double)aligner.plane( j, 0 ).get_width() / aligner.plane( j, i ).get_width() * scale );
 		
-		for( unsigned iy=0; iy<out->get_height(); ++iy ){
+		for( unsigned iy=0; iy<out.get_height(); ++iy ){
 			if( watcher )
-				watcher->set_current( i*1000 + (iy * 1000 / out->get_height() ) );
+				watcher->set_current( i*1000 + (iy * 1000 / out.get_height() ) );
 			
-			color_type* row = out->scan_line( iy );
-			for( unsigned ix=0; ix<out->get_width(); ++ix ){
+			color_type* row = out.scan_line( iy );
+			for( unsigned ix=0; ix<out.get_width(); ++ix ){
 				PointRender2 p( ix + full.x()*scale, iy + full.y()*scale/*, points*/ );
 				
 				for( unsigned j=0; j<max_count; ++j )

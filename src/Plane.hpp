@@ -62,6 +62,7 @@ class Plane{
 		color_type *data;
 		
 	public:
+		Plane() : height(0), width(0), line_width(0), data(nullptr) { }
 		Plane( unsigned w, unsigned h );
 		~Plane();
 		
@@ -69,13 +70,16 @@ class Plane{
 			:	height(p.height), width(p.width), line_width(p.line_width), data(p.data)
 			{ p.data = nullptr; }
 		
-		Plane& operator=( Plane& p );
+		Plane& operator=( const Plane& p );
 		Plane& operator=( Plane&& p ){
-			if( this == &p ){
-				delete data;
+			if( this != &p ){
 				height = p.height;
 				width = p.width;
 				line_width = p.line_width;
+				
+				delete data;
+				data = p.data;
+				p.data = nullptr;
 			}
 			return *this;
 		}
@@ -84,19 +88,11 @@ class Plane{
 		
 	//Plane handling
 		Plane( const Plane& p );
-		Plane* create_compatiable() const{
-			Plane* p = new Plane( width, height );
-			if( !p )
-				return NULL;
-			if( p->is_invalid() ){
-				delete p;
-				return NULL;
-			}
-			return p;
-		}
+		Plane create_compatiable() const{ return Plane( width, height ); }
 		
 	//Status
-		bool is_invalid() const{ return data == 0; }
+		operator bool() const{ return valid(); }
+		bool valid() const{ return data != nullptr; }
 		unsigned get_height() const{ return height; }
 		unsigned get_width() const{ return width; }
 		unsigned get_line_width() const{ return line_width; }
@@ -104,6 +100,7 @@ class Plane{
 	//Pixel/Row query
 		color_type& pixel( unsigned x, unsigned y ) const{ return data[ x + y*line_width ]; }
 		color_type* scan_line( unsigned y ) const{ return data + y*line_width; }
+		const color_type* const_scan_line( unsigned y ) const{ return scan_line( y ); }
 		
 	//Queries
 		color_type min_value() const;
@@ -116,8 +113,8 @@ class Plane{
 		
 	//Interlacing methods
 		bool is_interlaced() const;
-		void replace_line( Plane &p, bool top );
-		void combine_line( Plane &p, bool top );
+		void replace_line( const Plane &p, bool top );
+		void combine_line( const Plane &p, bool top );
 		
 	//Overlays
 	private:

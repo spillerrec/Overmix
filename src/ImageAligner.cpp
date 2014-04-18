@@ -25,10 +25,10 @@
 #include <QDebug>
 
 
-void ImageAligner::on_add( AImageAligner::ImagePosition& pos ){
+void ImageAligner::on_add(){
 	//Compare this one against all other images
-	for( unsigned i=0; i<images.size()-1; ++i )
-		offsets.push_back( find_offset( *(images[i].image), *(pos.image) ) );
+	for( unsigned i=0; i<count()-1; ++i )
+		offsets.push_back( find_offset( plane(i), plane( count()-1 ) ) );
 }
 
 ImageAligner::ImageOffset ImageAligner::get_offset( unsigned img1, unsigned img2 ) const{
@@ -42,7 +42,7 @@ ImageAligner::ImageOffset ImageAligner::get_offset( unsigned img1, unsigned img2
 	unsigned pos = std::min( img1, img2 );
 	unsigned index = (base-1) * base / 2 + pos; // n(n+1)/2, with n=base-1
 	
-	if( base >= images.size() )
+	if( base >= count() )
 		qFatal( "Out of bounds access in get_offset( %d, %d )", img1, img2 );
 	
 	ImageOffset offset = offsets[index];
@@ -62,17 +62,16 @@ void ImageAligner::rough_align(){
 	//containing all initialized ones. Set all images as unset as starting point.
 	std::vector<unsigned> unset;
 	std::vector<unsigned> set;
-	unset.reserve( images.size() );
-	set.reserve( images.size() );
-	for( unsigned i=0; i<images.size(); ++i )
+	unset.reserve( count() );
+	set.reserve( count() );
+	for( unsigned i=0; i<count(); ++i )
 		unset.push_back( i );
 	
 	//Initialize a single image as (0,0)
 	//The last image is used, but anyone could do
 	unsigned first = unset.back();
 	unset.pop_back();
-	images[first].pos.setX( 0 );
-	images[first].pos.setY( 0 );
+	setPos( first, { 0.0, 0.0 } );
 	set.push_back( first );
 	
 	//Keep adding one image at a time until all have been initialized
@@ -95,8 +94,7 @@ void ImageAligner::rough_align(){
 		unsigned next = unset[best_unset];
 		unsigned old = set[best_set];
 		ImageOffset offset = get_offset( old, next );
-		images[next].pos.setX( images[old].pos.x() + offset.distance_x );
-		images[next].pos.setY( images[old].pos.y() + offset.distance_y );
+		setPos( next, pos( old ) + QPointF( offset.distance_x, offset.distance_y ) );
 		
 		//Update lists;
 		std::swap( unset[best_unset], unset[unset.size()-1] );
@@ -108,9 +106,9 @@ void ImageAligner::rough_align(){
 double ImageAligner::total_error() const{
 	double error=0;
 	
-	for( unsigned i=0; i<images.size(); ++i ){
+	for( unsigned i=0; i<count(); ++i ){
 		double local_error=0, weight=0, weight_sum=0;
-		for( unsigned j=0; j<images.size(); ++j ){
+		for( unsigned j=0; j<count(); ++j ){
 			if( j == i )
 				continue;
 			ImageOffset offset = get_offset( i, j );
@@ -118,15 +116,15 @@ double ImageAligner::total_error() const{
 				weight_sum += offset.error;
 		}
 		
-		for( unsigned j=0; j<images.size(); ++j ){
+		for( unsigned j=0; j<count(); ++j ){
 			if( j == i )
 				continue;
 			
 			ImageOffset offset = get_offset( i, j );
 			if( offset.overlap > 0.25 ){
 				double w = weight_sum / offset.error; //TODO: offset.error == 0 !
-				local_error += std::abs(images[j].pos.x() + offset.distance_x - images[i].pos.x()) * w;
-				local_error += std::abs(images[j].pos.y() + offset.distance_y - images[i].pos.y()) * w;
+				local_error += std::abs(pos( j ).x() + offset.distance_x - pos( i ).x()) * w;
+				local_error += std::abs(pos( j ).y() + offset.distance_y - pos( i ).y()) * w;
 				weight += w;
 			}
 		}
@@ -138,7 +136,7 @@ double ImageAligner::total_error() const{
 
 #include <QTime>
 void ImageAligner::align( AProcessWatcher* watcher ){
-	if( images.size() == 0 ){
+	if( count() == 0 ){
 		qWarning( "No images to align" );
 		return;
 	}
@@ -153,19 +151,17 @@ void ImageAligner::align( AProcessWatcher* watcher ){
 	//Update overlap values
 	//*
 	unsigned offset_index = 0;
-	for( unsigned i=1; i<images.size(); ++i ){
-		ImagePosition img = images[i];
+	for( unsigned i=1; i<count(); ++i ){
 		for( unsigned j=0; j<i; ++j ){
 			if( j == i )
 				continue;
 			
-			ImagePosition img2 = images[j];
 			ImageOffset& offset = offsets[offset_index++];
 			
 			double new_overlap = calculate_overlap(
-					QPoint( img2.pos.x() - img.pos.x(), img2.pos.y() - img.pos.y() )
-				,	*img.image
-				,	*img2.image
+					QPoint( pos( j ).x() - pos( i ).x(), pos( j ).y() - pos( i ).y() )
+				,	plane( i )
+				,	plane( j )
 				);
 			
 			rel << "overlap error is: " << std::abs( offset.overlap - new_overlap ) << " (" << offset.overlap << " - " << new_overlap << ")\n";
@@ -183,9 +179,9 @@ void ImageAligner::align( AProcessWatcher* watcher ){
 	for( unsigned iterations=0; iterations<2000; ++iterations ){
 		rel << "Error at iteration " << iterations << ": " << total_error() << "\n";
 		
-		for( unsigned i=0; i<images.size(); ++i ){
+		for( unsigned i=0; i<count(); ++i ){
 			double x=0, y=0, weight=0, weight_sum=0;
-			for( unsigned j=0; j<images.size(); ++j ){
+			for( unsigned j=0; j<count(); ++j ){
 				if( j == i )
 					continue;
 				
@@ -194,27 +190,26 @@ void ImageAligner::align( AProcessWatcher* watcher ){
 					weight_sum += offset.error;
 			}
 			
-			for( unsigned j=0; j<images.size(); ++j ){
+			for( unsigned j=0; j<count(); ++j ){
 				if( j == i )
 					continue;
 				
 				ImageOffset offset = get_offset( j, i );
 				if( offset.overlap > 0.25 ){
 					double w = weight_sum / offset.error * offset.overlap; //TODO: offset.error == 0 !
-					x += (images[j].pos.x() + offset.distance_x) * w;
-					y += (images[j].pos.y() + offset.distance_y) * w;
+					x += (pos( j ).x() + offset.distance_x) * w;
+					y += (pos( j ).y() + offset.distance_y) * w;
 					weight += w;
 				}
 			}
 			
-			images[i].pos.setX( x / weight );
-			images[i].pos.setY( y / weight );
+			setPos( i, { x / weight, y / weight } );
 		}
 	}
 	rel << "Fine alignment took: " << t.restart() << " msec\n";
 	
-	for( unsigned i=0; i<images.size(); ++i )
-		rel << "Image " << i << ": " << images[i].pos.x() << "x" << images[i].pos.y() << "\n";
+	for( unsigned i=0; i<count(); ++i )
+		rel << "Image " << i << ": " << pos( i ).x() << "x" << pos( i ).y() << "\n";
 	
 	rel.close();
 }

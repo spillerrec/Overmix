@@ -151,39 +151,39 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 	
 	//TODO: determine amount of planes!
 	unsigned planes_amount = 3;
-	if( filter == FOR_MERGING && aligner.image(0)->get_system() == ImageEx::YUV )
+	if( filter == FOR_MERGING && ( aligner.image(0).get_system() == ImageEx::YUV || aligner.image(0).get_system() == ImageEx::GRAY ) )
 		planes_amount = 1;
 	
 	//Determine if we need to care about alpha per plane
 	bool use_plane_alpha = false;
 	for( unsigned i=0; i<max_count; ++i )
-		if( aligner.image( i )->alpha_plane() ){
+		if( aligner.image( i ).alpha_plane() ){
 			use_plane_alpha = true;
 			break;
 		}
 	
 	//Do iterator
 	QRect full = aligner.size();
-	ImageEx *img = new ImageEx( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0)->get_system() );
+	ImageEx *img = new ImageEx( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
 	if( !img )
 		return nullptr;
 	img->create( 1, 1 ); //TODO: set as initialized
 	
 	//Fill alpha
-	Plane* alpha = new Plane( full.width(), full.height() );
-	alpha->fill( color::WHITE );
-	img->replace_plane( 3, alpha );
+	Plane alpha( full.width(), full.height() );
+	alpha.fill( color::WHITE );
+	img->alpha_plane() = alpha;
 	
 	//Fake alpha
-	Plane* fake_alpha = new Plane( aligner.plane(0,0)->get_width(), aligner.plane(0,0)->get_height() );
+	Plane* fake_alpha = new Plane( aligner.plane(0).get_width(), aligner.plane(0).get_height() );
 	fake_alpha->fill( color::WHITE );
 	
 	if( watcher )
 		watcher->set_total( planes_amount*2000 );
 	for( unsigned i=0; i<planes_amount; i++ ){
 		//Determine local size
-		double scale_x = (double)aligner.plane(0,i)->get_width() / aligner.plane(0,0)->get_width();
-		double scale_y = (double)aligner.plane(0,i)->get_height() / aligner.plane(0,0)->get_height();
+		double scale_x = (double)aligner.plane(0,i).get_width() / aligner.plane(0).get_width();
+		double scale_y = (double)aligner.plane(0,i).get_height() / aligner.plane(0).get_height();
 		
 		//TODO: something is wrong with the rounding, chroma-channels are slightly off
 		QRect local( 
@@ -195,18 +195,18 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 		QRect out_size( upscale_chroma ? full : local );
 		
 		//Create output plane
-		Plane* out = new Plane( out_size.width(), out_size.height() );
-		out->fill( 0 );
-		img->replace_plane( i, out );
+		Plane out( out_size.width(), out_size.height() );
+		out.fill( 0 );
+		(*img)[i] = out;
 		
 		vector<PlaneItInfo> info;
-		info.push_back( PlaneItInfo( out, out_size.x(),out_size.y() ) );
+		info.push_back( PlaneItInfo( (*img)[i], out_size.x(),out_size.y() ) );
 		
 		info.push_back( PlaneItInfo( alpha, out_size.x(),out_size.y() ) );
 			//TODO: we still have issues with the chroma planes as the
 			//up-scaled layers doesn't always cover all pixels in the Y plane.
 		
-		vector<Plane*> temp;
+		vector<const Plane*> temp;
 		
 		if( out_size == local ){
 			for( unsigned j=0; j<max_count; j++ ){
@@ -217,12 +217,12 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 					) );
 				
 				if( use_plane_alpha ){
-					Plane* current_alpha = aligner.image( j )->alpha_plane();
+					const Plane* current_alpha = &aligner.image( j ).alpha_plane();
 					if( !current_alpha )
 						current_alpha = fake_alpha;
 					
 					info.push_back( PlaneItInfo(
-							current_alpha
+							*current_alpha
 						,	round( aligner.pos(j).x()*scale_x )
 						,	round( aligner.pos(j).y()*scale_y )
 						) );
@@ -235,20 +235,20 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 				if( watcher )
 					watcher->set_current( i*2000 + (j * 1000 / max_count) );
 				
-				Plane *p = aligner.plane( j, i )->scale_cubic( aligner.plane(j,0)->get_width(), aligner.plane(j,0)->get_height() );
+				const Plane *p = aligner.plane( j, i ).scale_cubic( aligner.plane(j).get_width(), aligner.plane(j).get_height() );
 				if( !p )
 					qDebug( "No plane :\\" );
 				temp.push_back( p );
 				QPoint pos = aligner.pos(j).toPoint();
-				info.push_back( PlaneItInfo( p, pos.x(),pos.y() ) );
+				info.push_back( PlaneItInfo( *p, pos.x(),pos.y() ) );
 				
 				if( use_plane_alpha ){
 					//Alpha
-					Plane* current_alpha = aligner.image( j )->alpha_plane();
+					const Plane* current_alpha = &aligner.image( j ).alpha_plane();
 					if( !current_alpha )
 						current_alpha = fake_alpha;
 					
-					info.push_back( PlaneItInfo( current_alpha, pos.x(),pos.y() ) );
+					info.push_back( PlaneItInfo( *current_alpha, pos.x(),pos.y() ) );
 				}
 			}
 		}
@@ -265,7 +265,7 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 		
 		//Upscale plane if necessary
 		if( full != out_size )
-			img->replace_plane( i, out->scale_cubic( full.width(), full.height() ) );
+			(*img)[i] = *out.scale_cubic( full.width(), full.height() );
 		
 		//Remove scaled planes
 		for( unsigned j=0; j<temp.size(); j++ )
@@ -274,6 +274,9 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 	
 	delete fake_alpha;
 	qDebug( "render rest took: %d", t.elapsed() );
+	
+	for( unsigned i=0; i<img->size(); i++ )
+		qDebug( "Image %d was %s", i, (*img)[i] ? "valid" : "invalid" );
 	
 	return img;
 }

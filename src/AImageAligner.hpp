@@ -35,15 +35,6 @@ class AImageAligner{
 		};
 		
 	protected:
-		struct ImagePosition{
-			const ImageEx* const original;
-			/*const*/ Plane* const image;
-			QPointF pos;
-			
-			ImagePosition( const ImageEx* const org, /*const*/ Plane* const img )
-				:	original(org), image(img) { }
-		};
-		
 		struct ImageOffset{
 			double distance_x;
 			double distance_y;
@@ -59,17 +50,40 @@ class AImageAligner{
 		const AlignMethod method;
 		const double scale;
 		double movement{ 0.75 };
-		std::vector<ImagePosition> images;
 		bool raw;
 		
 		double x_scale() const;
 		double y_scale() const;
 		
-		virtual /*const*/ Plane* prepare_plane( /*const*/ Plane* p ){ return p; }
-		virtual void on_add( ImagePosition& ){ }
+	private:
+		struct ImagePosition{
+			const ImageEx& original;
+			const Plane image;
+			QPointF pos;
+			
+			ImagePosition( const ImageEx& org, Plane&& img )
+				:	original(org), image(img) { }
+		};
+		std::vector<ImagePosition> images;
+	public:
+		//Accessors
+		unsigned count() const{ return images.size(); }
+		const ImageEx& image( unsigned index ) const{ return images[index].original; }
+		const Plane& plane( unsigned img_index, unsigned p_index=0 ) const;
+		QPointF pos( unsigned index ) const;
+		void setPos( unsigned index, QPointF newVal ){ images[index].pos = newVal; }
+		
+		//Construction
+		void add_image( const ImageEx& img );
+		
+	protected:
+		//Triggers when inserting
+		virtual Plane prepare_plane( const Plane& );
+		virtual void on_add(){ }
 	
 	public:
 		AImageAligner( AlignMethod method, double scale=1.0 ) : method(method), scale(scale), raw(false){ }
+		//copy, move, assign?
 		virtual ~AImageAligner();
 		
 		void set_raw( bool value ){ raw = value; }
@@ -79,13 +93,8 @@ class AImageAligner{
 		double get_scale() const{ return scale; }
 		double get_movement() const{ return movement; }
 		
-		void add_image( /*const*/ ImageEx* const img );
 		
 		QRect size() const;
-		unsigned count() const{ return images.size(); }
-		const ImageEx* image( unsigned index ) const{ return images[index].original; }
-		/*const*/ Plane* plane( unsigned img_index, unsigned p_index ) const;
-		QPointF pos( unsigned index ) const;
 		
 		virtual void align( AProcessWatcher* watcher=nullptr ) = 0;
 		

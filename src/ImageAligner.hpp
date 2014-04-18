@@ -29,7 +29,7 @@ class ImageAligner : public AImageAligner{
 		void rough_align();
 		
 		double total_error() const;
-		virtual void on_add( ImagePosition& pos );
+		virtual void on_add();
 	
 	public:
 		ImageAligner( AlignMethod method, double scale=1.0 ) : AImageAligner( method, scale ){ }

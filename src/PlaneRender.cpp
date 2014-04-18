@@ -50,13 +50,13 @@ ImageEx* PlaneRender::render( const AImageAligner& aligner, unsigned max_count, 
 	
 	
 	//Create output plane
-	Plane* out = new Plane( full.width(), full.height() );
-	out->fill( color::BLACK );
-	img->replace_plane( 0, out );
+	Plane out( full.width(), full.height() );
+	out.fill( color::BLACK );
+	(*img)[0] = out;
 	
 	//Initialize PlaneItInfos
 	vector<PlaneItInfo> info;
-	info.push_back( PlaneItInfo( out, full.x(),full.y() ) );
+	info.push_back( PlaneItInfo( (*img)[0], full.x(),full.y() ) );
 	
 	for( unsigned i=0; i<max_count; i++ )
 		info.push_back( PlaneItInfo(

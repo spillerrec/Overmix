@@ -28,14 +28,14 @@
 #include "ARender.hpp"
 
 struct PlaneItInfo{
-	Plane *p;
+	const Plane *p;
 	int x;
 	int y;
 	color_type* row_start;
 	color_type* row;
 	
-	PlaneItInfo( Plane *p, int x, int y ){
-		this->p = p;
+	PlaneItInfo( const Plane& p, int x, int y ){ //TODO: check if we can use p as reference?
+		this->p = &p;
 		this->x = x;
 		this->y = y;
 		row_start = 0;

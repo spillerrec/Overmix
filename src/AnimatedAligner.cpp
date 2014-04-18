@@ -42,7 +42,7 @@ class AnimFrame{
 		double find_error( unsigned index ){
 			unsigned comp_index = indexes[ indexes.size()-1 ];
 			aligner.set_raw( true );
-			auto offset = aligner.find_offset( *aligner.plane( comp_index, 0 ), *aligner.plane( index, 0 ) );
+			auto offset = aligner.find_offset( aligner.plane( comp_index, 0 ), aligner.plane( index, 0 ) );
 			qDebug( "Offset: %f", offset.distance_y );
 			aligner.set_raw( false );
 			return offset.error;
@@ -53,13 +53,13 @@ class AnimFrame{
 			AverageAligner render( aligner.get_method(), aligner.get_scale() );
 			render.set_movement( aligner.get_movement() );
 			for( int index : indexes )
-				render.add_image( (ImageEx*)aligner.image( index ) ); //TODO: fix cast
+				render.add_image( aligner.image( index ) ); //TODO: fix cast
 			render.align(); //TODO: avoid having to realign. Add stuff to FakeAligner?
 			
 			//Render this frame
 			ImageEx* img = SimpleRender().render( render );
 			QImage raw = img->to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_DITHER | ImageEx::SETTING_GAMMA );
-			auto offset = aligner.find_offset( *background[0], *(*img)[0] );
+			auto offset = aligner.find_offset( background[0], (*img)[0] );
 			delete img;
 			
 			//Add it to the file
@@ -72,8 +72,8 @@ class AnimFrame{
 double AnimatedAligner::find_threshold( const std::vector<int>& imgs ){
 	vector<double> errors;
 	set_raw( true ); //TODO: remove the need of this
-	for( unsigned i=0; i<images.size()-1; ++i )
-		errors.push_back( find_offset( *plane( i, 0 ), *plane( i+1, 0 ) ).error );
+	for( unsigned i=0; i<count()-1; ++i )
+		errors.push_back( find_offset( plane( i, 0 ), plane( i+1, 0 ) ).error );
 	set_raw( false );
 	sort( errors.begin(), errors.end() );
 	
@@ -111,21 +111,21 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 	average.set_movement( get_movement() );
 	average.set_edges( false );
 	for( unsigned i=0; i<count(); i++ )
-		average.add_image( (ImageEx*)image( i ) );
+		average.add_image( image( i ) );
 	average.align();
 	ImageEx* average_render = SimpleRender().render( average );
 	
 	//Init
 	std::vector<int> backlog;
-	for( unsigned i=0; i<images.size(); i++ )
+	for( unsigned i=0; i<count(); i++ )
 		backlog.push_back( i );
 	
 	/* Debug differences
 	{
 		debug::CsvFile cvs( "AnimatedAligner-Raw/animated.csv" );
 		cvs.add( "Index" ).add( "diff1" ).stop();
-		for( unsigned i=0; i<images.size(); i++ ){
-			auto diff1 = average.find_offset( *average.plane( i, 0 ), *average.plane( (i+1)%images.size(), 0 ) );
+		for( unsigned i=0; i<count(); i++ ){
+			auto diff1 = average.find_offset( average.plane( i, 0 ), average.plane( (i+1)%count(), 0 ) );
 			
 			cvs.add( i )
 				.	add( diff1.error )
@@ -139,17 +139,17 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 	{
 		debug::CsvFile graph( "AnimatedAligner-Raw/graph.csv" );
 		graph.add("");
-		for( unsigned i=0; i<images.size(); i++ )
+		for( unsigned i=0; i<count(); i++ )
 			graph.add( to_string(i) );
 		graph.stop();
 		
-		for( unsigned i=0; i<images.size(); i++ ){
+		for( unsigned i=0; i<count(); i++ ){
 			graph.add( to_string(i) );
-			for( unsigned j=0; j<images.size(); j++ ){
+			for( unsigned j=0; j<count(); j++ ){
 				if( i == j )
 					graph.add( 0.0 );
 				else
-					graph.add( find_offset( *plane( i,0 ), *plane( j,0 ) ).error );
+					graph.add( find_offset( plane( i,0 ), plane( j,0 ) ).error );
 			}
 			graph.stop();
 		}

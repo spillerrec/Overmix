@@ -46,12 +46,11 @@ class StaticDiff{
 		
 		void add_image( unsigned index ){
 			//Get the actual color
-			const Plane* p = aligner.plane( index, 0 );
-			color_type actual = p->pixel( offset.x(), offset.y() );
+			color_type actual = aligner.plane( index, 0 ).pixel( offset.x(), offset.y() );
 			
 			//Find the expected color
 			QPoint pos = (aligner.pos( index ) + offset - absolute).toPoint();
-			color_type expected = reference[0]->pixel( pos.x(), pos.y() );
+			color_type expected = reference[0].pixel( pos.x(), pos.y() );
 			
 			//Add it to the sum
 			sum += abs( actual - expected );
@@ -75,25 +74,25 @@ ImageEx* DiffRender::render( const AImageAligner& aligner, unsigned max_count, A
 	//Find the smallest shared size
 	QSize size = aligner.size().size(); //No image is larger than the final result
 	for( unsigned i=0; i<max_count; i++ ){
-		size.setWidth( min( (unsigned)size.width(), aligner.image(i)->get_width() ) );
-		size.setHeight( min( (unsigned)size.height(), aligner.image(i)->get_height() ) );
+		size.setWidth( min( (unsigned)size.width(), aligner.image(i).get_width() ) );
+		size.setHeight( min( (unsigned)size.height(), aligner.image(i).get_height() ) );
 	}
 	
 	//Create final output image based on the smallest size
 	ImageEx* img = new ImageEx( ImageEx::GRAY );
 	img->create( size.width(), size.height() );
-	Plane* output = (*img)[0];
+	Plane& output = (*img)[0];
 	
 	if( watcher )
 		watcher->set_total( 1000 );
 	
 	//Iterate over each pixel in the output image
-	for( unsigned iy=0; iy<output->get_height(); iy++ ){
+	for( unsigned iy=0; iy<output.get_height(); iy++ ){
 		if( watcher )
-			watcher->set_current( iy * 1000 / output->get_height() );
+			watcher->set_current( iy * 1000 / output.get_height() );
 		
-		color_type* out = output->scan_line( iy );
-		for( unsigned ix=0; ix<output->get_width(); ix++ ){
+		color_type* out = output.scan_line( iy );
+		for( unsigned ix=0; ix<output.get_width(); ix++ ){
 			//Set the pixel to the static difference of all the images until max_count
 			StaticDiff diff( aligner, *avg, ix, iy );
 			

@@ -21,54 +21,35 @@
 #include <fstream>
 
 AImageAligner::~AImageAligner(){
-	//Remove scaled images
-	for( unsigned i=0; i<images.size(); ++i )
-		if( (*(images[i].original))[0] != images[i].image )
-			delete images[i].image;
+	
 }
 
 double AImageAligner::x_scale() const{
-	if( method == ALIGN_BOTH || method == ALIGN_HOR )
-		return scale;
-	else
-		return 1.0;
+	return (method != ALIGN_VER) ? scale : 1.0;
 }
 double AImageAligner::y_scale() const{
-	if( method == ALIGN_BOTH || method == ALIGN_VER )
-		return scale;
-	else
-		return 1.0;
+	return (method != ALIGN_HOR) ? scale : 1.0;
 }
 
-void AImageAligner::add_image( /*const*/ ImageEx* const img ){
-	/*const*/ Plane* const use = (*img)[0];
-	
-	/*const*/ Plane* prepared = NULL;
-	
-	if( scale > 1.0 ){
-		Plane *temp = use->scale_cubic(
-				use->get_width() * x_scale() + 0.5
-			,	use->get_height() * y_scale() + 0.5
-			);
-		
-		prepared = prepare_plane( temp );
-		
-		if( temp != prepared )
-			delete temp;
-	}
-	else
-		prepared = prepare_plane( use );
-	
-	images.push_back( ImagePosition( img, prepared ) );
-	
-	on_add( images[ images.size()-1 ] );
+Plane AImageAligner::prepare_plane( const Plane& p ){
+	if( scale > 1.0 )
+		return Plane( *(p.scale_cubic(
+				p.get_width() * x_scale() + 0.5
+			,	p.get_height() * y_scale() + 0.5
+			)) );
+	return Plane();
+}
+
+void AImageAligner::add_image( const ImageEx& img ){
+	images.emplace_back( img, prepare_plane( img[0] ) );
+	on_add();
 }
 
 QRect AImageAligner::size() const{
 	QRectF total;
 	
 	for( unsigned i=0; i<count(); i++ )
-		total = total.united( QRectF( pos(i), QSizeF( plane(i,0)->get_width(), plane(i,0)->get_height() ) ) );
+		total = total.united( QRectF( pos(i), QSizeF( plane(i).get_width(), plane(i).get_height() ) ) );
 	
 	//Round so that we only increase size
 	total.setLeft( floor( total.left() ) );
@@ -121,11 +102,11 @@ AImageAligner::ImageOffset AImageAligner::find_offset( const Plane& img1, const 
 	return offset;
 }
 
-/*const*/ Plane* AImageAligner::plane( unsigned img_index, unsigned p_index ) const{
-	if( raw )
+const Plane& AImageAligner::plane( unsigned img_index, unsigned p_index ) const{
+	if( raw && images[img_index].image )
 		return images[img_index].image;
 	else
-		return (*(images[img_index].original))[p_index];
+		return images[img_index].original[p_index];
 }
 
 QPointF AImageAligner::pos( unsigned index ) const{

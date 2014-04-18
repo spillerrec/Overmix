@@ -36,6 +36,7 @@
 #include "debug.hpp"
 
 #include <vector>
+#include <utility>
 
 #include <QFileInfo>
 #include <QFile>
@@ -201,7 +202,7 @@ void main_widget::process_urls( QList<QUrl> urls ){
 		if( img ){
 			//Overwrite alpha
 			if( alpha_mask )
-				img->replace_plane( 3, new Plane( *alpha_mask ) );
+				img->alpha_plane() = *alpha_mask;
 			
 			//Crop
 			int left = ui->crop_left->value();
@@ -428,7 +429,7 @@ void main_widget::subpixel_align_image(){
 	aligner->set_movement( movement );
 	
 	for( auto img : images )
-		aligner->add_image( img );
+		aligner->add_image( *img );
 	aligner->align( &watcher );
 	
 	refresh_text();
@@ -466,7 +467,7 @@ void main_widget::set_alpha_mask(){
 		img.to_grayscale();
 		
 		delete alpha_mask;
-		alpha_mask = new Plane( *img[0] );
+		alpha_mask = new Plane( std::move( img[0] ) );
 		ui->pre_clear_mask->setEnabled( true );
 	}
 }

@@ -26,7 +26,7 @@ using namespace std;
 
 Plane* Plane::scale_nearest( unsigned wanted_width, unsigned wanted_height ) const{
 	Plane *scaled = new Plane( wanted_width, wanted_height );
-	if( !scaled || scaled->is_invalid() )
+	if( !scaled || !scaled->valid() )
 		return 0;
 	
 	for( unsigned iy=0; iy<wanted_height; iy++ ){
@@ -129,7 +129,7 @@ void do_line( const ScaleLine& line ){
 
 Plane* Plane::scale_generic( unsigned wanted_width, unsigned wanted_height, double window, Plane::Filter f ) const{
 	Plane *scaled = new Plane( wanted_width, wanted_height );
-	if( !scaled || scaled->is_invalid() )
+	if( !scaled || !scaled->valid() )
 		return scaled;
 	
 	QTime t;

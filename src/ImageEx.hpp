@@ -21,6 +21,7 @@
 #include "Plane.hpp"
 #include <QImage>
 #include <algorithm>
+#include <vector>
 
 class ImageEx{
 	public:
@@ -42,72 +43,56 @@ class ImageEx{
 		};
 	
 	private:
-		bool initialized;
-		Plane *planes[MAX_PLANES];
+		bool initialized{ false };
+		std::vector<Plane> planes;
+		Plane alpha;
 		system type;
-		bool read_dump_plane( FILE *f, unsigned index );
+		bool read_dump_plane( FILE *f );
 		bool from_dump( const char* path );
 		bool from_png( const char* path );
 		bool from_qimage( const char* path );
 		
 	public:
-		ImageEx( system type = RGB ) : type( type ){
-			initialized = false;
-			for( unsigned i=0; i<MAX_PLANES; i++ )
-				planes[i] = 0;
-		}
-		~ImageEx(){
-			for( unsigned i=0; i<MAX_PLANES; i++ )
-				if( planes[i] )
-					delete planes[i];
+		ImageEx( system type = RGB ) : type( type ){ }
+		ImageEx( Plane p ) : type( GRAY ){
+			planes.push_back( p );
 		}
 		
-		ImageEx( const ImageEx& img );
-		
+		unsigned size() const{ return planes.size(); }
 		void to_grayscale();
 		
 		bool create( unsigned width, unsigned height, bool alpha=false );
-		void replace_plane( unsigned index, Plane* p ){
-			if( index > 3 )
-				delete p;
-			else{
-				if( planes[index] )
-					delete planes[index];
-				planes[index] = p;
-			}
-		}
 		
 		template<typename... Args>
 		void apply_operation( Plane* (Plane::*func)( Args... ) const, Args... args ){
+			//TODO: reconsider this-
+			//TODO: remove pointer stuff
 			if( type == YUV || type == GRAY )
-				replace_plane( 0, (planes[0]->*func)( args... ) );
-			else{
-				for( unsigned i=0; i<MAX_PLANES-1; ++i )
-					if( planes[i] )
-						replace_plane( i, (planes[i]->*func)( args... ) );
-			}
+				planes[0] = *( (planes[0].*func)( args... ) );
+			else
+				for( auto& plane : planes )
+					plane = *( (plane.*func)( args... ) );
 		}
 		
 		bool is_valid() const{ return initialized; }
 		
 		bool read_file( const char* path );
-		Plane* alpha_plane() const{ return planes[MAX_PLANES-1]; }
+		Plane& alpha_plane(){ return alpha; }
+		const Plane& alpha_plane() const{ return alpha; }
 		
 		QImage to_qimage( YuvSystem system, unsigned setting=SETTING_NONE );
 		
 		unsigned get_width() const{
-			unsigned width = 0;
-			for( unsigned i=0; i<MAX_PLANES; ++i )
-				if( planes[i] )
-					width = std::max( planes[i]->get_width(), width );
-			return width;
+			if( planes.size() == 0 )
+				return 0;
+			return std::max_element( planes.begin(), planes.end()
+				,	[]( const Plane& p1, const Plane& p2 ){ return p1.get_width() < p2.get_width(); } )->get_width();
 		}
 		unsigned get_height() const{
-			unsigned height = 0;
-			for( unsigned i=0; i<MAX_PLANES; ++i )
-				if( planes[i] )
-					height = std::max( planes[i]->get_height(), height );
-			return height;
+			if( planes.size() == 0 )
+				return 0;
+			return std::max_element( planes.begin(), planes.end()
+				,	[]( const Plane& p1, const Plane& p2 ){ return p1.get_height() < p2.get_height(); } )->get_height();
 		}
 		
 		system get_system() const{ return type; }
@@ -118,16 +103,9 @@ class ImageEx{
 		void replace_line( ImageEx& img, bool top );
 		void combine_line( ImageEx& img, bool top );
 		
-		void scale_plane( unsigned index, unsigned width, unsigned height ){
-			if( planes[index] ){
-				Plane* prev = planes[index];
-				planes[index] = prev->scale_cubic( width, height );
-				delete prev;
-			}
-		}
 		void scale( unsigned width, unsigned height ){
-			for( unsigned i=0; i<MAX_PLANES; ++i )
-				scale_plane( i, width, height );
+			for( auto& plane : planes )
+				plane = *plane.scale_cubic( width, height );
 		}
 		void scale( double factor ){
 			unsigned width = get_width() * factor + 0.5;
@@ -144,9 +122,8 @@ class ImageEx{
 		}
 		MergeResult best_round( const ImageEx& img, int level, double range_x, double range_y, DiffCache *cache=nullptr ) const;
 		
-		Plane* operator[]( const unsigned index ) const{
-			return planes[index];
-		}
+		Plane& operator[]( unsigned index ){ return planes[index]; }
+		const Plane& operator[]( unsigned index ) const{ return planes[index]; }
 };
 
 #endif

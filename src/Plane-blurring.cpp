@@ -97,7 +97,7 @@ Plane* Plane::weighted_sum( double *kernel, unsigned w_width, unsigned w_height 
 	if( !kernel || w_width == 0 || w_height == 0 )
 		return NULL;
 	
-	Plane *out = create_compatiable();
+	Plane *out = new Plane( create_compatiable() ); //TODO: fix
 	if( out ){
 		//Set default settings
 		WeightedSumLine default_line;

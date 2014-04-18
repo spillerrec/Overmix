@@ -30,9 +30,9 @@ class InternAligner : public AverageAligner{
 			:	AverageAligner( method, scale ), normal(normal){
 			diff = DifferenceRender().render( normal );
 		}
-		virtual /*const*/ Plane* prepare_plane( /*const*/ Plane* p ) override{
+		virtual Plane prepare_plane( const Plane& p ) override{
 			//TODO: randomize repeating errors
-			return p;
+			return AImageAligner::prepare_plane( p );
 		}
 };
 
@@ -41,16 +41,16 @@ void LayeredAligner::align( AProcessWatcher* watcher ){
 		return;
 	
 	AverageAligner normal( method, scale );
-	for( auto image : images )
-		normal.add_image( (ImageEx* const)image.original );
+	for( unsigned i=0; i<count(); i++ )
+		normal.add_image( image( i ) );
 	normal.align();
 	
 	InternAligner aligner( normal, method, scale );
-	for( auto image : images )
-		aligner.add_image( (ImageEx* const)image.original );
+	for( unsigned i=0; i<count(); i++ )
+		aligner.add_image( image( i ) );
 	aligner.align();
 	
-	for( unsigned i=0; i<images.size(); i++ )
-		images[i].pos = aligner.pos(i);
+	for( unsigned i=0; i<count(); i++ )
+		setPos( i, aligner.pos(i) );
 }
 

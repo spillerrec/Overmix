@@ -101,7 +101,7 @@ static void edge_line( const EdgeLine<T>& line ){
 template<typename T, typename T2>
 Plane* parallel_edge_line( const Plane& p, T* weights_x, T* weights_y, unsigned size, unsigned div, T2 func ){
 	Plane *out = new Plane( p.get_width(), p.get_height() );
-	if( !out || out->is_invalid() )
+	if( !out || !out->valid() )
 		return out;
 	
 	//Calculate all y-lines

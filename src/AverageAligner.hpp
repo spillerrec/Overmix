@@ -29,7 +29,7 @@ class AverageAligner : public AImageAligner{
 		AverageAligner( AlignMethod method, double scale=1.0 ) : AImageAligner( method, scale ){ }
 		virtual void align( AProcessWatcher* watcher=nullptr ) override;
 		
-		virtual /*const*/ Plane* prepare_plane( /*const*/ Plane* p ) override;
+		virtual Plane prepare_plane( const Plane& p ) override;
 		void set_edges( bool enabled ){ use_edges = enabled; }
 };
 

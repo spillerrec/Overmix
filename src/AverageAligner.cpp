@@ -19,23 +19,24 @@
 #include "AverageAligner.hpp"
 #include "SimpleRender.hpp"
 
-/*const*/ Plane* AverageAligner::prepare_plane( /*const*/ Plane* p ){
+Plane AverageAligner::prepare_plane( const Plane& p ){
+	Plane prepared = AImageAligner::prepare_plane( p );
 	if( use_edges )
-		return p->edge_sobel();
+		return *prepared.edge_sobel();
 	else
-		return p;
+		return prepared;
 }
 
 QPointF AverageAligner::min_point() const{
-	if( images.size() == 0 )
+	if( count() == 0 )
 		return QPointF(0,0);
 	
-	QPointF min = images[0].pos;
-	for( auto img : images ){
-		if( img.pos.x() < min.x() )
-			min.setX( img.pos.x() );
-		if( img.pos.y() < min.y() )
-			min.setY( img.pos.y() );
+	QPointF min = pos( 0 );
+	for( unsigned i=0; i<count(); i++ ){
+		if( pos(i).x() < min.x() )
+			min.setX( pos(i).x() );
+		if( pos(i).y() < min.y() )
+			min.setY( pos(i).y() );
 	}
 	
 	return min;
@@ -50,7 +51,7 @@ void AverageAligner::align( AProcessWatcher* watcher ){
 	if( watcher )
 		watcher->set_total( count() );
 	
- 	images[0].pos = QPointF( 0,0 );
+ 	setPos( 0, QPointF( 0,0 ) );
 	for( unsigned i=1; i<count(); i++ ){
 		if( watcher )
 			watcher->set_current( i );
@@ -59,8 +60,8 @@ void AverageAligner::align( AProcessWatcher* watcher ){
 		if( !img )
 			qFatal( "NoOOO" );
 		
-		ImageOffset offset = find_offset( *((*img)[0]), *(images[i].image) );
-		images[i].pos = QPointF( offset.distance_x, offset.distance_y ) + min_point();
+		ImageOffset offset = find_offset( (*img)[0], plane( i, 0 ) );
+		setPos( i, QPointF( offset.distance_x, offset.distance_y ) + min_point() );
 		
 		delete img;
 	}

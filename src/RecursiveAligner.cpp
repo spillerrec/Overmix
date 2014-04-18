@@ -23,23 +23,24 @@
 #include <limits>
 using namespace std;
 
-/*const*/ Plane* RecursiveAligner::prepare_plane( /*const*/ Plane* p ){
-	if( use_edges )
-		return p->edge_sobel();
+Plane RecursiveAligner::prepare_plane( const Plane& p ){
+	Plane prepared( AImageAligner::prepare_plane( p ) );
+	if( use_edges && prepared )
+		return *prepared.edge_sobel();
 	else
-		return p;
+		return prepared;
 }
 
 QPointF RecursiveAligner::min_point() const{
-	if( images.size() == 0 )
+	if( count() == 0 )
 		return QPointF(0,0);
 	
-	QPointF min = images[0].pos;
-	for( auto img : images ){
-		if( img.pos.x() < min.x() )
-			min.setX( img.pos.x() );
-		if( img.pos.y() < min.y() )
-			min.setY( img.pos.y() );
+	QPointF min = pos( 0 );
+	for( unsigned i=0; i<count(); i++ ){
+		if( pos(i).x() < min.x() )
+			min.setX( pos(i).x() );
+		if( pos(i).y() < min.y() )
+			min.setY( pos(i).y() );
 	}
 	
 	return min;
@@ -50,21 +51,19 @@ pair<Plane*,QPointF> RecursiveAligner::combine( const Plane& first, const Plane&
 	QPointF offset_f( offset.distance_x, offset.distance_y );
 	
 	//Wrap planes in ImageEx*
-	ImageEx img1( ImageEx::GRAY );
-	ImageEx img2( ImageEx::GRAY );
-	img1.replace_plane( 0, new Plane( first ) );
-	img2.replace_plane( 0, new Plane( second ) );
+	ImageEx img1( first );
+	ImageEx img2( second );
 	
 	//Make aligner for rendering the result
 	FakeAligner aligner;
 	aligner.set_raw( true );
-	aligner.add_image( &img1 );
-	aligner.add_image( &img2 );
+	aligner.add_image( img1 );
+	aligner.add_image( img2 );
 	aligner.setPos( 1, offset_f );
 	
 	//Render it
 	ImageEx* merged = SimpleRender( SimpleRender::FOR_MERGING ).render( aligner );
-	Plane *out = new Plane( *((*merged)[0]) );
+	Plane *out = new Plane( (*merged)[0] );
 	delete merged;
 	
 	return make_pair( out, offset_f );
@@ -74,10 +73,10 @@ Plane* RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsign
 	auto amount = end - begin;
 	switch( amount ){
 		case 0: qFatal( "No images to align!" );
-		case 1: return new Plane( *(images[begin].image) ); //Just return this one
+		case 1: return new Plane( plane( begin ) ); //Just return this one
 		case 2: { //Optimization for two images
-				auto offset = combine( *(images[begin].image), *(images[begin+1].image) );
-				images[begin+1].pos = offset.second;
+				auto offset = combine( plane( begin ), plane( begin+1 ) );
+				setPos( begin+1, offset.second );
 				return offset.first;
 			}
 		default: { //More than two images
@@ -92,19 +91,19 @@ Plane* RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsign
 				//Find top-left corner of first
 				QPointF corner1( numeric_limits<double>::max(), numeric_limits<double>::max() );
 				for( unsigned i=begin; i<middle; i++ ){
-					corner1.setX( min( corner1.x(), images[i].pos.x() ) );
-					corner1.setY( min( corner1.y(), images[i].pos.y() ) );
+					corner1.setX( min( corner1.x(), pos(i).x() ) );
+					corner1.setY( min( corner1.y(), pos(i).y() ) );
 				}
 				//Find top-left corner of second
 				QPointF corner2( numeric_limits<double>::max(), numeric_limits<double>::max() );
 				for( unsigned i=middle; i<end; i++ ){
-					corner2.setX( min( corner2.x(), images[i].pos.x() ) );
-					corner2.setY( min( corner2.y(), images[i].pos.y() ) );
+					corner2.setX( min( corner2.x(), pos(i).x() ) );
+					corner2.setY( min( corner2.y(), pos(i).y() ) );
 				}
 				
 				//move all in "middle to end" using the offset
 				for( unsigned i=middle; i<end; i++ )
-					images[i].pos += corner1 + offset.second - corner2;
+					setPos( i, pos( i ) + corner1 + offset.second - corner2 );
 				
 				delete first;
 				delete second;
