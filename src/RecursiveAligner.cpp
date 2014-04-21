@@ -46,7 +46,7 @@ QPointF RecursiveAligner::min_point() const{
 	return min;
 }
 
-pair<Plane*,QPointF> RecursiveAligner::combine( const Plane& first, const Plane& second ) const{
+pair<Plane,QPointF> RecursiveAligner::combine( const Plane& first, const Plane& second ) const{
 	ImageOffset offset = find_offset( first, second );
 	QPointF offset_f( offset.distance_x, offset.distance_y );
 	
@@ -63,16 +63,15 @@ pair<Plane*,QPointF> RecursiveAligner::combine( const Plane& first, const Plane&
 	
 	//Render it
 	ImageEx merged = SimpleRender( SimpleRender::FOR_MERGING ).render( aligner );
-	Plane *out = new Plane( merged[0] );
 	
-	return make_pair( out, offset_f );
+	return make_pair( merged[0], offset_f );
 }
 
-Plane* RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsigned end ){
+Plane RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsigned end ){
 	auto amount = end - begin;
 	switch( amount ){
 		case 0: qFatal( "No images to align!" );
-		case 1: return new Plane( plane( begin ) ); //Just return this one
+		case 1: return plane( begin ); //Just return this one
 		case 2: { //Optimization for two images
 				auto offset = combine( plane( begin ), plane( begin+1 ) );
 				setPos( begin+1, offset.second );
@@ -81,11 +80,11 @@ Plane* RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsign
 		default: { //More than two images
 				//Solve sub-areas recursively
 				unsigned middle = amount / 2 + begin;
-				Plane* first = align( watcher, begin, middle );
-				Plane* second = align( watcher, middle, end );
+				Plane first = align( watcher, begin, middle );
+				Plane second = align( watcher, middle, end );
 				
 				//Find the offset between these two images
-				auto offset = combine( *first, *second );
+				auto offset = combine( first, second );
 				
 				//Find top-left corner of first
 				QPointF corner1( numeric_limits<double>::max(), numeric_limits<double>::max() );
@@ -104,8 +103,6 @@ Plane* RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsign
 				for( unsigned i=middle; i<end; i++ )
 					setPos( i, pos( i ) + corner1 + offset.second - corner2 );
 				
-				delete first;
-				delete second;
 				return offset.first; //Return the combined image
 			}
 	}

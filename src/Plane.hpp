@@ -21,6 +21,7 @@
 #include <QPoint>
 #include <QList>
 #include <cstdio>
+#include <vector>
 #include <utility>
 
 typedef int color_type;
@@ -51,7 +52,10 @@ struct Kernel{
 	//TODO: This should be a plane
 	unsigned width;
 	unsigned height;
-	double* values;
+	std::vector<double> values;
+	Kernel( unsigned width, unsigned height ) : width(width), height(height){
+		values.reserve( width*height );
+	}
 };
 
 class Plane{
@@ -200,7 +204,7 @@ class Plane{
 		
 	//Blurring
 	private:
-		Plane weighted_sum( double *kernel, unsigned w_width, unsigned w_height ) const; //TODO: change to kernel
+		Plane weighted_sum( Kernel &kernel ) const;
 		Kernel gaussian_kernel( double deviation_x, double deviation_y ) const;
 	public:
 		Plane blur_box( unsigned amount_x, unsigned amount_y ) const;

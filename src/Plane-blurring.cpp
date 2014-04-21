@@ -93,8 +93,8 @@ void sum_line( const WeightedSumLine& line ){
 		*(out++) = line.weighted_sum( in, ix-end );
 }
 
-Plane Plane::weighted_sum( double *kernel, unsigned w_width, unsigned w_height ) const{
-	if( !kernel || w_width == 0 || w_height == 0 )
+Plane Plane::weighted_sum( Kernel &kernel ) const{
+	if( kernel.width == 0 || kernel.height == 0 )
 		return Plane();
 	
 	Plane out( width, height );
@@ -103,12 +103,12 @@ Plane Plane::weighted_sum( double *kernel, unsigned w_width, unsigned w_height )
 	WeightedSumLine default_line;
 	default_line.width = width;
 	default_line.line_width = out.get_line_width();
-	default_line.weights = kernel;
-	default_line.w_width = w_width;
-	default_line.w_height = w_height;
+	default_line.weights = kernel.values.data();
+	default_line.w_width = kernel.width;
+	default_line.w_height = kernel.height;
 	default_line.full_sum = default_line.calculate_sum();
 	
-	int half_size = w_height / 2;
+	int half_size = kernel.height / 2;
 	std::vector<WeightedSumLine> lines;
 	for( unsigned iy=0; iy<height; ++iy ){
 		WeightedSumLine line = default_line;
@@ -122,7 +122,7 @@ Plane Plane::weighted_sum( double *kernel, unsigned w_width, unsigned w_height )
 			line.in = scan_line( 0 );
 			line.full_sum = line.calculate_sum();
 		}
-		else if( top+w_height >= height ){
+		else if( top+kernel.height >= height ){
 			//Cut stuff from bottom
 			line.in = scan_line( top );
 			line.w_height = height - top;
@@ -140,18 +140,9 @@ Plane Plane::weighted_sum( double *kernel, unsigned w_width, unsigned w_height )
 }
 
 Plane Plane::blur_box( unsigned amount_x, unsigned amount_y ) const{
-	unsigned size = ++amount_x * ++amount_y;
-	double *kernel = new double[ size ];
-	if( !kernel )
-		return Plane();
-	
-	for( unsigned iy=0; iy<amount_y; ++iy )
-		for( unsigned ix=0; ix<amount_x; ++ix )
-			kernel[ ix + iy*amount_x ] = 1.0;
-	
-	Plane p = weighted_sum( kernel, amount_x, amount_y );
-	delete[] kernel;
-	return p;
+	Kernel kernel( amount_x, amount_y );
+	kernel.values = std::vector<double>( amount_x*amount_y, 1.0 );
+	return weighted_sum( kernel );
 }
 
 const double PI = std::atan(1)*4;
@@ -166,17 +157,7 @@ static double gaussian2d( double dx, double dy, double devi_x, double devi_y ){
 
 Kernel Plane::gaussian_kernel( double deviation_x, double deviation_y ) const{
 	//TODO: make sure deviation is positive
-	
-	//Init kernel
-	Kernel kernel;
-	kernel.width = std::ceil( 12*deviation_x );
-	kernel.height = std::ceil( 12*deviation_y );
-	kernel.values = new double[ kernel.width * kernel.height ];
-	
-	if( !kernel.values ){
-		kernel.values = nullptr;
-		return kernel;
-	}
+	Kernel kernel( std::ceil( 12*deviation_x ), std::ceil( 12*deviation_y ) );
 	
 	//Fill kernel
 	double half_x = kernel.width/2.0;
@@ -190,13 +171,8 @@ Kernel Plane::gaussian_kernel( double deviation_x, double deviation_y ) const{
 
 Plane Plane::blur_gaussian( unsigned amount_x, unsigned amount_y ) const{
 	const double scaling = 0.33; //TODO: pixel to deviation
-	Kernel kernel = gaussian_kernel( amount_x*scaling, amount_y*scaling );
-	if( !kernel.values )
-		return Plane();
-	
-	Plane p = weighted_sum( kernel.values, kernel.width, kernel.height );
-	delete[] kernel.values;
-	return p;
+	auto kernel = gaussian_kernel( amount_x*scaling, amount_y*scaling );
+	return weighted_sum( kernel );
 }
 
 
@@ -204,9 +180,6 @@ Plane Plane::deconvolve_rl( double amount, unsigned iterations ) const{
 	//Create point spread function
 	//NOTE: It is symmetric, so we don't need a flipped one
 	Kernel psf = gaussian_kernel( amount, amount );
-	if( !psf.values )
-		return Plane();
-	//TODO: Make destructor in Kernel!
 	
 	//TODO: Make non-symmetric kernels work!
 	/*
@@ -217,20 +190,19 @@ Plane Plane::deconvolve_rl( double amount, unsigned iterations ) const{
 		}*/
 //	for( unsigned i=0; i<psf.width*psf.height; i++ )
 //		psf.values[i] = 1.0 / (psf.width*psf.height);
-	//return estimate->weighted_sum( psf.values, psf.width, psf.height );
+	//return estimate->weighted_sum( psf );
 	
-	Plane blurred( this->weighted_sum( psf.values, psf.width, psf.height ) );
+	Plane blurred( this->weighted_sum( psf ) );
 	Plane estimate( blurred ); //NOTE: some use just plain 0.5 as initial estimate
 	//TODO: Why did we initialy use *this, and then overwrite it with blurred?
 	Plane copy( *this );// blurred ); //*///TODO: make subtract/divide/etc take const input
 	for( unsigned i=0; i<iterations; ++i ){
-		Plane est_psf = estimate.weighted_sum( psf.values, psf.width, psf.height );
+		Plane est_psf = estimate.weighted_sum( psf );
 		est_psf.divide( copy ); //This is observed / est_psf
-		Plane error_est = est_psf.weighted_sum( psf.values, psf.width, psf.height );
+		Plane error_est = est_psf.weighted_sum( psf );
 		//TODO: oh shit, what happened to error_est?
 		estimate.multiply( est_psf );
 	}
 	
-	delete psf.values;
 	return estimate;
 }
