@@ -120,16 +120,14 @@ static void level_pixel( const SimplePixel& pix ){
 	*pix.row1 = opt->output_min + std::round( val * scale );
 }
 
-Plane* Plane::level(
+Plane Plane::level(
 		color_type limit_min
 	,	color_type limit_max
 	,	color_type output_min
 	,	color_type output_max
 	,	double gamma
 	) const{
-	Plane *out = new Plane( *this );
-	if( !out )
-		return out;
+	Plane out( *this );
 	
 	//Don't do anything if nothing will change
 	if( limit_min == output_min
@@ -148,7 +146,7 @@ Plane* Plane::level(
 			,	gamma
 		};
 	
-	out->for_each_pixel( &level_pixel, &options );
+	out.for_each_pixel( &level_pixel, &options );
 	
 	return out;
 }

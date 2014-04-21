@@ -387,17 +387,17 @@ void ImageEx::crop( unsigned left, unsigned top, unsigned right, unsigned bottom
 	unsigned width = right + left;
 	unsigned height = top + bottom;
 	if( type == YUV ){
-		planes[0] = *planes[0].crop( left*2, top*2, planes[0].get_width()-width*2, planes[0].get_height()-height*2 );
-		planes[1] = *planes[1].crop( left, top, planes[1].get_width()-width, planes[1].get_height()-height );
-		planes[2] = *planes[2].crop( left, top, planes[2].get_width()-width, planes[2].get_height()-height );
+		planes[0] = planes[0].crop( left*2, top*2, planes[0].get_width()-width*2, planes[0].get_height()-height*2 );
+		planes[1] = planes[1].crop( left, top, planes[1].get_width()-width, planes[1].get_height()-height );
+		planes[2] = planes[2].crop( left, top, planes[2].get_width()-width, planes[2].get_height()-height );
 		if( alpha )
-			alpha = *alpha.crop( left*2, top*2, alpha.get_width()-width*2, alpha.get_height()-height*2 );
+			alpha = alpha.crop( left*2, top*2, alpha.get_width()-width*2, alpha.get_height()-height*2 );
 	}
 	else{
 		for( auto& plane : planes )
-			plane = *plane.crop( left, top, plane.get_width()-width, plane.get_height()-height );
+			plane = plane.crop( left, top, plane.get_width()-width, plane.get_height()-height );
 		if( alpha )
-			alpha = *alpha.crop( left, top, alpha.get_width()-width, alpha.get_height()-height );
+			alpha = alpha.crop( left, top, alpha.get_width()-width, alpha.get_height()-height );
 	}
 };
 

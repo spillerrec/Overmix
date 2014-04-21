@@ -126,14 +126,14 @@ void Plane::copy( int x, int y, const Plane& from ){
 	}
 }
 
-Plane* Plane::crop( unsigned x, unsigned y, unsigned width, unsigned height ) const{
+Plane Plane::crop( unsigned x, unsigned y, unsigned width, unsigned height ) const{
 	//TODO: do input validation and error checking!
 	//TODO: reduce loops?
-	Plane* cropped = new Plane( width, height );
+	Plane cropped( width, height );
 	
 	for( unsigned iy=0; iy<height; iy++ ){
 		color_type* const input = scan_line( iy+y ) + x;
-		color_type* output = cropped->scan_line( iy );
+		color_type* output = cropped.scan_line( iy );
 		for( unsigned ix=0; ix<width; ix++ ){
 			output[ix] = input[ix];
 		}
@@ -201,7 +201,7 @@ void Plane::combine_line( const Plane &p, bool top ){
 	}
 }
 
-Plane* Plane::normalize() const{
+Plane Plane::normalize() const{
 	return level( min_value(), max_value(), color::BLACK, color::WHITE, 1.0 );
 }
 

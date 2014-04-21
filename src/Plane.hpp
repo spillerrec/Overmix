@@ -123,18 +123,18 @@ class Plane{
 		void substract( Plane &p );
 		void divide( Plane &p );
 		void multiply( Plane &p );
-		Plane* level( color_type limit_min, color_type limit_max
+		Plane level( color_type limit_min, color_type limit_max
 			,	color_type output_min, color_type output_max
 			,	double gamma
 			) const;
-		Plane* normalize() const;
+		Plane normalize() const;
 		
 	//Difference
 		double diff( const Plane& p, int x, int y, unsigned stride=1 ) const;
 		MergeResult best_round_sub( const Plane& p, int level, int left, int right, int top, int bottom, DiffCache *cache ) const;
 		
 	//Cropping
-		Plane* crop( unsigned x, unsigned y, unsigned width, unsigned height ) const;
+		Plane crop( unsigned x, unsigned y, unsigned width, unsigned height ) const;
 		
 	//Binarization
 		//TODO: find threshold methods: average, otsu?
