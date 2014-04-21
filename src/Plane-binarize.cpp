@@ -16,7 +16,7 @@
 */
 
 #include "Plane.hpp"
-//#include <algorithm> //For min#include "color.hpp"
+#include "color.hpp"
 
 #include <QtConcurrent>
 #include <QDebug>
@@ -38,9 +38,8 @@ static void adaptive_threshold( const SimplePixel& pixel ){
 	*pixel.row1 = *pixel.row1 > threshold ? color::WHITE : color::BLACK;
 }
 void Plane::binarize_adaptive( unsigned amount, color_type threshold ){
-	Plane* blurred = blur_box( amount, amount );
-	for_each_pixel( *blurred, &adaptive_threshold, &threshold );
-	delete blurred;
+	Plane blurred = blur_box( amount, amount );
+	for_each_pixel( blurred, &adaptive_threshold, &threshold );
 }
 
 void Plane::binarize_dither(){
@@ -63,10 +62,10 @@ void Plane::binarize_dither(){
 	}
 }
 
-Plane* Plane::dilate( int size ) const{
-	Plane* blurred = blur_box( size, size );
-	Plane copy(*this);
-	blurred->for_each_pixel( copy, [](const SimplePixel& pixel){
+Plane Plane::dilate( int size ) const{
+	Plane blurred = blur_box( size, size );
+	Plane copy(blurred);
+	blurred.for_each_pixel( copy, [](const SimplePixel& pixel){
 			if( *pixel.row2 > color::WHITE*0.5 )
 				*pixel.row1 = *pixel.row1 < color::WHITE ? color::BLACK : color::WHITE;
 			else

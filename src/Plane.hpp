@@ -88,7 +88,6 @@ class Plane{
 		
 	//Plane handling
 		Plane( const Plane& p );
-		Plane create_compatiable() const{ return Plane( width, height ); }
 		
 	//Status
 		operator bool() const{ return valid(); }
@@ -142,7 +141,7 @@ class Plane{
 		void binarize_threshold( color_type threshold );
 		void binarize_adaptive( unsigned amount, color_type threshold );
 		void binarize_dither();
-		Plane* dilate( int size ) const;
+		Plane dilate( int size ) const;
 		
 	//Scaling
 	public:
@@ -201,14 +200,14 @@ class Plane{
 		
 	//Blurring
 	private:
-		Plane* weighted_sum( double *kernel, unsigned w_width, unsigned w_height ) const; //TODO: change to kernel
+		Plane weighted_sum( double *kernel, unsigned w_width, unsigned w_height ) const; //TODO: change to kernel
 		Kernel gaussian_kernel( double deviation_x, double deviation_y ) const;
 	public:
-		Plane* blur_box( unsigned amount_x, unsigned amount_y ) const;
-		Plane* blur_gaussian( unsigned amount_x, unsigned amount_y ) const;
+		Plane blur_box( unsigned amount_x, unsigned amount_y ) const;
+		Plane blur_gaussian( unsigned amount_x, unsigned amount_y ) const;
 		
 	//De-blurring
-		Plane* deconvolve_rl( double amount, unsigned iterations ) const;
+		Plane deconvolve_rl( double amount, unsigned iterations ) const;
 };
 
 #endif

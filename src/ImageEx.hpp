@@ -72,6 +72,19 @@ class ImageEx{
 			else
 				for( auto& plane : planes )
 					plane = *( (plane.*func)( args... ) );
+			if( alpha )
+				alpha = *( (alpha.*func)( args... ) );
+		}
+		template<typename... Args>
+		void apply_operation( Plane (Plane::*func)( Args... ) const, Args... args ){
+			//TODO: For compatibility, reconsider the use of this
+			if( type == YUV || type == GRAY )
+				planes[0] = (planes[0].*func)( args... );
+			else
+				for( auto& plane : planes )
+					plane = (plane.*func)( args... );
+			if( alpha )
+				alpha = (alpha.*func)( args... );
 		}
 		
 		bool is_valid() const{ return initialized; }
