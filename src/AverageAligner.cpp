@@ -56,14 +56,10 @@ void AverageAligner::align( AProcessWatcher* watcher ){
 		if( watcher )
 			watcher->set_current( i );
 		
-		ImageEx* img = SimpleRender( SimpleRender::FOR_MERGING ).render( *this, i );
-		if( !img )
-			qFatal( "NoOOO" );
+		ImageEx img = SimpleRender( SimpleRender::FOR_MERGING ).render( *this, i );
 		
-		ImageOffset offset = find_offset( (*img)[0], plane( i, 0 ) );
+		ImageOffset offset = find_offset( img[0], plane( i, 0 ) );
 		setPos( i, QPointF( offset.distance_x, offset.distance_y ) + min_point() );
-		
-		delete img;
 	}
 	
 	raw = false;

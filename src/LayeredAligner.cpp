@@ -24,7 +24,7 @@
 class InternAligner : public AverageAligner{
 	protected:
 		AImageAligner& normal;
-		ImageEx* diff;
+		ImageEx diff;
 	public:
 		InternAligner( AImageAligner& normal, AlignMethod method, double scale=1.0 )
 			:	AverageAligner( method, scale ), normal(normal){

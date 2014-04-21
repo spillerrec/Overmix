@@ -37,7 +37,7 @@ class SimpleRender : public ARender{
 	public:
 		SimpleRender( Filters filter=AVERAGE, bool upscale_chroma=true ) : filter( filter ), upscale_chroma( upscale_chroma ) { }
 		
-		virtual ImageEx* render( const AImageAligner& aligner, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const override;
+		virtual ImageEx render( const AImageAligner& aligner, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const override;
 		
 		void setFilter( Filters f ){ filter = f; }
 		void setChromaUpscale( bool upscale ){ upscale_chroma = upscale; }

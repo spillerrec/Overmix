@@ -30,33 +30,31 @@
 using namespace std;
 
 
-ImageEx* PlaneRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
+ImageEx PlaneRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	if( max_count > aligner.count() )
 		max_count = aligner.count();
 	
 	//Abort if no images
 	if( max_count == 0 ){
 		qWarning( "No images to render!" );
-		return nullptr;
+		return ImageEx();
 	}
 	qDebug( "render_image: image count: %d", (int)max_count );
 	
 	//Do iterator
 	QRect full = aligner.size();
-	ImageEx *img = new ImageEx( ImageEx::GRAY );
-	if( !img )
-		return NULL;
-	img->create( 1, 1 ); //TODO: set as initialized
+	ImageEx img( ImageEx::GRAY );
+	img.create( 1, 1 ); //TODO: set as initialized
 	
 	
 	//Create output plane
 	Plane out( full.width(), full.height() );
 	out.fill( color::BLACK );
-	(*img)[0] = out;
+	img[0] = out;
 	
 	//Initialize PlaneItInfos
 	vector<PlaneItInfo> info;
-	info.push_back( PlaneItInfo( (*img)[0], full.x(),full.y() ) );
+	info.push_back( PlaneItInfo( img[0], full.x(),full.y() ) );
 	
 	for( unsigned i=0; i<max_count; i++ )
 		info.push_back( PlaneItInfo(

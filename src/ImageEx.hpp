@@ -64,18 +64,6 @@ class ImageEx{
 		bool create( unsigned width, unsigned height, bool alpha=false );
 		
 		template<typename... Args>
-		void apply_operation( Plane* (Plane::*func)( Args... ) const, Args... args ){
-			//TODO: reconsider this-
-			//TODO: remove pointer stuff
-			if( type == YUV || type == GRAY )
-				planes[0] = *( (planes[0].*func)( args... ) );
-			else
-				for( auto& plane : planes )
-					plane = *( (plane.*func)( args... ) );
-			if( alpha )
-				alpha = *( (alpha.*func)( args... ) );
-		}
-		template<typename... Args>
 		void apply_operation( Plane (Plane::*func)( Args... ) const, Args... args ){
 			//TODO: For compatibility, reconsider the use of this
 			if( type == YUV || type == GRAY )
@@ -85,6 +73,13 @@ class ImageEx{
 					plane = (plane.*func)( args... );
 			if( alpha )
 				alpha = (alpha.*func)( args... );
+		}
+		
+		template<typename... Args>
+		ImageEx apply_copy_operation( Args... args ) const{
+			ImageEx temp( *this );
+			temp.apply_operation( args... );
+			return temp;
 		}
 		
 		bool is_valid() const{ return initialized; }

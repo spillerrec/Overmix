@@ -156,7 +156,7 @@ class PointRender3 : public PointRenderBase{
 
 
 #include <QMessageBox>
-ImageEx* FloatRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
+ImageEx FloatRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	QTime t;
 	t.start();
 	
@@ -166,7 +166,7 @@ ImageEx* FloatRender::render( const AImageAligner& aligner, unsigned max_count, 
 	//Abort if no images
 	if( max_count == 0 ){
 		qWarning( "No images to render!" );
-		return nullptr;
+		return ImageEx();
 	}
 	qDebug( "render_image: image count: %d", (int)max_count );
 	
@@ -176,22 +176,20 @@ ImageEx* FloatRender::render( const AImageAligner& aligner, unsigned max_count, 
 	//Do iterator
 	QRect full = aligner.size();
 	double scale = 4.0;
-	ImageEx *img = new ImageEx( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
-	if( !img )
-		return NULL;
-	img->create( full.width()*scale, full.height()*scale );
+	ImageEx img( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
+	img.create( full.width()*scale, full.height()*scale );
 	
 	//Fill alpha
 	Plane alpha( full.width()*scale, full.height()*scale );
 	alpha.fill( color::WHITE );
-	img->alpha_plane() = alpha;
+	img.alpha_plane() = alpha;
 	
 	if( watcher )
 		watcher->set_total( planes_amount*1000 );
 	
 	vector<PointRenderBase::Point> points;
 	for( unsigned i=0; i<planes_amount; i++ ){
-		const Plane& out = (*img)[i];
+		const Plane& out = img[i];
 		
 		//Pre-calculate scales
 		vector<double> scales;

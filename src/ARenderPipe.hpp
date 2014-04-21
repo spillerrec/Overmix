@@ -22,11 +22,11 @@ class ImageEx;
 
 class ARenderPipe{
 	private:
-		ImageEx* cache{ nullptr };
+		ImageEx cache;
 		const ImageEx* base{ nullptr };
 		
 	protected:
-		virtual ImageEx* render( const ImageEx& img ) const = 0;
+		virtual ImageEx render( const ImageEx& img ) const = 0;
 		
 		template<typename T>
 		void set( T& out, T in ){
@@ -38,22 +38,17 @@ class ARenderPipe{
 		
 	public:
 		const ImageEx& get( const ImageEx& img ){
-			if( !cache || base != &img ){
-				invalidate();
+			if( !cache.is_valid() || base != &img ){
 				cache = render( img );
 				base = &img;
 			}
-			return *cache;
+			return cache;
 		}
 		
 		/** Invalidates any caches */
-		void invalidate(){
-			delete cache;
-			cache = nullptr;
-		}
-		virtual ~ARenderPipe(){
-			invalidate();
-		}
+		void invalidate(){ cache = ImageEx(); }
+		
+		virtual ~ARenderPipe(){ }
 };
 
 #endif

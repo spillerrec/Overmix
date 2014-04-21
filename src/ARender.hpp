@@ -29,7 +29,7 @@ class AProcessWatcher{
 
 class ARender{
 	public:
-		virtual ImageEx* render( const AImageAligner& aligner, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const = 0;
+		virtual ImageEx render( const AImageAligner& aligner, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const = 0;
 };
 
 #endif

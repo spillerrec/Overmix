@@ -57,10 +57,9 @@ class AnimFrame{
 			render.align(); //TODO: avoid having to realign. Add stuff to FakeAligner?
 			
 			//Render this frame
-			ImageEx* img = SimpleRender().render( render );
-			QImage raw = img->to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_DITHER | ImageEx::SETTING_GAMMA );
-			auto offset = aligner.find_offset( background[0], (*img)[0] );
-			delete img;
+			ImageEx img = SimpleRender().render( render );
+			QImage raw = img.to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_DITHER | ImageEx::SETTING_GAMMA );
+			auto offset = aligner.find_offset( background[0], img[0] );
 			
 			//Add it to the file
 			int img_index = anim.addImage( raw );
@@ -113,7 +112,7 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 	for( unsigned i=0; i<count(); i++ )
 		average.add_image( image( i ) );
 	average.align();
-	ImageEx* average_render = SimpleRender().render( average );
+	ImageEx average_render = SimpleRender().render( average );
 	
 	//Init
 	std::vector<int> backlog;
@@ -194,11 +193,9 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 		if( frame.size() == 0 )
 			break;
 		else
-			frame.save( iteration++, *average_render, anim );
+			frame.save( iteration++, average_render, anim );
 	}
 	
 	anim.write();
-	
-	delete average_render;
 }
 

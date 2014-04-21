@@ -136,7 +136,7 @@ static void render_dark_select( MultiPlaneIterator &it, bool alpha_used, unsigne
 		}, watcher, offset );
 }
 
-ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
+ImageEx SimpleRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	QTime t;
 	t.start();
 	if( max_count > aligner.count() )
@@ -145,7 +145,7 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 	//Abort if no images
 	if( max_count == 0 ){
 		qWarning( "No images to render!" );
-		return nullptr;
+		return ImageEx();
 	}
 	qDebug( "render_image: image count: %d", (int)max_count );
 	
@@ -264,7 +264,7 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 	for( unsigned i=0; i<img.size(); i++ )
 		qDebug( "Image %d was %s", i, img[i] ? "valid" : "invalid" );
 	
-	return new ImageEx( img );
+	return img;
 }
 
 

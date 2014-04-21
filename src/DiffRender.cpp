@@ -62,14 +62,12 @@ class StaticDiff{
 		}
 };
 
-ImageEx* DiffRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
+ImageEx DiffRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	if( max_count > aligner.count() )
 		max_count = aligner.count();
 	
 	//Normal render
-	ImageEx* avg = SimpleRender( SimpleRender::FOR_MERGING ).render( aligner, max_count );
-	if( !avg )
-		return nullptr;
+	ImageEx avg = SimpleRender( SimpleRender::FOR_MERGING ).render( aligner, max_count );
 	
 	//Find the smallest shared size
 	QSize size = aligner.size().size(); //No image is larger than the final result
@@ -79,9 +77,9 @@ ImageEx* DiffRender::render( const AImageAligner& aligner, unsigned max_count, A
 	}
 	
 	//Create final output image based on the smallest size
-	ImageEx* img = new ImageEx( ImageEx::GRAY );
-	img->create( size.width(), size.height() );
-	Plane& output = (*img)[0];
+	ImageEx img( ImageEx::GRAY );
+	img.create( size.width(), size.height() );
+	Plane& output = img[0];
 	
 	if( watcher )
 		watcher->set_total( 1000 );
@@ -94,7 +92,7 @@ ImageEx* DiffRender::render( const AImageAligner& aligner, unsigned max_count, A
 		color_type* out = output.scan_line( iy );
 		for( unsigned ix=0; ix<output.get_width(); ix++ ){
 			//Set the pixel to the static difference of all the images until max_count
-			StaticDiff diff( aligner, *avg, ix, iy );
+			StaticDiff diff( aligner, avg, ix, iy );
 			
 			for( unsigned j=0; j<max_count; j++ )
 				diff.add_image( j );
@@ -103,9 +101,7 @@ ImageEx* DiffRender::render( const AImageAligner& aligner, unsigned max_count, A
 		}
 	}
 	
-	img->apply_operation( &Plane::normalize );
-	
-	delete avg;
+	img.apply_operation( &Plane::normalize );
 	return img;
 }
 

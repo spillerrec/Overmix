@@ -130,7 +130,6 @@ void main_widget::resize_color(){        resize_groupbox( ui->color_group ); }
 main_widget::~main_widget(){
 	clear_image();
 	delete detelecine;
-	delete alpha_mask;
 }
 
 
@@ -138,10 +137,6 @@ void main_widget::resetAligner(){
 	delete aligner;
 	aligner = nullptr;
 	resetImage();
-}
-void main_widget::resetImage(){
-	delete temp_ex;
-	temp_ex = nullptr;
 }
 
 
@@ -202,7 +197,7 @@ void main_widget::process_urls( QList<QUrl> urls ){
 		if( img ){
 			//Overwrite alpha
 			if( alpha_mask )
-				img->alpha_plane() = *alpha_mask;
+				img->alpha_plane() = alpha_mask;
 			
 			//Crop
 			int left = ui->crop_left->value();
@@ -263,7 +258,7 @@ void main_widget::refresh_image(){
 	if( !aligner )
 		subpixel_align_image();
 	
-	if( !temp_ex ){
+	if( !temp_ex.is_valid() ){
 		//Select filter
 		bool chroma_upscale = ui->cbx_chroma->isChecked();
 		
@@ -299,7 +294,7 @@ void main_widget::refresh_image(){
 		setting = setting | ImageEx::SETTING_GAMMA;
 	
 	//Render image
-	if( temp_ex ){	
+	if( temp_ex.is_valid() ){	
 		QTime t;
 		t.start();
 		
@@ -329,7 +324,7 @@ void main_widget::refresh_image(){
 		pipe_threshold.setSize( ui->threshold_size->value() );
 		pipe_threshold.setMethod( ui->threshold_method->currentIndex() );
 		
-		ImageEx img_temp( pipe_threshold.get( pipe_level.get( pipe_edge.get( pipe_blurring.get( pipe_deconvolve.get( pipe_scaling.get( *temp_ex ) ) ) ) ) ) );
+		ImageEx img_temp( pipe_threshold.get( pipe_level.get( pipe_edge.get( pipe_blurring.get( pipe_deconvolve.get( pipe_scaling.get( temp_ex ) ) ) ) ) ) );
 		
 		//TODO: why no const on to_qimage?
 		temp = new QImage( img_temp.to_qimage( system, setting ) );
@@ -466,15 +461,13 @@ void main_widget::set_alpha_mask(){
 		img.read_file( filename.toLocal8Bit().constData() );
 		img.to_grayscale();
 		
-		delete alpha_mask;
-		alpha_mask = new Plane( std::move( img[0] ) );
+		alpha_mask = std::move( img[0] );
 		ui->pre_clear_mask->setEnabled( true );
 	}
 }
 
 void main_widget::clear_mask(){
-	delete alpha_mask;
-	alpha_mask = nullptr;
+	alpha_mask = Plane();
 	ui->pre_clear_mask->setEnabled( false );
 }
 

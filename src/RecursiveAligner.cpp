@@ -50,7 +50,7 @@ pair<Plane*,QPointF> RecursiveAligner::combine( const Plane& first, const Plane&
 	ImageOffset offset = find_offset( first, second );
 	QPointF offset_f( offset.distance_x, offset.distance_y );
 	
-	//Wrap planes in ImageEx*
+	//Wrap planes in ImageEx
 	ImageEx img1( first );
 	ImageEx img2( second );
 	
@@ -62,9 +62,8 @@ pair<Plane*,QPointF> RecursiveAligner::combine( const Plane& first, const Plane&
 	aligner.setPos( 1, offset_f );
 	
 	//Render it
-	ImageEx* merged = SimpleRender( SimpleRender::FOR_MERGING ).render( aligner );
-	Plane *out = new Plane( (*merged)[0] );
-	delete merged;
+	ImageEx merged = SimpleRender( SimpleRender::FOR_MERGING ).render( aligner );
+	Plane *out = new Plane( merged[0] );
 	
 	return make_pair( out, offset_f );
 }

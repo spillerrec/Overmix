@@ -42,10 +42,10 @@ class main_widget: public QMainWindow{
 		QImage *temp{ nullptr };
 		
 		AImageAligner *aligner{ nullptr };
-		ImageEx *temp_ex{ nullptr };
+		ImageEx temp_ex;
 		Deteleciner *detelecine{ nullptr };
 		
-		Plane *alpha_mask{ nullptr };
+		Plane alpha_mask;
 		
 		void clear_cache();
 		
@@ -79,7 +79,7 @@ class main_widget: public QMainWindow{
 		void resize_color();
 		
 		void resetAligner();
-		void resetImage();
+		void resetImage(){ temp_ex = ImageEx(); }
 		void update_draw();
 	
 	private slots:
