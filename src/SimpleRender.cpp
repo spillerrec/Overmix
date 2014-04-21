@@ -164,19 +164,17 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 	
 	//Do iterator
 	QRect full = aligner.size();
-	ImageEx *img = new ImageEx( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
-	if( !img )
-		return nullptr;
-	img->create( 1, 1 ); //TODO: set as initialized
+	ImageEx img( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
+	img.create( 1, 1 ); //TODO: set as initialized
 	
 	//Fill alpha
 	Plane alpha( full.width(), full.height() );
 	alpha.fill( color::WHITE );
-	img->alpha_plane() = alpha;
+	img.alpha_plane() = alpha;
 	
 	//Fake alpha
-	Plane* fake_alpha = new Plane( aligner.plane(0).get_width(), aligner.plane(0).get_height() );
-	fake_alpha->fill( color::WHITE );
+	Plane fake_alpha( aligner.plane(0).get_width(), aligner.plane(0).get_height() );
+	fake_alpha.fill( color::WHITE );
 	
 	if( watcher )
 		watcher->set_total( planes_amount*2000 );
@@ -197,16 +195,16 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 		//Create output plane
 		Plane out( out_size.width(), out_size.height() );
 		out.fill( 0 );
-		(*img)[i] = out;
+		img[i] = out;
 		
 		vector<PlaneItInfo> info;
-		info.push_back( PlaneItInfo( (*img)[i], out_size.x(),out_size.y() ) );
+		info.push_back( PlaneItInfo( img[i], out_size.x(),out_size.y() ) );
 		
 		info.push_back( PlaneItInfo( alpha, out_size.x(),out_size.y() ) );
 			//TODO: we still have issues with the chroma planes as the
 			//up-scaled layers doesn't always cover all pixels in the Y plane.
 		
-		vector<const Plane*> temp;
+		vector<Plane> temp;
 		
 		if( out_size == local ){
 			for( unsigned j=0; j<max_count; j++ ){
@@ -217,12 +215,10 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 					) );
 				
 				if( use_plane_alpha ){
-					const Plane* current_alpha = &aligner.image( j ).alpha_plane();
-					if( !current_alpha )
-						current_alpha = fake_alpha;
+					const Plane& current_alpha = aligner.image( j ).alpha_plane();
 					
 					info.push_back( PlaneItInfo(
-							*current_alpha
+							(current_alpha ? current_alpha : fake_alpha)
 						,	round( aligner.pos(j).x()*scale_x )
 						,	round( aligner.pos(j).y()*scale_y )
 						) );
@@ -235,20 +231,15 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 				if( watcher )
 					watcher->set_current( i*2000 + (j * 1000 / max_count) );
 				
-				const Plane *p = aligner.plane( j, i ).scale_cubic( aligner.plane(j).get_width(), aligner.plane(j).get_height() );
-				if( !p )
-					qDebug( "No plane :\\" );
-				temp.push_back( p );
+				const Plane& p = aligner.plane( j, i ).scale_cubic( aligner.plane(j).get_width(), aligner.plane(j).get_height() );
 				QPoint pos = aligner.pos(j).toPoint();
-				info.push_back( PlaneItInfo( *p, pos.x(),pos.y() ) );
+				info.push_back( PlaneItInfo( p, pos.x(),pos.y() ) );
+				temp.push_back( p );
 				
 				if( use_plane_alpha ){
 					//Alpha
-					const Plane* current_alpha = &aligner.image( j ).alpha_plane();
-					if( !current_alpha )
-						current_alpha = fake_alpha;
-					
-					info.push_back( PlaneItInfo( *current_alpha, pos.x(),pos.y() ) );
+					const Plane& current_alpha = aligner.image( j ).alpha_plane();
+					info.push_back( PlaneItInfo( (current_alpha ? current_alpha : fake_alpha), pos.x(),pos.y() ) );
 				}
 			}
 		}
@@ -265,20 +256,15 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 		
 		//Upscale plane if necessary
 		if( full != out_size )
-			(*img)[i] = *out.scale_cubic( full.width(), full.height() );
-		
-		//Remove scaled planes
-		for( unsigned j=0; j<temp.size(); j++ )
-			delete temp[j];
+			img[i] = out.scale_cubic( full.width(), full.height() );
 	}
 	
-	delete fake_alpha;
 	qDebug( "render rest took: %d", t.elapsed() );
 	
-	for( unsigned i=0; i<img->size(); i++ )
-		qDebug( "Image %d was %s", i, (*img)[i] ? "valid" : "invalid" );
+	for( unsigned i=0; i<img.size(); i++ )
+		qDebug( "Image %d was %s", i, img[i] ? "valid" : "invalid" );
 	
-	return img;
+	return new ImageEx( img );
 }
 
 

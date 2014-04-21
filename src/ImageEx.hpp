@@ -118,7 +118,7 @@ class ImageEx{
 		
 		void scale( unsigned width, unsigned height ){
 			for( auto& plane : planes )
-				plane = *plane.scale_cubic( width, height );
+				plane = plane.scale_cubic( width, height );
 		}
 		void scale( double factor ){
 			unsigned width = get_width() * factor + 0.5;

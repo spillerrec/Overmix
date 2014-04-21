@@ -33,10 +33,10 @@ double AImageAligner::y_scale() const{
 
 Plane AImageAligner::prepare_plane( const Plane& p ){
 	if( scale > 1.0 )
-		return Plane( *(p.scale_cubic(
+		return p.scale_cubic(
 				p.get_width() * x_scale() + 0.5
 			,	p.get_height() * y_scale() + 0.5
-			)) );
+			);
 	return Plane();
 }
 

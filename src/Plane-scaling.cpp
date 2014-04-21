@@ -24,13 +24,11 @@
 
 using namespace std;
 
-Plane* Plane::scale_nearest( unsigned wanted_width, unsigned wanted_height ) const{
-	Plane *scaled = new Plane( wanted_width, wanted_height );
-	if( !scaled || !scaled->valid() )
-		return 0;
+Plane Plane::scale_nearest( unsigned wanted_width, unsigned wanted_height ) const{
+	Plane scaled( wanted_width, wanted_height );
 	
 	for( unsigned iy=0; iy<wanted_height; iy++ ){
-		color_type* row = scaled->scan_line( iy );
+		color_type* row = scaled.scan_line( iy );
 		for( unsigned ix=0; ix<wanted_width; ix++ ){
 			double pos_x = ((double)ix / (wanted_width-1)) * (width-1);
 			double pos_y = ((double)iy / (wanted_height-1)) * (height-1);
@@ -127,10 +125,8 @@ void do_line( const ScaleLine& line ){
 	}
 }
 
-Plane* Plane::scale_generic( unsigned wanted_width, unsigned wanted_height, double window, Plane::Filter f ) const{
-	Plane *scaled = new Plane( wanted_width, wanted_height );
-	if( !scaled || !scaled->valid() )
-		return scaled;
+Plane Plane::scale_generic( unsigned wanted_width, unsigned wanted_height, double window, Plane::Filter f ) const{
+	Plane scaled( wanted_width, wanted_height );
 	
 	QTime t;
 	t.start();
@@ -146,7 +142,7 @@ Plane* Plane::scale_generic( unsigned wanted_width, unsigned wanted_height, doub
 	//Calculate all y-lines
 	std::vector<ScaleLine> lines;
 	for( unsigned iy=0; iy<wanted_height; ++iy ){
-		ScaleLine line( points, *scaled, iy, height );
+		ScaleLine line( points, scaled, iy, height );
 		line.row = scan_line( iy );
 		line.line_width = line_width;
 		line.window = window;
