@@ -231,7 +231,7 @@ ImageEx* SimpleRender::render( const AImageAligner& aligner, unsigned max_count,
 				if( watcher )
 					watcher->set_current( i*2000 + (j * 1000 / max_count) );
 				
-				const Plane& p = aligner.plane( j, i ).scale_cubic( aligner.plane(j).get_width(), aligner.plane(j).get_height() );
+				Plane p = aligner.plane( j, i ).scale_cubic( aligner.plane(j).get_width(), aligner.plane(j).get_height() );
 				QPoint pos = aligner.pos(j).toPoint();
 				info.push_back( PlaneItInfo( p, pos.x(),pos.y() ) );
 				temp.push_back( p );
