@@ -23,10 +23,15 @@
 #include <limits>
 using namespace std;
 
+
 Plane RecursiveAligner::prepare_plane( const Plane& p ){
-	Plane prepared( AImageAligner::prepare_plane( p ) );
-	if( use_edges && prepared )
-		return prepared.edge_sobel();
+	Plane prepared = AImageAligner::prepare_plane( p );
+	if( use_edges ){
+		if( prepared )
+			return prepared.edge_sobel();
+		else
+			return p.edge_sobel();
+	}
 	else
 		return prepared;
 }

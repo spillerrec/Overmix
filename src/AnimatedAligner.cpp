@@ -17,7 +17,7 @@
 
 
 #include "AnimatedAligner.hpp"
-#include "AverageAligner.hpp"
+#include "RecursiveAligner.hpp"
 #include "SimpleRender.hpp"
 #include "AnimationSaver.hpp"
 
@@ -29,13 +29,26 @@
 
 using namespace std;
 
+Plane AnimatedAligner::prepare_plane( const Plane& p ){
+	Plane prepared = AImageAligner::prepare_plane( p );
+	if( use_edges ){
+		if( prepared )
+			return prepared.edge_sobel();
+		else
+			return p.edge_sobel();
+	}
+	else
+		return prepared;
+}
+
+
 class AnimFrame{
 	public:
-		AverageAligner& aligner;
+		RecursiveAligner& aligner;
 		std::vector<unsigned> indexes;
 		
 	public:
-		AnimFrame( AverageAligner& aligner ) : aligner(aligner){ }
+		AnimFrame( RecursiveAligner& aligner ) : aligner(aligner){ }
 		void add_index( unsigned index ){ indexes.push_back( index ); }
 		unsigned size() const{ return indexes.size(); }
 		
@@ -50,7 +63,7 @@ class AnimFrame{
 		
 		void save( int frame, const ImageEx& background, AnimationSaver& anim ){
 			//Initialize aligner
-			AverageAligner render( aligner.get_method(), aligner.get_scale() );
+			RecursiveAligner render( aligner.get_method(), aligner.get_scale() );
 			render.set_movement( aligner.get_movement() );
 			for( int index : indexes )
 				render.add_image( aligner.image( index ) ); //TODO: fix cast
@@ -72,20 +85,22 @@ double AnimatedAligner::find_threshold( const std::vector<int>& imgs ){
 	vector<double> errors;
 	set_raw( true ); //TODO: remove the need of this
 	for( unsigned i=0; i<count()-1; ++i )
-		errors.push_back( find_offset( plane( i, 0 ), plane( i+1, 0 ) ).error );
+		errors.push_back( find_offset( plane( i ), plane( i+1 ) ).error );
 	set_raw( false );
+	
+	auto errors2 = errors;
 	sort( errors.begin(), errors.end() );
 	
 	//avoid breaking at the end
 	//TODO: pretty random... improve
-	for( int i=0; i<errors.size()*0.1; i++ )
-		errors.pop_back();
+//	for( int i=0; i<errors.size()*0.1; i++ )
+//		errors.pop_back();
 	
 	
 	double longest = 0;
 	double threshold = 0; //TODO: high value?
 	for( unsigned i=0; i<errors.size()-1; i++ ){
-		double diff = errors[i+1] - errors[i];
+		double diff = errors[i+1] / errors[i];
 		if( diff > longest ){
 			longest = diff;
 			threshold = diff / 2 + errors[i];
@@ -93,9 +108,15 @@ double AnimatedAligner::find_threshold( const std::vector<int>& imgs ){
 	}
 	
 	debug::CsvFile error_csv( "AnimatedAligner-Raw/errors.csv" );
-	error_csv.add( "error" ).add( "threshold" ).stop();
-	for( auto error : errors )
-		error_csv.add( error ).add( threshold ).stop();
+	error_csv.add( "errors2" ).add( "errors" ).add( "threshold" ).add( "old" ).add( "new" ).stop();
+	for( unsigned i=0; i<errors.size(); i++ ){
+		error_csv.add( errors2[i] );
+		error_csv.add( errors[i] );
+		error_csv.add( threshold );
+		error_csv.add( i>0 ? errors[i] - errors[i-1] : 0.0 );
+		error_csv.add( i>0 && errors[i-1] != 0.0 ? errors[i]/errors[i-1] : 0.0 );
+		error_csv.stop();
+	}
 	
 	return threshold;
 }
@@ -104,9 +125,10 @@ double AnimatedAligner::find_threshold( const std::vector<int>& imgs ){
 void AnimatedAligner::align( AProcessWatcher* watcher ){
 	if( count() == 0 )
 		return;
+	set_edges( false );
 	
 	//Align and render the image
-	AverageAligner average( method, scale );
+	RecursiveAligner average( method, scale );
 	average.set_movement( get_movement() );
 	average.set_edges( false );
 	for( unsigned i=0; i<count(); i++ )
@@ -155,7 +177,7 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 	}
 	//*/
 	
-	double factor = QInputDialog::getDouble( nullptr, "Specify threshold", "Threshold", 1.0, 0.01, 9.99, 2 );
+	double factor = 1.0;//QInputDialog::getDouble( nullptr, "Specify threshold", "Threshold", 1.0, 0.01, 9.99, 2 );
 	
 	double threshold = find_threshold( backlog ) * factor;
 	
