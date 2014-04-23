@@ -22,6 +22,7 @@
 
 #include <stdint.h>
 #include <limits>
+#include <vector>
 #include <png.h>
 #include <zlib.h>
 #include <QtConcurrentMap>
@@ -85,40 +86,33 @@ bool ImageEx::read_dump_plane( FILE *f ){
 		fread( &lenght, sizeof(uint32_t), 1, f );
 		qDebug( "Read lenght: %d", lenght );
 		
-		unsigned char* input = new unsigned char[ lenght ];
-		fread( input, 1, lenght, f );
+		vector<unsigned char> input( lenght );
+		fread( input.data(), 1, lenght, f );
 		
 		uLongf total = height*width*byte_count;
-		unsigned char* buffer = new unsigned char[ total ];
+		vector<unsigned char> buffer( total );
 		uLongf lenght_2 = lenght;
-		if( uncompress( (Bytef*)buffer, &total, (Bytef*)input, lenght_2 ) != Z_OK ){
+		if( uncompress( (Bytef*)buffer.data(), &total, (Bytef*)input.data(), lenght_2 ) != Z_OK ){
 			qDebug( "uncompress failed :\\" );
-			delete[] input;
-			delete[] buffer;
 			return false;
 		}
 		qDebug( "uncompressed data" );
 		
 		//Convert data
 		for( unsigned iy=0; iy<height; ++iy ){
-			unsigned char* line_buf = buffer + width * byte_count * iy;
+			unsigned char* line_buf = buffer.data() + width * byte_count * iy;
 			color_type *row = p.scan_line( iy );
 			process_dump_line( row, line_buf, width, depth );
 		}
-		
-		delete[] input;
-		delete[] buffer;
 	}
 	else{
-		unsigned char* buffer = new unsigned char[ width*byte_count ];
+		vector<unsigned char> buffer( width*byte_count );
 		
 		for( unsigned iy=0; iy<height; iy++ ){
 			color_type *row = p.scan_line( iy );
-			fread( buffer, byte_count, width, f );
-			process_dump_line( row, buffer, width, depth );
+			fread( buffer.data(), byte_count, width, f );
+			process_dump_line( row, buffer.data(), width, depth );
 		}
-		
-		delete[] buffer;
 	}
 	
 	return true;

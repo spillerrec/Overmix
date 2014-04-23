@@ -99,8 +99,9 @@ static void edge_line( const EdgeLine<T>& line ){
 
 
 template<typename T, typename T2>
-Plane parallel_edge_line( const Plane& p, T* weights_x, T* weights_y, unsigned size, unsigned div, T2 func ){
+Plane parallel_edge_line( const Plane& p, vector<T> weights_x, vector<T> weights_y, unsigned div, T2 func ){
 	Plane out( p.get_width(), p.get_height() );
+	unsigned size = sqrt( weights_x.size() );
 	
 	//Calculate all y-lines
 	std::vector<EdgeLine<T> > lines;
@@ -110,8 +111,8 @@ Plane parallel_edge_line( const Plane& p, T* weights_x, T* weights_y, unsigned s
 		line.width = p.get_width();
 		
 		line.size = size;
-		line.weights_x = weights_x;
-		line.weights_y = weights_y;
+		line.weights_x = weights_x.data();
+		line.weights_y = weights_y.data();
 		line.div = div;
 		
 		line.func = func;
@@ -126,10 +127,10 @@ Plane parallel_edge_line( const Plane& p, T* weights_x, T* weights_y, unsigned s
 	return out;
 }
 
-Plane Plane::edge_zero_generic( int *weights, unsigned size, unsigned div ) const{
-	return parallel_edge_line( *this, weights, (int*)NULL, size, div, calculate_zero_edge<int> );
+Plane Plane::edge_zero_generic( vector<int> weights, unsigned div ) const{
+	return parallel_edge_line( *this, weights, vector<int>(), div, calculate_zero_edge<int> );
 }
 
-Plane Plane::edge_dm_generic( int *weights_x, int *weights_y, unsigned size, unsigned div ) const{
-	return parallel_edge_line( *this, weights_x, weights_y, size, div, calculate_edge<int> );
+Plane Plane::edge_dm_generic( vector<int> weights_x, vector<int> weights_y, unsigned div ) const{
+	return parallel_edge_line( *this, weights_x, weights_y, div, calculate_edge<int> );
 }
