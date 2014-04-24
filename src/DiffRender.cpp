@@ -101,7 +101,7 @@ ImageEx DiffRender::render( const AImageAligner& aligner, unsigned max_count, AP
 		}
 	}
 	
-	img.apply_operation( &Plane::normalize );
+	img.apply( &Plane::normalize );
 	return img;
 }
 

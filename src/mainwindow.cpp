@@ -211,7 +211,7 @@ void main_widget::process_urls( QList<QUrl> urls ){
 			double deviation = ui->pre_deconvolve_deviation->value();
 			unsigned iterations = ui->pre_deconvolve_iterations->value();
 			if( deviation > 0.0009 && iterations > 0 )
-				img->apply_operation( &Plane::deconvolve_rl, deviation, iterations );
+				img->apply( &Plane::deconvolve_rl, deviation, iterations );
 			
 			//Scale
 			double scale_width = ui->pre_scale_width->value();

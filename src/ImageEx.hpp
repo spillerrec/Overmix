@@ -64,21 +64,31 @@ class ImageEx{
 		bool create( unsigned width, unsigned height, bool alpha=false );
 		
 		template<typename... Args>
-		void apply_operation( Plane (Plane::*func)( Args... ) const, Args... args ){
-			//TODO: For compatibility, reconsider the use of this
-			if( type == YUV || type == GRAY )
+		void apply( Plane (Plane::*func)( Args... ) const, Args... args ){
+			if( type == YUV )
 				planes[0] = (planes[0].*func)( args... );
 			else
-				for( auto& plane : planes )
-					plane = (plane.*func)( args... );
-			if( alpha )
+				applyAll( false, func, args... );
+		}
+		template<typename... Args>
+		void applyAll( bool do_alpha, Plane (Plane::*func)( Args... ) const, Args... args ){
+			for( auto& plane : planes )
+				plane = (plane.*func)( args... );
+			if( do_alpha && alpha )
 				alpha = (alpha.*func)( args... );
 		}
 		
 		template<typename... Args>
-		ImageEx apply_copy_operation( Args... args ) const{
+		ImageEx copyApply( Args... args ) const{
 			ImageEx temp( *this );
-			temp.apply_operation( args... );
+			temp.apply( args... );
+			return temp;
+		}
+		
+		template<typename... Args>
+		ImageEx copyApplyAll( Args... args ) const{
+			ImageEx temp( *this );
+			temp.applyAll( args... );
 			return temp;
 		}
 		
