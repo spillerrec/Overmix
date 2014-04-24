@@ -18,7 +18,9 @@
 #ifndef A_RENDER_PIPE_HPP
 #define A_RENDER_PIPE_HPP
 
-class ImageEx;
+#include "ImageEx.hpp"
+
+#include <utility>
 
 class ARenderPipe{
 	private:
@@ -26,6 +28,7 @@ class ARenderPipe{
 		const ImageEx* base{ nullptr };
 		
 	protected:
+		virtual bool renderNeeded() const = 0;
 		virtual ImageEx render( const ImageEx& img ) const = 0;
 		
 		template<typename T>
@@ -37,12 +40,17 @@ class ARenderPipe{
 		}
 		
 	public:
-		const ImageEx& get( const ImageEx& img ){
-			if( !cache.is_valid() || base != &img ){
-				cache = render( img );
-				base = &img;
+		typedef std::pair<const ImageEx&, bool> ImageCache;
+		
+		ImageCache get( ImageCache img ){
+			if( !renderNeeded() )
+				return img;
+			
+			if( img.second || !cache.is_valid() ){
+				cache = render( img.first );
+				base = &img.first;
 			}
-			return cache;
+			return ImageCache( cache, true );
 		}
 		
 		/** Invalidates any caches */

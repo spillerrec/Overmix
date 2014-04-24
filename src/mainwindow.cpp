@@ -258,7 +258,9 @@ void main_widget::refresh_image(){
 	if( !aligner )
 		subpixel_align_image();
 	
-	if( !temp_ex.is_valid() ){
+	bool new_image = !temp_ex.is_valid();
+	
+	if( new_image ){
 		//Select filter
 		bool chroma_upscale = ui->cbx_chroma->isChecked();
 		
@@ -324,7 +326,7 @@ void main_widget::refresh_image(){
 		pipe_threshold.setSize( ui->threshold_size->value() );
 		pipe_threshold.setMethod( ui->threshold_method->currentIndex() );
 		
-		ImageEx img_temp( pipe_threshold.get( pipe_level.get( pipe_edge.get( pipe_blurring.get( pipe_deconvolve.get( pipe_scaling.get( temp_ex ) ) ) ) ) ) );
+		ImageEx img_temp( pipe_threshold.get( pipe_level.get( pipe_edge.get( pipe_blurring.get( pipe_deconvolve.get( pipe_scaling.get( { temp_ex, new_image } ) ) ) ) ) ).first );
 		
 		//TODO: why no const on to_qimage?
 		temp = new QImage( img_temp.to_qimage( system, setting ) );
