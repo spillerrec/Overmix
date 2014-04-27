@@ -109,26 +109,17 @@ double AnimatedAligner::find_threshold( const std::vector<int>& imgs ){
 		}
 	}
 	/*/
-	for( unsigned i=1; i<errors2.size(); i++ ){
-		double error = (errors2[i] - errors2[i-1]) / 2 + errors2[i-1];
-		//TODO: this does not give all the possibilities!
+	for( unsigned i=1; i<errors.size(); i++ ){
+		double error = (errors[i] - errors[i-1]) / 2 + errors[i-1];
 		unsigned amount = 0;
-		bool below = true;
+		bool below = false;
 		for( unsigned j=0; j<errors2.size(); j++ ){
-			if( below ){
-				if( errors2[j] > error ){
-					amount++;
-					below = false;
-				}
-			}
-			else{
-				if( errors[j] < error ){
-					amount++;
-					below = true;
-				}
-			}
+			bool current = errors2[j] > error;
+			if( current != below )
+				amount++;
+			below = current;
 		}
-		if( amount > longest ){
+		if( amount >= longest ){
 			longest = amount;
 			threshold = error;
 		}
