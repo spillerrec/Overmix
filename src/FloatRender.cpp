@@ -175,7 +175,7 @@ ImageEx FloatRender::render( const AImageAligner& aligner, unsigned max_count, A
 	
 	//Do iterator
 	QRect full = aligner.size();
-	double scale = 4.0;
+	double scale = 1.0;
 	ImageEx img( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
 	img.create( full.width()*scale, full.height()*scale );
 	
