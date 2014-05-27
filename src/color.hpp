@@ -22,6 +22,7 @@
 #include <QColor>
 #include <cmath>
 #include <limits>
+#include <cstdlib>
 
 typedef int color_type;
 typedef long long precision_color_type;

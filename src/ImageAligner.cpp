@@ -23,6 +23,7 @@
 #include <utility>
 #include <float.h>
 #include <QDebug>
+#include <cmath>
 
 
 void ImageAligner::on_add(){

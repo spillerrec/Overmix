@@ -19,6 +19,7 @@
 
 #include <QtConcurrent>
 #include <QDebug>
+#include <cmath>
 
 using namespace std;
 
