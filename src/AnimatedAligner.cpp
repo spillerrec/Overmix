@@ -18,10 +18,11 @@
 
 #include "AnimatedAligner.hpp"
 #include "RecursiveAligner.hpp"
-#include "SimpleRender.hpp"
+#include "FloatRender.hpp"
 #include "AnimationSaver.hpp"
 
 #include <QInputDialog>
+#include <QDir>
 
 #include <fstream>
 
@@ -70,7 +71,7 @@ class AnimFrame{
 			render.align(); //TODO: avoid having to realign. Add stuff to FakeAligner?
 			
 			//Render this frame
-			ImageEx img = SimpleRender().render( render );
+			ImageEx img = FloatRender().render( render );
 			QImage raw = img.to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_DITHER | ImageEx::SETTING_GAMMA );
 			auto offset = aligner.find_offset( background[0], img[0] );
 			
@@ -99,22 +100,41 @@ double AnimatedAligner::find_threshold( const std::vector<int>& imgs ){
 	
 	double longest = 0;
 	double threshold = 0; //TODO: high value?
+	
+	/*
 	for( unsigned i=0; i<errors.size()-1; i++ ){
 		double diff = errors[i+1] / errors[i];
 		if( diff > longest ){
 			longest = diff;
-			threshold = diff / 2 + errors[i];
+			threshold = (errors[i+1] - errors[i]) / 2 + errors[i];
 		}
 	}
+	/*/
+	for( unsigned i=1; i<errors.size(); i++ ){
+		double error = (errors[i] - errors[i-1]) / 2 + errors[i-1];
+		unsigned amount = 0;
+		bool below = false;
+		for( unsigned j=0; j<errors2.size(); j++ ){
+			bool current = errors2[j] > error;
+			if( current != below )
+				amount++;
+			below = current;
+		}
+		if( amount >= longest ){
+			longest = amount;
+			threshold = error;
+		}
+	}
+	//*/
 	
-	debug::CsvFile error_csv( "AnimatedAligner-Raw/errors.csv" );
+	debug::CsvFile error_csv( "AnimatedAligner/package/errors.csv" );
 	error_csv.add( "errors2" ).add( "errors" ).add( "threshold" ).add( "old" ).add( "new" ).stop();
 	for( unsigned i=0; i<errors.size(); i++ ){
 		error_csv.add( errors2[i] );
 		error_csv.add( errors[i] );
 		error_csv.add( threshold );
 		error_csv.add( i>0 ? errors[i] - errors[i-1] : 0.0 );
-		error_csv.add( i>0 && errors[i-1] != 0.0 ? errors[i]/errors[i-1] : 0.0 );
+		error_csv.add( i>0 && errors[i-1] != 0.0 ? errors[i]/(double)errors[i-1] : 0.0 );
 		error_csv.stop();
 	}
 	
@@ -134,7 +154,7 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 	for( unsigned i=0; i<count(); i++ )
 		average.add_image( image( i ) );
 	average.align();
-	ImageEx average_render = SimpleRender().render( average );
+	ImageEx average_render = FloatRender().render( average );
 	
 	//Init
 	std::vector<int> backlog;
@@ -179,12 +199,13 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 	
 	double factor = 1.0;//QInputDialog::getDouble( nullptr, "Specify threshold", "Threshold", 1.0, 0.01, 9.99, 2 );
 	
+	QDir( "." ).mkdir( "AnimatedAligner" );
+	AnimationSaver anim( "AnimatedAligner/package" );
+	
 	double threshold = find_threshold( backlog ) * factor;
 	
-	AnimationSaver anim( "AnimatedAligner-Raw/package" );
-	
 	int iteration = 0;
-		debug::CsvFile frame_error_csv( "AnimatedAligner-Raw/frames.csv" );//s.c_str() );
+		debug::CsvFile frame_error_csv( "AnimatedAligner/package/frames.csv" );//s.c_str() );
 		frame_error_csv.add( "error" ).stop();
 	while( true ){
 		AnimFrame frame( average );

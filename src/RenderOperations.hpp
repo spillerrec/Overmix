@@ -27,12 +27,13 @@ class RenderPipeScaling : public ARenderPipe{
 		double width{ 1.0 }, height{ 1.0 };
 		
 	protected:
+		virtual bool renderNeeded() const override{
+			return width <= 0.9999 || width >= 1.0001 || height <= 0.9999 || height >= 1.0001;
+		}
 		virtual ImageEx render( const ImageEx& img ) const override{
 			//TODO: support multiple scaling methods?
 			ImageEx temp( img );
-			if( width <= 0.9999 || width >= 1.0001
-				|| height <= 0.9999 || height >= 1.0001 )
-				temp.scale( temp.get_width() * width + 0.5, temp.get_height() * height + 0.5 );
+			temp.scale( temp.get_width() * width + 0.5, temp.get_height() * height + 0.5 );
 			return temp;
 		}
 		
@@ -47,10 +48,9 @@ class RenderPipeDeconvolve : public ARenderPipe{
 		unsigned iterations{ 0 };
 		
 	protected:
+		virtual bool renderNeeded() const override{ return deviation > 0.0009 && iterations > 0; }
 		virtual ImageEx render( const ImageEx& img ) const override{
-			if( deviation > 0.0009 && iterations > 0 )
-				return img.apply_copy_operation( &Plane::deconvolve_rl, deviation, iterations );
-			return img;
+			return img.copyApply( &Plane::deconvolve_rl, deviation, iterations );
 		}
 		
 	public:
@@ -64,10 +64,11 @@ class RenderPipeBlurring : public ARenderPipe{
 		unsigned method{ 0 };
 		
 	protected:
+		virtual bool renderNeeded() const override{ return method != 0; }
 		virtual ImageEx render( const ImageEx& img ) const override{
 			switch( method ){
-				case 1: return img.apply_copy_operation( &Plane::blur_box, width, height ); break;
-				case 2: return img.apply_copy_operation( &Plane::blur_gaussian, width, height ); break;
+				case 1: return img.copyApplyAll( true, &Plane::blur_box, width, height ); break;
+				case 2: return img.copyApplyAll( true, &Plane::blur_gaussian, width, height ); break;
 				default: return img;
 			}
 		}
@@ -83,15 +84,19 @@ class RenderPipeEdgeDetection : public ARenderPipe{
 		unsigned method{ 0 };
 		
 	protected:
+		virtual bool renderNeeded() const override{ return method != 0; }
 		virtual ImageEx render( const ImageEx& img ) const override{
+			ImageEx temp( img );
+			temp.to_grayscale();
 			switch( method ){
-				case 1: return img.apply_copy_operation( &Plane::edge_robert ); break;
-				case 2: return img.apply_copy_operation( &Plane::edge_sobel ); break;
-				case 3: return img.apply_copy_operation( &Plane::edge_prewitt ); break;
-				case 4: return img.apply_copy_operation( &Plane::edge_laplacian ); break;
-				case 5: return img.apply_copy_operation( &Plane::edge_laplacian_large ); break;
-				default: return img;
+				case 1: temp.apply( &Plane::edge_robert ); break;
+				case 2: temp.apply( &Plane::edge_sobel ); break;
+				case 3: temp.apply( &Plane::edge_prewitt ); break;
+				case 4: temp.apply( &Plane::edge_laplacian ); break;
+				case 5: temp.apply( &Plane::edge_laplacian_large ); break;
+				default: break;
 			};
+			return temp;
 		}
 		
 	public:
@@ -107,8 +112,16 @@ class RenderPipeLevel : public ARenderPipe{
 		double gamma{ 1.0 };
 		
 	protected:
+		virtual bool renderNeeded() const override{
+			return limit_min != color::BLACK
+				||	limit_max != color::WHITE
+				||	out_min != color::BLACK
+				||	out_max != color::WHITE
+				||	gamma != 1.0
+				;
+			}
 		virtual ImageEx render( const ImageEx& img ) const override{
-			return img.apply_copy_operation( &Plane::level, limit_min, limit_max, out_min, out_max, gamma );
+			return img.copyApply( &Plane::level, limit_min, limit_max, out_min, out_max, gamma );
 		}
 		
 	public:
@@ -128,23 +141,19 @@ class RenderPipeThreshold : public ARenderPipe{
 		int size{ 20 };
 		
 	protected:
+		virtual bool renderNeeded() const override{ return method != 0; }
 		virtual ImageEx render( const ImageEx& img ) const override{
 			ImageEx temp( img );
+			temp.to_grayscale();
 			switch( method ){
 				case 1:
-						temp.to_grayscale();
 						temp[0].binarize_threshold( threshold );
 						if( size > 0 )
-							temp.apply_operation( &Plane::dilate, size );
+							temp.apply( &Plane::dilate, size );
 					break;
-				case 2:
-						temp.to_grayscale();
-						temp[0].binarize_adaptive( size, threshold );
-					break;
-				case 3:
-						temp.to_grayscale();
-						temp[0].binarize_dither();
-					break;
+					
+				case 2: temp[0].binarize_adaptive( size, threshold ); break;
+				case 3: temp[0].binarize_dither(); break;
 				default: break;
 			}
 			return temp;
