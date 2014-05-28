@@ -19,6 +19,7 @@
 #define IMAGE_EX_HPP
 
 #include "Plane.hpp"
+#include <QFile>
 #include <QImage>
 #include <algorithm>
 #include <vector>
@@ -47,7 +48,7 @@ class ImageEx{
 		std::vector<Plane> planes;
 		Plane alpha;
 		system type;
-		bool read_dump_plane( FILE *f );
+		bool read_dump_plane( QIODevice &dev );
 		bool from_dump( const char* path );
 		bool from_png( const char* path );
 		bool from_qimage( const char* path );

@@ -1,6 +1,6 @@
 # Libraries used
 QT += concurrent
-LIBS += -lpng -lz
+LIBS += -lpng -lz -llzma
 
 # C++11 support
 QMAKE_CXXFLAGS += -std=c++11
@@ -19,5 +19,5 @@ HEADERS += $$PWD/src/SimpleRender.hpp $$PWD/src/FloatRender.hpp $$PWD/src/DiffRe
 SOURCES += $$PWD/src/SimpleRender.cpp $$PWD/src/FloatRender.cpp $$PWD/src/DiffRender.cpp $$PWD/src/PlaneRender.cpp $$PWD/src/DifferenceRender.cpp
 
 # mics
-HEADERS += $$PWD/src/debug.hpp $$PWD/src/AnimationSaver.hpp $$PWD/src/ARenderPipe.hpp $$PWD/src/RenderOperations.hpp
-SOURCES += $$PWD/src/debug.cpp $$PWD/src/AnimationSaver.cpp
+HEADERS += $$PWD/src/debug.hpp $$PWD/src/AnimationSaver.hpp $$PWD/src/dump/DumpPlane.hpp $$PWD/src/ARenderPipe.hpp $$PWD/src/RenderOperations.hpp
+SOURCES += $$PWD/src/debug.cpp $$PWD/src/AnimationSaver.cpp $$PWD/src/dump/DumpPlane.cpp

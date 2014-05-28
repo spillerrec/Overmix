@@ -19,12 +19,12 @@
 #include "Plane.hpp"
 #include "MultiPlaneIterator.hpp"
 #include "color.hpp"
+#include "dump/DumpPlane.hpp"
 
 #include <stdint.h>
 #include <limits>
 #include <vector>
 #include <png.h>
-#include <zlib.h>
 #include <QtConcurrentMap>
 
 #include <QFileInfo>
@@ -49,7 +49,7 @@ void ImageEx::to_grayscale(){
 	type = GRAY;
 }
 
-void process_dump_line( color_type *out, unsigned char* in, unsigned width, uint16_t depth ){
+void process_dump_line( color_type *out, const uint8_t* in, unsigned width, uint16_t depth ){
 	unsigned byte_count = (depth + 7) / 8;
 	double scale = pow( 2.0, depth ) - 1.0;
 	if( byte_count == 1 )
@@ -60,75 +60,35 @@ void process_dump_line( color_type *out, unsigned char* in, unsigned width, uint
 			*out = color::from_double( ((uint16_t*)in)[ix] / scale );
 }
 
-bool ImageEx::read_dump_plane( FILE *f ){
-	if( !f )
+bool ImageEx::read_dump_plane( QIODevice &dev ){
+	DumpPlane dump_plane;
+	if( !dump_plane.read( dev ) )
 		return false;
-	
-	unsigned width, height;
-	fread( &width, sizeof(unsigned), 1, f );
-	fread( &height, sizeof(unsigned), 1, f );
-	
+		
+	unsigned width = dump_plane.getWidth();
+	unsigned height = dump_plane.getHeight();
 	planes.emplace_back( width, height );
 	auto& p = planes[planes.size()-1];
 	
-	uint16_t depth;
-	uint16_t config;
-	fread( &depth, sizeof(uint16_t), 1, f );
-	fread( &config, sizeof(uint16_t), 1, f );
-	unsigned byte_count = (depth + 7) / 8;
-	
-	qDebug( "Size: %dx%d (%d-%d)", width, height, depth, config );
-	
-	if( config & 0x1 ){
-		//Compression is used
-		qDebug( "Compression is used" );
-		uint32_t lenght;
-		fread( &lenght, sizeof(uint32_t), 1, f );
-		qDebug( "Read lenght: %d", lenght );
-		
-		vector<unsigned char> input( lenght );
-		fread( input.data(), 1, lenght, f );
-		
-		uLongf total = height*width*byte_count;
-		vector<unsigned char> buffer( total );
-		uLongf lenght_2 = lenght;
-		if( uncompress( (Bytef*)buffer.data(), &total, (Bytef*)input.data(), lenght_2 ) != Z_OK ){
-			qDebug( "uncompress failed :\\" );
-			return false;
-		}
-		qDebug( "uncompressed data" );
-		
-		//Convert data
-		for( unsigned iy=0; iy<height; ++iy ){
-			unsigned char* line_buf = buffer.data() + width * byte_count * iy;
-			color_type *row = p.scan_line( iy );
-			process_dump_line( row, line_buf, width, depth );
-		}
-	}
-	else{
-		vector<unsigned char> buffer( width*byte_count );
-		
-		for( unsigned iy=0; iy<height; iy++ ){
-			color_type *row = p.scan_line( iy );
-			fread( buffer.data(), byte_count, width, f );
-			process_dump_line( row, buffer.data(), width, depth );
-		}
+	//Convert data
+	for( unsigned iy=0; iy<height; ++iy ){
+		auto* line_buf = dump_plane.constScanline( iy );
+		color_type *row = p.scan_line( iy );
+		process_dump_line( row, line_buf, width, dump_plane.getDepth() );
 	}
 	
 	return true;
 }
 
 bool ImageEx::from_dump( const char* path ){
-	FILE *f = fopen( path, "rb" );
-	if( !f )
+	QFile f( path );
+	if( !f.open( QIODevice::ReadOnly ) )
 		return false;
 	
 	bool result = true;
 	result &= read_dump_plane( f );
 	result &= read_dump_plane( f );
 	result &= read_dump_plane( f );
-	
-	fclose( f );
 	
 	type = YUV;
 	
