@@ -26,6 +26,7 @@
 #include <float.h>
 #include <algorithm>
 #include <vector>
+#include <utility>
 using namespace std;
 
 static double cubic( double b, double c, double x ){
@@ -63,27 +64,29 @@ class PointRenderBase{
 	private:
 		QPoint pos;
 
-		QPointF toAbsolute( QPointF img_pos, QPointF offset, double scale ) const{
-			return img_pos * scale + offset;
+		QPointF toAbsolute( QPointF img_pos, QPointF offset, double scale_x, double scale_y ) const{
+			return QPointF( img_pos.x()*scale_x, img_pos.y()*scale_y ) + offset;
 		}
-		QPointF toRelative( QPointF pos, QPointF offset, double scale ) const{
-			return (pos - offset) / scale;
+		QPointF toRelative( QPointF pos, QPointF offset, double scale_x, double scale_y ) const{
+			QPointF img_pos( pos - offset );
+			return QPointF( img_pos.x()/scale_x, img_pos.y()/scale_y );
 		}
 		
 	public:
 		PointRenderBase( int x, int y ) : pos( x, y ) { }
 		
-		void add_points( const Plane& img, QPointF offset, double scale ){
-			QRectF relative( offset, QSizeF( img.get_width()*scale, img.get_height()*scale ) );
-			QRectF window( pos - QPointF( 2,2 )*scale, QSizeF( 4,4 )*scale );
+		void add_points( const Plane& img, QPointF offset, double scale_x, double scale_y ){
+			QRectF relative( offset, QSizeF( img.get_width()*scale_x, img.get_height()*scale_y ) );
+			QRectF window( pos - QPointF( 2*scale_x,2*scale_y ), QSizeF( 4*scale_x,4*scale_y ) );
 			QRectF usable = window.intersected(relative);
 			
-			QPointF fstart = toRelative( usable.topLeft(), offset, scale );
-			QPointF fend = toRelative( usable.bottomRight(), offset, scale );
+			QPointF fstart = toRelative( usable.topLeft(), offset, scale_x, scale_y );
+			QPointF fend = toRelative( usable.bottomRight(), offset, scale_x, scale_y );
 			for( int iy=ceil(fstart.y()); iy<floor(fend.y()); ++iy )
 				for( int ix=ceil(fstart.x()); ix<floor(fend.x()); ++ix ){
-					QPointF distance = toAbsolute( QPointF( ix, iy ), offset, scale ) - pos;
-					distance /= scale;
+					QPointF distance = toAbsolute( QPointF( ix, iy ), offset, scale_x, scale_y ) - pos;
+					distance.setX( distance.x() / scale_x );
+					distance.setY( distance.y() / scale_y );
 					Point p{ sqrt(distance.x()*distance.x() + distance.y()*distance.y()), img.pixel(ix,iy) };
 					add_point( p );
 				}
@@ -175,12 +178,11 @@ ImageEx FloatRender::render( const AImageAligner& aligner, unsigned max_count, A
 	
 	//Do iterator
 	QRect full = aligner.size();
-	double scale = 1.0;
 	ImageEx img( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
-	img.create( full.width()*scale, full.height()*scale );
+	img.create( full.width()*scale_x, full.height()*scale_y );
 	
 	//Fill alpha
-	Plane alpha( full.width()*scale, full.height()*scale );
+	Plane alpha( full.width()*scale_x, full.height()*scale_y );
 	alpha.fill( color::WHITE );
 	img.alpha_plane() = alpha;
 	
@@ -192,9 +194,12 @@ ImageEx FloatRender::render( const AImageAligner& aligner, unsigned max_count, A
 		const Plane& out = img[i];
 		
 		//Pre-calculate scales
-		vector<double> scales;
+		vector<pair<double,double>> scales;
 		for( unsigned j=0; j<max_count; ++j )
-			scales.push_back( (double)aligner.plane( j, 0 ).get_width() / aligner.plane( j, i ).get_width() * scale );
+			scales.emplace_back(
+					(double)aligner.plane( j, 0 ).get_width() / aligner.plane( j, i ).get_width() * scale_x
+				,	(double)aligner.plane( j, 0 ).get_height() / aligner.plane( j, i ).get_height() * scale_y
+				);
 		
 		for( unsigned iy=0; iy<out.get_height(); ++iy ){
 			if( watcher )
@@ -202,10 +207,12 @@ ImageEx FloatRender::render( const AImageAligner& aligner, unsigned max_count, A
 			
 			color_type* row = out.scan_line( iy );
 			for( unsigned ix=0; ix<out.get_width(); ++ix ){
-				PointRender2 p( ix + full.x()*scale, iy + full.y()*scale/*, points*/ );
+				PointRender2 p( ix + full.x()*scale_x, iy + full.y()*scale_y/*, points*/ );
 				
-				for( unsigned j=0; j<max_count; ++j )
-					p.add_points( aligner.plane( j, i ), aligner.pos( j )*scale, scales[j] );
+				for( unsigned j=0; j<max_count; ++j ){
+					QPointF pos( aligner.pos( j ).x() * scale_x, aligner.pos( j ).y() * scale_y );
+					p.add_points( aligner.plane( j, i ), pos, scales[j].first, scales[j].second );
+				}
 				
 				row[ix] = p.value();
 			}

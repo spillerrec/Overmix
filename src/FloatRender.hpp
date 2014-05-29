@@ -21,7 +21,10 @@
 #include "ARender.hpp"
 
 class FloatRender : public ARender{
+	double scale_x, scale_y;
 	public:
+		FloatRender( double scale_x, double scale_y ) : scale_x( scale_x ), scale_y( scale_y ) { }
+		FloatRender( double scale=1.0 ) : FloatRender( scale, scale ) { }
 		virtual ImageEx render( const AImageAligner& aligner, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const override;
 };
 
