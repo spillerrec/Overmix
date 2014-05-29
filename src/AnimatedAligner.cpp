@@ -67,18 +67,22 @@ class AnimFrame{
 			RecursiveAligner render( aligner.get_method(), aligner.get_scale() );
 			render.set_movement( aligner.get_movement() );
 			for( int index : indexes )
-				render.add_image( aligner.image( index ) ); //TODO: fix cast
+				render.add_image( aligner.image( index ) );
 			render.align(); //TODO: avoid having to realign. Add stuff to FakeAligner?
+			
+			//Find offset
+			//TODO: optimize if scale == 1.0
+			ImageEx img2 = FloatRender(aligner.x_scale(), aligner.y_scale()).render( render );
+			auto offset = aligner.find_offset( background[0], img2[0] );
 			
 			//Render this frame
 			ImageEx img = FloatRender().render( render );
 			QImage raw = img.to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_DITHER | ImageEx::SETTING_GAMMA );
-			auto offset = aligner.find_offset( background[0], img[0] );
 			
 			//Add it to the file
 			int img_index = anim.addImage( raw );
 			for( int index : indexes )
-				anim.addFrame( offset.distance_x, offset.distance_y, index, img_index );
+				anim.addFrame( offset.distance_x/aligner.get_scale(), offset.distance_y/aligner.get_scale(), index, img_index );
 		}
 };
 
@@ -154,7 +158,8 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 	for( unsigned i=0; i<count(); i++ )
 		average.add_image( image( i ) );
 	average.align();
-	ImageEx average_render = FloatRender().render( average );
+	ImageEx average_render = FloatRender( average.x_scale(), average.y_scale() ).render( average );
+	average_render.to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_DITHER | ImageEx::SETTING_GAMMA ).save("AnimatedAligner/background.png" );
 	
 	//Init
 	std::vector<int> backlog;

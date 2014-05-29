@@ -52,6 +52,7 @@ class AImageAligner{
 		double movement{ 0.75 };
 		bool raw;
 		
+	public:
 		double x_scale() const;
 		double y_scale() const;
 		
@@ -92,6 +93,12 @@ class AImageAligner{
 		AlignMethod get_method() const{ return method; }
 		double get_scale() const{ return scale; }
 		double get_movement() const{ return movement; }
+		
+		void offsetAll( double dx, double dy ){
+			QPointF offset( dx, dy );
+			for( auto& image : images )
+				image.pos += offset;
+		}
 		
 		
 		QRect size() const;
