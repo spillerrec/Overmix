@@ -96,6 +96,7 @@ class ImageEx{
 		bool is_valid() const{ return initialized; }
 		
 		bool read_file( const char* path );
+		bool saveDump( const char* path, unsigned depth=10 ) const;
 		Plane& alpha_plane(){ return alpha; }
 		const Plane& alpha_plane() const{ return alpha; }
 		

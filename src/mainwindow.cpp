@@ -349,8 +349,14 @@ void main_widget::save_image(){
 	}
 	/*/
 	QString filename = QFileDialog::getSaveFileName( this, tr("Save image"), "", tr("PNG files (*.png)") );
-	if( !filename.isEmpty() && temp )
-		temp->save( filename );
+	if( !filename.isEmpty() ){
+		if( QFileInfo( filename ).suffix() == "dump" ){
+			if( temp_ex.is_valid() )
+				temp_ex.saveDump( filename.toLocal8Bit().constData() );
+		}
+		else if( temp )
+			temp->save( filename );
+	}
 	//*/
 }
 

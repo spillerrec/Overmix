@@ -95,6 +95,39 @@ bool ImageEx::from_dump( const char* path ){
 	return result;
 }
 
+bool ImageEx::saveDump( const char* path, unsigned depth ) const{
+	QFile f( path );
+	if( !f.open( QIODevice::WriteOnly ) )
+		return false;
+	
+	bool multi_byte = depth > 8;
+	
+	for( auto& plane : planes ){
+		vector<uint8_t> data( plane.get_width() * plane.get_height() * (multi_byte?2:1) );
+		auto power = std::pow( 2, depth );
+		
+		for( unsigned iy=0; iy<plane.get_height(); iy++ ){
+			auto *row = plane.scan_line( iy );
+			if( multi_byte )
+				for( unsigned ix=0; ix<plane.get_width(); ix++ ){
+					uint16_t val = color::as_double( row[ix] ) * power;
+					data[ix*2 + 0 + plane.get_width()*iy*2] = val & 0x00FF;
+					data[ix*2 + 1 + plane.get_width()*iy*2] = (val & 0xFF00) >> 8;
+				}
+			else
+				for( unsigned ix=0; ix<plane.get_width(); ix++ ){
+					uint16_t val = color::as_double( row[ix] ) * power;
+					data[ix + plane.get_width()*iy] = val;
+				}
+		}
+		
+		if( !DumpPlane( plane.get_width(), plane.get_height(), depth, data ).write( f ) )
+			return false;
+	}
+	
+	return true;
+}
+
 static int read_chunk_callback_thing( png_structp, png_unknown_chunkp ){
 	return 0;
 }

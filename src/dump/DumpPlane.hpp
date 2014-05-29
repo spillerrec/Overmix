@@ -35,6 +35,10 @@ struct DumpPlane{
 		std::vector<uint8_t> data;
 		
 	public:
+		DumpPlane() { }
+		DumpPlane( uint32_t width, uint32_t height, uint16_t depth, std::vector<uint8_t> data )
+			:	width(width), height(height), depth(depth), data(data) { }
+		
 		uint32_t getWidth() const{ return width; }
 		uint32_t getHeight() const{ return height; }
 		uint8_t getDepth() const{ return depth; }
