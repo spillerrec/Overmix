@@ -49,6 +49,7 @@ class AImageAligner{
 	protected:
 		const AlignMethod method;
 		const double scale;
+		bool use_edges{ false };
 		double movement{ 0.75 };
 		bool raw;
 		
@@ -89,6 +90,7 @@ class AImageAligner{
 		
 		void set_raw( bool value ){ raw = value; }
 		void set_movement( double movement ){ this->movement = movement; }
+		void set_edges( bool enabled ){ use_edges = enabled; }
 		
 		AlignMethod get_method() const{ return method; }
 		double get_scale() const{ return scale; }

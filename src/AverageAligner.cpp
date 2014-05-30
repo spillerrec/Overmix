@@ -19,14 +19,6 @@
 #include "AverageAligner.hpp"
 #include "SimpleRender.hpp"
 
-Plane AverageAligner::prepare_plane( const Plane& p ){
-	Plane prepared = AImageAligner::prepare_plane( p );
-	if( use_edges )
-		return prepared.edge_sobel();
-	else
-		return prepared;
-}
-
 QPointF AverageAligner::min_point() const{
 	if( count() == 0 )
 		return QPointF(0,0);

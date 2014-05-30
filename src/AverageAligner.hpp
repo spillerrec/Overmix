@@ -23,14 +23,10 @@
 class AverageAligner : public AImageAligner{
 	protected:
 		QPointF min_point() const;
-		bool use_edges{ false };
 		
 	public:
 		AverageAligner( AlignMethod method, double scale=1.0 ) : AImageAligner( method, scale ){ }
 		virtual void align( AProcessWatcher* watcher=nullptr ) override;
-		
-		virtual Plane prepare_plane( const Plane& p ) override;
-		void set_edges( bool enabled ){ use_edges = enabled; }
 };
 
 #endif

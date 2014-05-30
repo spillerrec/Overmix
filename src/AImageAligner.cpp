@@ -31,13 +31,22 @@ double AImageAligner::y_scale() const{
 	return (method != ALIGN_HOR) ? scale : 1.0;
 }
 
+static Plane scalePlane( const Plane& p, double x_scale, double y_scale ){
+	return p.scale_cubic(
+			p.get_width() * x_scale + 0.5
+		,	p.get_height() * y_scale + 0.5
+		);
+}
+
 Plane AImageAligner::prepare_plane( const Plane& p ){
-	if( scale > 1.0 )
-		return p.scale_cubic(
-				p.get_width() * x_scale() + 0.5
-			,	p.get_height() * y_scale() + 0.5
-			);
-	return Plane();
+	if( use_edges ){
+		Plane edges = p.edge_sobel();
+		return ( scale != 1.0 ) ? scalePlane( edges, x_scale(), y_scale() ) : edges;
+	}
+	else if( scale != 1.0 )
+			return scalePlane( p, x_scale(), y_scale() );
+	else
+		return Plane();
 }
 
 void AImageAligner::add_image( const ImageEx& img ){

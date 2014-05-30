@@ -30,18 +30,6 @@
 
 using namespace std;
 
-Plane AnimatedAligner::prepare_plane( const Plane& p ){
-	Plane prepared = AImageAligner::prepare_plane( p );
-	if( use_edges ){
-		if( prepared )
-			return prepared.edge_sobel();
-		else
-			return p.edge_sobel();
-	}
-	else
-		return prepared;
-}
-
 
 class AnimFrame{
 	public:

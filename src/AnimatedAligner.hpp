@@ -23,13 +23,9 @@
 class AnimatedAligner : public AImageAligner{
 	private:
 		double find_threshold( const std::vector<int>& imgs );
-		bool use_edges{ false };
 	public:
 		AnimatedAligner( AlignMethod method, double scale=1.0 ) : AImageAligner( method, scale ){ }
 		virtual void align( AProcessWatcher* watcher=nullptr ) override;
-		
-		virtual Plane prepare_plane( const Plane& p ) override;
-		void set_edges( bool enabled ){ use_edges = enabled; }
 };
 
 #endif
