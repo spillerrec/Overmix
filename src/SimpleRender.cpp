@@ -195,10 +195,9 @@ ImageEx SimpleRender::render( const AImageAligner& aligner, unsigned max_count, 
 		//Create output plane
 		Plane out( out_size.width(), out_size.height() );
 		out.fill( 0 );
-		img[i] = out;
 		
 		vector<PlaneItInfo> info;
-		info.push_back( PlaneItInfo( img[i], out_size.x(),out_size.y() ) );
+		info.push_back( PlaneItInfo( out, out_size.x(),out_size.y() ) );
 		
 		info.push_back( PlaneItInfo( alpha, out_size.x(),out_size.y() ) );
 			//TODO: we still have issues with the chroma planes as the
@@ -257,6 +256,8 @@ ImageEx SimpleRender::render( const AImageAligner& aligner, unsigned max_count, 
 		//Upscale plane if necessary
 		if( full != out_size )
 			img[i] = out.scale_cubic( full.width(), full.height() );
+		else
+			img[i] = out;
 	}
 	
 	qDebug( "render rest took: %d", t.elapsed() );
