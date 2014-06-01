@@ -281,10 +281,21 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ){
 	
 	//Create iterator
 	std::vector<PlaneItInfo> info;
+	std::vector<Plane> temp( 2 );
 	info.push_back( PlaneItInfo( planes[0], 0,0 ) );
 	if( type != GRAY ){
-		info.push_back( PlaneItInfo( planes[1], 0,0 ) );
-		info.push_back( PlaneItInfo( planes[2], 0,0 ) );
+		if( planes[0].equalSize( planes[1] ) )
+			info.push_back( PlaneItInfo( planes[1], 0,0 ) );
+		else{
+			temp[0] = planes[1].scale_cubic( planes[0].get_width(), planes[0].get_height() );
+			info.push_back( PlaneItInfo( temp[0], 0,0 ) );
+		}
+		if( planes[0].equalSize( planes[2] ) )
+			info.push_back( PlaneItInfo( planes[2], 0,0 ) );
+		else{
+			temp[1] = planes[2].scale_cubic( planes[0].get_width(), planes[0].get_height() );
+			info.push_back( PlaneItInfo( temp[1], 0,0 ) );
+		}
 	}
 	if( alpha_plane() )
 		info.push_back( PlaneItInfo( alpha_plane(), 0,0 ) );

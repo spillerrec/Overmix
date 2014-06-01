@@ -100,6 +100,10 @@ class Plane{
 		unsigned get_width() const{ return width; }
 		unsigned get_line_width() const{ return line_width; }
 		
+		bool equalSize( const Plane& p ) const{
+			return width == p.width && height == p.height;
+		}
+		
 	//Pixel/Row query
 		color_type& pixel( unsigned x, unsigned y ) const{ return data[ x + y*line_width ]; }
 		color_type* scan_line( unsigned y ) const{ return data + y*line_width; }

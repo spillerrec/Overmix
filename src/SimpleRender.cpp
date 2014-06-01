@@ -253,11 +253,7 @@ ImageEx SimpleRender::render( const AImageAligner& aligner, unsigned max_count, 
 		else
 			render_average_extended( it, offset, watcher );
 		
-		//Upscale plane if necessary
-		if( full != out_size )
-			img[i] = out.scale_cubic( full.width(), full.height() );
-		else
-			img[i] = out;
+		img[i] = out;
 	}
 	
 	qDebug( "render rest took: %d", t.elapsed() );
