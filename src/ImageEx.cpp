@@ -241,15 +241,15 @@ bool ImageEx::from_qimage( const char* path ){
 bool ImageEx::read_file( const char* path ){
 	QString ext = QFileInfo( path ).suffix();
 	if( ext == "dump" )
-		return initialized = from_dump( path );
+		return from_dump( path );
 	if( ext == "png" )
-		return initialized = from_png( path );
+		return from_png( path );
 	
-	return initialized = from_qimage( path );
+	return from_qimage( path );
 }
 
 bool ImageEx::create( unsigned width, unsigned height, bool use_alpha ){
-	if( initialized )
+	if( is_valid() )
 		return false;
 	
 	unsigned amount;
@@ -267,7 +267,7 @@ bool ImageEx::create( unsigned width, unsigned height, bool use_alpha ){
 	if( use_alpha )
 		alpha = Plane( width, height );
 	
-	return initialized = true;
+	return true;
 }
 
 QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ){

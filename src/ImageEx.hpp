@@ -44,7 +44,6 @@ class ImageEx{
 		};
 	
 	private:
-		bool initialized{ false };
 		std::vector<Plane> planes;
 		Plane alpha;
 		system type;
@@ -93,7 +92,7 @@ class ImageEx{
 			return temp;
 		}
 		
-		bool is_valid() const{ return initialized; }
+		bool is_valid() const{ return planes.size() > 0; }
 		
 		bool read_file( const char* path );
 		bool saveDump( const char* path, unsigned depth=10 ) const;
