@@ -136,6 +136,7 @@ main_widget::~main_widget(){
 void main_widget::resetAligner(){
 	delete aligner;
 	aligner = nullptr;
+	ui->btn_save->setEnabled( false );
 	resetImage();
 }
 
@@ -338,7 +339,7 @@ void main_widget::refresh_image(){
 	
 	viewer.change_image( new imageCache( *temp ), true );
 	refresh_text();
-	
+	ui->btn_save->setEnabled( true );
 }
 
 void main_widget::save_image(){
