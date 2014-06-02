@@ -97,6 +97,8 @@ class AImageAligner{
 		double get_movement() const{ return movement; }
 		double get_edges() const{ return use_edges; }
 		
+		QPointF min_point() const;
+		
 		void offsetAll( double dx, double dy ){
 			QPointF offset( dx, dy );
 			for( auto& image : images )

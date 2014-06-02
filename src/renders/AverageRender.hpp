@@ -15,31 +15,19 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef AVERAGE_RENDER_HPP
+#define AVERAGE_RENDER_HPP
 
-#include "AverageAligner.hpp"
-#include "../renders/SimpleRender.hpp"
+#include "ARender.hpp"
 
-
-void AverageAligner::align( AProcessWatcher* watcher ){
-	if( count() == 0 )
-		return;
-	
-	raw = true;
-	
-	if( watcher )
-		watcher->set_total( count() );
-	
- 	setPos( 0, QPointF( 0,0 ) );
-	for( unsigned i=1; i<count(); i++ ){
-		if( watcher )
-			watcher->set_current( i );
+class AverageRender : public ARender{
+	protected:
+		bool for_merging;
 		
-		ImageEx img = SimpleRender( SimpleRender::FOR_MERGING ).render( *this, i );
+	public:
+		AverageRender( bool for_merging=false ) : for_merging( for_merging ) { }
 		
-		ImageOffset offset = find_offset( img[0], plane( i, 0 ) );
-		setPos( i, QPointF( offset.distance_x, offset.distance_y ) + min_point() );
-	}
-	
-	raw = false;
-}
+		virtual ImageEx render( const AImageAligner& aligner, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const override;
+};
 
+#endif

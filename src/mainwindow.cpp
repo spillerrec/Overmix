@@ -22,6 +22,7 @@
 #include "viewer/imageCache.h"
 
 #include "color.hpp"
+#include "renders/AverageRender.hpp"
 #include "renders/SimpleRender.hpp"
 #include "renders/DiffRender.hpp"
 #include "renders/FloatRender.hpp"
@@ -278,8 +279,10 @@ void main_widget::refresh_image(){
 			temp_ex = SimpleRender( SimpleRender::DARK_SELECT, chroma_upscale ).render( *aligner, INT_MAX, &watcher );
 		else if( ui->rbtn_subpixel->isChecked() )
 			temp_ex = FloatRender().render( *aligner, INT_MAX, &watcher );
-		else
+		else if( chroma_upscale )
 			temp_ex = SimpleRender( SimpleRender::AVERAGE, chroma_upscale ).render( *aligner, INT_MAX, &watcher );
+		else
+			temp_ex = AverageRender().render( *aligner, INT_MAX, &watcher );
 	}
 	
 	//Set color system

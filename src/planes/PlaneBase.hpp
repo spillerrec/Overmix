@@ -95,7 +95,7 @@ class PlaneBase{
 		
 	//Pixel/Row query
 		T& pixel( unsigned x, unsigned y ) const{ return data[ x + y*line_width ]; }
-		T* scan_line( unsigned y ) const{ return data + y*line_width; }
+		T* scan_line( unsigned y ) const{ return data + y*line_width; } //TODO: !!!!!!!!
 		const T* const_scan_line( unsigned y ) const{ return scan_line( y ); }
 		
 	//Drawing methods

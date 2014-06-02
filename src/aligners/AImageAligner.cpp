@@ -24,6 +24,21 @@ AImageAligner::~AImageAligner(){
 	
 }
 
+QPointF AImageAligner::min_point() const{
+	if( count() == 0 )
+		return QPointF(0,0);
+	
+	QPointF min = pos( 0 );
+	for( unsigned i=0; i<count(); i++ ){
+		if( pos(i).x() < min.x() )
+			min.setX( pos(i).x() );
+		if( pos(i).y() < min.y() )
+			min.setY( pos(i).y() );
+	}
+	
+	return min;
+}
+
 double AImageAligner::x_scale() const{
 	return (method != ALIGN_VER) ? scale : 1.0;
 }
