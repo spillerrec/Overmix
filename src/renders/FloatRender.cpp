@@ -17,9 +17,9 @@
 
 
 #include "FloatRender.hpp"
-#include "AImageAligner.hpp"
-#include "ImageEx.hpp"
-#include "color.hpp"
+#include "../AImageAligner.hpp"
+#include "../ImageEx.hpp"
+#include "../color.hpp"
 
 #include <QTime>
 #include <float.h>

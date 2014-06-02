@@ -25,7 +25,7 @@
 
 #include "planes/Plane.hpp"
 #include "color.hpp"
-#include "ARender.hpp"
+#include "renders/ARender.hpp"
 
 struct PlaneItInfo{
 	const Plane *p;

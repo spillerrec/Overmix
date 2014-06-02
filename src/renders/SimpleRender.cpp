@@ -17,11 +17,11 @@
 
 
 #include "SimpleRender.hpp"
-#include "AImageAligner.hpp"
-#include "ImageEx.hpp"
-#include "color.hpp"
+#include "../AImageAligner.hpp"
+#include "../ImageEx.hpp"
+#include "../color.hpp"
 
-#include "MultiPlaneIterator.hpp"
+#include "../MultiPlaneIterator.hpp"
 
 #include <QTime>
 #include <QRect>

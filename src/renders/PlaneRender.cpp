@@ -17,11 +17,9 @@
 
 
 #include "PlaneRender.hpp"
-#include "AImageAligner.hpp"
-#include "ImageEx.hpp"
-#include "color.hpp"
-
-#include "MultiPlaneIterator.hpp"
+#include "../AImageAligner.hpp"
+#include "../ImageEx.hpp"
+#include "../color.hpp"
 
 #include <QTime>
 #include <QRect>

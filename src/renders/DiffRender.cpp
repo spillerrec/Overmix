@@ -18,8 +18,8 @@
 
 #include "DiffRender.hpp"
 #include "SimpleRender.hpp"
-#include "AImageAligner.hpp"
-#include "color.hpp"
+#include "../AImageAligner.hpp"
+#include "../color.hpp"
 
 #include <vector>
 using namespace std;
