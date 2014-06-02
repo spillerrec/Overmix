@@ -18,7 +18,7 @@
 
 #include "AnimatedAligner.hpp"
 #include "RecursiveAligner.hpp"
-#include "FloatRender.hpp"
+#include "../renders/FloatRender.hpp"
 #include "AnimationSaver.hpp"
 
 #include <QInputDialog>
@@ -26,7 +26,7 @@
 
 #include <fstream>
 
-#include "debug.hpp"
+#include "../debug.hpp"
 
 using namespace std;
 
@@ -134,7 +134,6 @@ double AnimatedAligner::find_threshold( const std::vector<int>& imgs ){
 	return threshold;
 }
 
-#include "color.hpp"
 void AnimatedAligner::align( AProcessWatcher* watcher ){
 	if( count() == 0 )
 		return;

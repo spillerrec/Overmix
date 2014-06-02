@@ -18,7 +18,7 @@
 
 #include "RecursiveAligner.hpp"
 #include "FakeAligner.hpp"
-#include "SimpleRender.hpp"
+#include "../renders/SimpleRender.hpp"
 
 #include <limits>
 using namespace std;

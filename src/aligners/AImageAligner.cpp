@@ -16,7 +16,7 @@
 */
 
 #include "AImageAligner.hpp"
-#include "color.hpp"
+#include "../color.hpp"
 
 #include <fstream>
 

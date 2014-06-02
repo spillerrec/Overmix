@@ -18,8 +18,8 @@
 #ifndef A_IMAGE_ALIGNER_HPP
 #define A_IMAGE_ALIGNER_HPP
 
-#include "planes/Plane.hpp"
-#include "ImageEx.hpp"
+#include "../planes/Plane.hpp"
+#include "../ImageEx.hpp"
 
 #include <vector>
 #include <QPointF>

@@ -18,8 +18,8 @@
 
 #include "LayeredAligner.hpp"
 #include "AverageAligner.hpp"
-#include "SimpleRender.hpp"
-#include "DifferenceRender.hpp"
+#include "../renders/SimpleRender.hpp"
+#include "../renders/DifferenceRender.hpp"
 
 class InternAligner : public AverageAligner{
 	protected:

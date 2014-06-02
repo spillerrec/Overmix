@@ -18,7 +18,7 @@
 
 #include "DiffRender.hpp"
 #include "SimpleRender.hpp"
-#include "../AImageAligner.hpp"
+#include "../aligners/AImageAligner.hpp"
 #include "../color.hpp"
 
 #include <vector>

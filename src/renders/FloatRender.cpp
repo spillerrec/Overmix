@@ -17,7 +17,7 @@
 
 
 #include "FloatRender.hpp"
-#include "../AImageAligner.hpp"
+#include "../aligners/AImageAligner.hpp"
 #include "../ImageEx.hpp"
 #include "../color.hpp"
 

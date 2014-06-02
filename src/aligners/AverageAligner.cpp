@@ -17,7 +17,7 @@
 
 
 #include "AverageAligner.hpp"
-#include "SimpleRender.hpp"
+#include "../renders/SimpleRender.hpp"
 
 QPointF AverageAligner::min_point() const{
 	if( count() == 0 )
