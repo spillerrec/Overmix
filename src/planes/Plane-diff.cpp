@@ -22,7 +22,7 @@
 #include <QDebug>
 #include <algorithm>
 
-#include "color.hpp"
+#include "../color.hpp"
 
 using namespace std;
 

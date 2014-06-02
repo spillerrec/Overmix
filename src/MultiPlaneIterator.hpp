@@ -23,7 +23,7 @@
 #include <QImage>
 #include <QtConcurrent>
 
-#include "Plane.hpp"
+#include "planes/Plane.hpp"
 #include "color.hpp"
 #include "ARender.hpp"
 

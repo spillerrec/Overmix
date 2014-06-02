@@ -16,7 +16,6 @@
 */
 
 #include "ImageEx.hpp"
-#include "Plane.hpp"
 #include "MultiPlaneIterator.hpp"
 #include "color.hpp"
 #include "dump/DumpPlane.hpp"

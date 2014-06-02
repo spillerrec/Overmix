@@ -16,7 +16,7 @@
 */
 
 #include "Plane.hpp"
-#include "color.hpp"
+#include "../color.hpp"
 
 #include <QtConcurrent>
 #include <QDebug>

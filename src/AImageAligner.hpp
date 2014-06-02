@@ -18,7 +18,7 @@
 #ifndef A_IMAGE_ALIGNER_HPP
 #define A_IMAGE_ALIGNER_HPP
 
-#include "Plane.hpp"
+#include "planes/Plane.hpp"
 #include "ImageEx.hpp"
 
 #include <vector>

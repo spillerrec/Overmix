@@ -17,10 +17,6 @@
 
 
 #include "DifferenceRender.hpp"
-#include "Plane.hpp"
-#include "color.hpp"
-
-#include "MultiPlaneIterator.hpp"
 
 static void diff_pixel( MultiPlaneLineIterator &it ){
 	//Calculate sum

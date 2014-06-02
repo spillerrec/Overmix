@@ -18,7 +18,6 @@
 
 #include "FloatRender.hpp"
 #include "AImageAligner.hpp"
-#include "Plane.hpp"
 #include "ImageEx.hpp"
 #include "color.hpp"
 

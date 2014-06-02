@@ -25,53 +25,11 @@
 #include <QtConcurrent>
 #include <QDebug>
 
-#include "color.hpp"
+#include "../color.hpp"
 
 using namespace std;
 
 const unsigned long Plane::MAX_VAL = 0xFFFFFFFF;
-
-Plane::Plane( unsigned w, unsigned h ){
-	height = h;
-	width = w;
-	line_width = w;
-	data = new color_type[ h * line_width ];
-}
-
-Plane::~Plane(){
-	if( data )
-		delete[] data;
-}
-
-Plane::Plane( const Plane& p ){
-	height = p.height;
-	width = p.width;
-	line_width = p.line_width;
-	
-	unsigned size = height * line_width;
-	if( size > 0 ){
-		data = new color_type[ size ];
-		memcpy( data, p.data, sizeof(color_type)*size );
-	}
-	else
-		data = nullptr;
-}
-
-Plane& Plane::operator=( const Plane& p ){
-	delete data; //TODO: optimize if all sizes are equal
-	height = p.height;
-	width = p.width;
-	line_width = p.line_width;
-	
-	unsigned size = height * line_width;
-	if( size > 0 ){
-		data = new color_type[ size ];
-		memcpy( data, p.data, sizeof(color_type)*size );
-	}
-	else
-		data = nullptr;
-	return *this;
-}
 
 
 color_type Plane::min_value() const{
@@ -104,26 +62,6 @@ color_type Plane::mean_value() const{
 	}
 	*/
 	return color::WHITE;
-}
-
-void Plane::fill( color_type value ){
-	for( unsigned iy=0; iy<get_height(); ++iy ){
-		color_type* row = scan_line( iy );
-		for( unsigned ix=0; ix<get_width(); ++ix )
-			row[ix] = value;
-	}
-}
-
-void Plane::copy( int x, int y, const Plane& from ){
-	//TODO: check ranges
-	unsigned range_x = min( width, from.width+x );
-	unsigned range_y = min( height, from.height+y );
-	for( unsigned iy=y; iy < range_y; iy++ ){
-		color_type* dest = scan_line( iy );
-		const color_type* source = from.scan_line( iy - y );
-		for( unsigned ix=x; ix < range_x; ix++ )
-			dest[ix] = source[ix-x];
-	}
 }
 
 Plane Plane::crop( unsigned x, unsigned y, unsigned width, unsigned height ) const{

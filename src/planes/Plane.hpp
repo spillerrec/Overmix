@@ -24,6 +24,8 @@
 #include <vector>
 #include <utility>
 
+#include "PlaneBase.hpp"
+
 typedef int color_type;
 typedef std::pair<QPoint,double> MergeResult;
 
@@ -58,65 +60,31 @@ struct Kernel{
 	}
 };
 
-class Plane{
-	private:
-		unsigned height;
-		unsigned width;
-		unsigned line_width;
-		color_type *data;
-		
+class Plane : public PlaneBase<color_type>{
 	public:
-		Plane() : height(0), width(0), line_width(0), data(nullptr) { }
-		Plane( unsigned w, unsigned h );
-		~Plane();
+		Plane() { }
+		Plane( unsigned w, unsigned h ) : PlaneBase( w, h ) { }
 		
-		Plane( Plane&& p )
-			:	height(p.height), width(p.width), line_width(p.line_width), data(p.data)
-			{ p.data = nullptr; }
+		Plane( const Plane& p ) : PlaneBase( p ) { }
+		Plane( Plane&& p ) : PlaneBase( p ) { }
 		
-		Plane& operator=( const Plane& p );
+		Plane& operator=( const Plane& p ){
+			*(PlaneBase<color_type>*)this = p;
+			return *this;
+		}
 		Plane& operator=( Plane&& p ){
-			if( this != &p ){
-				height = p.height;
-				width = p.width;
-				line_width = p.line_width;
-				
-				delete data;
-				data = p.data;
-				p.data = nullptr;
-			}
+			*(PlaneBase<color_type>*)this = p;
 			return *this;
 		}
 		
 		static const unsigned long MAX_VAL;
 		
 	//Plane handling
-		Plane( const Plane& p );
-		
-	//Status
-		operator bool() const{ return valid(); }
-		bool valid() const{ return data != nullptr; }
-		unsigned get_height() const{ return height; }
-		unsigned get_width() const{ return width; }
-		unsigned get_line_width() const{ return line_width; }
-		
-		bool equalSize( const Plane& p ) const{
-			return width == p.width && height == p.height;
-		}
-		
-	//Pixel/Row query
-		color_type& pixel( unsigned x, unsigned y ) const{ return data[ x + y*line_width ]; }
-		color_type* scan_line( unsigned y ) const{ return data + y*line_width; }
-		const color_type* const_scan_line( unsigned y ) const{ return scan_line( y ); }
 		
 	//Queries
 		color_type min_value() const;
 		color_type max_value() const;
 		color_type mean_value() const;
-		
-	//Drawing methods
-		void fill( color_type value );
-		void copy( int x, int y, const Plane& from );
 		
 	//Interlacing methods
 		bool is_interlaced() const;

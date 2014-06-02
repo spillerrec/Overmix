@@ -18,7 +18,6 @@
 
 #include "SimpleRender.hpp"
 #include "AImageAligner.hpp"
-#include "Plane.hpp"
 #include "ImageEx.hpp"
 #include "color.hpp"
 
