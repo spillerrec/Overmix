@@ -54,6 +54,7 @@ class AnimFrame{
 			//Initialize aligner
 			RecursiveAligner render( aligner.get_method(), aligner.get_scale() );
 			render.set_movement( aligner.get_movement() );
+			render.set_edges( aligner.get_edges() );
 			for( int index : indexes )
 				render.add_image( aligner.image( index ) );
 			render.align(); //TODO: avoid having to realign. Add stuff to FakeAligner?
@@ -137,12 +138,11 @@ double AnimatedAligner::find_threshold( const std::vector<int>& imgs ){
 void AnimatedAligner::align( AProcessWatcher* watcher ){
 	if( count() == 0 )
 		return;
-	set_edges( false );
 	
 	//Align and render the image
 	RecursiveAligner average( method, scale );
 	average.set_movement( get_movement() );
-	average.set_edges( false );
+	average.set_edges( use_edges );
 	for( unsigned i=0; i<count(); i++ )
 		average.add_image( image( i ) );
 	average.align();

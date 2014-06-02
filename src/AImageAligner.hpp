@@ -95,6 +95,7 @@ class AImageAligner{
 		AlignMethod get_method() const{ return method; }
 		double get_scale() const{ return scale; }
 		double get_movement() const{ return movement; }
+		double get_edges() const{ return use_edges; }
 		
 		void offsetAll( double dx, double dy ){
 			QPointF offset( dx, dy );
