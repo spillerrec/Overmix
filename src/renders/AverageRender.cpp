@@ -44,7 +44,7 @@ class SumPlane {
 		}
 		
 		void addPlane( const Plane& p, unsigned x, unsigned y ){
-			//TODO: make multi-threaded
+			//TODO: make multi-threaded //NOTE: haven't been working out too well...
 			for( unsigned iy=0; iy<p.get_height(); iy++ ){
 				//Add to sum
 				auto in = p.const_scan_line( iy );
@@ -60,7 +60,25 @@ class SumPlane {
 		}
 		
 		void addAlphaPlane( const Plane& p, const Plane& alpha, unsigned x, unsigned y ){
-			//TODO:
+			//Scale alpha if needed
+			Plane scaled;
+			if( p.get_width() != alpha.get_width() || p.get_height() != alpha.get_height() )
+				scaled = alpha.scale_cubic( p.get_width(), p.get_height() );
+			const Plane& alpha_scaled = scaled.valid() ? scaled : alpha;
+			
+			for( unsigned iy=0; iy<p.get_height(); iy++ ){
+				//Add to sum
+				auto in = p.const_scan_line( iy );
+				auto out = sum.scan_line( iy + y ) + x;
+				auto a_in = alpha_scaled.const_scan_line( iy );
+				auto a_out = amount.scan_line( iy+y ) + x;
+				
+				for( unsigned ix=0; ix<p.get_width(); ix++ ){
+					auto a_val = a_in[ix];
+					out[ix] += in[ix] * color::as_double( a_val );
+					a_out[ix] += a_val;
+				}
+			}
 		}
 		
 		Plane average() const{
@@ -145,8 +163,11 @@ ImageEx AverageRender::render( const AImageAligner& aligner, unsigned max_count,
 					round( (aligner.pos(j).x() - min_point.x())*scale_x )
 				,	round( (aligner.pos(j).y() - min_point.y())*scale_y ) );
 			
-			//TODO: if( use_plane_alpha ){
-			sum.addPlane( aligner.plane( j, c ), pos.x(), pos.y() );
+			const Plane& alpha_plane = aligner.image( j ).alpha_plane();
+			if( use_plane_alpha && alpha_plane.valid() )
+				sum.addAlphaPlane( aligner.plane( j, c ), alpha_plane, pos.x(), pos.y() );
+			else
+				sum.addPlane( aligner.plane( j, c ), pos.x(), pos.y() );
 		}
 		
 		img[c] = sum.average();
