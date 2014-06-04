@@ -22,10 +22,12 @@
 
 class AverageRender : public ARender{
 	protected:
+		bool upscale_chroma;
 		bool for_merging;
 		
 	public:
-		AverageRender( bool for_merging=false ) : for_merging( for_merging ) { }
+		AverageRender( bool upscale_chroma=false, bool for_merging=false )
+			:	upscale_chroma(upscale_chroma), for_merging(for_merging) { }
 		
 		virtual ImageEx render( const AImageAligner& aligner, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const override;
 };

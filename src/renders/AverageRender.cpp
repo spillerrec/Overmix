@@ -30,6 +30,23 @@
 using namespace std;
 
 
+class ScaledPlane{
+	private:
+		Plane scaled;
+		const Plane& original;
+		
+	public:
+		ScaledPlane( const Plane& p, unsigned width, unsigned height ) : original( p ){
+			if( p.get_width() != width || p.get_height() != height )
+				scaled = p.scale_cubic( width, height );
+		}
+		
+		ScaledPlane( const Plane& p, const Plane& wanted_size )
+			: ScaledPlane( p, wanted_size.get_width(), wanted_size.get_height() ) { }
+		
+		const Plane& operator()() const{ return scaled.valid() ? scaled : original; }
+};
+
 class SumPlane {
 	//NOTE: we could split this into two classes, specialized in handling precision alpha or not
 	private:
@@ -61,16 +78,13 @@ class SumPlane {
 		
 		void addAlphaPlane( const Plane& p, const Plane& alpha, unsigned x, unsigned y ){
 			//Scale alpha if needed
-			Plane scaled;
-			if( p.get_width() != alpha.get_width() || p.get_height() != alpha.get_height() )
-				scaled = alpha.scale_cubic( p.get_width(), p.get_height() );
-			const Plane& alpha_scaled = scaled.valid() ? scaled : alpha;
+			ScaledPlane alpha_scaled( alpha, p );
 			
 			for( unsigned iy=0; iy<p.get_height(); iy++ ){
 				//Add to sum
 				auto in = p.const_scan_line( iy );
 				auto out = sum.scan_line( iy + y ) + x;
-				auto a_in = alpha_scaled.const_scan_line( iy );
+				auto a_in = alpha_scaled().const_scan_line( iy );
 				auto a_out = amount.scan_line( iy+y ) + x;
 				
 				for( unsigned ix=0; ix<p.get_width(); ix++ ){
@@ -145,8 +159,9 @@ ImageEx AverageRender::render( const AImageAligner& aligner, unsigned max_count,
 	auto min_point = aligner.min_point();
 	for( unsigned c=0; c<planes_amount; c++ ){
 		//Determine local size
-		double scale_x = (double)aligner.plane(0,c).get_width() / aligner.plane(0).get_width();
-		double scale_y = (double)aligner.plane(0,c).get_height() / aligner.plane(0).get_height();
+		double scale_x = upscale_chroma ? 1 : (double)aligner.plane(0,c).get_width() / aligner.plane(0).get_width();
+		double scale_y = upscale_chroma ? 1 : (double)aligner.plane(0,c).get_height() / aligner.plane(0).get_height();
+		
 		
 		//TODO: something is wrong with the rounding, chroma-channels are slightly off
 		QRect local( 
@@ -162,12 +177,16 @@ ImageEx AverageRender::render( const AImageAligner& aligner, unsigned max_count,
 			QPoint pos(
 					round( (aligner.pos(j).x() - min_point.x())*scale_x )
 				,	round( (aligner.pos(j).y() - min_point.y())*scale_y ) );
+			ScaledPlane plane( aligner.plane( j, c )
+				,	aligner.plane( j ).get_width()*scale_x
+				,	aligner.plane( j ).get_height()*scale_y
+				);
 			
 			const Plane& alpha_plane = aligner.image( j ).alpha_plane();
 			if( use_plane_alpha && alpha_plane.valid() )
-				sum.addAlphaPlane( aligner.plane( j, c ), alpha_plane, pos.x(), pos.y() );
+				sum.addAlphaPlane( plane(), alpha_plane, pos.x(), pos.y() );
 			else
-				sum.addPlane( aligner.plane( j, c ), pos.x(), pos.y() );
+				sum.addPlane( plane(), pos.x(), pos.y() );
 		}
 		
 		img[c] = sum.average();

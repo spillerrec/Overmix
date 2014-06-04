@@ -256,6 +256,7 @@ static color_type color_from_spinbox( QSpinBox* spinbox ){
 	return color::from_double( spinbox->value() / (double)spinbox->maximum() );
 }
 
+#include <QMessageBox>
 void main_widget::refresh_image(){
 	if( !aligner )
 		subpixel_align_image();
@@ -279,10 +280,9 @@ void main_widget::refresh_image(){
 			temp_ex = SimpleRender( SimpleRender::DARK_SELECT, chroma_upscale ).render( *aligner, INT_MAX, &watcher );
 		else if( ui->rbtn_subpixel->isChecked() )
 			temp_ex = FloatRender().render( *aligner, INT_MAX, &watcher );
-		else if( chroma_upscale )
-			temp_ex = SimpleRender( SimpleRender::AVERAGE, chroma_upscale ).render( *aligner, INT_MAX, &watcher );
 		else
-			temp_ex = AverageRender().render( *aligner, INT_MAX, &watcher );
+		//	temp_ex = SimpleRender( SimpleRender::AVERAGE, chroma_upscale ).render( *aligner, INT_MAX, &watcher );
+			temp_ex = AverageRender( chroma_upscale ).render( *aligner, INT_MAX, &watcher );
 	}
 	
 	//Set color system
