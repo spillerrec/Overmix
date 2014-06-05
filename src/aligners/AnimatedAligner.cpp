@@ -66,10 +66,9 @@ class AnimFrame{
 			
 			//Render this frame
 			ImageEx img = FloatRender().render( render );
-			QImage raw = img.to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_DITHER | ImageEx::SETTING_GAMMA );
 			
 			//Add it to the file
-			int img_index = anim.addImage( raw );
+			int img_index = anim.addImage( img );
 			for( int index : indexes )
 				anim.addFrame( offset.distance_x/aligner.get_scale(), offset.distance_y/aligner.get_scale(), index, img_index );
 		}

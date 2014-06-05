@@ -18,6 +18,8 @@
 
 #include "AnimationSaver.hpp"
 
+#include "../ImageEx.hpp"
+
 #include <QDir>
 
 #include <cmath>
@@ -87,16 +89,19 @@ QSize AnimationSaver::normalize(){
 	return size;
 }
 
-int AnimationSaver::addImage( QImage img ){
+int AnimationSaver::addImage( const ImageEx& img ){
 	//Create thumbnail for first frame
-	if( current_id == 1 )
-		img.scaled( 256, 256, Qt::KeepAspectRatio )
+	if( current_id == 1 ){
+		ImageEx temp( img ); //TODO: fix const on to_qimage!
+		QImage raw = temp.to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_DITHER | ImageEx::SETTING_GAMMA );
+		raw.scaled( 256, 256, Qt::KeepAspectRatio )
 			.save( folder + "/Thumbnails/thumbnail.jpg", nullptr, 95 );
+	}
 	
-	QString filename = "data/" + numberZeroFill( current_id++, 4 ) + ".png"; //TODO: allow file format to be changed?
-	img.save( folder + "/" + filename );
+	QString filename = "data/" + numberZeroFill( current_id++, 4 ) + ".dump"; //TODO: allow file format to be changed?
+	img.saveDump( (folder + "/" + filename).toLocal8Bit().constData() );
 	
-	images.push_back( {filename, img.size()} );
+	images.push_back( {filename, QSize( img.get_width(), img.get_height() )} );
 	return images.size() - 1;
 }
 

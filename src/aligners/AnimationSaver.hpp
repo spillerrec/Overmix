@@ -24,6 +24,8 @@
 #include <vector>
 #include <utility>
 
+class ImageEx;
+
 class AnimationSaver{
 	private:
 		struct ImageInfo{
@@ -49,7 +51,7 @@ class AnimationSaver{
 	public:
 		AnimationSaver( QString folder );
 		
-		int addImage( QImage img );
+		int addImage( const ImageEx& img );
 		
 		void addFrame( int x, int y, int id, int image ){
 			frames.emplace_back( id, FrameInfo( {x, y, image, 1000/frames_per_second} ) );
