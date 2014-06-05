@@ -17,6 +17,7 @@
 
 
 #include "FloatRender.hpp"
+#include "AverageRender.hpp"
 #include "../aligners/AImageAligner.hpp"
 #include "../ImageEx.hpp"
 #include "../color.hpp"
@@ -156,6 +157,15 @@ class PointRender3 : public PointRenderBase{
 		
 };
 
+bool isSubpixel( const AImageAligner& aligner, unsigned max_count ){
+	for( unsigned j=0; j<max_count; ++j ){
+		auto pos = aligner.pos( j );
+		if( pos.x() != round(pos.x()) || pos.y() != round(pos.y()) )
+			return true;
+	}
+	return false;
+}
+
 
 #include <QMessageBox>
 ImageEx FloatRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
@@ -171,6 +181,14 @@ ImageEx FloatRender::render( const AImageAligner& aligner, unsigned max_count, A
 		return ImageEx();
 	}
 	qDebug( "render_image: image count: %d", (int)max_count );
+	
+	//Fall back to AverageRender if no sub-pixel alignment
+	if( !isSubpixel( aligner, max_count ) ){
+		ImageEx render = AverageRender().render( aligner );
+		if( scale_x != 1.0 && scale_y != 1.0 )
+			render.scale( render.get_width()*scale_x, render.get_height()*scale_y );
+		return render;
+	}
 	
 	//TODO: determine amount of planes!
 	unsigned planes_amount = 3; //TODO: alpha?
