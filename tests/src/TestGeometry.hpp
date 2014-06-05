@@ -15,18 +15,24 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "TestPlane.hpp"
-#include "TestGeometry.hpp"
+#ifndef TEST_GEOMETRY_HPP
+#define TEST_GEOMETRY_HPP
 
-#include <QTest>
+#include <QObject>
 
-int main( int argc, char* argv[] ){
-	TestPlane test_plane;
-	QTest::qExec( &test_plane, argc, argv );
+class TestGeometry : public QObject{
+	Q_OBJECT
 	
-	TestGeometry test_geometry;
-	QTest::qExec( &test_geometry, argc, argv );
+	private:
+		void fillTestData();
 	
-	return 0;
-}
+	private slots:
+		void testSizeInit_data(){ fillTestData(); }
+		void testSizeInit();
+		
+		void testAdd_data(){ fillTestData(); }
+		void testAdd();
+		
+};
 
+#endif

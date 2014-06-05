@@ -26,7 +26,7 @@
 
 #include "PlaneBase.hpp"
 
-typedef int color_type;
+typedef unsigned short color_type;
 typedef std::pair<QPoint,double> MergeResult;
 
 class DiffCache{
@@ -63,6 +63,7 @@ struct Kernel{
 class Plane : public PlaneBase<color_type>{
 	public:
 		Plane() { }
+		Plane( Size<unsigned> size) : PlaneBase( size ) { }
 		Plane( unsigned w, unsigned h ) : PlaneBase( w, h ) { }
 		
 		Plane( const Plane& p ) : PlaneBase( p ) { }

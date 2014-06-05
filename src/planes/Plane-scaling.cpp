@@ -30,10 +30,8 @@ Plane Plane::scale_nearest( unsigned wanted_width, unsigned wanted_height ) cons
 	for( unsigned iy=0; iy<wanted_height; iy++ ){
 		color_type* row = scaled.scan_line( iy );
 		for( unsigned ix=0; ix<wanted_width; ix++ ){
-			double pos_x = ((double)ix / (wanted_width-1)) * (width-1);
-			double pos_y = ((double)iy / (wanted_height-1)) * (height-1);
-			
-			row[ix] = pixel( round( pos_x ), round( pos_y ) );
+			Point<unsigned> pos = (Size<double>( ix, iy ) / (scaled.getSize()-1) * (getSize()-1)).round();
+			row[ix] = pixel( pos.x, pos.y );
 		}
 	}
 	
@@ -135,14 +133,14 @@ Plane Plane::scale_generic( unsigned wanted_width, unsigned wanted_height, doubl
 	std::vector<ScalePoint> points;
 	points.reserve( wanted_width );
 	for( unsigned ix=0; ix<wanted_width; ++ix ){
-		ScalePoint p( ix, width, wanted_width, window, f );
+		ScalePoint p( ix, size.width, wanted_width, window, f );
 		points.push_back( p );
 	}
 	
 	//Calculate all y-lines
 	std::vector<ScaleLine> lines;
 	for( unsigned iy=0; iy<wanted_height; ++iy ){
-		ScaleLine line( points, scaled, iy, height );
+		ScaleLine line( points, scaled, iy, size.height );
 		line.row = scan_line( iy );
 		line.line_width = line_width;
 		line.window = window;

@@ -21,36 +21,39 @@
 #include <cstdio>
 #include <utility>
 
+#include "../Geometry.hpp"
+
 template<typename T>
 class PlaneBase{
 	protected:
-		unsigned width{ 0 };
-		unsigned height{ 0 };
+		Size<unsigned> size{ 0, 0 };
 		unsigned line_width{ 0 };
 		T *data{ nullptr };
 		
 	public:
 		PlaneBase() { }
-		PlaneBase( unsigned w, unsigned h )
-			:	width( w ), height( h ), line_width( w ) {
-			data = new T[ h * line_width ];
+		PlaneBase( Size<unsigned> size )
+			:	size(size), line_width( size.width ) {
+			data = new T[ size.height * line_width ];
 		}
+		PlaneBase( unsigned w, unsigned h )
+			:	PlaneBase( Size<unsigned>( w, h ) ) { }
+		
 		~PlaneBase(){ delete data; }
 		
 		PlaneBase( PlaneBase&& p )
-			:	width(p.width), height(p.height), line_width(p.line_width), data(p.data)
+			:	size(p.size), line_width(p.line_width), data(p.data)
 			{ p.data = nullptr; }
 		
 		PlaneBase& operator=( const PlaneBase& p ){
 			delete data; //TODO: optimize if all sizes are equal
-			height = p.height;
-			width = p.width;
+			size = p.size;
 			line_width = p.line_width;
 			
-			unsigned size = height * line_width;
-			if( size > 0 ){
-				data = new T[ size ];
-				memcpy( data, p.data, sizeof(T)*size );
+			unsigned byte_size = size.height * line_width;
+			if( byte_size > 0 ){
+				data = new T[ byte_size ];
+				memcpy( data, p.data, sizeof(T)*byte_size );
 			}
 			else
 				data = nullptr;
@@ -59,8 +62,7 @@ class PlaneBase{
 		
 		PlaneBase& operator=( PlaneBase&& p ){
 			if( this != &p ){
-				height = p.height;
-				width = p.width;
+				size= p.size;
 				line_width = p.line_width;
 				
 				delete data;
@@ -72,11 +74,11 @@ class PlaneBase{
 		
 	//Plane handling
 		PlaneBase( const PlaneBase& p )
-			:	width(p.width), height(p.height), line_width(p.line_width) {
-			unsigned size = height * line_width;
-			if( size > 0 ){
-				data = new T[ size ];
-				memcpy( data, p.data, sizeof(T)*size );
+			:	size(p.size), line_width(p.line_width) {
+			unsigned byte_size = size.height * line_width;
+			if( byte_size > 0 ){
+				data = new T[ byte_size ];
+				memcpy( data, p.data, sizeof(T)*byte_size );
 			}
 			else
 				data = nullptr;
@@ -85,12 +87,14 @@ class PlaneBase{
 	//Status
 		operator bool() const{ return valid(); }
 		bool valid() const{ return data != nullptr; }
-		unsigned get_height() const{ return height; }
-		unsigned get_width() const{ return width; }
+		unsigned get_height() const{ return size.height; }
+		unsigned get_width() const{ return size.width; }
 		unsigned get_line_width() const{ return line_width; }
 		
+		Size<unsigned> getSize() const{ return size; }
+		
 		bool equalSize( const PlaneBase& p ) const{
-			return width == p.width && height == p.height;
+			return size == p.size;
 		}
 		
 	//Pixel/Row query
@@ -108,8 +112,8 @@ class PlaneBase{
 		}
 		void copy( int x, int y, const PlaneBase& from ){
 			//TODO: check ranges
-			unsigned range_x = min( width, from.width+x );
-			unsigned range_y = min( height, from.height+y );
+			unsigned range_x = min( size.width, from.size.width+x );
+			unsigned range_y = min( size.height, from.size.height+y );
 			for( unsigned iy=y; iy < range_y; iy++ ){
 				T* dest = scan_line( iy );
 				const T* source = from.scan_line( iy - y );

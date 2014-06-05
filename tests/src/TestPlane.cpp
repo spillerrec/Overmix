@@ -18,7 +18,7 @@
 
 #include "TestPlane.hpp"
 
-#include "Plane.hpp"
+#include "planes/Plane.hpp"
 #include "color.hpp"
 
 #include <QTest>
@@ -42,7 +42,7 @@ void TestPlane::testInitialization(){
 	QFETCH(bool, invalid);
 	
 	Plane p( width, height );
-	QCOMPARE( p.is_invalid(), invalid );
+	QCOMPARE( p.valid(), invalid );
 	QCOMPARE( p.get_width(), width );
 	QCOMPARE( p.get_height(), height );
 }
