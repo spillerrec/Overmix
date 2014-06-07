@@ -51,6 +51,11 @@ namespace debug{
 				return *this;
 			}
 			
+			CsvFile& add( double value ){
+				file << value << ",";
+				return *this;
+			}
+			
 			CsvFile& add( const char* const value ){
 				file << "\"" << value << "\",";
 				return *this;

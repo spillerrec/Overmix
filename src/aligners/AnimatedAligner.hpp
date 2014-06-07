@@ -22,7 +22,7 @@
 
 class AnimatedAligner : public AImageAligner{
 	private:
-		double find_threshold( const std::vector<int>& imgs );
+		double find_threshold();
 	public:
 		AnimatedAligner( AlignMethod method, double scale=1.0 ) : AImageAligner( method, scale ){ }
 		virtual void align( AProcessWatcher* watcher=nullptr ) override;

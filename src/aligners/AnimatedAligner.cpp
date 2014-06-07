@@ -50,7 +50,7 @@ class AnimFrame{
 			return offset.error;
 		}
 		
-		void save( int frame, const ImageEx& background, AnimationSaver& anim ){
+		void save( int frame, const ImageEx& background, AnimationSaver& anim, debug::CsvFile& csv ){
 			//Initialize aligner
 			RecursiveAligner render( aligner.get_method(), aligner.get_scale() );
 			render.set_movement( aligner.get_movement() );
@@ -71,11 +71,16 @@ class AnimFrame{
 			int img_index = anim.addImage( img );
 			for( int index : indexes )
 				anim.addFrame( offset.distance_x/aligner.get_scale(), offset.distance_y/aligner.get_scale(), index, img_index );
+			
+			//Add movement stuff to csv file
+			for( unsigned i=0; i<indexes.size(); i++ )
+				csv.add( (color_type)indexes[i] ).add( render.pos(i).x() ).add( render.pos(i).y() ).stop();
+			csv.stop();
 		}
 };
 
-double AnimatedAligner::find_threshold( const std::vector<int>& imgs ){
-	vector<double> errors;
+double AnimatedAligner::find_threshold(){
+	vector<color_type> errors;
 	set_raw( true ); //TODO: remove the need of this
 	for( unsigned i=0; i<count()-1; ++i )
 		errors.push_back( find_offset( plane( i ), plane( i+1 ) ).error );
@@ -84,24 +89,10 @@ double AnimatedAligner::find_threshold( const std::vector<int>& imgs ){
 	auto errors2 = errors;
 	sort( errors.begin(), errors.end() );
 	
-	//avoid breaking at the end
-	//TODO: pretty random... improve
-//	for( int i=0; i<errors.size()*0.1; i++ )
-//		errors.pop_back();
-	
-	
 	double longest = 0;
 	double threshold = 0; //TODO: high value?
 	
-	/*
-	for( unsigned i=0; i<errors.size()-1; i++ ){
-		double diff = errors[i+1] / errors[i];
-		if( diff > longest ){
-			longest = diff;
-			threshold = (errors[i+1] - errors[i]) / 2 + errors[i];
-		}
-	}
-	/*/
+	//Try each threshold and pick the one which crosses the most
 	for( unsigned i=1; i<errors.size(); i++ ){
 		double error = (errors[i] - errors[i-1]) / 2 + errors[i-1];
 		unsigned amount = 0;
@@ -117,16 +108,13 @@ double AnimatedAligner::find_threshold( const std::vector<int>& imgs ){
 			threshold = error;
 		}
 	}
-	//*/
 	
 	debug::CsvFile error_csv( "AnimatedAligner/package/errors.csv" );
-	error_csv.add( "errors2" ).add( "errors" ).add( "threshold" ).add( "old" ).add( "new" ).stop();
+	error_csv.add( "errors2" ).add( "errors" ).add( "threshold" ).stop();
 	for( unsigned i=0; i<errors.size(); i++ ){
 		error_csv.add( errors2[i] );
 		error_csv.add( errors[i] );
 		error_csv.add( threshold );
-		error_csv.add( i>0 ? errors[i] - errors[i-1] : 0.0 );
-		error_csv.add( i>0 && errors[i-1] != 0.0 ? errors[i]/(double)errors[i-1] : 0.0 );
 		error_csv.stop();
 	}
 	
@@ -137,7 +125,15 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 	if( count() == 0 )
 		return;
 	
+	//Create directories
+	QDir( "." ).mkdir( "AnimatedAligner" );
+	AnimationSaver anim( "AnimatedAligner/package" );
+	
+	double factor = 1.0;//QInputDialog::getDouble( nullptr, "Specify threshold", "Threshold", 1.0, 0.01, 9.99, 2 );
+	double threshold = find_threshold() * factor;
+	
 	//Align and render the image
+	//TODO: remove the need of this
 	RecursiveAligner average( method, scale );
 	average.set_movement( get_movement() );
 	average.set_edges( use_edges );
@@ -152,55 +148,14 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 	for( unsigned i=0; i<count(); i++ )
 		backlog.push_back( i );
 	
-	/* Debug differences
-	{
-		debug::CsvFile cvs( "AnimatedAligner-Raw/animated.csv" );
-		cvs.add( "Index" ).add( "diff1" ).stop();
-		for( unsigned i=0; i<count(); i++ ){
-			auto diff1 = average.find_offset( average.plane( i, 0 ), average.plane( (i+1)%count(), 0 ) );
-			
-			cvs.add( i )
-				.	add( diff1.error )
-				.	stop()
-				;
-		}
-	}
-	//*/
-	
-	/* Debug graph
-	{
-		debug::CsvFile graph( "AnimatedAligner-Raw/graph.csv" );
-		graph.add("");
-		for( unsigned i=0; i<count(); i++ )
-			graph.add( to_string(i) );
-		graph.stop();
-		
-		for( unsigned i=0; i<count(); i++ ){
-			graph.add( to_string(i) );
-			for( unsigned j=0; j<count(); j++ ){
-				if( i == j )
-					graph.add( 0.0 );
-				else
-					graph.add( find_offset( plane( i,0 ), plane( j,0 ) ).error );
-			}
-			graph.stop();
-		}
-	}
-	//*/
-	
-	double factor = 1.0;//QInputDialog::getDouble( nullptr, "Specify threshold", "Threshold", 1.0, 0.01, 9.99, 2 );
-	
-	QDir( "." ).mkdir( "AnimatedAligner" );
-	AnimationSaver anim( "AnimatedAligner/package" );
-	
-	double threshold = find_threshold( backlog ) * factor;
+	debug::CsvFile frame_error_csv( "AnimatedAligner/package/frames.csv" );
+	frame_error_csv.add( "error" ).stop();
+	debug::CsvFile movement_csv( "AnimatedAligner/package/movement.csv" );
+	movement_csv.add( "index" ).add( "x" ).add( "y" ).stop();
 	
 	int iteration = 0;
-		debug::CsvFile frame_error_csv( "AnimatedAligner/package/frames.csv" );//s.c_str() );
-		frame_error_csv.add( "error" ).stop();
 	while( true ){
 		AnimFrame frame( average );
-		//string s = QString("AnimatedAligner-Raw/frame %1.csv").arg( iteration ).toLocal8Bit().constData();
 		
 		for( int& index : backlog ){
 			if( index < 0 ) //Already used, ignore it
@@ -227,7 +182,7 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 		if( frame.size() == 0 )
 			break;
 		else
-			frame.save( iteration++, average_render, anim );
+			frame.save( iteration++, average_render, anim, movement_csv );
 	}
 	
 	anim.write();
