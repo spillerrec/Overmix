@@ -60,10 +60,10 @@ class DialogWatcher : public AProcessWatcher{
 			dialog.setMinimum( 0 );
 			dialog.setValue( 0 );
 		}
-		virtual void set_total( int total ) override{
+		virtual void setTotal( int total ) override{
 			dialog.setMaximum( total );
 		}
-		virtual void set_current( int current ) override{
+		virtual void setCurrent( int current ) override{
 			dialog.setValue( current );
 		}
 };

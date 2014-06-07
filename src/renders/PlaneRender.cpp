@@ -61,7 +61,7 @@ ImageEx PlaneRender::render( const AImageAligner& aligner, unsigned max_count, A
 			) );
 	
 	if( watcher )
-		watcher->set_total( 1000 );
+		watcher->setTotal( 1000 );
 	
 	//Execute
 	MultiPlaneIterator it( info );

@@ -204,7 +204,7 @@ ImageEx FloatRender::render( const AImageAligner& aligner, unsigned max_count, A
 	img.alpha_plane() = alpha;
 	
 	if( watcher )
-		watcher->set_total( planes_amount*1000 );
+		watcher->setTotal( planes_amount*1000 );
 	
 	vector<PointRenderBase::Point> points;
 	for( unsigned i=0; i<planes_amount; i++ ){
@@ -220,7 +220,7 @@ ImageEx FloatRender::render( const AImageAligner& aligner, unsigned max_count, A
 		
 		for( unsigned iy=0; iy<out.get_height(); ++iy ){
 			if( watcher )
-				watcher->set_current( i*1000 + (iy * 1000 / out.get_height() ) );
+				watcher->setCurrent( i*1000 + (iy * 1000 / out.get_height() ) );
 			
 			color_type* row = out.scan_line( iy );
 			for( unsigned ix=0; ix<out.get_width(); ++ix ){

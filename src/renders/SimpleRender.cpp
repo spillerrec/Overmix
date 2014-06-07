@@ -176,7 +176,7 @@ ImageEx SimpleRender::render( const AImageAligner& aligner, unsigned max_count, 
 	fake_alpha.fill( color::WHITE );
 	
 	if( watcher )
-		watcher->set_total( planes_amount*2000 );
+		watcher->setTotal( planes_amount*2000 );
 	for( unsigned i=0; i<planes_amount; i++ ){
 		//Determine local size
 		double scale_x = (double)aligner.plane(0,i).get_width() / aligner.plane(0).get_width();
@@ -227,7 +227,7 @@ ImageEx SimpleRender::render( const AImageAligner& aligner, unsigned max_count, 
 			temp.reserve( max_count );
 			for( unsigned j=0; j<max_count; j++ ){
 				if( watcher )
-					watcher->set_current( i*2000 + (j * 1000 / max_count) );
+					watcher->setCurrent( i*2000 + (j * 1000 / max_count) );
 				
 				Plane p = aligner.plane( j, i ).scale_cubic( aligner.plane(j).get_width(), aligner.plane(j).get_height() );
 				QPoint pos = aligner.pos(j).toPoint();

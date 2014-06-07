@@ -23,8 +23,8 @@ class AImageAligner;
 
 class AProcessWatcher{
 	public:
-		virtual void set_total( int total ) = 0;
-		virtual void set_current( int current ) = 0;
+		virtual void setTotal( int total ) = 0;
+		virtual void setCurrent( int current ) = 0;
 };
 
 class ARender{
