@@ -254,7 +254,7 @@ void main_widget::refresh_text(){
 }
 
 static color_type color_from_spinbox( QSpinBox* spinbox ){
-	return color::from_double( spinbox->value() / (double)spinbox->maximum() );
+	return color::fromDouble( spinbox->value() / (double)spinbox->maximum() );
 }
 
 #include <QMessageBox>

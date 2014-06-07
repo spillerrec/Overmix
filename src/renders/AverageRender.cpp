@@ -89,7 +89,7 @@ class SumPlane {
 				
 				for( unsigned ix=0; ix<p.get_width(); ix++ ){
 					auto a_val = a_in[ix];
-					out[ix] += in[ix] * color::as_double( a_val );
+					out[ix] += in[ix] * color::asDouble( a_val );
 					a_out[ix] += a_val;
 				}
 			}

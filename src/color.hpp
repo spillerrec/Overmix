@@ -38,17 +38,17 @@ struct color{
 	constexpr static color_type MIN_VAL = std::numeric_limits<color_type>::min();
 	constexpr static color_type MAX_VAL = std::numeric_limits<color_type>::max();
 	
-	constexpr static double as_double( color_type value ){
+	constexpr static double asDouble( color_type value ){
 		return value / (double)WHITE;
 	}
-	constexpr static color_type from_double( double value ){
+	constexpr static color_type fromDouble( double value ){
 		return value * WHITE;
 	}
-	constexpr static unsigned char as_8bit( color_type value ){
-		return as_double( value ) * 255;
+	constexpr static unsigned char as8bit( color_type value ){
+		return asDouble( value ) * 255;
 	}
-	constexpr static color_type from_8bit( unsigned char value ){
-		return from_double( value / 255.0 );
+	constexpr static color_type from8bit( unsigned char value ){
+		return fromDouble( value / 255.0 );
 	}
 	
 	static color_type truncate( precision_color_type value ){
@@ -81,23 +81,23 @@ struct color{
 			a = c->a;
 		}
 		color( QRgb c ){
-			r = from_8bit( qRed( c ) );
-			g = from_8bit( qGreen( c ) );
-			b = from_8bit( qBlue( c ) );
-			a = from_8bit( qAlpha( c ) );
+			r = from8bit( qRed( c ) );
+			g = from8bit( qGreen( c ) );
+			b = from8bit( qBlue( c ) );
+			a = from8bit( qAlpha( c ) );
 		//	linearize();
 		}
 	
 	public:
 		static color_type sRgb2linear( color_type value ){
-			double v = as_double( value );
+			double v = asDouble( value );
 			v = ( v <= 0.04045 ) ? v / 12.92 : std::pow( (v+0.055)/1.055, 2.4 );
-			return from_double( v );
+			return fromDouble( v );
 		}
 		static color_type linear2sRgb( color_type value ){
-			double v = as_double( value );
+			double v = asDouble( value );
 			v = ( v <= 0.0031308 ) ? 12.92 * v : 1.055*std::pow( v, 1.0/2.4 ) - 0.055;
-			return from_double( v );
+			return fromDouble( v );
 		}
 		static double ycbcr2srgb( double v ){
 			//rec. 601 and 709
@@ -121,13 +121,13 @@ struct color{
 			a = linear2sRgb( a );
 		}
 		
-		color yuv_to_rgb( double kr, double kg, double kb, bool gamma );
+		color yuvToRgb( double kr, double kg, double kb, bool gamma );
 		
-		color rec601_to_rgb( bool gamma=true ){
-			return yuv_to_rgb( 0.299, 0.587, 0.114, gamma );
+		color rec601ToRgb( bool gamma=true ){
+			return yuvToRgb( 0.299, 0.587, 0.114, gamma );
 		}
-		color rec709_to_rgb( bool gamma=true ){
-			return yuv_to_rgb( 0.2126, 0.7152, 0.0722, gamma );
+		color rec709ToRgb( bool gamma=true ){
+			return yuvToRgb( 0.2126, 0.7152, 0.0722, gamma );
 		}
 		
 	void clear(){

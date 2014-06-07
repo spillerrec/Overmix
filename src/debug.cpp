@@ -56,13 +56,13 @@ void debug::output_transfers_functions( QString path ){
 	out.add( "From" ).add( "sRgb2linear" ).add( "linear2sRgb" ).add( "sRgb2sRgb" ).add( "ycbcr2srgb" ).stop();
 	
 	for( int i=0; i<256; i++ ){
-		color_type val = color::from_8bit( i );
+		color_type val = color::from8bit( i );
 		
 		out.add( val )
 			.add( color::sRgb2linear( val ) )
 			.add( color::linear2sRgb( val ) )
 			.add( color::sRgb2linear( color::linear2sRgb( val ) ) )
-			.add( color::from_double( color::ycbcr2srgb( color::as_double( val ) ) ) )
+			.add( color::fromDouble( color::ycbcr2srgb( color::asDouble( val ) ) ) )
 			.stop()
 			;
 	}

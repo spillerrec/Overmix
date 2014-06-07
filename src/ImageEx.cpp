@@ -53,10 +53,10 @@ void process_dump_line( color_type *out, const uint8_t* in, unsigned width, uint
 	double scale = pow( 2.0, depth ) - 1.0;
 	if( byte_count == 1 )
 		for( unsigned ix=0; ix<width; ++ix, ++out )
-			*out = color::from_double( (in[ix]) / scale );
+			*out = color::fromDouble( (in[ix]) / scale );
 	else
 		for( unsigned ix=0; ix<width; ++ix, ++out )
-			*out = color::from_double( ((uint16_t*)in)[ix] / scale );
+			*out = color::fromDouble( ((uint16_t*)in)[ix] / scale );
 }
 
 bool ImageEx::read_dump_plane( QIODevice &dev ){
@@ -109,13 +109,13 @@ bool ImageEx::saveDump( const char* path, unsigned depth ) const{
 			auto *row = plane.scan_line( iy );
 			if( multi_byte )
 				for( unsigned ix=0; ix<plane.get_width(); ix++ ){
-					uint16_t val = color::as_double( row[ix] ) * power;
+					uint16_t val = color::asDouble( row[ix] ) * power;
 					data[ix*2 + 0 + plane.get_width()*iy*2] = val & 0x00FF;
 					data[ix*2 + 1 + plane.get_width()*iy*2] = (val & 0xFF00) >> 8;
 				}
 			else
 				for( unsigned ix=0; ix<plane.get_width(); ix++ ){
-					uint16_t val = color::as_double( row[ix] ) * power;
+					uint16_t val = color::asDouble( row[ix] ) * power;
 					data[ix + plane.get_width()*iy] = val;
 				}
 		}
@@ -186,9 +186,9 @@ bool ImageEx::from_png( const char* path ){
 		color_type* g = planes[1].scan_line( iy );
 		color_type* b = planes[2].scan_line( iy );
 		for( unsigned ix=0; ix<width; ix++ ){
-			r[ix] = color::from_8bit( row_pointers[iy][ix*3 + 0] );
-			g[ix] = color::from_8bit( row_pointers[iy][ix*3 + 1] );
-			b[ix] = color::from_8bit( row_pointers[iy][ix*3 + 2] );
+			r[ix] = color::from8bit( row_pointers[iy][ix*3 + 0] );
+			g[ix] = color::from8bit( row_pointers[iy][ix*3 + 1] );
+			b[ix] = color::from8bit( row_pointers[iy][ix*3 + 2] );
 		}
 	}
 	
@@ -226,11 +226,11 @@ bool ImageEx::from_qimage( const char* path ){
 		const QRgb* in = (const QRgb*)img.constScanLine( iy );
 		
 		for( int ix=0; ix<width; ++ix, ++in ){
-			*(r++) = color::from_8bit( qRed( *in ) );
-			*(g++) = color::from_8bit( qGreen( *in ) );
-			*(b++) = color::from_8bit( qBlue( *in ) );
+			*(r++) = color::from8bit( qRed( *in ) );
+			*(g++) = color::from8bit( qGreen( *in ) );
+			*(b++) = color::from8bit( qBlue( *in ) );
 			if( alpha )
-				*(a++) = color::from_8bit( qAlpha( *in ) );
+				*(a++) = color::from8bit( qAlpha( *in ) );
 		}
 	}
 	
@@ -326,9 +326,9 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ){
 			color p = (it.*pixel)();
 			if( is_yuv ){
 				if( system == SYSTEM_REC709 )
-					p = p.rec709_to_rgb( gamma );
+					p = p.rec709ToRgb( gamma );
 				else
-					p = p.rec601_to_rgb( gamma );
+					p = p.rec601ToRgb( gamma );
 			}
 			
 			if( dither )

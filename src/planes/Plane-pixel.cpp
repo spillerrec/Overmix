@@ -74,14 +74,14 @@ static void substract_pixel( const SimplePixel& pix ){
 	*pix.row1 = std::max( (int)*pix.row2 - (int)*pix.row1, 0 );
 }
 static void divide_pixel( const SimplePixel& pix ){
-	double val1 = color::as_double( *pix.row1 );
-	double val2 = color::as_double( *pix.row2 );
-	*pix.row1 = color::from_double( val2 / val1 );
+	double val1 = color::asDouble( *pix.row1 );
+	double val2 = color::asDouble( *pix.row2 );
+	*pix.row1 = color::fromDouble( val2 / val1 );
 }
 static void multiply_pixel( const SimplePixel& pix ){
-	double val1 = color::as_double( *pix.row1 );
-	double val2 = color::as_double( *pix.row2 );
-	*pix.row1 = color::from_double( val2 * val1 );
+	double val1 = color::asDouble( *pix.row1 );
+	double val2 = color::asDouble( *pix.row2 );
+	*pix.row1 = color::fromDouble( val2 * val1 );
 }
 
 void Plane::substract( Plane &p ){

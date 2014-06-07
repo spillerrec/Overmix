@@ -91,7 +91,7 @@ static void render_average_alpha( MultiPlaneIterator &it, unsigned offset, AProc
 		for( unsigned i=2; i<it.size(); i+=2 ){
 			if( it.valid( i ) ){
 				if( it.valid( i+1 ) ){
-					double w = color::as_double( it[i+1] );
+					double w = color::asDouble( it[i+1] );
 					avg += it[i] * w;
 					amount += w;
 				}

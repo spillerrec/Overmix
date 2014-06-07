@@ -18,10 +18,10 @@
 #include "color.hpp"
 
 
-color color::yuv_to_rgb( double kr, double kg, double kb, bool gamma ){
-	double y  = as_double( r );
-	double cb = as_double( g );
-	double cr = as_double( b );
+color color::yuvToRgb( double kr, double kg, double kb, bool gamma ){
+	double y  = asDouble( r );
+	double cb = asDouble( g );
+	double cr = asDouble( b );
 	
 	//Remove foot- and head-room
 	y = (y - (16 / 255.0)) / ( (255 - 16 - (255-235)) / 255.0 );
@@ -55,6 +55,6 @@ color color::yuv_to_rgb( double kr, double kg, double kb, bool gamma ){
 		rb = ycbcr2srgb( rb );
 	}
 	
-	return color( from_double(rr), from_double(rg), from_double(rb), a );
+	return color( fromDouble(rr), fromDouble(rg), fromDouble(rb), a );
 }
 
