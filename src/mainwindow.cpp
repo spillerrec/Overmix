@@ -110,6 +110,7 @@ main_widget::main_widget()
 	connect( ui->rbtn_diff,         SIGNAL( toggled(bool) ), this, SLOT( resetAligner() ) );
 	connect( ui->rbtn_static_diff,  SIGNAL( toggled(bool) ), this, SLOT( resetAligner() ) );
 	connect( ui->rbtn_subpixel,     SIGNAL( toggled(bool) ), this, SLOT( resetAligner() ) );
+	connect( ui->cbx_chroma,        SIGNAL( toggled(bool) ), this, SLOT( resetAligner() ) );
 	
 	//Add images
 	qRegisterMetaType<QList<QUrl> >( "QList<QUrl>" );
@@ -277,7 +278,7 @@ void main_widget::refresh_image(){
 		else if( ui->rbtn_static_diff->isChecked() )
 			temp_ex = DiffRender().render( *aligner, INT_MAX, &watcher );
 		else if( ui->rbtn_dehumidifier->isChecked() )
-			temp_ex = SimpleRender( SimpleRender::DARK_SELECT, chroma_upscale ).render( *aligner, INT_MAX, &watcher );
+			temp_ex = SimpleRender( SimpleRender::DARK_SELECT, true ).render( *aligner, INT_MAX, &watcher );
 		else if( ui->rbtn_subpixel->isChecked() )
 			temp_ex = FloatRender().render( *aligner, INT_MAX, &watcher );
 		else
