@@ -28,25 +28,34 @@
 #include <complex>
 
 class FourierPlane : public PlaneBase<std::complex<double>>{
-	public:
-		FourierPlane( Size<unsigned> size) : PlaneBase( size ) { }
-		FourierPlane( unsigned w, unsigned h ) : PlaneBase( w, h ) { }
+	private:
+		unsigned real_width;
+		Plane toPlaneInvalidate() const;
 		
-		FourierPlane( const FourierPlane& p ) : PlaneBase( p ) { }
-		FourierPlane( FourierPlane&& p ) : PlaneBase( p ) { }
+	public:
+		FourierPlane( Size<unsigned> size ) : PlaneBase( size ), real_width( size.width*2 ) { }
+		FourierPlane( unsigned w, unsigned h ) : PlaneBase( w, h ), real_width( w * 2 ) { }
+		
+		FourierPlane( const FourierPlane& p ) : PlaneBase( p ), real_width( p.real_width ) { }
+		FourierPlane( FourierPlane&& p ) : PlaneBase( p ), real_width( p.real_width ) { }
 		
 		FourierPlane& operator=( const FourierPlane& p ){
 			*(PlaneBase<std::complex<double>>*)this = p;
+			real_width = p.real_width;
 			return *this;
 		}
 		FourierPlane& operator=( FourierPlane&& p ){
 			*(PlaneBase<std::complex<double>>*)this = p;
+			real_width = p.real_width;
 			return *this;
 		}
 		
 		FourierPlane( const Plane& p );
 		
 		Plane asPlane() const;
+		Plane toPlane() const{
+			return FourierPlane( *this ).toPlaneInvalidate();
+		}
 		
 };
 
