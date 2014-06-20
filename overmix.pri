@@ -1,6 +1,6 @@
 # Libraries used
 QT += concurrent
-LIBS += -lpng -lz -llzma
+LIBS += -lfftw3-3 -lm -lpng -lz -llzma
 
 # C++11 support
 QMAKE_CXXFLAGS += -std=c++11
@@ -10,8 +10,8 @@ HEADERS += $$PWD/src/MultiPlaneIterator.hpp $$PWD/src/color.hpp $$PWD/src/ImageE
 SOURCES += $$PWD/src/MultiPlaneIterator.cpp $$PWD/src/color.cpp $$PWD/src/ImageEx.cpp $$PWD/src/Deteleciner.cpp
 
 # Planes
-HEADERS += $$PWD/src/planes/Plane.hpp $$PWD/src/planes/PlaneBase.hpp
-SOURCES += $$PWD/src/planes/Plane.cpp
+HEADERS += $$PWD/src/planes/Plane.hpp $$PWD/src/planes/PlaneBase.hpp $$PWD/src/planes/FourierPlane.hpp
+SOURCES += $$PWD/src/planes/Plane.cpp $$PWD/src/planes/FourierPlane.cpp
 SOURCES += $$PWD/src/planes/Plane-scaling.cpp $$PWD/src/planes/Plane-edgedetection.cpp $$PWD/src/planes/Plane-blurring.cpp $$PWD/src/planes/Plane-diff.cpp $$PWD/src/planes/Plane-pixel.cpp $$PWD/src/planes/Plane-binarize.cpp
 
 # Aligners
