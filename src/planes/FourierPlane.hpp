@@ -23,6 +23,7 @@
 #include <QPoint>
 #include <QList>
 #include <cstdio>
+#include <string>
 #include <vector>
 #include <utility>
 #include <complex>
@@ -31,22 +32,27 @@ class FourierPlane : public PlaneBase<std::complex<double>>{
 	private:
 		unsigned real_width;
 		Plane toPlaneInvalidate() const;
+		double scaling{ 1.0 };
 		
 	public:
 		FourierPlane( Size<unsigned> size ) : PlaneBase( size ), real_width( size.width*2 ) { }
 		FourierPlane( unsigned w, unsigned h ) : PlaneBase( w, h ), real_width( w * 2 ) { }
 		
-		FourierPlane( const FourierPlane& p ) : PlaneBase( p ), real_width( p.real_width ) { }
-		FourierPlane( FourierPlane&& p ) : PlaneBase( p ), real_width( p.real_width ) { }
+		FourierPlane( const FourierPlane& p )
+			:	PlaneBase( p ), real_width( p.real_width ), scaling( p.scaling ) { }
+		FourierPlane( FourierPlane&& p )
+			:	PlaneBase( p ), real_width( p.real_width ), scaling( p.scaling ) { }
 		
 		FourierPlane& operator=( const FourierPlane& p ){
 			*(PlaneBase<std::complex<double>>*)this = p;
 			real_width = p.real_width;
+			scaling = p.scaling;
 			return *this;
 		}
 		FourierPlane& operator=( FourierPlane&& p ){
 			*(PlaneBase<std::complex<double>>*)this = p;
 			real_width = p.real_width;
+			scaling = p.scaling;
 			return *this;
 		}
 		
@@ -57,6 +63,12 @@ class FourierPlane : public PlaneBase<std::complex<double>>{
 			return FourierPlane( *this ).toPlaneInvalidate();
 		}
 		
+		void debugResolution( std::string path ) const;
+		
+		FourierPlane reduce( unsigned w, unsigned h ) const;
+		void remove( unsigned w, unsigned h );
+		
+		void blur( double dev_x, double dev_y );
 };
 
 #endif
