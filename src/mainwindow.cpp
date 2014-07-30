@@ -99,6 +99,11 @@ main_widget::main_widget()
 	connect( ui->render_group, SIGNAL(clicked(bool)), this, SLOT(resize_render()) );
 	connect( ui->postprocess_group, SIGNAL(clicked(bool)), this, SLOT(resize_postprogress()) );
 	connect( ui->color_group, SIGNAL(clicked(bool)), this, SLOT(resize_color()) );
+	resize_preprocess();
+	resize_merge();
+	resize_render();
+	resize_postprogress();
+	resize_color();
 	
 	//Merge method
 	connect( ui->cbx_merge_h, SIGNAL( toggled(bool) ), this, SLOT( toggled_hor() ) );

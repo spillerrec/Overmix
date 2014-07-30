@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>998</width>
-    <height>781</height>
+    <height>804</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,7 +21,18 @@
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
       <item>
-       <widget class="QLabel" name="lbl_info"/>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QLabel" name="lbl_info"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btn_clear">
+          <property name="text">
+           <string>Clear</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
        <widget class="QGroupBox" name="preprocess_group">
@@ -30,6 +41,9 @@
         </property>
         <property name="checkable">
          <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_10">
          <property name="spacing">
@@ -374,27 +388,6 @@
            </widget>
           </widget>
          </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_5">
-           <item>
-            <widget class="QPushButton" name="btn_reload">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Reload</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btn_clear">
-             <property name="text">
-              <string>Clear</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
         </layout>
        </widget>
       </item>
@@ -605,6 +598,9 @@
         <property name="checkable">
          <bool>true</bool>
         </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
         <layout class="QGridLayout" name="gridLayout_3">
          <property name="leftMargin">
           <number>3</number>
@@ -677,6 +673,9 @@
         <property name="checkable">
          <bool>true</bool>
         </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
         <layout class="QVBoxLayout" name="verticalLayout_6">
          <property name="leftMargin">
           <number>3</number>
@@ -733,7 +732,7 @@
                <item>
                 <widget class="QDoubleSpinBox" name="dsbx_scale_width">
                  <property name="enabled">
-                  <bool>true</bool>
+                  <bool>false</bool>
                  </property>
                  <property name="decimals">
                   <number>4</number>
@@ -1231,6 +1230,9 @@
         </property>
         <property name="checkable">
          <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
         </property>
         <layout class="QGridLayout" name="gridLayout">
          <property name="leftMargin">
