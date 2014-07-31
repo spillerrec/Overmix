@@ -395,7 +395,7 @@ void imageViewer::draw_message( QStaticText *text ){
 
 void imageViewer::paintEvent( QPaintEvent* ){
 	static QStaticText txt_loading( tr( "Loading" ) );
-	static QStaticText txt_no_image( tr( "No image selected" ) );
+	static QStaticText txt_no_image( tr( "Drop images here" ) );
 	static QStaticText txt_invalid( tr( "Image invalid or broken!" ) );
 	
 	//Start checking for errors
