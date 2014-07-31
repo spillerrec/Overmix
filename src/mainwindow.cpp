@@ -110,12 +110,12 @@ main_widget::main_widget()
 	connect( ui->cbx_merge_v, SIGNAL( toggled(bool) ), this, SLOT( toggled_ver() ) );
 	
 	//Reset aligner cache
-	connect( ui->rbtn_avg,          SIGNAL( toggled(bool) ), this, SLOT( resetAligner() ) );
-	connect( ui->rbtn_dehumidifier, SIGNAL( toggled(bool) ), this, SLOT( resetAligner() ) );
-	connect( ui->rbtn_diff,         SIGNAL( toggled(bool) ), this, SLOT( resetAligner() ) );
-	connect( ui->rbtn_static_diff,  SIGNAL( toggled(bool) ), this, SLOT( resetAligner() ) );
-	connect( ui->rbtn_subpixel,     SIGNAL( toggled(bool) ), this, SLOT( resetAligner() ) );
-	connect( ui->cbx_chroma,        SIGNAL( toggled(bool) ), this, SLOT( resetAligner() ) );
+	connect( ui->rbtn_avg,          SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
+	connect( ui->rbtn_dehumidifier, SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
+	connect( ui->rbtn_diff,         SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
+	connect( ui->rbtn_static_diff,  SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
+	connect( ui->rbtn_subpixel,     SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
+	connect( ui->cbx_chroma,        SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
 	
 	//Add images
 	qRegisterMetaType<QList<QUrl> >( "QList<QUrl>" );
