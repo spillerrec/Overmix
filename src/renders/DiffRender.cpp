@@ -58,7 +58,7 @@ class StaticDiff{
 		}
 		
 		color_type result() const{
-			return amount ? color::truncate( sum / amount ) : color::BLACK;
+			return amount ? color::truncate( color::WHITE - sum / amount ) : color::WHITE;
 		}
 };
 
