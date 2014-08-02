@@ -26,6 +26,7 @@
 #include "viewer/imageViewer.h"
 
 #include "RenderOperations.hpp"
+#include "containers/ImageContainer.hpp"
 
 class AImageAligner;
 class Deteleciner;
@@ -38,7 +39,7 @@ class main_widget: public QMainWindow{
 	private:
 		class Ui_main_widget *ui;
 		imageViewer viewer;
-		std::vector<ImageEx*> images;
+		ImageContainer images;
 		QImage *temp{ nullptr };
 		
 		AImageAligner *aligner{ nullptr };

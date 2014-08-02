@@ -165,15 +165,15 @@ void main_widget::dropEvent( QDropEvent *event ){
 
 void main_widget::resize_groupbox( QGroupBox* box ){
 	if( box->isChecked() )
-		box->setMaximumSize( QWIDGETSIZE_MAX, QWIDGETSIZE_MAX ); //TODO: max value
+		box->setMaximumSize( QWIDGETSIZE_MAX, QWIDGETSIZE_MAX );
 	else
 		box->setMaximumHeight( 20 );
 }
 
 //Load an image for mapped, doesn't work with lambdas appearently...
-static ImageEx* load( QUrl url ){
-	ImageEx *img = new ImageEx();
-	img->read_file( url.toLocalFile().toLocal8Bit().constData() );
+static ImageEx load( QUrl url ){
+	ImageEx img;
+	img.read_file( url.toLocalFile().toLocal8Bit().constData() );
 	return img;
 }
 
@@ -185,7 +185,7 @@ void main_widget::process_urls( QList<QUrl> urls ){
 	t.start();
 	int loading_delay = 0;
 	
-	QFuture<ImageEx*> img_loader = QtConcurrent::run( load, urls[0] );
+	QFuture<ImageEx> img_loader = QtConcurrent::run( load, urls[0] );
 	
 	for( int i=0; i<urls.count(); i++ ){
 		progress.setValue( i );
@@ -193,50 +193,52 @@ void main_widget::process_urls( QList<QUrl> urls ){
 		QTime delay;
 		delay.start();
 		//Get and start loading next image
-		ImageEx* img = img_loader.result();
+		ImageEx img = img_loader.result();
+		//TODO: QtConcurrent is probably not optimized for move semantics
 		if( i+1 < urls.count() )
 			img_loader = QtConcurrent::run( load, urls[i+1] );
 		loading_delay += delay.elapsed();
 		
 		//De-telecine
-		if( detelecine )
-			img = detelecine->process( img );
-		
-		if( img ){
-			//Overwrite alpha
-			if( alpha_mask )
-				img->alpha_plane() = alpha_mask;
-			
-			//Crop
-			int left = ui->crop_left->value();
-			int right = ui->crop_right->value();
-			int top = ui->crop_top->value();
-			int bottom = ui->crop_bottom->value();
-			if( left > 0 || right > 0 || top > 0 || bottom > 0 )
-				img->crop( left, top, right, bottom );
-			
-			//Deconvolve
-			double deviation = ui->pre_deconvolve_deviation->value();
-			unsigned iterations = ui->pre_deconvolve_iterations->value();
-			if( deviation > 0.0009 && iterations > 0 )
-				img->apply( &Plane::deconvolve_rl, deviation, iterations );
-			
-			//Scale
-			double scale_width = ui->pre_scale_width->value();
-			double scale_height = ui->pre_scale_height->value();
-			bool scale_chroma = ui->pre_scale_chroma->isChecked();
-			if( scale_width <= 0.9999 || scale_width >= 1.0001
-				|| scale_height <= 0.9999 || scale_height >= 1.0001
-				|| scale_chroma )
-				img->scale( img->get_width() * scale_width + 0.5, img->get_height() * scale_height + 0.5 );
-			
-			images.push_back( img );
+		if( detelecine ){
+			auto frame = detelecine->process( &img );
+			if( !frame ){
+				img = *frame;
+				delete frame;
+			}
 		}
 		
-		if( progress.wasCanceled() && i+1 < urls.count() ){
-			delete img_loader.result();
+		//Overwrite alpha
+		if( alpha_mask )
+			img.alpha_plane() = alpha_mask;
+		
+		//Crop
+		int left = ui->crop_left->value();
+		int right = ui->crop_right->value();
+		int top = ui->crop_top->value();
+		int bottom = ui->crop_bottom->value();
+		if( left > 0 || right > 0 || top > 0 || bottom > 0 )
+			img.crop( left, top, right, bottom );
+		
+		//Deconvolve
+		double deviation = ui->pre_deconvolve_deviation->value();
+		unsigned iterations = ui->pre_deconvolve_iterations->value();
+		if( deviation > 0.0009 && iterations > 0 )
+			img.apply( &Plane::deconvolve_rl, deviation, iterations );
+		
+		//Scale
+		double scale_width = ui->pre_scale_width->value();
+		double scale_height = ui->pre_scale_height->value();
+		bool scale_chroma = ui->pre_scale_chroma->isChecked();
+		if( scale_width <= 0.9999 || scale_width >= 1.0001
+			|| scale_height <= 0.9999 || scale_height >= 1.0001
+			|| scale_chroma )
+			img.scale( img.get_width() * scale_width + 0.5, img.get_height() * scale_height + 0.5 );
+		
+		images.addImage( std::move( img ) );
+		
+		if( progress.wasCanceled() )
 			break;
-		}
 	}
 	qDebug( "Adding images took: %d", t.elapsed() );
 	qDebug( "Loading blocked for: %d ms", loading_delay );
@@ -254,7 +256,7 @@ void main_widget::refresh_text(){
 			tr( "Size: " )
 		+	QString::number(s.width()) + "x"
 		+	QString::number(s.height()) + " ("
-		+	QString::number( images.size() ) + ")"
+		+	QString::number( images.amount() ) + ")"
 	);
 }
 
@@ -394,8 +396,6 @@ void main_widget::clear_image(){
 	if( detelecine )
 		detelecine->clear();
 	
-	for( auto img : images )
-		delete img;
 	images.clear();
 	
 	refresh_text();
@@ -443,8 +443,9 @@ void main_widget::subpixel_align_image(){
 	
 	aligner->set_edges( ui->cbx_edges->isChecked() );
 	
-	for( auto img : images )
-		aligner->add_image( *img );
+	for( unsigned i=0; i<images.groupAmount(); i++ )
+		for( auto& item : images.getGroup( i ).items )
+		aligner->add_image( item.image() );
 	aligner->align( &watcher );
 	
 	refresh_text();
@@ -497,5 +498,5 @@ void main_widget::update_draw(){
 	else
 		ui->btn_refresh->setText( tr( "Draw" ) );
 	
-	ui->btn_refresh->setEnabled( images.size() > 0 );
+	ui->btn_refresh->setEnabled( images.amount() > 0 );
 }

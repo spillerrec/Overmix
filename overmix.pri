@@ -1,6 +1,6 @@
 # Libraries used
 QT += concurrent
-LIBS += -lfftw3-3 -lm -lpng -lz -llzma
+LIBS += -lfftw3 -lm -lpng -lz -llzma
 
 # C++11 support
 QMAKE_CXXFLAGS += -std=c++11
@@ -8,6 +8,10 @@ QMAKE_CXXFLAGS += -std=c++11
 # Core logic
 HEADERS += $$PWD/src/MultiPlaneIterator.hpp $$PWD/src/color.hpp $$PWD/src/ImageEx.hpp $$PWD/src/Deteleciner.hpp
 SOURCES += $$PWD/src/MultiPlaneIterator.cpp $$PWD/src/color.cpp $$PWD/src/ImageEx.cpp $$PWD/src/Deteleciner.cpp
+
+# Containers
+HEADERS += $$PWD/src/containers/AlignGroup.hpp $$PWD/src/containers/ImageContainer.hpp $$PWD/src/containers/RenderGroup.hpp $$PWD/src/containers/ImageGroup.hpp
+SOURCES += $$PWD/src/containers/AlignGroup.cpp $$PWD/src/containers/ImageContainer.cpp $$PWD/src/containers/RenderGroup.cpp
 
 # Planes
 HEADERS += $$PWD/src/planes/Plane.hpp $$PWD/src/planes/PlaneBase.hpp $$PWD/src/planes/FourierPlane.hpp
