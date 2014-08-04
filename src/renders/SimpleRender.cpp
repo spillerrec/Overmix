@@ -17,7 +17,7 @@
 
 
 #include "SimpleRender.hpp"
-#include "../aligners/AImageAligner.hpp"
+#include "../containers/RenderGroup.hpp"
 #include "../ImageEx.hpp"
 #include "../color.hpp"
 
@@ -135,7 +135,7 @@ static void render_dark_select( MultiPlaneIterator &it, bool alpha_used, unsigne
 		}, watcher, offset );
 }
 
-ImageEx SimpleRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
+ImageEx SimpleRender::render( const RenderGroup& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	QTime t;
 	t.start();
 	if( max_count > aligner.count() )

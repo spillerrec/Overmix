@@ -18,3 +18,23 @@
 
 #include "RenderGroup.hpp"
 
+
+unsigned RenderGroup::count() const{
+	return aligner.count();
+}
+const ImageEx& RenderGroup::image( unsigned index ) const{
+	return aligner.image( index );
+}
+const Plane& RenderGroup::plane( unsigned img_index, unsigned p_index ) const{
+	return aligner.plane( img_index, p_index );
+}
+QPointF RenderGroup::pos( unsigned index ) const{
+	return aligner.pos( index );
+}
+
+QPointF RenderGroup::minPoint() const{
+	return aligner.min_point();
+}
+QRect RenderGroup::size() const{
+	return aligner.size();
+}

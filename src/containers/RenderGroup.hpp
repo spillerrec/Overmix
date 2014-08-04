@@ -19,12 +19,25 @@
 #define RENDER_GROUP_HPP
 
 #include "ImageContainer.hpp"
+#include "../aligners/AImageAligner.hpp"
+
+#include <QRect>
 
 class RenderGroup{
 	private:
+		const AImageAligner& aligner;
 		
 	public:
+		//TODO: init from AlignGroup
+		RenderGroup( const AImageAligner& aligner ) : aligner(aligner) { }//NOTE: Temporary
 		
+		unsigned count() const;
+		const ImageEx& image( unsigned index ) const;
+		const Plane& plane( unsigned img_index, unsigned p_index=0 ) const;
+		QPointF pos( unsigned index ) const;
+		
+		QPointF minPoint() const;
+		QRect size() const;
 };
 
 #endif

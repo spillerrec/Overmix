@@ -18,7 +18,7 @@
 
 #include "DiffRender.hpp"
 #include "SimpleRender.hpp"
-#include "../aligners/AImageAligner.hpp"
+#include "../containers/RenderGroup.hpp"
 #include "../color.hpp"
 
 #include <vector>
@@ -28,7 +28,7 @@ using namespace std;
 
 class StaticDiff{
 	private:
-		const AImageAligner& aligner;
+		const RenderGroup& aligner;
 		const ImageEx& reference;
 		
 		unsigned amount{ 0 };
@@ -38,7 +38,7 @@ class StaticDiff{
 		QPoint absolute;
 		
 	public:
-		StaticDiff( const AImageAligner& aligner, const ImageEx& ref, unsigned x, unsigned y )
+		StaticDiff( const RenderGroup& aligner, const ImageEx& ref, unsigned x, unsigned y )
 			: aligner(aligner), reference(ref) {
 			offset = QPoint( x, y );
 			absolute = aligner.size().topLeft();
@@ -62,7 +62,7 @@ class StaticDiff{
 		}
 };
 
-ImageEx DiffRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
+ImageEx DiffRender::render( const RenderGroup& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	if( max_count > aligner.count() )
 		max_count = aligner.count();
 	

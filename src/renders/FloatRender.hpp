@@ -25,7 +25,7 @@ class FloatRender : public ARender{
 	public:
 		FloatRender( double scale_x, double scale_y ) : scale_x( scale_x ), scale_y( scale_y ) { }
 		FloatRender( double scale=1.0 ) : FloatRender( scale, scale ) { }
-		virtual ImageEx render( const AImageAligner& aligner, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const override;
+		virtual ImageEx render( const RenderGroup& aligner, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const override;
 };
 
 #endif

@@ -17,7 +17,7 @@
 
 
 #include "PlaneRender.hpp"
-#include "../aligners/AImageAligner.hpp"
+#include "../containers/RenderGroup.hpp"
 #include "../ImageEx.hpp"
 #include "../color.hpp"
 
@@ -27,7 +27,7 @@
 using namespace std;
 
 
-ImageEx PlaneRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
+ImageEx PlaneRender::render( const RenderGroup& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	if( max_count > aligner.count() )
 		max_count = aligner.count();
 	

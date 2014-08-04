@@ -19,7 +19,10 @@
 #define A_RENDER_HPP
 
 class ImageEx;
+class RenderGroup;
 class AImageAligner;
+
+#include "../containers/RenderGroup.hpp"
 
 class AProcessWatcher{
 	public:
@@ -29,7 +32,11 @@ class AProcessWatcher{
 
 class ARender{
 	public:
-		virtual ImageEx render( const AImageAligner& aligner, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const = 0;
+		ImageEx render( const AImageAligner& aligner, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const{
+			RenderGroup temp( aligner );
+			return render( temp, max_count, watcher );
+		}
+		virtual ImageEx render( const RenderGroup& group, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const = 0;
 };
 
 #endif

@@ -130,7 +130,7 @@ class SumPlane {
 		}
 };
 
-ImageEx AverageRender::render( const AImageAligner& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
+ImageEx AverageRender::render( const RenderGroup& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	QTime t;
 	t.start();
 	if( max_count > aligner.count() )
@@ -156,7 +156,7 @@ ImageEx AverageRender::render( const AImageAligner& aligner, unsigned max_count,
 	img.create( 1, 1 ); //TODO: set as initialized
 	
 	QRect full = aligner.size();
-	auto min_point = aligner.min_point();
+	auto min_point = aligner.minPoint();
 	for( unsigned c=0; c<planes_amount; c++ ){
 		//Determine local size
 		double scale_x = upscale_chroma ? 1 : (double)aligner.plane(0,c).get_width() / aligner.plane(0).get_width();
