@@ -266,7 +266,7 @@ static color_type color_from_spinbox( QSpinBox* spinbox ){
 
 #include <QMessageBox>
 void main_widget::refresh_image(){
-	if( !aligner )
+	if( !aligner ) //TODO: we need new way of deciding when to align
 		subpixel_align_image();
 	
 	bool new_image = !temp_ex.is_valid();
@@ -281,16 +281,16 @@ void main_widget::refresh_image(){
 		DialogWatcher watcher( progress );
 		
 		if( ui->rbtn_diff->isChecked() )
-			temp_ex = DifferenceRender().render( *aligner, INT_MAX, &watcher );
+			temp_ex = DifferenceRender().render( images, INT_MAX, &watcher );
 		else if( ui->rbtn_static_diff->isChecked() )
-			temp_ex = DiffRender().render( *aligner, INT_MAX, &watcher );
+			temp_ex = DiffRender().render( images, INT_MAX, &watcher );
 		else if( ui->rbtn_dehumidifier->isChecked() )
-			temp_ex = SimpleRender( SimpleRender::DARK_SELECT, true ).render( *aligner, INT_MAX, &watcher );
+			temp_ex = SimpleRender( SimpleRender::DARK_SELECT, true ).render( images, INT_MAX, &watcher );
 		else if( ui->rbtn_subpixel->isChecked() )
-			temp_ex = FloatRender().render( *aligner, INT_MAX, &watcher );
+			temp_ex = FloatRender().render( images, INT_MAX, &watcher );
 		else
-		//	temp_ex = SimpleRender( SimpleRender::AVERAGE, chroma_upscale ).render( *aligner, INT_MAX, &watcher );
-			temp_ex = AverageRender( chroma_upscale ).render( *aligner, INT_MAX, &watcher );
+		//	temp_ex = SimpleRender( SimpleRender::AVERAGE, chroma_upscale ).render( images, INT_MAX, &watcher );
+			temp_ex = AverageRender( chroma_upscale ).render( images, INT_MAX, &watcher );
 	}
 	
 	//Set color system
@@ -447,6 +447,8 @@ void main_widget::subpixel_align_image(){
 		for( auto& item : images.getGroup( i ).items )
 		aligner->add_image( item.image() );
 	aligner->align( &watcher );
+	
+	aligner->setPositions( images );
 	
 	refresh_text();
 	update_draw();

@@ -23,7 +23,7 @@
 
 RenderGroup::RenderGroup( const ImageContainer& container ) : use_container(true), container(&container) {
 	for( unsigned i=0; i<container.groupAmount(); i++ )
-		for( unsigned j=0; j<container.getGroup(i).items.size(); j++ )
+		for( unsigned j=0; j<container.getConstGroup(i).items.size(); j++ )
 			positions.emplace_back( i, j ); //TODO: add filtering
 }
 
@@ -37,7 +37,7 @@ unsigned RenderGroup::count() const{
 const ImageEx& RenderGroup::image( unsigned index ) const{
 	if( use_container ){
 		auto pos = positions[index];
-		return container->getGroup(pos.group).items[pos.index].image();
+		return container->getConstGroup(pos.group).items[pos.index].image();
 	}
 	else
 		return aligner->image( index );
@@ -51,7 +51,7 @@ const Plane& RenderGroup::plane( unsigned img_index, unsigned p_index ) const{
 QPointF RenderGroup::pos( unsigned index ) const{
 	if( use_container ){
 		auto pos = positions[index];
-		return container->getGroup(pos.group).items[pos.index].offset;
+		return container->getConstGroup(pos.group).items[pos.index].offset;
 	}
 	else
 		return aligner->pos( index );

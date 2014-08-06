@@ -17,8 +17,18 @@
 
 #include "AImageAligner.hpp"
 #include "../color.hpp"
+#include "../containers/ImageContainer.hpp"
 
 #include <fstream>
+
+
+//NOTE: Temporary
+void AImageAligner::setPositions( ImageContainer& container ) const{
+	unsigned i=0;
+		for( unsigned j=0; j<container.groupAmount(); j++ )
+			for( auto& item : container.getGroup(j).items )
+				item.offset = pos( i++ );
+}
 
 AImageAligner::~AImageAligner(){
 	

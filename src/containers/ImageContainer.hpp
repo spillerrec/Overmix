@@ -27,7 +27,8 @@ class ImageContainer{
 		
 	public:
 		unsigned groupAmount() const{ return groups.size(); }
-		const ImageGroup& getGroup( unsigned index ) const{ return groups[index]; }
+		const ImageGroup& getConstGroup( unsigned index ) const{ return groups[index]; }
+		ImageGroup& getGroup( unsigned index ){ return groups[index]; }
 		unsigned amount() const{
 			unsigned sum=0;
 			for( auto group : groups )

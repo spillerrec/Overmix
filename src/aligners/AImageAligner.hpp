@@ -25,6 +25,7 @@
 #include <QPointF>
 
 class AProcessWatcher;
+class ImageContainer;
 
 class AImageAligner{
 	public:
@@ -111,6 +112,9 @@ class AImageAligner{
 		virtual void align( AProcessWatcher* watcher=nullptr ) = 0;
 		
 		void debug( QString csv_file ) const;
+		
+		//NOTE: Temporary
+		void setPositions( ImageContainer& container ) const;
 };
 
 #endif
