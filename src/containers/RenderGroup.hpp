@@ -18,18 +18,35 @@
 #ifndef RENDER_GROUP_HPP
 #define RENDER_GROUP_HPP
 
-#include "ImageContainer.hpp"
-#include "../aligners/AImageAligner.hpp"
-
 #include <QRect>
+#include <QPointF>
+#include <vector>
+
+class Plane;
+class ImageEx;
+class AImageAligner;
+class ImageContainer;
 
 class RenderGroup{
 	private:
-		const AImageAligner& aligner;
+		bool use_container;
+		const AImageAligner* aligner;
+		const ImageContainer* container{ nullptr };
+		
+		struct ImagePosition{
+			unsigned group;
+			unsigned index;
+			ImagePosition( unsigned group, unsigned index ) : group(group), index(index) { }
+		};
+		
+		//TODO: animation stuff
+		std::vector<ImagePosition> positions;
+		
 		
 	public:
 		//TODO: init from AlignGroup
-		RenderGroup( const AImageAligner& aligner ) : aligner(aligner) { }//NOTE: Temporary
+		RenderGroup( const AImageAligner& aligner ) : use_container(false), aligner(&aligner) { }//NOTE: Temporary
+		RenderGroup( const ImageContainer& container );
 		
 		unsigned count() const;
 		const ImageEx& image( unsigned index ) const;

@@ -18,23 +18,75 @@
 
 #include "RenderGroup.hpp"
 
+#include "ImageContainer.hpp"
+#include "../aligners/AImageAligner.hpp"
+
+RenderGroup::RenderGroup( const ImageContainer& container ) : use_container(true), container(&container) {
+	for( unsigned i=0; i<container.groupAmount(); i++ )
+		for( unsigned j=0; j<container.getGroup(i).items.size(); j++ )
+			positions.emplace_back( i, j ); //TODO: add filtering
+}
+
 
 unsigned RenderGroup::count() const{
-	return aligner.count();
+	if( use_container )
+		return positions.size();
+	else
+		return aligner->count();
 }
 const ImageEx& RenderGroup::image( unsigned index ) const{
-	return aligner.image( index );
+	if( use_container ){
+		auto pos = positions[index];
+		return container->getGroup(pos.group).items[pos.index].image();
+	}
+	else
+		return aligner->image( index );
 }
 const Plane& RenderGroup::plane( unsigned img_index, unsigned p_index ) const{
-	return aligner.plane( img_index, p_index );
+	if( use_container )
+		return image( img_index )[p_index];
+	else
+		return aligner->plane( img_index, p_index );
 }
 QPointF RenderGroup::pos( unsigned index ) const{
-	return aligner.pos( index );
+	if( use_container ){
+		auto pos = positions[index];
+		return container->getGroup(pos.group).items[pos.index].offset;
+	}
+	else
+		return aligner->pos( index );
 }
 
 QPointF RenderGroup::minPoint() const{
-	return aligner.min_point();
+	//TODO: following function is copied from AImageAligner
+	
+	if( count() == 0 )
+		return QPointF(0,0);
+	
+	QPointF min = pos( 0 );
+	for( unsigned i=0; i<count(); i++ ){
+		if( pos(i).x() < min.x() )
+			min.setX( pos(i).x() );
+		if( pos(i).y() < min.y() )
+			min.setY( pos(i).y() );
+	}
+	
+	return min;
 }
+
 QRect RenderGroup::size() const{
-	return aligner.size();
+	//TODO: following function is copied from AImageAligner
+	QRectF total;
+	
+	for( unsigned i=0; i<count(); i++ )
+		total = total.united( QRectF( pos(i), QSizeF( plane(i).get_width(), plane(i).get_height() ) ) );
+	
+	//Round so that we only increase size
+	total.setLeft( floor( total.left() ) );
+	total.setTop( floor( total.top() ) );
+	total.setRight( ceil( total.right() ) );
+	total.setBottom( ceil( total.bottom() ) );
+	//TODO: just return a QRectF and let the caller deal with the rounding
+	
+	return total.toRect();
 }

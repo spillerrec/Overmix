@@ -18,11 +18,11 @@
 #ifndef A_RENDER_HPP
 #define A_RENDER_HPP
 
-class ImageEx;
 class RenderGroup;
 class AImageAligner;
 
 #include "../containers/RenderGroup.hpp"
+#include "../ImageEx.hpp"
 
 class AProcessWatcher{
 	public:
