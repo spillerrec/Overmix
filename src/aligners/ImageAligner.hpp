@@ -32,7 +32,8 @@ class ImageAligner : public AImageAligner{
 		virtual void on_add();
 	
 	public:
-		ImageAligner( AlignMethod method, double scale=1.0 ) : AImageAligner( method, scale ){ }
+		ImageAligner( AContainer& container, AlignMethod method, double scale=1.0 )
+			:	AImageAligner( container, method, scale ){ }
 		
 		void align( AProcessWatcher* watcher=nullptr );
 	

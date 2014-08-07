@@ -19,6 +19,7 @@
 #define IMAGE_GROUP_HPP
 
 #include "../ImageEx.hpp"
+#include "AContainer.hpp"
 
 #include <QString>
 #include <QPointF>
@@ -53,11 +54,18 @@ class ImageItem{
 		}
 };
 
-struct ImageGroup{
-	QString name;
-	std::vector<ImageItem> items;
-	
-	ImageGroup( QString name ) : name(name) { }
+class ImageGroup : public AContainer{
+	public:
+		QString name;
+		std::vector<ImageItem> items;
+		
+		ImageGroup( QString name ) : name(name) { }
+		
+	public: //AContainer implementation
+		virtual unsigned count() const{ return items.size(); }
+		virtual const ImageEx& image( unsigned index ) const{ return items[index].image(); }
+		virtual QPointF pos( unsigned index ) const{ return items[index].offset; }
+		virtual void setPos( unsigned index, QPointF newVal ){ items[index].offset = newVal; }
 };
 
 #endif

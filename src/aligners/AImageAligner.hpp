@@ -20,6 +20,7 @@
 
 #include "../planes/Plane.hpp"
 #include "../ImageEx.hpp"
+#include "../containers/AContainer.hpp"
 
 #include <vector>
 #include <QPointF>
@@ -27,7 +28,7 @@
 class AProcessWatcher;
 class ImageContainer;
 
-class AImageAligner{
+class AImageAligner : public AContainer{
 	public:
 		enum AlignMethod{
 			ALIGN_BOTH,
@@ -53,28 +54,22 @@ class AImageAligner{
 		bool use_edges{ false };
 		double movement{ 0.75 };
 		bool raw;
+		AContainer& container;
 		
 	public:
 		double x_scale() const;
 		double y_scale() const;
+		AContainer& getContainer(){ return container; }
 		
 	private:
-		struct ImagePosition{
-			const ImageEx& original;
-			const Plane image;
-			QPointF pos;
-			
-			ImagePosition( const ImageEx& org, Plane&& img )
-				:	original(org), image(img) { }
-		};
-		std::vector<ImagePosition> images;
+		std::vector<Plane> images;
 	public:
 		//Accessors
-		unsigned count() const{ return images.size(); }
-		const ImageEx& image( unsigned index ) const{ return images[index].original; }
+		unsigned count() const{ return container.count(); }
+		const ImageEx& image( unsigned index ) const{ return container.image( index ); }
 		const Plane& plane( unsigned img_index, unsigned p_index=0 ) const;
 		QPointF pos( unsigned index ) const;
-		void setPos( unsigned index, QPointF newVal ){ images[index].pos = newVal; }
+		void setPos( unsigned index, QPointF newVal );
 		
 		//Construction
 		void add_image( const ImageEx& img );
@@ -85,7 +80,8 @@ class AImageAligner{
 		virtual void on_add(){ }
 	
 	public:
-		AImageAligner( AlignMethod method, double scale=1.0 ) : method(method), scale(scale), raw(false){ }
+		AImageAligner( AContainer& container, AlignMethod method, double scale=1.0 )
+			:	method(method), scale(scale), raw(false), container(container){ }
 		//copy, move, assign?
 		virtual ~AImageAligner();
 		
@@ -98,23 +94,9 @@ class AImageAligner{
 		double get_movement() const{ return movement; }
 		double get_edges() const{ return use_edges; }
 		
-		QPointF min_point() const;
-		
-		void offsetAll( double dx, double dy ){
-			QPointF offset( dx, dy );
-			for( auto& image : images )
-				image.pos += offset;
-		}
-		
-		
-		QRect size() const;
-		
 		virtual void align( AProcessWatcher* watcher=nullptr ) = 0;
 		
 		void debug( QString csv_file ) const;
-		
-		//NOTE: Temporary
-		void setPositions( ImageContainer& container ) const;
 };
 
 #endif

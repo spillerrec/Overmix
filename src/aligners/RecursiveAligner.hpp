@@ -23,12 +23,11 @@
 
 class RecursiveAligner : public AImageAligner{
 	protected:
-		QPointF min_point() const;
-		
 		std::pair<Plane,QPointF> combine( const Plane& first, const Plane& second ) const;
 		Plane align( AProcessWatcher* watcher, unsigned begin, unsigned end );
 	public:
-		RecursiveAligner( AlignMethod method, double scale=1.0 ) : AImageAligner( method, scale ){ }
+		RecursiveAligner( AContainer& container, AlignMethod method, double scale=1.0 )
+			:	AImageAligner( container, method, scale ){ }
 		virtual void align( AProcessWatcher* watcher=nullptr ) override;
 };
 

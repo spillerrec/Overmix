@@ -52,7 +52,7 @@ class AnimFrame{
 		
 		void save( int frame, const ImageEx& background, AnimationSaver& anim, debug::CsvFile& csv ){
 			//Initialize aligner
-			RecursiveAligner render( aligner.get_method(), aligner.get_scale() );
+			RecursiveAligner render( aligner.getContainer(), aligner.get_method(), aligner.get_scale() );
 			render.set_movement( aligner.get_movement() );
 			render.set_edges( aligner.get_edges() );
 			for( int index : indexes )
@@ -134,7 +134,7 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 	
 	//Align and render the image
 	//TODO: remove the need of this
-	RecursiveAligner average( method, scale );
+	RecursiveAligner average( container, method, scale );
 	average.set_movement( get_movement() );
 	average.set_edges( use_edges );
 	for( unsigned i=0; i<count(); i++ )

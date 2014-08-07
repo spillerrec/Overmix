@@ -21,6 +21,7 @@
 #include "../renders/SimpleRender.hpp"
 #include "../renders/DifferenceRender.hpp"
 
+/*
 class InternAligner : public AverageAligner{
 	protected:
 		AImageAligner& normal;
@@ -34,13 +35,14 @@ class InternAligner : public AverageAligner{
 			//TODO: randomize repeating errors
 			return AImageAligner::prepare_plane( p );
 		}
-};
+};*/
 
 void LayeredAligner::align( AProcessWatcher* watcher ){
+	/*
 	if( count() == 0 )
 		return;
 	
-	AverageAligner normal( method, scale );
+	AverageAligner normal( container, method, scale );
 	for( unsigned i=0; i<count(); i++ )
 		normal.add_image( image( i ) );
 	normal.align();
@@ -52,5 +54,6 @@ void LayeredAligner::align( AProcessWatcher* watcher ){
 	
 	for( unsigned i=0; i<count(); i++ )
 		setPos( i, aligner.pos(i) );
+	*/
 }
 

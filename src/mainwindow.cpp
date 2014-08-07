@@ -256,7 +256,7 @@ void main_widget::refresh_text(){
 			tr( "Size: " )
 		+	QString::number(s.width()) + "x"
 		+	QString::number(s.height()) + " ("
-		+	QString::number( images.amount() ) + ")"
+		+	QString::number( images.count() ) + ")"
 	);
 }
 
@@ -427,15 +427,15 @@ void main_widget::subpixel_align_image(){
 	int merge_index = ui->merge_method->currentIndex();
 	switch( merge_index ){
 		case 0: //Fake
-			aligner = new FakeAligner(); break;
+			aligner = new FakeAligner( images ); break;
 		case 1: //Ordered
-			aligner = new AverageAligner( method, scale ); break;
+			aligner = new AverageAligner( images, method, scale ); break;
 		case 2: //Recursive
-			aligner = new RecursiveAligner( method, scale ); break;
+			aligner = new RecursiveAligner( images, method, scale ); break;
 		case 3: //Layered
-			aligner = new LayeredAligner( method, scale ); break;
+			aligner = new LayeredAligner( images, method, scale ); break;
 		case 4: //Animated
-			aligner = new AnimatedAligner( method, scale ); break;
+			aligner = new AnimatedAligner( images, method, scale ); break;
 	}
 	
 	double movement = ui->merge_movement->value() / 100.0;
@@ -447,8 +447,6 @@ void main_widget::subpixel_align_image(){
 		for( auto& item : images.getGroup( i ).items )
 		aligner->add_image( item.image() );
 	aligner->align( &watcher );
-	
-	aligner->setPositions( images );
 	
 	refresh_text();
 	update_draw();
@@ -500,5 +498,5 @@ void main_widget::update_draw(){
 	else
 		ui->btn_refresh->setText( tr( "Draw" ) );
 	
-	ui->btn_refresh->setEnabled( images.amount() > 0 );
+	ui->btn_refresh->setEnabled( images.count() > 0 );
 }

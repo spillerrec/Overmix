@@ -24,7 +24,8 @@ class AnimatedAligner : public AImageAligner{
 	private:
 		double find_threshold();
 	public:
-		AnimatedAligner( AlignMethod method, double scale=1.0 ) : AImageAligner( method, scale ){ }
+		AnimatedAligner( AContainer& container, AlignMethod method, double scale=1.0 )
+			:	AImageAligner( container, method, scale ){ }
 		virtual void align( AProcessWatcher* watcher=nullptr ) override;
 };
 

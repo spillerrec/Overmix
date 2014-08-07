@@ -18,7 +18,7 @@
 
 #include "FloatRender.hpp"
 #include "AverageRender.hpp"
-#include "../containers/RenderGroup.hpp"
+#include "../containers/AContainer.hpp"
 #include "../ImageEx.hpp"
 #include "../color.hpp"
 
@@ -157,7 +157,7 @@ class PointRender3 : public PointRenderBase{
 		
 };
 
-bool isSubpixel( const RenderGroup& aligner, unsigned max_count ){
+bool isSubpixel( const AContainer& aligner, unsigned max_count ){
 	for( unsigned j=0; j<max_count; ++j ){
 		auto pos = aligner.pos( j );
 		if( pos.x() != round(pos.x()) || pos.y() != round(pos.y()) )
@@ -168,7 +168,7 @@ bool isSubpixel( const RenderGroup& aligner, unsigned max_count ){
 
 
 #include <QMessageBox>
-ImageEx FloatRender::render( const RenderGroup& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
+ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	QTime t;
 	t.start();
 	

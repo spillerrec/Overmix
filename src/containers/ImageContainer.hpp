@@ -20,26 +20,36 @@
 
 #include "ImageGroup.hpp"
 
-class ImageContainer{
+class ImageContainer : public AContainer{
 	private:
 		std::vector<ImageGroup> groups;
 		std::vector<Plane> masks;
 		
 	public:
+		
+		/** A index to an ImageItem */
+		struct ImagePosition{
+			unsigned group;
+			unsigned index;
+			ImagePosition( unsigned group, unsigned index ) : group(group), index(index) { }
+		};
+		
 		unsigned groupAmount() const{ return groups.size(); }
 		const ImageGroup& getConstGroup( unsigned index ) const{ return groups[index]; }
 		ImageGroup& getGroup( unsigned index ){ return groups[index]; }
-		unsigned amount() const{
-			unsigned sum=0;
-			for( auto group : groups )
-				sum += group.items.size();
-			return sum;
-			//TODO: accumulate
-		}
+		
 		void clear(){
 			groups.clear();
 			masks.clear();
 		}
+		
+	private:
+		ImagePosition fromLinear( unsigned index ) const;
+	public: //AContainer implementation
+		virtual unsigned count() const;
+		virtual const ImageEx& image( unsigned index ) const;
+		virtual QPointF pos( unsigned index ) const;
+		virtual void setPos( unsigned index, QPointF newVal );
 		
 	public:
 		void addImage( ImageEx&& img, int group=-1 );

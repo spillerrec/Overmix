@@ -130,7 +130,7 @@ class SumPlane {
 		}
 };
 
-ImageEx AverageRender::render( const RenderGroup& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
+ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	QTime t;
 	t.start();
 	if( max_count > aligner.count() )

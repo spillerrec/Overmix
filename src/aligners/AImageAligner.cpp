@@ -22,31 +22,8 @@
 #include <fstream>
 
 
-//NOTE: Temporary
-void AImageAligner::setPositions( ImageContainer& container ) const{
-	unsigned i=0;
-		for( unsigned j=0; j<container.groupAmount(); j++ )
-			for( auto& item : container.getGroup(j).items )
-				item.offset = pos( i++ );
-}
-
 AImageAligner::~AImageAligner(){
 	
-}
-
-QPointF AImageAligner::min_point() const{
-	if( count() == 0 )
-		return QPointF(0,0);
-	
-	QPointF min = pos( 0 );
-	for( unsigned i=0; i<count(); i++ ){
-		if( pos(i).x() < min.x() )
-			min.setX( pos(i).x() );
-		if( pos(i).y() < min.y() )
-			min.setY( pos(i).y() );
-	}
-	
-	return min;
 }
 
 double AImageAligner::x_scale() const{
@@ -75,24 +52,8 @@ Plane AImageAligner::prepare_plane( const Plane& p ){
 }
 
 void AImageAligner::add_image( const ImageEx& img ){
-	images.emplace_back( img, prepare_plane( img[0] ) );
+	images.emplace_back( prepare_plane( img[0] ) );
 	on_add();
-}
-
-QRect AImageAligner::size() const{
-	QRectF total;
-	
-	for( unsigned i=0; i<count(); i++ )
-		total = total.united( QRectF( pos(i), QSizeF( plane(i).get_width(), plane(i).get_height() ) ) );
-	
-	//Round so that we only increase size
-	total.setLeft( floor( total.left() ) );
-	total.setTop( floor( total.top() ) );
-	total.setRight( ceil( total.right() ) );
-	total.setBottom( ceil( total.bottom() ) );
-	//TODO: just return a QRectF and let the caller deal with the rounding
-	
-	return total.toRect();
 }
 
 double AImageAligner::calculate_overlap( QPoint offset, const Plane& img1, const Plane& img2 ){
@@ -137,17 +98,24 @@ AImageAligner::ImageOffset AImageAligner::find_offset( const Plane& img1, const 
 }
 
 const Plane& AImageAligner::plane( unsigned img_index, unsigned p_index ) const{
-	if( raw && images[img_index].image )
-		return images[img_index].image;
+	if( raw && images[img_index] )
+		return images[img_index];
 	else
-		return images[img_index].original[p_index];
+		return image( img_index )[p_index];
 }
 
 QPointF AImageAligner::pos( unsigned index ) const{
+	auto pos = container.pos( index );
 	if( raw )
-		return images[index].pos;
+		return QPointF( pos.x() * x_scale(), pos.y() * y_scale() );
 	else
-		return QPointF( images[index].pos.x() / x_scale(), images[index].pos.y() / y_scale() );
+		return pos;
+}
+void AImageAligner::setPos( unsigned index, QPointF newVal ){
+	if( raw )
+		container.setPos( index, QPointF( newVal.x() / x_scale(), newVal.y() / y_scale() ) );
+	else
+		container.setPos( index, newVal );
 }
 
 void AImageAligner::debug( QString csv_file ) const{

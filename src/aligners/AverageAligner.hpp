@@ -22,7 +22,8 @@
 
 class AverageAligner : public AImageAligner{
 	public:
-		AverageAligner( AlignMethod method, double scale=1.0 ) : AImageAligner( method, scale ){ }
+		AverageAligner( AContainer& container, AlignMethod method, double scale=1.0 )
+			:	AImageAligner( container, method, scale ){ }
 		virtual void align( AProcessWatcher* watcher=nullptr ) override;
 };
 

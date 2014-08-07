@@ -15,6 +15,28 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef A_CONTAINER_HPP
+#define A_CONTAINER_HPP
 
-#include "AlignGroup.hpp"
+#include <QRect>
+#include <QPointF>
 
+class ImageEx;
+class Plane;
+
+class AContainer{
+	public:
+		virtual unsigned count() const = 0;
+		virtual const ImageEx& image( unsigned index ) const = 0;
+		virtual const Plane& plane( unsigned img_index, unsigned p_index=0 ) const;
+		virtual QPointF pos( unsigned index ) const = 0;
+		virtual void setPos( unsigned index, QPointF newVal ) = 0;
+		virtual ~AContainer() { }
+		
+	public:
+		QRect size() const;
+		QPointF minPoint() const;
+		void offsetAll( double dx, double dy );
+};
+
+#endif

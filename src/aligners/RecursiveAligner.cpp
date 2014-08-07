@@ -17,44 +17,25 @@
 
 
 #include "RecursiveAligner.hpp"
-#include "FakeAligner.hpp"
+#include "../containers/ImageContainer.hpp"
 #include "../renders/SimpleRender.hpp"
 
 #include <limits>
 using namespace std;
 
-QPointF RecursiveAligner::min_point() const{
-	if( count() == 0 )
-		return QPointF(0,0);
-	
-	QPointF min = pos( 0 );
-	for( unsigned i=0; i<count(); i++ ){
-		if( pos(i).x() < min.x() )
-			min.setX( pos(i).x() );
-		if( pos(i).y() < min.y() )
-			min.setY( pos(i).y() );
-	}
-	
-	return min;
-}
-
 pair<Plane,QPointF> RecursiveAligner::combine( const Plane& first, const Plane& second ) const{
 	ImageOffset offset = find_offset( first, second );
 	QPointF offset_f( offset.distance_x, offset.distance_y );
 	
-	//Wrap planes in ImageEx
-	ImageEx img1( first );
-	ImageEx img2( second );
-	
-	//Make aligner for rendering the result
-	FakeAligner aligner;
-	aligner.set_raw( true );
-	aligner.add_image( img1 );
-	aligner.add_image( img2 );
-	aligner.setPos( 1, offset_f );
+	//Wrap planes in ImageContainer
+	//TODO: Optimize this
+	ImageContainer container;
+	container.addImage( ImageEx( first ) );
+	container.addImage( ImageEx( second ) );
+	container.getGroup( 0 ).items[1].offset = offset_f;
 	
 	//Render it
-	ImageEx merged = SimpleRender( SimpleRender::FOR_MERGING ).render( aligner );
+	ImageEx merged = SimpleRender( SimpleRender::FOR_MERGING ).render( container );
 	
 	return make_pair( merged[0], offset_f );
 }
