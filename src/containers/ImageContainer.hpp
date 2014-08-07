@@ -44,7 +44,7 @@ class ImageContainer : public AContainer{
 		}
 		
 	private:
-		ImagePosition fromLinear( unsigned index ) const;
+		std::vector<ImagePosition> indexes;
 	public: //AContainer implementation
 		virtual unsigned count() const;
 		virtual const ImageEx& image( unsigned index ) const;

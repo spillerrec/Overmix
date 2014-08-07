@@ -24,41 +24,23 @@ void ImageContainer::addImage( ImageEx&& img, int group ){
 	
 	unsigned index = ( group >= 0 ) ? group : groups.size()-1;
 	groups[index].items.emplace_back( ImageItem( "", std::move(img) ) );
+	indexes.emplace_back( index, groups[index].count()-1 );
 }
 
-
-ImageContainer::ImagePosition ImageContainer::fromLinear( unsigned index ) const{
-	for( unsigned i=0; i<groups.size(); i++ ){
-		if( index < groups[i].items.size() )
-			return { i, index };
-		else
-			index -= groups[i].items.size();
-	}
-	
-	qWarning( "ImageContainer::fromLinear(), out-of-bounds" );
-	return { 0, 0 }; //Oh no...
-}
-
-unsigned ImageContainer::count() const{
-	unsigned sum=0;
-	for( auto group : groups )
-		sum += group.items.size();
-	return sum;
-	//TODO: accumulate
-}
+unsigned ImageContainer::count() const{ return indexes.size(); }
 
 const ImageEx& ImageContainer::image( unsigned index ) const{
-	auto pos = fromLinear( index );
+	auto pos = indexes[index];
 	return groups[pos.group].image( pos.index );
 }
 
 QPointF ImageContainer::pos( unsigned index ) const{
-	auto pos = fromLinear( index );
+	auto pos = indexes[index];
 	return groups[pos.group].pos( pos.index );
 }
 
 void ImageContainer::setPos( unsigned index, QPointF newVal ){
-	auto pos = fromLinear( index );
+	auto pos = indexes[index];
 	groups[pos.group].setPos( pos.index, newVal );
 }
 
