@@ -21,12 +21,7 @@
 #include "ImageGroup.hpp"
 
 class ImageContainer : public AContainer{
-	private:
-		std::vector<ImageGroup> groups;
-		std::vector<Plane> masks;
-		
 	public:
-		
 		/** A index to an ImageItem */
 		struct ImagePosition{
 			unsigned group;
@@ -34,6 +29,12 @@ class ImageContainer : public AContainer{
 			ImagePosition( unsigned group, unsigned index ) : group(group), index(index) { }
 		};
 		
+	private:
+		std::vector<ImageGroup> groups;
+		std::vector<Plane> masks;
+		std::vector<ImagePosition> indexes;
+		
+	public:
 		unsigned groupAmount() const{ return groups.size(); }
 		const ImageGroup& getConstGroup( unsigned index ) const{ return groups[index]; }
 		ImageGroup& getGroup( unsigned index ){ return groups[index]; }
@@ -41,10 +42,9 @@ class ImageContainer : public AContainer{
 		void clear(){
 			groups.clear();
 			masks.clear();
+			indexes.clear();
 		}
 		
-	private:
-		std::vector<ImagePosition> indexes;
 	public: //AContainer implementation
 		virtual unsigned count() const;
 		virtual const ImageEx& image( unsigned index ) const;
