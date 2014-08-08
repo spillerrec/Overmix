@@ -55,7 +55,7 @@ Plane AImageAligner::prepare_plane( const Plane& p ){
 void AImageAligner::addImages(){
 	//TODO: we can't do this in the constructor?
 	for( unsigned i=0; i<container.count(); i++ ){
-		images.emplace_back( prepare_plane( image(i)[0] ) );
+		images.emplace_back( ImageEx( prepare_plane( image(i)[0] ) ) );
 		on_add();
 	}
 }
@@ -101,11 +101,11 @@ AImageAligner::ImageOffset AImageAligner::find_offset( const Plane& img1, const 
 	return offset;
 }
 
-const Plane& AImageAligner::plane( unsigned img_index, unsigned p_index ) const{
-	if( raw && images[img_index] )
-		return images[img_index];
+const ImageEx& AImageAligner::image( unsigned index ) const{
+	if( raw && images[index].is_valid() )
+		return images[index];
 	else
-		return image( img_index )[p_index];
+		return container.image( index );
 }
 
 QPointF AImageAligner::pos( unsigned index ) const{

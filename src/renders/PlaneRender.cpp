@@ -55,7 +55,7 @@ ImageEx PlaneRender::render( const AContainer& aligner, unsigned max_count, APro
 	
 	for( unsigned i=0; i<max_count; i++ )
 		info.push_back( PlaneItInfo(
-				aligner.plane( i, 0 )
+				aligner.image( i )[0]
 			,	round( aligner.pos(i).x() )
 			,	round( aligner.pos(i).y() )
 			) );

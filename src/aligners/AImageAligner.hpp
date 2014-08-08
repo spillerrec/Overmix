@@ -62,12 +62,11 @@ class AImageAligner : public AContainer{
 		AContainer& getContainer(){ return container; }
 		
 	private:
-		std::vector<Plane> images;
+		std::vector<ImageEx> images;
 	public:
 		//Accessors
 		unsigned count() const{ return container.count(); }
-		const ImageEx& image( unsigned index ) const{ return container.image( index ); }
-		const Plane& plane( unsigned img_index, unsigned p_index=0 ) const;
+		const ImageEx& image( unsigned index ) const;
 		QPointF pos( unsigned index ) const;
 		void setPos( unsigned index, QPointF newVal );
 		int frame( unsigned index ) const{ return container.frame( index ); }

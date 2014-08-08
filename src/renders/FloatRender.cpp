@@ -214,8 +214,8 @@ ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, APro
 		vector<pair<double,double>> scales;
 		for( unsigned j=0; j<max_count; ++j )
 			scales.emplace_back(
-					(double)aligner.plane( j, 0 ).get_width() / aligner.plane( j, i ).get_width() * scale_x
-				,	(double)aligner.plane( j, 0 ).get_height() / aligner.plane( j, i ).get_height() * scale_y
+					(double)aligner.image( j )[0].get_width() / aligner.image( j )[i].get_width() * scale_x
+				,	(double)aligner.image( j )[0].get_height() / aligner.image( j )[i].get_height() * scale_y
 				);
 		
 		for( unsigned iy=0; iy<out.get_height(); ++iy ){
@@ -228,7 +228,7 @@ ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, APro
 				
 				for( unsigned j=0; j<max_count; ++j ){
 					QPointF pos( aligner.pos( j ).x() * scale_x, aligner.pos( j ).y() * scale_y );
-					p.add_points( aligner.plane( j, i ), pos, scales[j].first, scales[j].second );
+					p.add_points( aligner.image( j )[i], pos, scales[j].first, scales[j].second );
 				}
 				
 				row[ix] = p.value();

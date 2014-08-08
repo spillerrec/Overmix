@@ -44,9 +44,9 @@ Plane RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsigne
 	auto amount = end - begin;
 	switch( amount ){
 		case 0: qFatal( "No images to align!" );
-		case 1: return plane( begin ); //Just return this one
+		case 1: return image( begin )[0]; //Just return this one
 		case 2: { //Optimization for two images
-				auto offset = combine( plane( begin ), plane( begin+1 ) );
+				auto offset = combine( image( begin )[0], image( begin+1 )[0] );
 				setPos( begin+1, offset.second );
 				return offset.first;
 			}

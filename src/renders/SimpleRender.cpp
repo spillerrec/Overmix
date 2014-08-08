@@ -172,15 +172,15 @@ ImageEx SimpleRender::render( const AContainer& aligner, unsigned max_count, APr
 	img.alpha_plane() = alpha;
 	
 	//Fake alpha
-	Plane fake_alpha( aligner.plane(0).get_width(), aligner.plane(0).get_height() );
+	Plane fake_alpha( aligner.image(0)[0].get_width(), aligner.image(0)[0].get_height() );
 	fake_alpha.fill( color::WHITE );
 	
 	if( watcher )
 		watcher->setTotal( planes_amount*2000 );
 	for( unsigned i=0; i<planes_amount; i++ ){
 		//Determine local size
-		double scale_x = (double)aligner.plane(0,i).get_width() / aligner.plane(0).get_width();
-		double scale_y = (double)aligner.plane(0,i).get_height() / aligner.plane(0).get_height();
+		double scale_x = (double)aligner.image(0)[i].get_width() / aligner.image(0)[0].get_width();
+		double scale_y = (double)aligner.image(0)[i].get_height() / aligner.image(0)[0].get_height();
 		
 		//TODO: something is wrong with the rounding, chroma-channels are slightly off
 		QRect local( 
@@ -207,13 +207,13 @@ ImageEx SimpleRender::render( const AContainer& aligner, unsigned max_count, APr
 		if( out_size == local ){
 			for( unsigned j=0; j<max_count; j++ ){
 				info.push_back( PlaneItInfo(
-						aligner.plane( j, i )
+						aligner.image( j )[i]
 					,	round( aligner.pos(j).x()*scale_x )
 					,	round( aligner.pos(j).y()*scale_y )
 					) );
 				
 				if( use_plane_alpha ){
-					const Plane& current_alpha = aligner.image( j ).alpha_plane();
+					const Plane& current_alpha = aligner.alpha( j );
 					
 					info.push_back( PlaneItInfo(
 							(current_alpha ? current_alpha : fake_alpha)
@@ -229,14 +229,14 @@ ImageEx SimpleRender::render( const AContainer& aligner, unsigned max_count, APr
 				if( watcher )
 					watcher->setCurrent( i*2000 + (j * 1000 / max_count) );
 				
-				Plane p = aligner.plane( j, i ).scale_cubic( aligner.plane(j).get_width(), aligner.plane(j).get_height() );
+				Plane p = aligner.image( j )[i].scale_cubic( aligner.image( j )[i].get_width(), aligner.image( j )[i].get_height() );
 				QPoint pos = aligner.pos(j).toPoint();
 				temp.push_back( p );
 				info.push_back( PlaneItInfo( temp[temp.size()-1], pos.x(),pos.y() ) );
 				
 				if( use_plane_alpha ){
 					//Alpha
-					const Plane& current_alpha = aligner.image( j ).alpha_plane();
+					const Plane& current_alpha = aligner.alpha( j );
 					info.push_back( PlaneItInfo( (current_alpha ? current_alpha : fake_alpha), pos.x(),pos.y() ) );
 				}
 			}

@@ -20,16 +20,16 @@
 
 #include "../ImageEx.hpp"
 
-const Plane& AContainer::plane( unsigned img_index, unsigned p_index ) const{
-	//TODO: Get rid of this
-	return image( img_index )[p_index];
+
+const Plane& AContainer::alpha( unsigned index ) const{
+	return image( index ).alpha_plane();
 }
 
 QRect AContainer::size() const{
 	QRectF total;
 	
 	for( unsigned i=0; i<count(); i++ )
-		total = total.united( QRectF( pos(i), QSizeF( plane(i).get_width(), plane(i).get_height() ) ) );
+		total = total.united( QRectF( pos(i), QSizeF( image(i).get_width(), image(i).get_height() ) ) );
 	
 	//Round so that we only increase size
 	total.setLeft( floor( total.left() ) );

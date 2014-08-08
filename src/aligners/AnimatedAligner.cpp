@@ -49,7 +49,7 @@ class AnimFrame{
 		double find_error( unsigned index ){
 			unsigned comp_index = indexes[ indexes.size()-1 ];
 			aligner.set_raw( true );
-			auto offset = aligner.find_offset( aligner.plane( comp_index, 0 ), aligner.plane( index, 0 ) );
+			auto offset = aligner.find_offset( aligner.image( comp_index )[0], aligner.image( index )[0] );
 			qDebug( "Offset: %f", offset.distance_y );
 			aligner.set_raw( false );
 			return offset.error;
@@ -86,7 +86,7 @@ double AnimatedAligner::find_threshold(){
 	vector<color_type> errors;
 	set_raw( true ); //TODO: remove the need of this
 	for( unsigned i=0; i<count()-1; ++i )
-		errors.push_back( find_offset( plane( i ), plane( i+1 ) ).error );
+		errors.push_back( find_offset( image( i )[0], image( i+1 )[0] ).error );
 	set_raw( false );
 	
 	auto errors2 = errors;

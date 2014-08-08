@@ -55,7 +55,8 @@ class ImageEx{
 	public:
 		ImageEx( system type = RGB ) : type( type ){ }
 		ImageEx( Plane p ) : type( GRAY ){
-			planes.push_back( p );
+			if( p.valid() )
+				planes.push_back( p );
 		}
 		
 		unsigned size() const{ return planes.size(); }

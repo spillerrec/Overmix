@@ -147,7 +147,7 @@ ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AP
 	//Determine if we need to care about alpha per plane
 	bool use_plane_alpha = false;
 	for( unsigned i=0; i<max_count; ++i )
-		if( aligner.image( i ).alpha_plane() ){
+		if( aligner.alpha( i ) ){
 			use_plane_alpha = true;
 			break;
 		}
@@ -159,8 +159,8 @@ ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AP
 	auto min_point = aligner.minPoint();
 	for( unsigned c=0; c<planes_amount; c++ ){
 		//Determine local size
-		double scale_x = upscale_chroma ? 1 : (double)aligner.plane(0,c).get_width() / aligner.plane(0).get_width();
-		double scale_y = upscale_chroma ? 1 : (double)aligner.plane(0,c).get_height() / aligner.plane(0).get_height();
+		double scale_x = upscale_chroma ? 1 : (double)aligner.image( 0 )[c].get_width() / aligner.image( 0 )[c].get_width();
+		double scale_y = upscale_chroma ? 1 : (double)aligner.image( 0 )[c].get_height() / aligner.image( 0 )[c].get_height();
 		
 		
 		//TODO: something is wrong with the rounding, chroma-channels are slightly off
@@ -177,12 +177,12 @@ ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AP
 			QPoint pos(
 					round( (aligner.pos(j).x() - min_point.x())*scale_x )
 				,	round( (aligner.pos(j).y() - min_point.y())*scale_y ) );
-			ScaledPlane plane( aligner.plane( j, c )
-				,	aligner.plane( j ).get_width()*scale_x
-				,	aligner.plane( j ).get_height()*scale_y
+			ScaledPlane plane( aligner.image( j )[c]
+				,	aligner.image( j )[0].get_width()*scale_x
+				,	aligner.image( j )[0].get_height()*scale_y
 				);
 			
-			const Plane& alpha_plane = aligner.image( j ).alpha_plane();
+			const Plane& alpha_plane = aligner.alpha( j );
 			if( use_plane_alpha && alpha_plane.valid() )
 				sum.addAlphaPlane( plane(), alpha_plane, pos.x(), pos.y() );
 			else

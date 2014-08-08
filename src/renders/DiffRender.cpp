@@ -47,7 +47,7 @@ class StaticDiff{
 		
 		void add_image( unsigned index ){
 			//Get the actual color
-			color_type actual = aligner.plane( index, 0 ).pixel( offset.x(), offset.y() );
+			color_type actual = aligner.image( index )[0].pixel( offset.x(), offset.y() );
 			
 			//Find the expected color
 			QPoint pos = (aligner.pos( index ) + offset - absolute).toPoint();

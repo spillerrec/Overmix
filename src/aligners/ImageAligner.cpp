@@ -29,7 +29,7 @@
 void ImageAligner::on_add(){
 	//Compare this one against all other images
 	for( unsigned i=0; i<count()-1; ++i )
-		offsets.push_back( find_offset( plane(i), plane( count()-1 ) ) );
+		offsets.push_back( find_offset( image(i)[0], image( count()-1 )[0] ) );
 }
 
 ImageAligner::ImageOffset ImageAligner::get_offset( unsigned img1, unsigned img2 ) const{
@@ -161,8 +161,8 @@ void ImageAligner::align( AProcessWatcher* watcher ){
 			
 			double new_overlap = calculate_overlap(
 					QPoint( pos( j ).x() - pos( i ).x(), pos( j ).y() - pos( i ).y() )
-				,	plane( i )
-				,	plane( j )
+				,	image( i )[0]
+				,	image( j )[0]
 				);
 			
 			rel << "overlap error is: " << std::abs( offset.overlap - new_overlap ) << " (" << offset.overlap << " - " << new_overlap << ")\n";
