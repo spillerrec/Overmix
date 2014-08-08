@@ -23,10 +23,7 @@
 class FakeAligner : public AImageAligner{
 	public:
 		FakeAligner( AContainer& container ) : AImageAligner( container, ALIGN_BOTH, 1.0 ){ }
-		virtual void align( AProcessWatcher* ) override{
-			for( unsigned i=0; i<count(); i++ )
-				setPos( i, QPointF( 0.0, 0.0 ) );
-		}
+		virtual void align( AProcessWatcher* ) override{ resetPosition(); }
 };
 
 #endif

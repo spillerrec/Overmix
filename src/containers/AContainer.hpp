@@ -31,11 +31,14 @@ class AContainer{
 		virtual const Plane& plane( unsigned img_index, unsigned p_index=0 ) const;
 		virtual QPointF pos( unsigned index ) const = 0;
 		virtual void setPos( unsigned index, QPointF newVal ) = 0;
+		virtual int frame( unsigned index ) const = 0;
+		virtual void setFrame( unsigned index, int newVal ) = 0;
 		virtual ~AContainer() { }
 		
 	public:
 		QRect size() const;
 		QPointF minPoint() const;
+		void resetPosition();
 		void offsetAll( double dx, double dy );
 };
 

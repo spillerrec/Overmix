@@ -443,9 +443,7 @@ void main_widget::subpixel_align_image(){
 	
 	aligner->set_edges( ui->cbx_edges->isChecked() );
 	
-	for( unsigned i=0; i<images.groupAmount(); i++ )
-		for( auto& item : images.getGroup( i ).items )
-		aligner->add_image( item.image() );
+	aligner->addImages();
 	aligner->align( &watcher );
 	
 	refresh_text();

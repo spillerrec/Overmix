@@ -50,6 +50,8 @@ class ImageContainer : public AContainer{
 		virtual const ImageEx& image( unsigned index ) const;
 		virtual QPointF pos( unsigned index ) const;
 		virtual void setPos( unsigned index, QPointF newVal );
+		virtual int frame( unsigned index ) const;
+		virtual void setFrame( unsigned index, int newVal );
 		
 	public:
 		void addImage( ImageEx&& img, int group=-1 );

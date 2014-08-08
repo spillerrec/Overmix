@@ -44,3 +44,12 @@ void ImageContainer::setPos( unsigned index, QPointF newVal ){
 	groups[pos.group].setPos( pos.index, newVal );
 }
 
+int ImageContainer::frame( unsigned index ) const{
+	auto pos = indexes[index];
+	return groups[pos.group].frame( pos.index );
+}
+void ImageContainer::setFrame( unsigned index, int newVal ){
+	auto pos = indexes[index];
+	groups[pos.group].setFrame( pos.index, newVal );
+}
+

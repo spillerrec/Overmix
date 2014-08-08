@@ -34,6 +34,7 @@ class ImageItem{
 		
 	public:
 		QPointF offset;
+		int frame{ -1 };
 		
 		ImageItem( QString filename, ImageEx&& img )
 			:	filename(filename), img(img) { }
@@ -66,6 +67,8 @@ class ImageGroup : public AContainer{
 		virtual const ImageEx& image( unsigned index ) const{ return items[index].image(); }
 		virtual QPointF pos( unsigned index ) const{ return items[index].offset; }
 		virtual void setPos( unsigned index, QPointF newVal ){ items[index].offset = newVal; }
+		virtual int frame( unsigned index ) const{ return items[index].frame; }
+		virtual void setFrame( unsigned index, int newVal ){ items[index].frame = newVal; }
 };
 
 #endif

@@ -22,7 +22,8 @@
 #include <fstream>
 
 
-AImageAligner::~AImageAligner(){
+AImageAligner::AImageAligner( AContainer& container, AlignMethod method, double scale )
+	:	method(method), scale(scale), raw(false), container(container){
 	
 }
 
@@ -51,9 +52,12 @@ Plane AImageAligner::prepare_plane( const Plane& p ){
 		return Plane();
 }
 
-void AImageAligner::add_image( const ImageEx& img ){
-	images.emplace_back( prepare_plane( img[0] ) );
-	on_add();
+void AImageAligner::addImages(){
+	//TODO: we can't do this in the constructor?
+	for( unsigned i=0; i<container.count(); i++ ){
+		images.emplace_back( prepare_plane( image(i)[0] ) );
+		on_add();
+	}
 }
 
 double AImageAligner::calculate_overlap( QPoint offset, const Plane& img1, const Plane& img2 ){

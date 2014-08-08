@@ -70,9 +70,11 @@ class AImageAligner : public AContainer{
 		const Plane& plane( unsigned img_index, unsigned p_index=0 ) const;
 		QPointF pos( unsigned index ) const;
 		void setPos( unsigned index, QPointF newVal );
+		int frame( unsigned index ) const{ return container.frame( index ); }
+		void setFrame( unsigned index, int newVal ){ container.setFrame( index, newVal ); }
 		
 		//Construction
-		void add_image( const ImageEx& img );
+		void addImages();
 		
 	protected:
 		//Triggers when inserting
@@ -80,10 +82,9 @@ class AImageAligner : public AContainer{
 		virtual void on_add(){ }
 	
 	public:
-		AImageAligner( AContainer& container, AlignMethod method, double scale=1.0 )
-			:	method(method), scale(scale), raw(false), container(container){ }
+		AImageAligner( AContainer& container, AlignMethod method, double scale=1.0 );
 		//copy, move, assign?
-		virtual ~AImageAligner();
+		virtual ~AImageAligner() { }
 		
 		void set_raw( bool value ){ raw = value; }
 		void set_movement( double movement ){ this->movement = movement; }

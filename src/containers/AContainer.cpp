@@ -56,6 +56,11 @@ QPointF AContainer::minPoint() const{
 	return min;
 }
 
+void AContainer::resetPosition(){
+	for( unsigned i=0; i<count(); i++ )
+		setPos( i, { 0.0, 0.0 } );
+}
+
 void AContainer::offsetAll( double dx, double dy ){
 	QPointF offset( dx, dy );
 	for( unsigned i=0; i<count(); i++ )

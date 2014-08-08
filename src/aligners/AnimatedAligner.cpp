@@ -19,6 +19,7 @@
 #include "AnimatedAligner.hpp"
 #include "RecursiveAligner.hpp"
 #include "../renders/FloatRender.hpp"
+#include "../containers/FrameContainer.hpp"
 #include "AnimationSaver.hpp"
 
 #include <QInputDialog>
@@ -35,10 +36,14 @@ class AnimFrame{
 	public:
 		RecursiveAligner& aligner;
 		std::vector<unsigned> indexes;
+		int frame;
 		
 	public:
-		AnimFrame( RecursiveAligner& aligner ) : aligner(aligner){ }
-		void add_index( unsigned index ){ indexes.push_back( index ); }
+		AnimFrame( RecursiveAligner& aligner, int frame ) : aligner(aligner), frame(frame) { }
+		void add_index( unsigned index ){
+			indexes.push_back( index );
+			aligner.setFrame( index, frame );
+		}
 		unsigned size() const{ return indexes.size(); }
 		
 		double find_error( unsigned index ){
@@ -50,31 +55,29 @@ class AnimFrame{
 			return offset.error;
 		}
 		
-		void save( int frame, const ImageEx& background, AnimationSaver& anim, debug::CsvFile& csv ){
-			//Initialize aligner
-			RecursiveAligner render( aligner.getContainer(), aligner.get_method(), aligner.get_scale() );
-			render.set_movement( aligner.get_movement() );
-			render.set_edges( aligner.get_edges() );
-			for( int index : indexes )
-				render.add_image( aligner.image( index ) );
-			render.align(); //TODO: avoid having to realign. Add stuff to FakeAligner?
+		void save( const ImageEx& background, AnimationSaver& anim, debug::CsvFile& csv ){
+			//Initialize container
+			FrameContainer container( aligner, frame );
 			
 			//Find offset
 			//TODO: optimize if scale == 1.0
-			ImageEx img2 = FloatRender(aligner.x_scale(), aligner.y_scale()).render( render );
+			ImageEx img2 = FloatRender(aligner.x_scale(), aligner.y_scale()).render( container );
 			auto offset = aligner.find_offset( background[0], img2[0] );
 			
 			//Render this frame
-			ImageEx img = FloatRender().render( render );
+			ImageEx img = FloatRender().render( container );
 			
 			//Add it to the file
 			int img_index = anim.addImage( img );
-			for( int index : indexes )
-				anim.addFrame( offset.distance_x/aligner.get_scale(), offset.distance_y/aligner.get_scale(), index, img_index );
+			for( unsigned i=0; i<container.count(); i++ )
+				anim.addFrame(
+						offset.distance_x/aligner.get_scale(), offset.distance_y/aligner.get_scale()
+					,	container.realIndex(i), img_index
+					);
 			
 			//Add movement stuff to csv file
-			for( unsigned i=0; i<indexes.size(); i++ )
-				csv.add( (color_type)indexes[i] ).add( render.pos(i).x() ).add( render.pos(i).y() ).stop();
+			for( unsigned i=0; i<container.count(); i++ )
+				csv.add( (color_type)container.realIndex(i) ).add( container.pos(i).x() ).add( container.pos(i).y() ).stop();
 			csv.stop();
 		}
 };
@@ -137,8 +140,7 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 	RecursiveAligner average( container, method, scale );
 	average.set_movement( get_movement() );
 	average.set_edges( use_edges );
-	for( unsigned i=0; i<count(); i++ )
-		average.add_image( image( i ) );
+	average.addImages();
 	average.align();
 	ImageEx average_render = FloatRender( average.x_scale(), average.y_scale() ).render( average );
 	average_render.to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_DITHER | ImageEx::SETTING_GAMMA ).save("AnimatedAligner/background.png" );
@@ -155,7 +157,7 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 	
 	int iteration = 0;
 	while( true ){
-		AnimFrame frame( average );
+		AnimFrame frame( average, iteration++ );
 		
 		for( int& index : backlog ){
 			if( index < 0 ) //Already used, ignore it
@@ -182,7 +184,7 @@ void AnimatedAligner::align( AProcessWatcher* watcher ){
 		if( frame.size() == 0 )
 			break;
 		else
-			frame.save( iteration++, average_render, anim, movement_csv );
+			frame.save( average_render, anim, movement_csv );
 	}
 	
 	anim.write();
