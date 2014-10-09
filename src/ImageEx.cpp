@@ -103,7 +103,7 @@ bool ImageEx::saveDump( const char* path, unsigned depth ) const{
 	
 	for( auto& plane : planes ){
 		vector<uint8_t> data( plane.get_width() * plane.get_height() * (multi_byte?2:1) );
-		auto power = std::pow( 2, depth );
+		auto power = std::pow( 2, depth ) - 1;
 		
 		for( unsigned iy=0; iy<plane.get_height(); iy++ ){
 			auto *row = plane.scan_line( iy );

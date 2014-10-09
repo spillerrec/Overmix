@@ -72,10 +72,11 @@ main_widget::main_widget()
 	:	QMainWindow()
 	,	ui(new Ui_main_widget)
 #ifdef PORTABLE //Portable settings
-	,	viewer( QSettings( QCoreApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat ), (QWidget*)this )
+	,	settings( QCoreApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat )
 #else
-	,	viewer( QSettings( "spillerrec", "overmix" ), (QWidget*)this )
+	,	settings( "spillerrec", "overmix" )
 #endif
+	,	viewer( settings, (QWidget*)this )
 {
 	ui->setupUi(this);
 	temp = NULL;
@@ -127,6 +128,8 @@ main_widget::main_widget()
 	setAcceptDrops( true );
 	ui->main_layout->addWidget( &viewer );
 	viewer.setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
+	
+	save_dir = settings.value( "save_directory", "." ).toString();
 }
 void main_widget::resize_preprocess(){   resize_groupbox( ui->preprocess_group ); }
 void main_widget::resize_merge(){        resize_groupbox( ui->merge_group ); }
@@ -360,7 +363,7 @@ void main_widget::save_image(){
 		//debug::make_slide( *temp, "createdslide/upscale", 1.0/0.8 );
 	}
 	/*/
-	QString filename = QFileDialog::getSaveFileName( this, tr("Save image"), "", tr("PNG files (*.png)") );
+	QString filename = QFileDialog::getSaveFileName( this, tr("Save image"), save_dir, tr("PNG files (*.png)") );
 	if( !filename.isEmpty() ){
 		if( QFileInfo( filename ).suffix() == "dump" ){
 			if( temp_ex.is_valid() )
@@ -368,6 +371,10 @@ void main_widget::save_image(){
 		}
 		else if( temp )
 			temp->save( filename );
+		
+		//Remember the folder we saved in
+		save_dir = QFileInfo( filename ).dir().absolutePath();
+		settings.setValue( "save_directory", save_dir );
 	}
 	//*/
 }

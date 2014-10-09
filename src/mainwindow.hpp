@@ -20,6 +20,7 @@
 
 #include <QMainWindow>
 #include <QImage>
+#include <QSettings>
 #include <QUrl>
 
 #include "ImageEx.hpp"
@@ -38,6 +39,10 @@ class main_widget: public QMainWindow{
 	
 	private:
 		class Ui_main_widget *ui;
+		
+		QSettings settings;
+		QString save_dir;
+		
 		imageViewer viewer;
 		ImageContainer images;
 		QImage *temp{ nullptr };
@@ -49,6 +54,7 @@ class main_widget: public QMainWindow{
 		Plane alpha_mask;
 		
 		void clear_cache();
+		
 		
 	private:
 		RenderPipeScaling pipe_scaling;
