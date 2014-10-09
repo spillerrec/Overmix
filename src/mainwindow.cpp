@@ -176,7 +176,7 @@ void main_widget::resize_groupbox( QGroupBox* box ){
 //Load an image for mapped, doesn't work with lambdas appearently...
 static ImageEx load( QUrl url ){
 	ImageEx img;
-	img.read_file( url.toLocalFile().toLocal8Bit().constData() );
+	img.read_file( url.toLocalFile() );
 	return img;
 }
 
@@ -367,7 +367,7 @@ void main_widget::save_image(){
 	if( !filename.isEmpty() ){
 		if( QFileInfo( filename ).suffix() == "dump" ){
 			if( temp_ex.is_valid() )
-				temp_ex.saveDump( filename.toLocal8Bit().constData() );
+				temp_ex.saveDump( filename );
 		}
 		else if( temp )
 			temp->save( filename );
@@ -484,7 +484,7 @@ void main_widget::set_alpha_mask(){
 	
 	if( !filename.isEmpty() ){
 		ImageEx img;
-		img.read_file( filename.toLocal8Bit().constData() );
+		img.read_file( filename );
 		img.to_grayscale();
 		
 		alpha_mask = std::move( img[0] );

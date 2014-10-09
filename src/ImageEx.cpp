@@ -79,7 +79,7 @@ bool ImageEx::read_dump_plane( QIODevice &dev ){
 	return true;
 }
 
-bool ImageEx::from_dump( const char* path ){
+bool ImageEx::from_dump( QString path ){
 	QFile f( path );
 	if( !f.open( QIODevice::ReadOnly ) )
 		return false;
@@ -94,7 +94,7 @@ bool ImageEx::from_dump( const char* path ){
 	return result;
 }
 
-bool ImageEx::saveDump( const char* path, unsigned depth ) const{
+bool ImageEx::saveDump( QString path, unsigned depth ) const{
 	QFile f( path );
 	if( !f.open( QIODevice::WriteOnly ) )
 		return false;
@@ -200,7 +200,7 @@ bool ImageEx::from_png( const char* path ){
 }
 
 
-bool ImageEx::from_qimage( const char* path ){
+bool ImageEx::from_qimage( QString path ){
 	QImage img( path );
 	if( img.isNull() )
 		return false;
@@ -237,12 +237,13 @@ bool ImageEx::from_qimage( const char* path ){
 	return true;
 }
 
-bool ImageEx::read_file( const char* path ){
+bool ImageEx::read_file( QString path ){
 	QString ext = QFileInfo( path ).suffix();
 	if( ext == "dump" )
 		return from_dump( path );
-	if( ext == "png" )
-		return from_png( path );
+	//TODO: actually make png loading useful, by providing 16-bit loading, and fix const char* interface
+//	if( ext == "png" )
+//		return from_png( path );
 	
 	return from_qimage( path );
 }

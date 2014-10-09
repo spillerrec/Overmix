@@ -19,6 +19,7 @@
 #define IMAGE_EX_HPP
 
 #include "planes/Plane.hpp"
+#include <QString>
 #include <QFile>
 #include <QImage>
 #include <algorithm>
@@ -48,9 +49,9 @@ class ImageEx{
 		Plane alpha;
 		system type;
 		bool read_dump_plane( QIODevice &dev );
-		bool from_dump( const char* path );
+		bool from_dump( QString path );
 		bool from_png( const char* path );
-		bool from_qimage( const char* path );
+		bool from_qimage( QString path );
 		
 	public:
 		ImageEx( system type = RGB ) : type( type ){ }
@@ -95,8 +96,8 @@ class ImageEx{
 		
 		bool is_valid() const{ return planes.size() > 0; }
 		
-		bool read_file( const char* path );
-		bool saveDump( const char* path, unsigned depth=10 ) const;
+		bool read_file( QString path );
+		bool saveDump( QString path, unsigned depth=10 ) const;
 		Plane& alpha_plane(){ return alpha; }
 		const Plane& alpha_plane() const{ return alpha; }
 		
