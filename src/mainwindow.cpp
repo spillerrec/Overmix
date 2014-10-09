@@ -130,6 +130,8 @@ main_widget::main_widget()
 	viewer.setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
 	
 	save_dir = settings.value( "save_directory", "." ).toString();
+	if( settings.value( "remember_position", true ).toBool() )
+		restoreGeometry( settings.value( "window_position" ).toByteArray() );
 }
 void main_widget::resize_preprocess(){   resize_groupbox( ui->preprocess_group ); }
 void main_widget::resize_merge(){        resize_groupbox( ui->merge_group ); }
@@ -164,7 +166,10 @@ void main_widget::dropEvent( QDropEvent *event ){
 		event->accept();
 	}
 }
-
+void main_widget::closeEvent( QCloseEvent *event ){
+	settings.setValue( "window_position", saveGeometry() );
+	QWidget::closeEvent( event );
+}
 
 void main_widget::resize_groupbox( QGroupBox* box ){
 	if( box->isChecked() )

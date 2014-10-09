@@ -71,6 +71,7 @@ class main_widget: public QMainWindow{
 	protected:
 		void dragEnterEvent( QDragEnterEvent *event );
 		void dropEvent( QDropEvent *event );
+		void closeEvent( QCloseEvent *event );
 		
 		void resize_groupbox( QGroupBox* box );
 		void make_slide();
