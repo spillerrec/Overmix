@@ -31,7 +31,7 @@
 class FourierPlane : public PlaneBase<std::complex<double>>{
 	private:
 		unsigned real_width;
-		Plane toPlaneInvalidate() const;
+		Plane toPlaneInvalidate();
 		double scaling{ 1.0 };
 		
 	public:

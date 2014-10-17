@@ -34,17 +34,17 @@ struct Sum{
 	void reduce( const uint64_t add ){ total += add; }
 };
 struct Para{
-	color_type *c1;
-	color_type *c2;
+	const color_type *c1;
+	const color_type *c2;
 	unsigned width;
 	unsigned stride;
-	Para( color_type* c1, color_type *c2, unsigned width, unsigned stride )
+	Para( const color_type* c1, const color_type *c2, unsigned width, unsigned stride )
 		:	c1( c1 ), c2( c2 ), width( width ), stride( stride )
 		{ }
 };
 static uint64_t diff_2_line( Para p ){
 	uint64_t sum = 0;
-	for( color_type* end=p.c1+p.width; p.c1<end; p.c1+=p.stride, p.c2+=p.stride ){
+	for( auto end=p.c1+p.width; p.c1<end; p.c1+=p.stride, p.c2+=p.stride ){
 		auto diff = abs( *p.c1 - *p.c2 );
 		if( diff > (10 / 255.0 * color::WHITE) ) //TODO: Ad-hoc constant
 			sum += diff;
@@ -63,8 +63,8 @@ double Plane::diff( const Plane& p, int x, int y, unsigned stride ) const{
 	unsigned height = min( get_height() - p1_top, p.get_height() - p2_top );
 	
 	//Initial offsets on the two planes
-	color_type* c1 = scan_line( p1_top ) + p1_left;
-	color_type* c2 = p.scan_line( p2_top ) + p2_left;
+	auto c1 = const_scan_line( p1_top ) + p1_left;
+	auto c2 = p.const_scan_line( p2_top ) + p2_left;
 	
 	//Calculate all the offsets for QtConcurrent::mappedReduced
 	vector<Para> lines;

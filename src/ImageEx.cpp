@@ -106,7 +106,7 @@ bool ImageEx::saveDump( QString path, unsigned depth ) const{
 		auto power = std::pow( 2, depth ) - 1;
 		
 		for( unsigned iy=0; iy<plane.get_height(); iy++ ){
-			auto *row = plane.scan_line( iy );
+			auto *row = plane.const_scan_line( iy );
 			if( multi_byte )
 				for( unsigned ix=0; ix<plane.get_width(); ix++ ){
 					uint16_t val = color::asDouble( row[ix] ) * power;

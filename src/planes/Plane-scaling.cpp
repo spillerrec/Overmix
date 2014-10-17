@@ -88,7 +88,7 @@ struct ScaleLine{
 	unsigned index;
 	unsigned width;
 	
-	color_type* row; //at (0,index)
+	const color_type* row; //at (0,index)
 	unsigned line_width;
 	double window;
 	Plane::Filter f;
@@ -105,10 +105,10 @@ void do_line( const ScaleLine& line ){
 		double avg = 0;
 		double amount = 0;
       int offset = ((int)line.index-ver.start)*line.line_width;
-      color_type* row = line.row - offset + x.start;
+      auto row = line.row - offset + x.start;
 		
 		for( auto wy : ver.weights ){
-			color_type* row2 = row;
+			auto row2 = row;
 			for( auto wx : x.weights ){
 				double weight = wy * wx;
 				avg += *(row2++) * weight;
@@ -141,7 +141,7 @@ Plane Plane::scale_generic( unsigned wanted_width, unsigned wanted_height, doubl
 	std::vector<ScaleLine> lines;
 	for( unsigned iy=0; iy<wanted_height; ++iy ){
 		ScaleLine line( points, scaled, iy, size.height );
-		line.row = scan_line( iy );
+		line.row = const_scan_line( iy );
 		line.line_width = line_width;
 		line.window = window;
 		line.f = f;

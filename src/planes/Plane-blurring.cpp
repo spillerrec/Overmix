@@ -26,7 +26,7 @@ using namespace std;
 
 struct WeightedSumLine{
 	color_type *out;	//Output row
-	color_type *in; //Input row, must be the top row weights affects
+	const color_type *in; //Input row, must be the top row weights affects
 	unsigned width;
 	unsigned line_width; //For input row
 	
@@ -44,10 +44,10 @@ struct WeightedSumLine{
 		return sum;
 	}
 	
-	color_type weighted_sum( color_type* in ) const{
+	color_type weighted_sum( const color_type* in ) const{
 		double sum = 0;
 		for( unsigned iy=0; iy<w_height; ++iy ){
-			color_type *line = in + iy*line_width;
+			auto line = in + iy*line_width;
 			for( unsigned ix=0; ix<w_width; ++ix, ++line )
 				sum += weights[ ix + iy*w_width ] * (*line);
 		}
@@ -56,14 +56,14 @@ struct WeightedSumLine{
 		return std::round( std::max( sum, 0.0 ) );
 		
 	}
-	color_type weighted_sum( color_type* in, int cutting ) const{
+	color_type weighted_sum( const color_type* in, int cutting ) const{
 		unsigned start = cutting > 0 ? 0 : -cutting;
 		unsigned end = cutting > 0 ? w_width-cutting : w_width;
 		
 		double sum = 0;
 		double w_sum = 0;
 		for( unsigned iy=0; iy<w_height; ++iy ){
-			color_type *line = in + iy*line_width;
+			auto line = in + iy*line_width;
 			for( unsigned ix=start; ix<end; ++ix, ++line ){
 				double w = weights[ ix + iy*w_width ];
 				sum += w * (*line);
@@ -77,8 +77,8 @@ struct WeightedSumLine{
 };
 
 void sum_line( const WeightedSumLine& line ){
-	color_type *in = line.in;
-	color_type *out = line.out;
+	auto in = line.in;
+	auto out = line.out;
 	unsigned size_half = line.w_width/2;
 	
 	//Fill the start of the row with the same value
@@ -120,17 +120,17 @@ Plane Plane::weighted_sum( Kernel &kernel ) const{
 			//Cut stuff from top
 			line.w_height += top; //Subtracts!
 			line.weights += -top * line.w_width;
-			line.in = scan_line( 0 );
+			line.in = const_scan_line( 0 );
 			line.full_sum = line.calculate_sum();
 		}
 		else if( top+kernel.height >= size.height ){
 			//Cut stuff from bottom
-			line.in = scan_line( top );
+			line.in = const_scan_line( top );
 			line.w_height = size.height - top;
 			line.full_sum = line.calculate_sum();
 		}
 		else //Use defaults
-			line.in = scan_line( top );
+			line.in = const_scan_line( top );
 		
 		lines.push_back( line );
 	}

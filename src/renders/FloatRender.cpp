@@ -208,7 +208,7 @@ ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, APro
 	
 	vector<PointRenderBase::Point> points;
 	for( unsigned i=0; i<planes_amount; i++ ){
-		const Plane& out = img[i];
+		auto out = img[i];
 		
 		//Pre-calculate scales
 		vector<pair<double,double>> scales;

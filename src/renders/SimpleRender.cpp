@@ -207,7 +207,7 @@ ImageEx SimpleRender::render( const AContainer& aligner, unsigned max_count, APr
 		if( out_size == local ){
 			for( unsigned j=0; j<max_count; j++ ){
 				info.push_back( PlaneItInfo(
-						aligner.image( j )[i]
+						const_cast<Plane&>( aligner.image( j )[i] ) //TODO: FIX!!!
 					,	round( aligner.pos(j).x()*scale_x )
 					,	round( aligner.pos(j).y()*scale_y )
 					) );
@@ -216,7 +216,7 @@ ImageEx SimpleRender::render( const AContainer& aligner, unsigned max_count, APr
 					const Plane& current_alpha = aligner.alpha( j );
 					
 					info.push_back( PlaneItInfo(
-							(current_alpha ? current_alpha : fake_alpha)
+							const_cast<Plane&>(current_alpha ? current_alpha : fake_alpha) //TODO: FIX!!!
 						,	round( aligner.pos(j).x()*scale_x )
 						,	round( aligner.pos(j).y()*scale_y )
 						) );
@@ -237,7 +237,7 @@ ImageEx SimpleRender::render( const AContainer& aligner, unsigned max_count, APr
 				if( use_plane_alpha ){
 					//Alpha
 					const Plane& current_alpha = aligner.alpha( j );
-					info.push_back( PlaneItInfo( (current_alpha ? current_alpha : fake_alpha), pos.x(),pos.y() ) );
+					info.push_back( PlaneItInfo( const_cast<Plane&>(current_alpha ? current_alpha : fake_alpha), pos.x(),pos.y() ) );  //TODO: FIX!!!
 				}
 			}
 		}

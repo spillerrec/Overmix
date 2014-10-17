@@ -37,19 +37,19 @@ struct EdgeLine{
 	unsigned div;
 	
 	//Operator
-	typedef color_type (*func_t)( const EdgeLine<T>&, color_type* );
+	typedef color_type (*func_t)( const EdgeLine<T>&, const color_type* );
 	func_t func;
 	
 	//Input, with line_width as we need several lines
-	color_type* in;
+	const color_type* in;
 	unsigned line_width;
 };
 
 template<typename T>
-static T calculate_kernel( T *kernel, unsigned size, color_type* in, unsigned line_width ){
+static T calculate_kernel( T *kernel, unsigned size, const color_type* in, unsigned line_width ){
 	T sum = 0;
 	for( unsigned iy=0; iy<size; ++iy ){
-		color_type *row = in + iy*line_width;
+		auto row = in + iy*line_width;
 		for( unsigned ix=0; ix<size; ++ix, ++kernel, ++row )
 			sum += *kernel * *row;
 	}
@@ -57,7 +57,7 @@ static T calculate_kernel( T *kernel, unsigned size, color_type* in, unsigned li
 }
 
 template<typename T>
-static color_type calculate_edge( const EdgeLine<T>& line, color_type* in ){
+static color_type calculate_edge( const EdgeLine<T>& line, const color_type* in ){
 	using namespace std;
 	
 	int sum_x = calculate_kernel( line.weights_x, line.size, in, line.line_width );
@@ -68,7 +68,7 @@ static color_type calculate_edge( const EdgeLine<T>& line, color_type* in ){
 }
 
 template<typename T>
-static color_type calculate_zero_edge( const EdgeLine<T>& line, color_type* in ){
+static color_type calculate_zero_edge( const EdgeLine<T>& line, const color_type* in ){
 	using namespace std;
 	//TODO: improve
 	int sum = max( calculate_kernel( line.weights_x, line.size, in, line.line_width ), 0 );
@@ -78,8 +78,8 @@ static color_type calculate_zero_edge( const EdgeLine<T>& line, color_type* in )
 
 template<typename T>
 static void edge_line( const EdgeLine<T>& line ){
-	color_type *in = line.in;
-	color_type *out = line.out;
+	auto in = line.in;
+	auto out = line.out;
 	unsigned size_half = line.size/2;
 	
 	//Fill the start of the row with the same value
@@ -117,7 +117,7 @@ Plane parallel_edge_line( const Plane& p, vector<T> weights_x, vector<T> weights
 		
 		line.func = func;
 		
-		line.in = p.scan_line( std::min( std::max( int(iy-size/2), 0 ), int(p.get_height()-size-1) ) ); //Always stay inside
+		line.in = p.const_scan_line( std::min( std::max( int(iy-size/2), 0 ), int(p.get_height()-size-1) ) ); //Always stay inside
 		line.line_width = p.get_line_width();
 		
 		lines.push_back( line );

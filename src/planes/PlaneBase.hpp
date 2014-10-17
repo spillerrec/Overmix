@@ -19,6 +19,7 @@
 #define PLANE_BASE_HPP
 
 #include <cstdio>
+#include <vector>
 #include <utility>
 
 #include "../Geometry.hpp"
@@ -28,65 +29,18 @@ class PlaneBase{
 	protected:
 		Size<unsigned> size{ 0, 0 };
 		unsigned line_width{ 0 };
-		T *data{ nullptr };
+		std::vector<T> data;
 		
 	public:
 		PlaneBase() { }
 		PlaneBase( Size<unsigned> size )
-			:	size(size), line_width( size.width ) {
-			data = new T[ size.height * line_width ];
-		}
+			:	size(size), line_width( size.width ), data( size.height * line_width ) { }
 		PlaneBase( unsigned w, unsigned h )
 			:	PlaneBase( Size<unsigned>( w, h ) ) { }
 		
-		~PlaneBase(){ delete data; }
-		
-		PlaneBase( PlaneBase&& p )
-			:	size(p.size), line_width(p.line_width), data(p.data)
-			{ p.data = nullptr; }
-		
-		PlaneBase& operator=( const PlaneBase& p ){
-			delete data; //TODO: optimize if all sizes are equal
-			size = p.size;
-			line_width = p.line_width;
-			
-			unsigned byte_size = size.height * line_width;
-			if( byte_size > 0 ){
-				data = new T[ byte_size ];
-				memcpy( data, p.data, sizeof(T)*byte_size );
-			}
-			else
-				data = nullptr;
-			return *this;
-		}
-		
-		PlaneBase& operator=( PlaneBase&& p ){
-			if( this != &p ){
-				size= p.size;
-				line_width = p.line_width;
-				
-				delete data;
-				data = p.data;
-				p.data = nullptr;
-			}
-			return *this;
-		}
-		
-	//Plane handling
-		PlaneBase( const PlaneBase& p )
-			:	size(p.size), line_width(p.line_width) {
-			unsigned byte_size = size.height * line_width;
-			if( byte_size > 0 ){
-				data = new T[ byte_size ];
-				memcpy( data, p.data, sizeof(T)*byte_size );
-			}
-			else
-				data = nullptr;
-		}
-		
 	//Status
 		operator bool() const{ return valid(); }
-		bool valid() const{ return data != nullptr; }
+		bool valid() const{ return data.size() != 0; }
 		unsigned get_height() const{ return size.height; }
 		unsigned get_width() const{ return size.width; }
 		unsigned get_line_width() const{ return line_width; }
@@ -98,9 +52,9 @@ class PlaneBase{
 		}
 		
 	//Pixel/Row query
-		T& pixel( unsigned x, unsigned y ) const{ return data[ x + y*line_width ]; }
-		T* scan_line( unsigned y ) const{ return data + y*line_width; } //TODO: !!!!!!!!
-		const T* const_scan_line( unsigned y ) const{ return scan_line( y ); }
+		const T& pixel( unsigned x, unsigned y ) const{ return data[ x + y*line_width ]; }
+		T* scan_line( unsigned y ) { return data.data() + y*line_width; } //TODO: !!!!!!!!
+		const T* const_scan_line( unsigned y ) const{ return data.data() + y*line_width; }
 		
 	//Drawing methods
 		void fill( T value ){
