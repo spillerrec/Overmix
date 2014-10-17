@@ -25,7 +25,6 @@
 class ARenderPipe{
 	private:
 		ImageEx cache;
-		const ImageEx* base{ nullptr };
 		
 	protected:
 		virtual bool renderNeeded() const = 0;
@@ -46,10 +45,9 @@ class ARenderPipe{
 			if( !renderNeeded() )
 				return img;
 			
-			if( img.second || !cache.is_valid() ){
+			if( img.second || !cache.is_valid() )
 				cache = render( img.first );
-				base = &img.first;
-			}
+			
 			return ImageCache( cache, true );
 		}
 		

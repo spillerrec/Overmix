@@ -45,7 +45,7 @@ class main_widget: public QMainWindow{
 		
 		imageViewer viewer;
 		ImageContainer images;
-		QImage *temp{ nullptr };
+		QImage temp;
 		
 		AImageAligner *aligner{ nullptr };
 		ImageEx temp_ex;

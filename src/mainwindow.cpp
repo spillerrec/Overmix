@@ -79,7 +79,6 @@ main_widget::main_widget()
 	,	viewer( settings, (QWidget*)this )
 {
 	ui->setupUi(this);
-	temp = NULL;
 	
 	//Buttons
 	connect( ui->btn_clear, SIGNAL( clicked() ), this, SLOT( clear_image() ) );
@@ -349,14 +348,14 @@ void main_widget::refresh_image(){
 		ImageEx img_temp( pipe_threshold.get( pipe_level.get( pipe_edge.get( pipe_blurring.get( pipe_deconvolve.get( pipe_scaling.get( { temp_ex, new_image } ) ) ) ) ) ).first );
 		
 		//TODO: why no const on to_qimage?
-		temp = new QImage( img_temp.to_qimage( system, setting ) );
+		temp = QImage( img_temp.to_qimage( system, setting ) );
 		
 		qDebug( "to_qimage() took: %d", t.elapsed() );
 	}
 	else
-		temp = new QImage();
+		temp = QImage();
 	
-	viewer.change_image( new imageCache( *temp ), true );
+	viewer.change_image( new imageCache( temp ), true );
 	refresh_text();
 	ui->btn_save->setEnabled( true );
 }
@@ -374,8 +373,8 @@ void main_widget::save_image(){
 			if( temp_ex.is_valid() )
 				temp_ex.saveDump( filename );
 		}
-		else if( temp )
-			temp->save( filename );
+		else if( !temp.isNull() )
+			temp.save( filename );
 		
 		//Remember the folder we saved in
 		save_dir = QFileInfo( filename ).dir().absolutePath();
@@ -398,7 +397,7 @@ void main_widget::toggled_ver(){
 
 void main_widget::clear_cache(){
 	resetAligner();
-	temp = NULL; //TODO: huh?
+	temp = QImage();
 	viewer.change_image( NULL, true );
 }
 
@@ -407,6 +406,13 @@ void main_widget::clear_image(){
 	
 	if( detelecine )
 		detelecine->clear();
+	
+	pipe_scaling.invalidate();
+	pipe_deconvolve.invalidate();
+	pipe_blurring.invalidate();
+	pipe_edge.invalidate();
+	pipe_level.invalidate();
+	pipe_threshold.invalidate();
 	
 	images.clear();
 	
