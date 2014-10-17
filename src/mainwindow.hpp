@@ -90,8 +90,10 @@ class main_widget: public QMainWindow{
 		void resetImage(){ temp_ex = ImageEx(); }
 		void update_draw();
 	
-	private slots:
+	public slots:
 		void process_urls( QList<QUrl> urls );
+		
+	private slots:
 		void refresh_text();
 		void refresh_image();
 		void save_image();

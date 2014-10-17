@@ -14,15 +14,28 @@
 	You should have received a copy of the GNU General Public License
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#include <QApplication>
 #include "mainwindow.hpp"
 
+#include <QApplication>
+#include <QStringList>
+#include <QUrl>
+
 int main(int argc, char *argv[]){
+	QApplication a( argc, argv );
+	QList<QUrl> images;
 	
-	QApplication a(argc, argv);
+	auto args = a.arguments();
+	args.removeFirst();
+	for( auto arg : args ){
+		//TODO: handle arguments
+		if( !arg.startsWith( "-" ) )
+			images.push_back( QUrl::fromLocalFile( arg ) );
+	}
+	
 	main_widget w;
 	w.show();
+	if( !images.isEmpty() )
+		w.process_urls( images );
 
 	return a.exec();
 }
