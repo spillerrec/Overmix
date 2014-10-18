@@ -33,6 +33,8 @@
 #include "aligners/LayeredAligner.hpp"
 #include "aligners/FakeAligner.hpp"
 #include "Deteleciner.hpp"
+#include "Preprocessor.hpp"
+#include "containers/ImageContainer.hpp"
 
 #include "debug.hpp"
 
@@ -68,7 +70,7 @@ class DialogWatcher : public AProcessWatcher{
 		}
 };
 
-main_widget::main_widget()
+main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	:	QMainWindow()
 	,	ui(new Ui_main_widget)
 #ifdef PORTABLE //Portable settings
@@ -77,6 +79,8 @@ main_widget::main_widget()
 	,	settings( "spillerrec", "overmix" )
 #endif
 	,	viewer( settings, (QWidget*)this )
+	,	preprocessor( preprocessor )
+	,	images( images )
 {
 	ui->setupUi(this);
 	
@@ -215,34 +219,23 @@ void main_widget::process_urls( QList<QUrl> urls ){
 			}
 		}
 		
-		//Overwrite alpha
-		if( alpha_mask )
-			img.alpha_plane() = alpha_mask;
-		
 		//Crop
-		int left = ui->crop_left->value();
-		int right = ui->crop_right->value();
-		int top = ui->crop_top->value();
-		int bottom = ui->crop_bottom->value();
-		if( left > 0 || right > 0 || top > 0 || bottom > 0 )
-			img.crop( left, top, right, bottom );
+		preprocessor.crop_left   = ui->crop_left  ->value();
+		preprocessor.crop_right  = ui->crop_right ->value();
+		preprocessor.crop_top    = ui->crop_top   ->value();
+		preprocessor.crop_bottom = ui->crop_bottom->value();
 		
 		//Deconvolve
-		double deviation = ui->pre_deconvolve_deviation->value();
-		unsigned iterations = ui->pre_deconvolve_iterations->value();
-		if( deviation > 0.0009 && iterations > 0 )
-			img.apply( &Plane::deconvolve_rl, deviation, iterations );
+		preprocessor.deviation = ui->pre_deconvolve_deviation->value();
+		preprocessor.dev_iterations = ui->pre_deconvolve_iterations->value();
 		
 		//Scale
-		double scale_width = ui->pre_scale_width->value();
-		double scale_height = ui->pre_scale_height->value();
-		bool scale_chroma = ui->pre_scale_chroma->isChecked();
-		if( scale_width <= 0.9999 || scale_width >= 1.0001
-			|| scale_height <= 0.9999 || scale_height >= 1.0001
-			|| scale_chroma )
-			img.scale( img.get_width() * scale_width + 0.5, img.get_height() * scale_height + 0.5 );
+		//TODO: method
+		preprocessor.scale_x = ui->pre_scale_width->value();
+		preprocessor.scale_y = ui->pre_scale_height->value();
 		
-		images.addImage( std::move( img ) );
+		preprocessor.processFile( img );
+		images.addImage( std::move( img ), alpha_mask ); //TODO: get filename
 		
 		if( progress.wasCanceled() )
 			break;
@@ -498,13 +491,13 @@ void main_widget::set_alpha_mask(){
 		img.read_file( filename );
 		img.to_grayscale();
 		
-		alpha_mask = std::move( img[0] );
+		alpha_mask = images.addMask( std::move( img[0] ) );
 		ui->pre_clear_mask->setEnabled( true );
 	}
 }
 
 void main_widget::clear_mask(){
-	alpha_mask = Plane();
+	alpha_mask = -1;
 	ui->pre_clear_mask->setEnabled( false );
 }
 

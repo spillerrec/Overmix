@@ -40,8 +40,8 @@ class ImageItem{
 			:	filename(filename), img(img) { }
 		
 		const ImageEx& image() const{ return img; }
-		const Plane& alpha( const std::vector<Plane> masks ) const{
-			return ( mask_id >= 0 ) ? masks[mask_id] : mask;
+		const Plane& alpha( const std::vector<Plane>& masks ) const{
+			return ( mask_id >= 0 ) ? masks[mask_id] : (mask ? mask : img.alpha_plane());
 		}
 		
 		void setMask( Plane&& mask ){
@@ -59,12 +59,14 @@ class ImageGroup : public AContainer{
 	public:
 		QString name;
 		std::vector<ImageItem> items;
+		const std::vector<Plane>& masks;
 		
-		ImageGroup( QString name ) : name(name) { }
+		ImageGroup( QString name, const std::vector<Plane>& masks ) : name(name), masks(masks) { }
 		
 	public: //AContainer implementation
 		virtual unsigned count() const{ return items.size(); }
 		virtual const ImageEx& image( unsigned index ) const{ return items[index].image(); }
+		virtual const Plane& alpha( unsigned index ) const override{ return items[index].alpha( masks ); }
 		virtual QPointF pos( unsigned index ) const{ return items[index].offset; }
 		virtual void setPos( unsigned index, QPointF newVal ){ items[index].offset = newVal; }
 		virtual int frame( unsigned index ) const{ return items[index].frame; }

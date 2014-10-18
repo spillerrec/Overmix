@@ -14,35 +14,38 @@
 	You should have received a copy of the GNU General Public License
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "mainwindow.hpp"
 
-#include "Preprocessor.hpp"
-#include "containers/ImageContainer.hpp"
+#ifndef PREPROCESSOR_HPP
+#define PREPROCESSOR_HPP
 
-#include <QApplication>
-#include <QStringList>
-#include <QUrl>
+#include "Geometry.hpp"
+#include "ImageEx.hpp"
 
-int main( int argc, char *argv[] ){
-	QApplication a( argc, argv );
-	auto args = a.arguments();
-	args.removeFirst();
-	
-	Preprocessor processor;
-	ImageContainer images;
-	
-	for( auto arg : args ){
-		//TODO: handle arguments
-		if( !arg.startsWith( "-" ) ){
-			ImageEx img;
-			img.read_file( arg );
-			processor.processFile( img );
-			images.addImage( std::move( img ), -1, -1, arg );
-		}
-	}
-	
-	main_widget w( processor, images );
-	w.show();
+#include <QString>
+#include <vector>
 
-	return a.exec();
-}
+class Preprocessor{
+	private:
+		//Filters
+		//TODO: detelecine
+		
+	public:
+		//Crop
+		unsigned crop_left{ 0 }, crop_top{ 0 }, crop_bottom{ 0 }, crop_right{ 0 };
+		
+		//Deconvolve
+		double deviation{ 0.0 };
+		unsigned dev_iterations{ 0 };
+		
+		//Scaling
+		//TODO: method
+		double scale_x{ 1.0 };
+		double scale_y{ 1.0 };
+		bool scale_chroma{ false };
+		
+	public:
+		void processFile( ImageEx& img );
+		
+};
+
+#endif

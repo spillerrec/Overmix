@@ -130,11 +130,8 @@ class ImageEx{
 			if( alpha_plane() )
 				alpha_plane() = alpha_plane().scale_cubic( width, height );
 		}
-		void scale( double factor ){
-			unsigned width = get_width() * factor + 0.5;
-			unsigned height = get_height() * factor + 0.5;
-			scale( width, height );
-		}
+		void scaleFactor( double factor_x, double factor_y )
+			{ scale( get_width() * factor_x + 0.5, get_height() * factor_y + 0.5 ); }
 		void crop( unsigned left, unsigned top, unsigned right, unsigned bottom );
 		
 		MergeResult best_vertical( const ImageEx& img, int level, double range, DiffCache *cache=nullptr ) const{

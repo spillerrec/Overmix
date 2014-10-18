@@ -67,6 +67,7 @@ class AImageAligner : public AContainer{
 		//Accessors
 		unsigned count() const{ return container.count(); }
 		const ImageEx& image( unsigned index ) const;
+		const Plane& alpha( unsigned index ) const{ return container.alpha( index ); }
 		QPointF pos( unsigned index ) const;
 		void setPos( unsigned index, QPointF newVal );
 		int frame( unsigned index ) const{ return container.frame( index ); }

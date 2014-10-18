@@ -28,6 +28,7 @@ class FrameContainer : public AContainer{
 	public: //AContainer implementation
 		virtual unsigned count() const{ return indexes.size(); }
 		virtual const ImageEx& image( unsigned index ) const{ return container.image( indexes[index] ); }
+		virtual const Plane& alpha( unsigned index ) const{ return container.alpha( indexes[index] ); }
 		virtual QPointF pos( unsigned index ) const{ return container.pos( indexes[index] ); }
 		virtual void setPos( unsigned index, QPointF newVal ){ return container.setPos( indexes[index], newVal ); }
 		virtual int frame( unsigned index ) const{ return container.frame( index ); }

@@ -27,11 +27,11 @@
 #include "viewer/imageViewer.h"
 
 #include "RenderOperations.hpp"
-#include "containers/ImageContainer.hpp"
 
 class AImageAligner;
 class Deteleciner;
-class Plane;
+class ImageContainer;
+class Preprocessor;
 class QGroupBox;
 
 class main_widget: public QMainWindow{
@@ -44,14 +44,15 @@ class main_widget: public QMainWindow{
 		QString save_dir;
 		
 		imageViewer viewer;
-		ImageContainer images;
+		Preprocessor& preprocessor;
+		ImageContainer& images;
 		QImage temp;
 		
 		AImageAligner *aligner{ nullptr };
 		ImageEx temp_ex;
 		Deteleciner *detelecine{ nullptr };
 		
-		Plane alpha_mask;
+		int alpha_mask{ -1 };
 		
 		void clear_cache();
 		
@@ -65,7 +66,7 @@ class main_widget: public QMainWindow{
 		RenderPipeThreshold pipe_threshold;
 	
 	public:
-		explicit main_widget();
+		explicit main_widget( Preprocessor& preprocessor, ImageContainer& images );
 		~main_widget();
 	
 	protected:

@@ -18,12 +18,15 @@
 
 #include "ImageContainer.hpp"
 
-void ImageContainer::addImage( ImageEx&& img, int group ){
+void ImageContainer::addImage( ImageEx&& img, int mask, int group, QString filepath ){
 	if( groups.size() == 0 )
-		groups.emplace_back( ImageGroup( "" ) );
+		groups.emplace_back( "", masks );
+	
+	ImageItem item{ filepath, std::move(img) };
+	item.setSharedMask( mask );
 	
 	unsigned index = ( group >= 0 ) ? group : groups.size()-1;
-	groups[index].items.emplace_back( ImageItem( "", std::move(img) ) );
+	groups[index].items.emplace_back( item );
 	indexes.emplace_back( index, groups[index].count()-1 );
 }
 
@@ -32,6 +35,11 @@ unsigned ImageContainer::count() const{ return indexes.size(); }
 const ImageEx& ImageContainer::image( unsigned index ) const{
 	auto pos = indexes[index];
 	return groups[pos.group].image( pos.index );
+}
+
+const Plane& ImageContainer::alpha( unsigned index ) const{
+	auto pos = indexes[index];
+	return groups[pos.group].alpha( pos.index );
 }
 
 QPointF ImageContainer::pos( unsigned index ) const{

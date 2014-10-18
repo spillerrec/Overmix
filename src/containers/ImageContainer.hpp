@@ -46,18 +46,23 @@ class ImageContainer : public AContainer{
 		}
 		
 	public: //AContainer implementation
-		virtual unsigned count() const;
-		virtual const ImageEx& image( unsigned index ) const;
-		virtual QPointF pos( unsigned index ) const;
-		virtual void setPos( unsigned index, QPointF newVal );
-		virtual int frame( unsigned index ) const;
-		virtual void setFrame( unsigned index, int newVal );
+		virtual       unsigned  count() const;
+		virtual const ImageEx&  image( unsigned index ) const;
+		virtual const Plane&    alpha( unsigned index ) const;
+		virtual       QPointF     pos( unsigned index ) const;
+		virtual       void     setPos( unsigned index, QPointF newVal );
+		virtual       int       frame( unsigned index ) const;
+		virtual       void   setFrame( unsigned index, int newVal );
 		
 	public:
-		void addImage( ImageEx&& img, int group=-1 );
-		void addFile( QString filepath );
+		void addImage( ImageEx&& img, int mask=-1, int group=-1, QString filepath="" );
 		
-		void addGroup( QString name ){ groups.push_back( { name } ); }
+		int addMask( Plane&& mask ){
+			masks.emplace_back( mask );
+			return masks.size() - 1;
+		}
+		
+		void addGroup( QString name ){ groups.emplace_back( name, masks ); }
 		
 		void moveImage( unsigned from_group, unsigned from_img
 			,	unsigned to_group, unsigned to_img );
