@@ -54,6 +54,7 @@ Plane AImageAligner::prepare_plane( const Plane& p ){
 
 void AImageAligner::addImages(){
 	//TODO: we can't do this in the constructor?
+	images.clear();
 	for( unsigned i=0; i<container.count(); i++ ){
 		images.emplace_back( ImageEx( prepare_plane( image(i)[0] ) ) );
 		on_add();

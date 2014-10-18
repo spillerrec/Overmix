@@ -51,6 +51,10 @@ Plane RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsigne
 				return offset.first;
 			}
 		default: { //More than two images
+				//Reset position
+				for( unsigned i=begin; i<end; i++ )
+					setPos( i, QPointF() );
+				
 				//Solve sub-areas recursively
 				unsigned middle = amount / 2 + begin;
 				Plane first = align( watcher, begin, middle );

@@ -315,7 +315,7 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ){
 	img.fill(0);
 	
 	
-	vector<color> line( get_width()+1 );
+	vector<color> line( get_width()+1, color( 0,0,0,0 ) );
 	for( unsigned iy=0; iy<it.height(); iy++, it.next_line() ){
 		QRgb* row = (QRgb*)img.scanLine( iy );
 		for( unsigned ix=0; ix<it.width(); ix++, it.next_x() ){
