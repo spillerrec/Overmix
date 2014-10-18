@@ -396,6 +396,7 @@ void main_widget::clear_cache(){
 
 void main_widget::clear_image(){
 	clear_cache();
+	clear_mask();
 	
 	if( detelecine )
 		detelecine->clear();
