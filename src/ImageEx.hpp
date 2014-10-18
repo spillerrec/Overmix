@@ -115,6 +115,7 @@ class ImageEx{
 			return std::max_element( planes.begin(), planes.end()
 				,	[]( const Plane& p1, const Plane& p2 ){ return p1.get_height() < p2.get_height(); } )->get_height();
 		}
+		Point<unsigned> getSize() const{ return { get_width(), get_height() }; }
 		
 		system get_system() const{ return type; }
 		

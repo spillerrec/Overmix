@@ -45,7 +45,7 @@ void Plane::binarize_adaptive( unsigned amount, color_type threshold ){
 void Plane::binarize_dither(){
 	color_type threshold = (color::WHITE - color::BLACK) / 2 + color::BLACK;
 	
-	vector<double> errors( size.width+1, 0 );
+	vector<double> errors( size.width()+1, 0 );
 	for( unsigned iy=0; iy<get_height(); ++iy ){
 		color_type* row = scan_line( iy );
 		for( unsigned ix=0; ix<get_width(); ++ix ){

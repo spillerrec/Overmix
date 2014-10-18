@@ -36,13 +36,13 @@ class ScaledPlane{
 		const Plane& original;
 		
 	public:
-		ScaledPlane( const Plane& p, unsigned width, unsigned height ) : original( p ){
-			if( p.get_width() != width || p.get_height() != height )
-				scaled = p.scale_cubic( width, height );
+		ScaledPlane( const Plane& p, Size<unsigned> size ) : original( p ){
+			if( p.getSize() != size )
+				scaled = p.scale_cubic( size.width(), size.height() );
 		}
 		
 		ScaledPlane( const Plane& p, const Plane& wanted_size )
-			: ScaledPlane( p, wanted_size.get_width(), wanted_size.get_height() ) { }
+			: ScaledPlane( p, wanted_size.getSize() ) { }
 		
 		const Plane& operator()() const{ return scaled.valid() ? scaled : original; }
 };
@@ -54,38 +54,37 @@ class SumPlane {
 		PlaneBase<precision_color_type> amount;
 	
 	public:
-		SumPlane( unsigned width, unsigned height )
-			: sum( width, height ), amount( width, height ){
+		SumPlane( Size<> size ) : sum( size ), amount( size ){
 			sum.fill( 0 );
 			amount.fill( 0 );
 		}
 		
-		void addPlane( const Plane& p, unsigned x, unsigned y ){
+		void addPlane( const Plane& p, Point<> pos ){
 			//TODO: make multi-threaded //NOTE: haven't been working out too well...
 			for( unsigned iy=0; iy<p.get_height(); iy++ ){
 				//Add to sum
 				auto in = p.const_scan_line( iy );
-				auto out = sum.scan_line( iy + y );
+				auto out = sum.scan_line( iy + pos.y );
 				for( unsigned ix=0; ix<p.get_width(); ix++ )
-					out[ix+x] += in[ix];
+					out[ix+pos.x] += in[ix];
 					
 				//Add a full amount to amount
-				auto a = amount.scan_line( iy+y );
+				auto a = amount.scan_line( iy + pos.y );
 				for( unsigned ix=0; ix<p.get_width(); ix++ )
-					a[ix+x] += color::WHITE;
+					a[ix+pos.x] += color::WHITE;
 			}
 		}
 		
-		void addAlphaPlane( const Plane& p, const Plane& alpha, unsigned x, unsigned y ){
+		void addAlphaPlane( const Plane& p, const Plane& alpha, Point<> pos ){
 			//Scale alpha if needed
 			ScaledPlane alpha_scaled( alpha, p );
 			
 			for( unsigned iy=0; iy<p.get_height(); iy++ ){
 				//Add to sum
 				auto in = p.const_scan_line( iy );
-				auto out = sum.scan_line( iy + y ) + x;
+				auto out = sum.scan_line( iy + pos.y ) + pos.x;
 				auto a_in = alpha_scaled().const_scan_line( iy );
-				auto a_out = amount.scan_line( iy+y ) + x;
+				auto a_out = amount.scan_line( iy + pos.y ) + pos.x;
 				
 				for( unsigned ix=0; ix<p.get_width(); ix++ ){
 					auto a_val = a_in[ix];
@@ -135,11 +134,11 @@ class AlphaScales{
 		vector<vector<ScaledPlane>> items;
 		
 	public:
-		void addScale( const AContainer& aligner, double scale_x, double scale_y ){
+		void addScale( const AContainer& aligner, Point<double> scale ){
 			vector<ScaledPlane> scales;
 			for( unsigned i=0; i<aligner.maskCount(); i++ ){
 				auto& mask = aligner.mask( i );
-				scales.emplace_back( mask, mask.get_width() * scale_x + 0.5,  mask.get_height() * scale_y + 0.5 );
+				scales.emplace_back( mask, (mask.getSize() * scale).round() );
 			}
 			items.emplace_back( scales );
 		}
@@ -175,43 +174,34 @@ ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AP
 	
 	AlphaScales masks;
 	for( unsigned c=0; c<planes_amount; c++ ){
-		double scale_x = upscale_chroma ? 1 : (double)aligner.image( 0 )[c].get_width() / aligner.image( 0 )[0].get_width();
-		double scale_y = upscale_chroma ? 1 : (double)aligner.image( 0 )[c].get_height() / aligner.image( 0 )[0].get_height();
-		masks.addScale( aligner, scale_x, scale_y );
+		auto scale = upscale_chroma ? Point<double>(1,1)
+            : aligner.image( 0 )[c].getSize().to<double>() / aligner.image( 0 )[0].getSize().to<double>();
+		masks.addScale( aligner, scale );
 	}
 	
-	QRect full = aligner.size();
+	Size<int> full( aligner.size().size() );
 	auto min_point = aligner.minPoint();
 	for( unsigned c=0; c<planes_amount; c++ ){
 		//Determine local size
-		double scale_x = upscale_chroma ? 1 : (double)aligner.image( 0 )[c].get_width() / aligner.image( 0 )[0].get_width();
-		double scale_y = upscale_chroma ? 1 : (double)aligner.image( 0 )[c].get_height() / aligner.image( 0 )[0].get_height();
+		auto scale = upscale_chroma ? Point<double>(1,1)
+			: aligner.image( 0 )[c].getSize().to<double>() / aligner.image( 0 )[0].getSize().to<double>();
 		
 		
 		//TODO: something is wrong with the rounding, chroma-channels are slightly off
-		QRect local( 
-				(int)round( full.x()*scale_x )
-			,	(int)round( full.y()*scale_y )
-			,	(int)round( full.width()*scale_x )
-			,	(int)round( full.height()*scale_y )
-			);
-		
-		SumPlane sum( local.width(), local.height() );
+		SumPlane sum( (scale * full).round() );
 		
 		for( unsigned j=0; j<max_count; j++ ){
-			QPoint pos(
-					round( (aligner.pos(j).x() - min_point.x())*scale_x )
-				,	round( (aligner.pos(j).y() - min_point.y())*scale_y ) );
-			ScaledPlane plane( aligner.image( j )[c]
-				,	aligner.image( j )[0].get_width()*scale_x
-				,	aligner.image( j )[0].get_height()*scale_y
-				);
+			auto& image = aligner.image( j );
+			Point<> pos(
+					round( (aligner.pos(j).x() - min_point.x())*scale.x )
+				,	round( (aligner.pos(j).y() - min_point.y())*scale.y ) );
+			ScaledPlane plane( image[c], (scale * image[0].getSize()).round() );
 			
 			const Plane& alpha_plane = masks.getAlpha( c, aligner.imageMask( j ), aligner.alpha( j ) );
 			if( use_plane_alpha && alpha_plane.valid() )
-				sum.addAlphaPlane( plane(), alpha_plane, pos.x(), pos.y() );
+				sum.addAlphaPlane( plane(), alpha_plane, pos );
 			else
-				sum.addPlane( plane(), pos.x(), pos.y() );
+				sum.addPlane( plane(), pos );
 		}
 		
 		img[c] = sum.average();

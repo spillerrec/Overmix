@@ -102,7 +102,7 @@ Plane Plane::weighted_sum( Kernel &kernel ) const{
 	
 	//Set default settings
 	WeightedSumLine default_line;
-	default_line.width = size.width;
+	default_line.width = size.width();
 	default_line.line_width = out.get_line_width();
 	default_line.weights = kernel.values.data();
 	default_line.w_width = kernel.width;
@@ -111,7 +111,7 @@ Plane Plane::weighted_sum( Kernel &kernel ) const{
 	
 	int half_size = kernel.height / 2;
 	std::vector<WeightedSumLine> lines;
-	for( unsigned iy=0; iy<size.height; ++iy ){
+	for( unsigned iy=0; iy<size.height(); ++iy ){
 		WeightedSumLine line = default_line;
 		line.out = out.scan_line( iy );
 		
@@ -123,10 +123,10 @@ Plane Plane::weighted_sum( Kernel &kernel ) const{
 			line.in = const_scan_line( 0 );
 			line.full_sum = line.calculate_sum();
 		}
-		else if( top+kernel.height >= size.height ){
+		else if( top+kernel.height >= size.height() ){
 			//Cut stuff from bottom
 			line.in = const_scan_line( top );
-			line.w_height = size.height - top;
+			line.w_height = size.height() - top;
 			line.full_sum = line.calculate_sum();
 		}
 		else //Use defaults

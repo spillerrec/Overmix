@@ -35,7 +35,7 @@ class FourierPlane : public PlaneBase<std::complex<double>>{
 		double scaling{ 1.0 };
 		
 	public:
-		FourierPlane( Size<unsigned> size ) : PlaneBase( size ), real_width( size.width*2 ) { }
+		FourierPlane( Size<unsigned> size ) : PlaneBase( size ), real_width( size.width()*2 ) { }
 		FourierPlane( unsigned w, unsigned h ) : PlaneBase( w, h ), real_width( w * 2 ) { }
 		
 		FourierPlane( const FourierPlane& p )

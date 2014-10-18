@@ -133,14 +133,14 @@ Plane Plane::scale_generic( unsigned wanted_width, unsigned wanted_height, doubl
 	std::vector<ScalePoint> points;
 	points.reserve( wanted_width );
 	for( unsigned ix=0; ix<wanted_width; ++ix ){
-		ScalePoint p( ix, size.width, wanted_width, window, f );
+		ScalePoint p( ix, size.width(), wanted_width, window, f );
 		points.push_back( p );
 	}
 	
 	//Calculate all y-lines
 	std::vector<ScaleLine> lines;
 	for( unsigned iy=0; iy<wanted_height; ++iy ){
-		ScaleLine line( points, scaled, iy, size.height );
+		ScaleLine line( points, scaled, iy, size.height() );
 		line.row = const_scan_line( iy );
 		line.line_width = line_width;
 		line.window = window;

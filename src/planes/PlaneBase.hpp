@@ -34,15 +34,15 @@ class PlaneBase{
 	public:
 		PlaneBase() { }
 		PlaneBase( Size<unsigned> size )
-			:	size(size), line_width( size.width ), data( size.height * line_width ) { }
+			:	size(size), line_width( size.width() ), data( size.height() * line_width ) { }
 		PlaneBase( unsigned w, unsigned h )
 			:	PlaneBase( Size<unsigned>( w, h ) ) { }
 		
 	//Status
 		operator bool() const{ return valid(); }
 		bool valid() const{ return data.size() != 0; }
-		unsigned get_height() const{ return size.height; }
-		unsigned get_width() const{ return size.width; }
+		unsigned get_height() const{ return size.height(); }
+		unsigned get_width() const{ return size.width(); }
 		unsigned get_line_width() const{ return line_width; }
 		
 		Size<unsigned> getSize() const{ return size; }
@@ -66,8 +66,8 @@ class PlaneBase{
 		}
 		void copy( int x, int y, const PlaneBase& from ){
 			//TODO: check ranges
-			unsigned range_x = min( size.width, from.size.width+x );
-			unsigned range_y = min( size.height, from.size.height+y );
+			unsigned range_x = min( size.width(), from.size.width()+x );
+			unsigned range_y = min( size.height(), from.size.height()+y );
 			for( unsigned iy=y; iy < range_y; iy++ ){
 				T* dest = scan_line( iy );
 				const T* source = from.scan_line( iy - y );
