@@ -17,6 +17,25 @@
 
 #include "color.hpp"
 
+#include <vector>
+
+std::vector<color_type> generate_gamma(){
+	std::vector<color_type> temp( UINT16_MAX );
+	
+	for( int_fast32_t i=0; i<UINT16_MAX; i++ ){
+		long double v = i;
+		v /= color::WHITE;
+		
+		v = color::ycbcr2srgb( v );
+		
+		temp[i] = v*color::WHITE + 0.5;
+	}
+	
+	return temp;
+}
+
+auto gamma_lookup = generate_gamma();
+
 
 color color::yuvToRgb( double kr, double kg, double kb, bool gamma ){
 	double y  = asDouble( r );
@@ -49,11 +68,13 @@ color color::yuvToRgb( double kr, double kg, double kb, bool gamma ){
 	rb = (rb < 0 ) ? 0 : (rb > 1 ) ? 1 : rb;
 	
 	//Gamma correction
-	if( gamma ){
-		rg = ycbcr2srgb( rg );
-		rr = ycbcr2srgb( rr );
-		rb = ycbcr2srgb( rb );
-	}
+	if( gamma )
+		return color(
+				gamma_lookup[ fromDouble(rr) ]
+			,	gamma_lookup[ fromDouble(rg) ]
+			,	gamma_lookup[ fromDouble(rb) ]
+			,	a
+			);
 	
 	return color( fromDouble(rr), fromDouble(rg), fromDouble(rb), a );
 }

@@ -303,15 +303,10 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ){
 	it.iterate_all();
 	
 	//Fetch with alpha
-	color (MultiPlaneIterator::*pixel)() const = NULL;
+	auto pixel = ( type == GRAY )
+		?	( alpha_plane() ? &MultiPlaneIterator::gray_alpha : &MultiPlaneIterator::gray )
+		:	( alpha_plane() ? &MultiPlaneIterator::pixel_alpha : &MultiPlaneIterator::pixel );
 	
-	if( type == GRAY )
-		pixel = ( alpha_plane() ) ? &MultiPlaneIterator::gray_alpha : &MultiPlaneIterator::gray;
-	else
-		pixel = ( alpha_plane() ) ? &MultiPlaneIterator::pixel_alpha : &MultiPlaneIterator::pixel;
-	
-	
-	color *line = new color[ get_width()+1 ];
 	
 	//Create image
 	QImage img(	it.width(), it.height()
@@ -319,8 +314,8 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ){
 		);
 	img.fill(0);
 	
-	//TODO: select function
 	
+	vector<color> line( get_width()+1 );
 	for( unsigned iy=0; iy<it.height(); iy++, it.next_line() ){
 		QRgb* row = (QRgb*)img.scanLine( iy );
 		for( unsigned ix=0; ix<it.width(); ix++, it.next_x() ){
@@ -350,8 +345,6 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ){
 			row[ix] = qRgba( rounded.r, rounded.g, rounded.b, rounded.a );
 		}
 	}
-	
-	delete[] line;
 	
 	return img;
 }
