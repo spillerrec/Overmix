@@ -26,13 +26,15 @@ class FrameContainer : public AContainer{
 		std::vector<unsigned> indexes;
 		
 	public: //AContainer implementation
-		virtual unsigned count() const{ return indexes.size(); }
-		virtual const ImageEx& image( unsigned index ) const{ return container.image( indexes[index] ); }
-		virtual const Plane& alpha( unsigned index ) const{ return container.alpha( indexes[index] ); }
-		virtual QPointF pos( unsigned index ) const{ return container.pos( indexes[index] ); }
-		virtual void setPos( unsigned index, QPointF newVal ){ return container.setPos( indexes[index], newVal ); }
-		virtual int frame( unsigned index ) const{ return container.frame( index ); }
-		virtual void setFrame( unsigned index, int newVal ){ return container.setFrame( index, newVal ); }
+		virtual unsigned count() const override{ return indexes.size(); }
+		virtual const ImageEx& image( unsigned index ) const override{ return container.image( indexes[index] ); }
+		virtual const Plane& alpha( unsigned index ) const override{ return container.alpha( indexes[index] ); }
+		virtual const Plane& mask( unsigned index ) const override{ return container.mask( indexes[index] ); }
+		virtual unsigned maskCount() const override{ return container.maskCount(); }
+		virtual QPointF pos( unsigned index ) const override{ return container.pos( indexes[index] ); }
+		virtual void setPos( unsigned index, QPointF newVal ) override{ return container.setPos( indexes[index], newVal ); }
+		virtual int frame( unsigned index ) const override{ return container.frame( index ); }
+		virtual void setFrame( unsigned index, int newVal ) override{ return container.setFrame( index, newVal ); }
 		
 	public:
 		FrameContainer( AContainer& container, int frame ) : container(container) {

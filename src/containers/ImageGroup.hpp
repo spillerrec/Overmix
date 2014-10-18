@@ -67,6 +67,8 @@ class ImageGroup : public AContainer{
 		virtual unsigned count() const{ return items.size(); }
 		virtual const ImageEx& image( unsigned index ) const{ return items[index].image(); }
 		virtual const Plane& alpha( unsigned index ) const override{ return items[index].alpha( masks ); }
+		virtual const Plane& mask( unsigned index ) const override{ return masks[index]; }
+		virtual unsigned maskCount() const override{ return masks.size(); }
 		virtual QPointF pos( unsigned index ) const{ return items[index].offset; }
 		virtual void setPos( unsigned index, QPointF newVal ){ items[index].offset = newVal; }
 		virtual int frame( unsigned index ) const{ return items[index].frame; }

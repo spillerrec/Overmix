@@ -29,6 +29,8 @@ class AContainer{
 		virtual unsigned count() const = 0;
 		virtual const ImageEx& image( unsigned index ) const = 0;
 		virtual const Plane& alpha( unsigned index ) const = 0;
+		virtual const Plane& mask( unsigned index ) const;
+		virtual unsigned maskCount() const{ return 0; }
 		virtual QPointF pos( unsigned index ) const = 0;
 		virtual void setPos( unsigned index, QPointF newVal ) = 0;
 		virtual int frame( unsigned index ) const = 0;

@@ -25,6 +25,9 @@ const Plane& AContainer::alpha( unsigned index ) const{
 	return image( index ).alpha_plane();
 }
 
+//NOTE: this makes no sense, throw something instead?
+const Plane& AContainer::mask( unsigned index ) const{ return alpha( index ); }
+
 QRect AContainer::size() const{
 	QRectF total;
 	

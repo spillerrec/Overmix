@@ -47,12 +47,14 @@ class ImageContainer : public AContainer{
 		
 	public: //AContainer implementation
 		virtual       unsigned  count() const;
-		virtual const ImageEx&  image( unsigned index ) const;
-		virtual const Plane&    alpha( unsigned index ) const;
-		virtual       QPointF     pos( unsigned index ) const;
-		virtual       void     setPos( unsigned index, QPointF newVal );
-		virtual       int       frame( unsigned index ) const;
-		virtual       void   setFrame( unsigned index, int newVal );
+		virtual const ImageEx&  image( unsigned index ) const override;
+		virtual const Plane&    alpha( unsigned index ) const override;
+		virtual const Plane&     mask( unsigned index ) const override{ return masks[index]; }
+		virtual       unsigned maskCount()              const override{ return masks.size(); }
+		virtual       QPointF     pos( unsigned index ) const override;
+		virtual       void     setPos( unsigned index, QPointF newVal ) override;
+		virtual       int       frame( unsigned index ) const override;
+		virtual       void   setFrame( unsigned index, int newVal ) override;
 		
 	public:
 		void addImage( ImageEx&& img, int mask=-1, int group=-1, QString filepath="" );
