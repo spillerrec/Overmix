@@ -56,17 +56,6 @@ struct color{
 	}
 	
 	public:
-		//TODO: we do not handle the case of preallocated storage!
-		void* operator new( size_t size ){
-			return std::calloc( 1, size );
-		}
-		void* operator new[]( size_t size ){
-			return std::calloc( size, 1 );
-		}
-		void operator delete( void* p )  { std::free( p ); }
-		void operator delete[]( void* p ){ std::free( p ); }
-		
-	
 		color() { } //Initialized by new/delete
 		color( color_type r, color_type g, color_type b, color_type a = WHITE ){
 			this->r = r;
