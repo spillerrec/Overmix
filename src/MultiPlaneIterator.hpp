@@ -28,26 +28,20 @@
 #include "renders/ARender.hpp"
 
 struct PlaneItInfo{
-	Plane *p;
-	int x;
-	int y;
-	color_type* row_start;
-	color_type* row;
+	Plane& p;
+	int x, y;
+	color_type* row_start{ nullptr };
+	color_type* row{ nullptr };
 	
-	PlaneItInfo( Plane& p, int x, int y ){ //TODO: check if we can use p as reference?
-		this->p = &p;
-		this->x = x;
-		this->y = y;
-		row_start = 0;
-		row = 0;
-	}
+	PlaneItInfo( Plane& p, int x, int y ) : p(p), x(x), y(y) { }
 	
-	bool check_x( int x ){
-		return x >= 0 && (unsigned)x < p->get_width();
-	}
-	bool check_y( int y ){
-		return y >= 0 && (unsigned)y < p->get_height();
-	}
+	bool check_x( int x )
+		{ return x >= 0 && (unsigned)x < p.get_width(); }
+	bool check_y( int y )
+		{ return y >= 0 && (unsigned)y < p.get_height(); }
+	
+	int right()  const{ return x + p.get_width()  - 1; }
+	int bottom() const{ return y + p.get_height() - 1; }
 };
 
 class PlaneLine{
@@ -78,9 +72,7 @@ class MultiPlaneLineIterator{
 				int y, int left, int right, const std::vector<PlaneItInfo> &infos, void *data
 			);
 		
-		unsigned left() const{
-			return right - x;
-		}
+		unsigned left() const{ return right - x; }
 		
 		void next(){
 			for( PlaneLine& l : lines )
@@ -169,6 +161,7 @@ class MultiPlaneIterator{
 		unsigned width(){ return right - left + 1; }
 		unsigned height(){ return bottom - top + 1; }
 		
+		void iterate( int x, int y, int right, int bottom );
 		bool iterate_all();
 		void iterate_shared();
 		
@@ -185,13 +178,16 @@ class MultiPlaneIterator{
 				next_line();
 		}
 		
-		void for_all_lines( void func( MultiPlaneLineIterator &it ) ){
+		static std::vector<int> range( int from, int to ){
 			std::vector<int> its;
-			its.reserve( bottom - top );
-			
-			for( int iy=top; iy<=bottom; iy++ )
-				its.push_back( iy );
-			
+			its.reserve( to - from );
+			for( int i=from; i<=to; i++ )
+				its.push_back( i );
+			return its;
+		}
+		
+		void for_all_lines( void func( MultiPlaneLineIterator &it ) ){
+			auto its = range( top, bottom );
 			QtConcurrent::blockingMap( its, [func,this](int iy){
 					MultiPlaneLineIterator it( iy, this->left, this->right, this->infos, data );
 					func( it );
@@ -199,12 +195,7 @@ class MultiPlaneIterator{
 		}
 		
 		void for_all_pixels( void func( MultiPlaneLineIterator &it ) ){
-			std::vector<int> its;
-			its.reserve( bottom - top );
-			
-			for( int iy=top; iy<=bottom; iy++ )
-				its.push_back( iy );
-			
+			auto its = range( top, bottom );
 			QtConcurrent::blockingMap( its, [func,this](int iy){
 					MultiPlaneLineIterator it( iy, this->left, this->right, this->infos, data );
 					it.for_all( func );
@@ -212,12 +203,7 @@ class MultiPlaneIterator{
 		}
 		
 		void for_all_pixels( void func( MultiPlaneLineIterator &it ), AProcessWatcher* watcher, unsigned offset=0, unsigned count=1000 ){
-			std::vector<int> its;
-			its.reserve( bottom - top );
-			
-			for( int iy=top; iy<=bottom; iy++ )
-				its.push_back( iy );
-			
+			auto its = range( top, bottom );
 			QFuture<void> future = QtConcurrent::map( its, [func,this](int iy){
 					MultiPlaneLineIterator it( iy, this->left, this->right, this->infos, data );
 					it.for_all( func );
