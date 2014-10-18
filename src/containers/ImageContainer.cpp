@@ -37,6 +37,12 @@ const ImageEx& ImageContainer::image( unsigned index ) const{
 	return groups[pos.group].image( pos.index );
 }
 
+
+int ImageContainer::imageMask( unsigned index ) const{
+	auto pos = indexes[index];
+	return groups[pos.group].imageMask( pos.index );
+}
+
 const Plane& ImageContainer::alpha( unsigned index ) const{
 	auto pos = indexes[index];
 	return groups[pos.group].alpha( pos.index );

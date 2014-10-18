@@ -40,6 +40,7 @@ class ImageItem{
 			:	filename(filename), img(img) { }
 		
 		const ImageEx& image() const{ return img; }
+		int maskId() const{ return mask_id; }
 		const Plane& alpha( const std::vector<Plane>& masks ) const{
 			return ( mask_id >= 0 ) ? masks[mask_id] : (mask ? mask : img.alpha_plane());
 		}
@@ -66,6 +67,7 @@ class ImageGroup : public AContainer{
 	public: //AContainer implementation
 		virtual unsigned count() const{ return items.size(); }
 		virtual const ImageEx& image( unsigned index ) const{ return items[index].image(); }
+		virtual int imageMask( unsigned index ) const{ return items[index].maskId(); }
 		virtual const Plane& alpha( unsigned index ) const override{ return items[index].alpha( masks ); }
 		virtual const Plane& mask( unsigned index ) const override{ return masks[index]; }
 		virtual unsigned maskCount() const override{ return masks.size(); }

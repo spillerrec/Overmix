@@ -130,6 +130,24 @@ class SumPlane {
 		}
 };
 
+class AlphaScales{
+	private:
+		vector<vector<ScaledPlane>> items;
+		
+	public:
+		void addScale( const AContainer& aligner, double scale_x, double scale_y ){
+			vector<ScaledPlane> scales;
+			for( unsigned i=0; i<aligner.maskCount(); i++ ){
+				auto& mask = aligner.mask( i );
+				scales.emplace_back( mask, mask.get_width() * scale_x + 0.5,  mask.get_height() * scale_y + 0.5 );
+			}
+			items.emplace_back( scales );
+		}
+		
+		const Plane& getAlpha( int channel, int mask, const Plane& fallback )
+			{ return ( mask < 0 ) ? fallback : items[channel][mask](); }
+};
+
 ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	QTime t;
 	t.start();
@@ -154,6 +172,13 @@ ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AP
 	
 	ImageEx img( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
 	img.create( 1, 1 ); //TODO: set as initialized
+	
+	AlphaScales masks;
+	for( unsigned c=0; c<planes_amount; c++ ){
+		double scale_x = upscale_chroma ? 1 : (double)aligner.image( 0 )[c].get_width() / aligner.image( 0 )[0].get_width();
+		double scale_y = upscale_chroma ? 1 : (double)aligner.image( 0 )[c].get_height() / aligner.image( 0 )[0].get_height();
+		masks.addScale( aligner, scale_x, scale_y );
+	}
 	
 	QRect full = aligner.size();
 	auto min_point = aligner.minPoint();
@@ -182,7 +207,7 @@ ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AP
 				,	aligner.image( j )[0].get_height()*scale_y
 				);
 			
-			const Plane& alpha_plane = aligner.alpha( j );
+			const Plane& alpha_plane = masks.getAlpha( c, aligner.imageMask( j ), aligner.alpha( j ) );
 			if( use_plane_alpha && alpha_plane.valid() )
 				sum.addAlphaPlane( plane(), alpha_plane, pos.x(), pos.y() );
 			else

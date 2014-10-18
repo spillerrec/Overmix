@@ -49,6 +49,7 @@ class ImageContainer : public AContainer{
 		virtual       unsigned  count() const;
 		virtual const ImageEx&  image( unsigned index ) const override;
 		virtual const Plane&    alpha( unsigned index ) const override;
+		virtual       int   imageMask( unsigned index ) const override;
 		virtual const Plane&     mask( unsigned index ) const override{ return masks[index]; }
 		virtual       unsigned maskCount()              const override{ return masks.size(); }
 		virtual       QPointF     pos( unsigned index ) const override;

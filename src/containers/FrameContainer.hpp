@@ -28,6 +28,7 @@ class FrameContainer : public AContainer{
 	public: //AContainer implementation
 		virtual unsigned count() const override{ return indexes.size(); }
 		virtual const ImageEx& image( unsigned index ) const override{ return container.image( indexes[index] ); }
+		virtual int imageMask( unsigned index ) const override{ return container.imageMask( indexes[index] ); }
 		virtual const Plane& alpha( unsigned index ) const override{ return container.alpha( indexes[index] ); }
 		virtual const Plane& mask( unsigned index ) const override{ return container.mask( indexes[index] ); }
 		virtual unsigned maskCount() const override{ return container.maskCount(); }

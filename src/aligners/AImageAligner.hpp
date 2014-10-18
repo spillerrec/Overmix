@@ -68,6 +68,7 @@ class AImageAligner : public AContainer{
 		unsigned count() const{ return container.count(); }
 		const ImageEx& image( unsigned index ) const;
 		const Plane& alpha( unsigned index ) const{ return container.alpha( index ); }
+		int imageMask( unsigned index ) const override{ return container.imageMask( index ); }
 		const Plane& mask( unsigned index ) const override{ return container.mask( index ); }
 		unsigned maskCount() const override{ return container.maskCount(); }
 		QPointF pos( unsigned index ) const;
