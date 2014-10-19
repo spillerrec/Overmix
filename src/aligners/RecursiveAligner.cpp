@@ -23,30 +23,32 @@
 #include <limits>
 using namespace std;
 
-pair<Plane,Point<double>> RecursiveAligner::combine( const Plane& first, const Plane& second ) const{
-	ImageOffset offset = find_offset( first, second );
+pair<ImageEx,Point<double>> RecursiveAligner::combine( const ImageEx& first, const ImageEx& second ) const{
+	ImageOffset offset = findOffset( first, second );
 	Point<double> offset_f( offset.distance_x, offset.distance_y );
 	
 	//Wrap planes in ImageContainer
 	//TODO: Optimize this
 	ImageContainer container;
-	container.addImage( ImageEx( first ) );
+	container.addImage( ImageEx( first ) ); //We are having copies here!!
 	container.addImage( ImageEx( second ) );
 	container.getGroup( 0 ).items[1].offset = offset_f;
 	
 	//Render it
 	ImageEx merged = SimpleRender( SimpleRender::FOR_MERGING ).render( container );
 	
-	return make_pair( merged[0], offset_f );
+	return make_pair( merged, offset_f );
 }
 
-Plane RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsigned end ){
+ImageEx RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsigned end ){
 	auto amount = end - begin;
 	switch( amount ){
 		case 0: qFatal( "No images to align!" );
 		case 1: return image( begin )[0]; //Just return this one
 		case 2: { //Optimization for two images
-				auto offset = combine( image( begin )[0], image( begin+1 )[0] );
+				ImageEx first ( image( begin   )[0], alpha( begin   ) );
+				ImageEx second( image( begin+1 )[0], alpha( begin+1 ) );
+				auto offset = combine( first, second );
 				setPos( begin+1, offset.second );
 				return offset.first;
 			}
@@ -57,20 +59,20 @@ Plane RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsigne
 				
 				//Solve sub-areas recursively
 				unsigned middle = amount / 2 + begin;
-				Plane first = align( watcher, begin, middle );
-				Plane second = align( watcher, middle, end );
+				auto first = align( watcher, begin, middle );
+				auto second = align( watcher, middle, end );
 				
 				//Find the offset between these two images
 				auto offset = combine( first, second );
 				
 				//Find top-left corner of first
-				Point<double> corner1( numeric_limits<double>::max(), numeric_limits<double>::max() );
+				auto corner1 = Point<double>( numeric_limits<double>::max(), numeric_limits<double>::max() );
+				auto corner2 = corner1;
 				for( unsigned i=begin; i<middle; i++ ){
 					corner1.x = min( corner1.x, pos(i).x );
 					corner1.y = min( corner1.y, pos(i).y );
 				}
 				//Find top-left corner of second
-				Point<double> corner2( numeric_limits<double>::max(), numeric_limits<double>::max() );
 				for( unsigned i=middle; i<end; i++ ){
 					corner2.x = min( corner2.x, pos(i).x );
 					corner2.y = min( corner2.y, pos(i).y );

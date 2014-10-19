@@ -108,7 +108,8 @@ class Plane : public PlaneBase<color_type>{
 		
 	//Difference
 		double diff( const Plane& p, int x, int y, unsigned stride=1 ) const;
-		MergeResult best_round_sub( const Plane& p, int level, int left, int right, int top, int bottom, DiffCache *cache ) const;
+		double diffAlpha( const Plane& p, const Plane& alpha, const Plane& alpha_p, int x, int y, unsigned stride=1 ) const;
+		MergeResult best_round_sub( const Plane& p, const Plane& a1, const Plane& a2, int level, int left, int right, int top, int bottom, DiffCache *cache ) const;
 		
 	//Cropping
 		Plane crop( unsigned x, unsigned y, unsigned width, unsigned height ) const;

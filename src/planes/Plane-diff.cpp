@@ -36,24 +36,49 @@ struct Sum{
 struct Para{
 	const color_type *c1;
 	const color_type *c2;
+	const color_type *a1;
+	const color_type *a2;
 	unsigned width;
 	unsigned stride;
-	Para( const color_type* c1, const color_type *c2, unsigned width, unsigned stride )
-		:	c1( c1 ), c2( c2 ), width( width ), stride( stride )
-		{ }
+	Para( const color_type* c1, const color_type *c2, unsigned width, unsigned stride
+		,	const color_type* a1=nullptr, const color_type *a2=nullptr )
+		:	c1( c1 ), c2( c2 ), a1( a1 ), a2( a2 ), width( width ), stride( stride ) { }
 };
-static uint64_t diff_2_line( Para p ){
+static uint64_t diff_alpha_line( Para p ){
 	uint64_t sum = 0;
-	for( auto end=p.c1+p.width; p.c1<end; p.c1+=p.stride, p.c2+=p.stride ){
-		auto diff = abs( *p.c1 - *p.c2 );
-		if( diff > (10 / 255.0 * color::WHITE) ) //TODO: Ad-hoc constant
-			sum += diff;
+	const auto epsilon = 10 / 255.0 * color::WHITE; //TODO: Ad-hoc constant, and perhaps a little high...
+	
+	if( !p.a1 && !p.a2 )
+		for( auto end=p.c1+p.width; p.c1<end; p.c1+=p.stride, p.c2+=p.stride ){
+			auto diff = abs( *p.c1 - *p.c2 );
+			if( diff > epsilon )
+				sum += diff;
+		}
+	else if( p.a1 && p.a2 )
+		for( auto end=p.c1+p.width; p.c1<end; p.c1+=p.stride, p.c2+=p.stride, p.a1+=p.stride, p.a2+=p.stride ){
+			auto diff = abs( *p.c1 - *p.c2 ) * color::asDouble( *p.a1 ) * color::asDouble( *p.a2 );
+			if( diff > epsilon )
+				sum += diff;
+		}
+	else{
+		//We have exactly one alpha plane
+		auto a = p.a1 ? p.a1 : p.a2;
+		for( auto end=p.c1+p.width; p.c1<end; p.c1+=p.stride, p.c2+=p.stride, a+=p.stride ){
+			auto diff = abs( *p.c1 - *p.c2 ) * color::asDouble( *a );
+			if( diff > epsilon )
+				sum += diff;
+		}
 	}
 	
 	return sum;
 }
 
 double Plane::diff( const Plane& p, int x, int y, unsigned stride ) const{
+	Plane empty;
+	return diffAlpha( p, empty, empty, x, y, stride );
+}
+
+double Plane::diffAlpha( const Plane& p, const Plane& alpha, const Plane& alpha_p, int x, int y, unsigned stride ) const{
 	//Find edges
 	int p1_top = y < 0 ? 0 : y;
 	int p2_top = y > 0 ? 0 : -y;
@@ -63,19 +88,24 @@ double Plane::diff( const Plane& p, int x, int y, unsigned stride ) const{
 	unsigned height = min( get_height() - p1_top, p.get_height() - p2_top );
 	
 	//Initial offsets on the two planes
-	auto c1 = const_scan_line( p1_top ) + p1_left;
+	auto c1 =   const_scan_line( p1_top ) + p1_left;
 	auto c2 = p.const_scan_line( p2_top ) + p2_left;
+	auto a1 = alpha   ? alpha  .const_scan_line( p1_top ) + p1_left : nullptr;
+	auto a2 = alpha_p ? alpha_p.const_scan_line( p2_top ) + p2_left : nullptr;
+	
 	
 	//Calculate all the offsets for QtConcurrent::mappedReduced
 	vector<Para> lines;
 	lines.reserve( height );
 	for( unsigned i=0; i<height; i+=stride ){
-		lines.push_back( Para( c1+i%stride, c2+i%stride, width, stride ) );
+		lines.push_back( Para( c1+i%stride, c2+i%stride, width, stride, a1, a2 ) );
 		c1 += line_width * stride;
 		c2 += p.line_width * stride;
+		a1 += a1 ? alpha  .line_width * stride : 0;
+		a2 += a2 ? alpha_p.line_width * stride : 0;
 	}
 	
-	Sum sum = QtConcurrent::blockingMappedReduced( lines, &diff_2_line, &Sum::reduce );
+	Sum sum = QtConcurrent::blockingMappedReduced( lines, &diff_alpha_line, &Sum::reduce );
 	return sum.total / (double)( height * width / (stride*stride) );
 }
 
@@ -99,6 +129,8 @@ void DiffCache::add_diff( int x, int y, double diff, unsigned precision ){
 struct img_comp{
 	const Plane& img1;
 	const Plane& img2;
+	const Plane& a1;
+	const Plane& a2;
 	int h_middle;
 	int v_middle;
 	double diff;
@@ -110,8 +142,9 @@ struct img_comp{
 	double precision;
 	bool diff_set;
 	
-	img_comp( const Plane& image1, const Plane& image2, int hm, int vm, int lvl=0, int l=0, int r=0, int t=0, int b=0, double p=1 )
+	img_comp( const Plane& image1, const Plane& image2, const Plane& a1, const Plane& a2, int hm, int vm, int lvl=0, int l=0, int r=0, int t=0, int b=0, double p=1 )
 		:	img1( image1 ), img2( image2 )
+		,	a1( a1 ), a2( a2 )
 		,	h_middle( hm ), v_middle( vm )
 		,	diff( -1 )
 		,	level( lvl )
@@ -122,7 +155,7 @@ struct img_comp{
 		{ }
 	void do_diff(){
 		if( !diff_set )
-			diff = img1.diff( img2, h_middle, v_middle, precision );
+			diff = img1.diffAlpha( img2, a1, a2, h_middle, v_middle, precision );
 	}
 	void set_diff( double new_diff ){
 		diff = new_diff;
@@ -132,7 +165,7 @@ struct img_comp{
 	
 	MergeResult result( DiffCache *cache ) const{
 		if( level > 0 )
-			return img1.best_round_sub( img2, level, left, right, top, bottom, cache );
+			return img1.best_round_sub( img2, a1, a2, level, left, right, top, bottom, cache );
 		else
 			return MergeResult(QPoint( h_middle, v_middle ),diff);
 	}
@@ -157,7 +190,8 @@ struct img_comp{
 static void do_diff_center( img_comp& comp ){
 	comp.do_diff();
 }
-MergeResult Plane::best_round_sub( const Plane& p, int level, int left, int right, int top, int bottom, DiffCache *cache ) const{
+
+MergeResult Plane::best_round_sub( const Plane& p, const Plane& a1, const Plane& a2, int level, int left, int right, int top, int bottom, DiffCache *cache ) const{
 //	qDebug( "Round %d: %d,%d x %d,%d", level, left, right, top, bottom );
 	std::vector<img_comp> comps;
 	int amount = level*2 + 2;
@@ -170,7 +204,7 @@ MergeResult Plane::best_round_sub( const Plane& p, int level, int left, int righ
 		//Check every diff in the remaining area
 		for( int ix=left; ix<=right; ix++ )
 			for( int iy=top; iy<=bottom; iy++ ){
-				img_comp t( *this, p, ix, iy );
+				img_comp t( *this, p, a1, a2, ix, iy );
 				t.set_diff( cache->get_diff( ix, iy, 1 ) );
 				comps.push_back( t );
 			}
@@ -197,7 +231,7 @@ MergeResult Plane::best_round_sub( const Plane& p, int level, int left, int righ
 				
 				//Create and add
 				img_comp t(
-						*this, p, x, y, level
+						*this, p, a1, a2, x, y, level
 					,	floor( ix - h_offset ), ceil( ix + h_offset )
 					,	floor( iy - v_offset ), ceil( iy + v_offset )
 					,	precision

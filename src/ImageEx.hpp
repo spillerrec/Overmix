@@ -59,6 +59,11 @@ class ImageEx{
 			if( p.valid() )
 				planes.push_back( p );
 		}
+		ImageEx( Plane p, Plane a ) : type( GRAY ){
+			if( p.valid() )
+				planes.push_back( p );
+			alpha = a;
+		}
 		
 		unsigned size() const{ return planes.size(); }
 		void to_grayscale();

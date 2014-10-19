@@ -70,7 +70,7 @@ double AImageAligner::calculate_overlap( Point<> offset, const Plane& img1, cons
 	return (double)common.width() * common.height() / area;
 }
 
-AImageAligner::ImageOffset AImageAligner::find_offset( const Plane& img1, const Plane& img2 ) const{
+AImageAligner::ImageOffset AImageAligner::find_offset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ) const{
 	//Keep repeating with higher levels until it drops
 	//below threshold
 	int level = 1; //TODO: magic number
@@ -86,7 +86,7 @@ AImageAligner::ImageOffset AImageAligner::find_offset( const Plane& img1, const 
 	}
 	do{
 		result = img1.best_round_sub( img2
-			,	level
+			,	a1, a2, level
 			,	((int)1 - (int)img2.get_width()) * movement_x, ((int)img1.get_width() - 1) * movement_x
 			,	((int)1 - (int)img2.get_height()) * movement_y, ((int)img1.get_height() - 1) * movement_y
 			,	&cache

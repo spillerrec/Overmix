@@ -29,7 +29,7 @@
 void ImageAligner::on_add(){
 	//Compare this one against all other images
 	for( unsigned i=0; i<count()-1; ++i )
-		offsets.push_back( find_offset( image(i)[0], image( count()-1 )[0] ) );
+		offsets.push_back( findOffset( i, count()-1 ) );
 }
 
 ImageAligner::ImageOffset ImageAligner::get_offset( unsigned img1, unsigned img2 ) const{

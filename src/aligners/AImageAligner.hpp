@@ -46,7 +46,13 @@ class AImageAligner : public AContainer{
 		static double calculate_overlap( Point<> offset, const Plane& img1, const Plane& img2 );
 		
 	public: //TODO:
-		ImageOffset find_offset( const Plane& img1, const Plane& img2 ) const;
+		ImageOffset find_offset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ) const;
+		ImageOffset findOffset( unsigned index, const Plane& img2, const Plane& a2 ) const
+			{ return find_offset( image( index )[0], img2, alpha( index ), a2 ); }
+		ImageOffset findOffset( unsigned index, unsigned index2 ) const
+			{ return findOffset( index, image( index2 )[0], alpha( index2 ) ); }
+		ImageOffset findOffset( const ImageEx& img1, const ImageEx& img2 ) const
+			{ return find_offset( img1[0], img2[0], img1.alpha_plane(), img2.alpha_plane() ); }
 	
 	protected:
 		const AlignMethod method;
