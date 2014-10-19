@@ -18,22 +18,22 @@
 #ifndef DETELECINER_HPP
 #define DETELECINER_HPP
 
-class ImageEx;
+#include "ImageEx.hpp"
 
 class Deteleciner{
 	private:
-		ImageEx* frame{ nullptr };
+		ImageEx frame;
 		bool interlaced{ false };
 		
-		ImageEx* addInterlaced( ImageEx* image );
-		ImageEx* addProgressive( ImageEx* image );
+		ImageEx addInterlaced( ImageEx image );
+		ImageEx addProgressive( ImageEx image );
 		
 	public:
 		~Deteleciner(){ clear(); }
 		
-		bool empty() const{ return frame == nullptr; }
-		void clear();
-		ImageEx* process( ImageEx* img );
+		bool empty() const{ return !frame.is_valid(); }
+		void clear(){ frame = ImageEx(); }
+		ImageEx process( ImageEx img );
 };
 
 #endif

@@ -19,55 +19,50 @@
 #include "Deteleciner.hpp"
 #include "ImageEx.hpp"
 
-ImageEx* Deteleciner::addInterlaced( ImageEx* image ){
-	if( !frame ){
+ImageEx Deteleciner::addInterlaced( ImageEx image ){
+	if( !frame.is_valid() ){
 		frame = image;
 		interlaced = true;
-		return nullptr;
+		return ImageEx();
 	}
 	
 	if( interlaced ){
 		interlaced = true;
-		frame->replace_line( *image, true );
-		ImageEx* temp = frame;
+		frame.replace_line( image, true );
+		ImageEx temp = frame;
 		frame = image;
 		return temp;
 	}
 	else{
-		frame->combine_line( *image, true );
-		ImageEx* temp = frame;
+		frame.combine_line( image, true );
+		ImageEx temp = frame;
 		frame = image;
 		interlaced = true;
 		return temp;
 	}
 }
 
-ImageEx* Deteleciner::addProgressive( ImageEx* image ){
-	if( !frame ){
+ImageEx Deteleciner::addProgressive( ImageEx image ){
+	if( !frame.is_valid() ){
 		frame = image;
 		interlaced = false;
-		return nullptr;
+		return ImageEx();
 	}
 	
 	if( interlaced ){
-		image->combine_line( *frame, false );
+		image.combine_line( frame, false );
 		clear();
 		return image;
 	}
 	else{
-		ImageEx* temp = frame;
+		ImageEx temp = frame;
 		frame = image;
 		return temp;
 	}
 }
 
-void Deteleciner::clear(){
-	delete frame;
-	frame = nullptr;
-}
-
-ImageEx* Deteleciner::process( ImageEx* image ){
-	if( image->is_interlaced() )
+ImageEx Deteleciner::process( ImageEx image ){
+	if( image.is_interlaced() )
 		return addInterlaced( image );
 	else
 		return addProgressive( image );

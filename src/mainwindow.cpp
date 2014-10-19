@@ -211,13 +211,10 @@ void main_widget::process_urls( QList<QUrl> urls ){
 		loading_delay += delay.elapsed();
 		
 		//De-telecine
-		if( detelecine ){
-			auto frame = detelecine->process( &img );
-			if( !frame ){
-				img = *frame;
-				delete frame;
-			}
-		}
+		if( detelecine )
+			img = detelecine->process( img );
+		if( !img.is_valid() )
+			continue;
 		
 		//Crop
 		preprocessor.crop_left   = ui->crop_left  ->value();
