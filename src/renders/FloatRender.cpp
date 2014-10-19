@@ -160,7 +160,7 @@ class PointRender3 : public PointRenderBase{
 bool isSubpixel( const AContainer& aligner, unsigned max_count ){
 	for( unsigned j=0; j<max_count; ++j ){
 		auto pos = aligner.pos( j );
-		if( pos.x() != round(pos.x()) || pos.y() != round(pos.y()) )
+		if( pos != pos.round() )
 			return true;
 	}
 	return false;
@@ -227,7 +227,7 @@ ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, APro
 				PointRender2 p( ix + full.x()*scale_x, iy + full.y()*scale_y/*, points*/ );
 				
 				for( unsigned j=0; j<max_count; ++j ){
-					QPointF pos( aligner.pos( j ).x() * scale_x, aligner.pos( j ).y() * scale_y );
+					QPointF pos( aligner.pos( j ).x * scale_x, aligner.pos( j ).y * scale_y );
 					p.add_points( aligner.image( j )[i], pos, scales[j].first, scales[j].second );
 				}
 				

@@ -23,9 +23,9 @@
 #include <limits>
 using namespace std;
 
-pair<Plane,QPointF> RecursiveAligner::combine( const Plane& first, const Plane& second ) const{
+pair<Plane,Point<double>> RecursiveAligner::combine( const Plane& first, const Plane& second ) const{
 	ImageOffset offset = find_offset( first, second );
-	QPointF offset_f( offset.distance_x, offset.distance_y );
+	Point<double> offset_f( offset.distance_x, offset.distance_y );
 	
 	//Wrap planes in ImageContainer
 	//TODO: Optimize this
@@ -53,7 +53,7 @@ Plane RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsigne
 		default: { //More than two images
 				//Reset position
 				for( unsigned i=begin; i<end; i++ )
-					setPos( i, QPointF() );
+					setPos( i, Point<double>() );
 				
 				//Solve sub-areas recursively
 				unsigned middle = amount / 2 + begin;
@@ -64,16 +64,16 @@ Plane RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsigne
 				auto offset = combine( first, second );
 				
 				//Find top-left corner of first
-				QPointF corner1( numeric_limits<double>::max(), numeric_limits<double>::max() );
+				Point<double> corner1( numeric_limits<double>::max(), numeric_limits<double>::max() );
 				for( unsigned i=begin; i<middle; i++ ){
-					corner1.setX( min( corner1.x(), pos(i).x() ) );
-					corner1.setY( min( corner1.y(), pos(i).y() ) );
+					corner1.x = min( corner1.x, pos(i).x );
+					corner1.y = min( corner1.y, pos(i).y );
 				}
 				//Find top-left corner of second
-				QPointF corner2( numeric_limits<double>::max(), numeric_limits<double>::max() );
+				Point<double> corner2( numeric_limits<double>::max(), numeric_limits<double>::max() );
 				for( unsigned i=middle; i<end; i++ ){
-					corner2.setX( min( corner2.x(), pos(i).x() ) );
-					corner2.setY( min( corner2.y(), pos(i).y() ) );
+					corner2.x = min( corner2.x, pos(i).x );
+					corner2.y = min( corner2.y, pos(i).y );
 				}
 				
 				//move all in "middle to end" using the offset

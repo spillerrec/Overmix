@@ -192,9 +192,7 @@ ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AP
 		
 		for( unsigned j=0; j<max_count; j++ ){
 			auto& image = aligner.image( j );
-			Point<> pos(
-					round( (aligner.pos(j).x() - min_point.x())*scale.x )
-				,	round( (aligner.pos(j).y() - min_point.y())*scale.y ) );
+			auto pos = (scale * (aligner.pos(j) - min_point)).round();
 			ScaledPlane plane( image[c], (scale * image[0].getSize()).round() );
 			
 			const Plane& alpha_plane = masks.getAlpha( c, aligner.imageMask( j ), aligner.alpha( j ) );

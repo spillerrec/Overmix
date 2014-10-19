@@ -95,7 +95,7 @@ void ImageAligner::rough_align(){
 		unsigned next = unset[best_unset];
 		unsigned old = set[best_set];
 		ImageOffset offset = get_offset( old, next );
-		setPos( next, pos( old ) + QPointF( offset.distance_x, offset.distance_y ) );
+		setPos( next, pos( old ) + Point<double>( offset.distance_x, offset.distance_y ) );
 		
 		//Update lists;
 		std::swap( unset[best_unset], unset[unset.size()-1] );
@@ -124,8 +124,8 @@ double ImageAligner::total_error() const{
 			ImageOffset offset = get_offset( i, j );
 			if( offset.overlap > 0.25 ){
 				double w = weight_sum / offset.error; //TODO: offset.error == 0 !
-				local_error += std::abs(pos( j ).x() + offset.distance_x - pos( i ).x()) * w;
-				local_error += std::abs(pos( j ).y() + offset.distance_y - pos( i ).y()) * w;
+				local_error += std::abs(pos( j ).x + offset.distance_x - pos( i ).x) * w;
+				local_error += std::abs(pos( j ).y + offset.distance_y - pos( i ).y) * w;
 				weight += w;
 			}
 		}
@@ -159,11 +159,7 @@ void ImageAligner::align( AProcessWatcher* watcher ){
 			
 			ImageOffset& offset = offsets[offset_index++];
 			
-			double new_overlap = calculate_overlap(
-					QPoint( pos( j ).x() - pos( i ).x(), pos( j ).y() - pos( i ).y() )
-				,	image( i )[0]
-				,	image( j )[0]
-				);
+			double new_overlap = calculate_overlap( pos( j ) - pos( i ), image( i )[0], image( j )[0] );
 			
 			rel << "overlap error is: " << std::abs( offset.overlap - new_overlap ) << " (" << offset.overlap << " - " << new_overlap << ")\n";
 			if( std::abs( offset.overlap - new_overlap ) > 0.1 )
@@ -198,8 +194,8 @@ void ImageAligner::align( AProcessWatcher* watcher ){
 				ImageOffset offset = get_offset( j, i );
 				if( offset.overlap > 0.25 ){
 					double w = weight_sum / offset.error * offset.overlap; //TODO: offset.error == 0 !
-					x += (pos( j ).x() + offset.distance_x) * w;
-					y += (pos( j ).y() + offset.distance_y) * w;
+					x += (pos( j ).x + offset.distance_x) * w;
+					y += (pos( j ).y + offset.distance_y) * w;
 					weight += w;
 				}
 			}
@@ -210,7 +206,7 @@ void ImageAligner::align( AProcessWatcher* watcher ){
 	rel << "Fine alignment took: " << t.restart() << " msec\n";
 	
 	for( unsigned i=0; i<count(); ++i )
-		rel << "Image " << i << ": " << pos( i ).x() << "x" << pos( i ).y() << "\n";
+		rel << "Image " << i << ": " << pos( i ).x << "x" << pos( i ).y << "\n";
 	
 	rel.close();
 }

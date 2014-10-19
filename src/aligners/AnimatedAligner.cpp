@@ -77,7 +77,7 @@ class AnimFrame{
 			
 			//Add movement stuff to csv file
 			for( unsigned i=0; i<container.count(); i++ )
-				csv.add( (color_type)container.realIndex(i) ).add( container.pos(i).x() ).add( container.pos(i).y() ).stop();
+				csv.add( (color_type)container.realIndex(i) ).add( container.pos(i).x ).add( container.pos(i).y ).stop();
 			csv.stop();
 		}
 };

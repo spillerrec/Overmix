@@ -18,8 +18,8 @@
 #ifndef A_CONTAINER_HPP
 #define A_CONTAINER_HPP
 
+#include "../Geometry.hpp"
 #include <QRect>
-#include <QPointF>
 
 class ImageEx;
 class Plane;
@@ -32,15 +32,15 @@ class AContainer{
 		virtual int imageMask( unsigned ) const{ return -1; }
 		virtual const Plane& mask( unsigned index ) const;
 		virtual unsigned maskCount() const{ return 0; }
-		virtual QPointF pos( unsigned index ) const = 0;
-		virtual void setPos( unsigned index, QPointF newVal ) = 0;
+		virtual Point<double> pos( unsigned index ) const = 0;
+		virtual void setPos( unsigned index, Point<double> newVal ) = 0;
 		virtual int frame( unsigned index ) const = 0;
 		virtual void setFrame( unsigned index, int newVal ) = 0;
 		virtual ~AContainer() { }
 		
 	public:
 		QRect size() const;
-		QPointF minPoint() const;
+		Point<double> minPoint() const;
 		void resetPosition();
 		void offsetAll( double dx, double dy );
 };

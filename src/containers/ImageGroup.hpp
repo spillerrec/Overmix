@@ -22,7 +22,6 @@
 #include "AContainer.hpp"
 
 #include <QString>
-#include <QPointF>
 #include <vector>
 
 class ImageItem{
@@ -33,7 +32,7 @@ class ImageItem{
 		int mask_id{ -1 };
 		
 	public:
-		QPointF offset;
+		Point<double> offset;
 		int frame{ -1 };
 		
 		ImageItem( QString filename, ImageEx&& img )
@@ -71,8 +70,8 @@ class ImageGroup : public AContainer{
 		virtual const Plane& alpha( unsigned index ) const override{ return items[index].alpha( masks ); }
 		virtual const Plane& mask( unsigned index ) const override{ return masks[index]; }
 		virtual unsigned maskCount() const override{ return masks.size(); }
-		virtual QPointF pos( unsigned index ) const{ return items[index].offset; }
-		virtual void setPos( unsigned index, QPointF newVal ){ items[index].offset = newVal; }
+		virtual Point<double> pos( unsigned index ) const{ return items[index].offset; }
+		virtual void setPos( unsigned index, Point<double> newVal ){ items[index].offset = newVal; }
 		virtual int frame( unsigned index ) const{ return items[index].frame; }
 		virtual void setFrame( unsigned index, int newVal ){ items[index].frame = newVal; }
 };

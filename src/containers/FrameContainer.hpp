@@ -32,8 +32,8 @@ class FrameContainer : public AContainer{
 		virtual const Plane& alpha( unsigned index ) const override{ return container.alpha( indexes[index] ); }
 		virtual const Plane& mask( unsigned index ) const override{ return container.mask( indexes[index] ); }
 		virtual unsigned maskCount() const override{ return container.maskCount(); }
-		virtual QPointF pos( unsigned index ) const override{ return container.pos( indexes[index] ); }
-		virtual void setPos( unsigned index, QPointF newVal ) override{ return container.setPos( indexes[index], newVal ); }
+		virtual Point<double> pos( unsigned index ) const override{ return container.pos( indexes[index] ); }
+		virtual void setPos( unsigned index, Point<double> newVal ) override{ return container.setPos( indexes[index], newVal ); }
 		virtual int frame( unsigned index ) const override{ return container.frame( index ); }
 		virtual void setFrame( unsigned index, int newVal ) override{ return container.setFrame( index, newVal ); }
 		

@@ -23,7 +23,7 @@
 
 class RecursiveAligner : public AImageAligner{
 	protected:
-		std::pair<Plane,QPointF> combine( const Plane& first, const Plane& second ) const;
+		std::pair<Plane,Point<double>> combine( const Plane& first, const Plane& second ) const;
 		Plane align( AProcessWatcher* watcher, unsigned begin, unsigned end );
 	public:
 		RecursiveAligner( AContainer& container, AlignMethod method, double scale=1.0 )

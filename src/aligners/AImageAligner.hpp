@@ -43,7 +43,7 @@ class AImageAligner : public AContainer{
 			double error;
 			double overlap;
 		};
-		static double calculate_overlap( QPoint offset, const Plane& img1, const Plane& img2 );
+		static double calculate_overlap( Point<> offset, const Plane& img1, const Plane& img2 );
 		
 	public: //TODO:
 		ImageOffset find_offset( const Plane& img1, const Plane& img2 ) const;
@@ -71,8 +71,8 @@ class AImageAligner : public AContainer{
 		int imageMask( unsigned index ) const override{ return container.imageMask( index ); }
 		const Plane& mask( unsigned index ) const override{ return container.mask( index ); }
 		unsigned maskCount() const override{ return container.maskCount(); }
-		QPointF pos( unsigned index ) const;
-		void setPos( unsigned index, QPointF newVal );
+		Point<double> pos( unsigned index ) const;
+		void setPos( unsigned index, Point<double> newVal );
 		int frame( unsigned index ) const{ return container.frame( index ); }
 		void setFrame( unsigned index, int newVal ){ container.setFrame( index, newVal ); }
 		

@@ -48,12 +48,12 @@ const Plane& ImageContainer::alpha( unsigned index ) const{
 	return groups[pos.group].alpha( pos.index );
 }
 
-QPointF ImageContainer::pos( unsigned index ) const{
+Point<double> ImageContainer::pos( unsigned index ) const{
 	auto pos = indexes[index];
 	return groups[pos.group].pos( pos.index );
 }
 
-void ImageContainer::setPos( unsigned index, QPointF newVal ){
+void ImageContainer::setPos( unsigned index, Point<double> newVal ){
 	auto pos = indexes[index];
 	groups[pos.group].setPos( pos.index, newVal );
 }

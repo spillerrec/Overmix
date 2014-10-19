@@ -86,8 +86,8 @@ struct Point{
 	}
 	template<typename T2>
 	Point<T>& operator-=( const Point<T2>& other ){
-		x += other.x;
-		y += other.y;
+		x -= other.x;
+		y -= other.y;
 		return *this;
 	}
 	template<typename T2>
@@ -129,8 +129,8 @@ struct Point{
 	}
 	template<typename T2>
 	Point<T>& operator-=( T2 other ) const{
-		x += other;
-		y += other;
+		x -= other;
+		y -= other;
 		return *this;
 	}
 	template<typename T2>

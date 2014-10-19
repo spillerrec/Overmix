@@ -32,7 +32,7 @@ QRect AContainer::size() const{
 	QRectF total;
 	
 	for( unsigned i=0; i<count(); i++ )
-		total = total.united( QRectF( pos(i), QSizeF( image(i).get_width(), image(i).get_height() ) ) );
+		total = total.united( QRectF( { pos(i).x, pos(i).y }, QSizeF( image(i).get_width(), image(i).get_height() ) ) );
 	
 	//Round so that we only increase size
 	total.setLeft( floor( total.left() ) );
@@ -44,16 +44,16 @@ QRect AContainer::size() const{
 	return total.toRect();
 }
 
-QPointF AContainer::minPoint() const{
+Point<double> AContainer::minPoint() const{
 	if( count() == 0 )
-		return QPointF(0,0);
+		return { 0, 0 };
 	
-	QPointF min = pos( 0 );
+	Point<double> min = pos( 0 );
 	for( unsigned i=0; i<count(); i++ ){
-		if( pos(i).x() < min.x() )
-			min.setX( pos(i).x() );
-		if( pos(i).y() < min.y() )
-			min.setY( pos(i).y() );
+		if( pos(i).x < min.x )
+			min.x = pos(i).x;
+		if( pos(i).y < min.y )
+			min.y = pos(i).y;
 	}
 	
 	return min;
@@ -65,7 +65,7 @@ void AContainer::resetPosition(){
 }
 
 void AContainer::offsetAll( double dx, double dy ){
-	QPointF offset( dx, dy );
+	Point<double> offset( dx, dy );
 	for( unsigned i=0; i<count(); i++ )
 		setPos( i, pos( i ) + offset );
 }

@@ -61,9 +61,9 @@ void AImageAligner::addImages(){
 	}
 }
 
-double AImageAligner::calculate_overlap( QPoint offset, const Plane& img1, const Plane& img2 ){
+double AImageAligner::calculate_overlap( Point<> offset, const Plane& img1, const Plane& img2 ){
 	QRect first( 0,0, img1.get_width(), img1.get_height() );
-	QRect second( offset, QSize(img2.get_width(), img2.get_height()) );
+	QRect second( { offset.x, offset.y }, QSize(img2.get_width(), img2.get_height()) );
 	QRect common = first.intersected( second );
 	
 	double area = first.width() * first.height();
@@ -74,7 +74,7 @@ AImageAligner::ImageOffset AImageAligner::find_offset( const Plane& img1, const 
 	//Keep repeating with higher levels until it drops
 	//below threshold
 	int level = 1; //TODO: magic number
-	std::pair<QPoint,double> result;
+	std::pair<Point<>,double> result;
 	DiffCache cache;
 	
 	//Restrict movement
@@ -94,8 +94,8 @@ AImageAligner::ImageOffset AImageAligner::find_offset( const Plane& img1, const 
 	}while( result.second > 0.10*color::WHITE && level++ < 6 ); //TODO: magic number!
 	
 	ImageOffset offset;
-	offset.distance_x = result.first.x();
-	offset.distance_y = result.first.y();
+	offset.distance_x = result.first.x;
+	offset.distance_y = result.first.y;
 	offset.error = result.second;
 	offset.overlap = calculate_overlap( result.first, img1, img2 );
 	
@@ -109,16 +109,16 @@ const ImageEx& AImageAligner::image( unsigned index ) const{
 		return container.image( index );
 }
 
-QPointF AImageAligner::pos( unsigned index ) const{
+Point<double> AImageAligner::pos( unsigned index ) const{
 	auto pos = container.pos( index );
 	if( raw )
-		return QPointF( pos.x() * x_scale(), pos.y() * y_scale() );
+		return { pos.x * x_scale(), pos.y * y_scale() };
 	else
 		return pos;
 }
-void AImageAligner::setPos( unsigned index, QPointF newVal ){
+void AImageAligner::setPos( unsigned index, Point<double> newVal ){
 	if( raw )
-		container.setPos( index, QPointF( newVal.x() / x_scale(), newVal.y() / y_scale() ) );
+		container.setPos( index, { newVal.x / x_scale(), newVal.y / y_scale() } );
 	else
 		container.setPos( index, newVal );
 }
@@ -142,13 +142,13 @@ void AImageAligner::debug( QString csv_file ) const{
 	//Write alignment info
 	for( unsigned i=0; i<count(); i++ ){
 		rel << i+1 << ", ";
-		rel << pos(i).x() << ", ";
-		rel << pos(i).y() << ", ";
+		rel << pos(i).x << ", ";
+		rel << pos(i).y << ", ";
 		
 		if( i > 0 ){
-			QPointF diff = pos(i) - pos(i-1);
-			rel << diff.x() << ", ";
-			rel << diff.y();
+			auto diff = pos(i) - pos(i-1);
+			rel << diff.x << ", ";
+			rel << diff.y;
 		}
 		rel << "\n";
 	}

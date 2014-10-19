@@ -35,8 +35,8 @@ class StaticDiff{
 		unsigned amount{ 0 };
 		precision_color_type sum{ color::BLACK };
 		
-		QPoint offset;
-		QPoint absolute;
+		Point<double> offset;
+		Point<double> absolute;
 		
 	public:
 		StaticDiff( const AContainer& aligner, const ImageEx& ref, unsigned x, unsigned y )
@@ -47,11 +47,11 @@ class StaticDiff{
 		
 		void add_image( unsigned index ){
 			//Get the actual color
-			color_type actual = aligner.image( index )[0].pixel( offset.x(), offset.y() );
+			color_type actual = aligner.image( index )[0].pixel( offset.x, offset.y );
 			
 			//Find the expected color
-			QPoint pos = (aligner.pos( index ) + offset - absolute).toPoint();
-			color_type expected = reference[0].pixel( pos.x(), pos.y() );
+			auto pos = (aligner.pos( index ) + offset - absolute).round();
+			color_type expected = reference[0].pixel( pos.x, pos.y );
 			
 			//Add it to the sum
 			sum += abs( actual - expected );

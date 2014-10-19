@@ -208,8 +208,8 @@ ImageEx SimpleRender::render( const AContainer& aligner, unsigned max_count, APr
 			for( unsigned j=0; j<max_count; j++ ){
 				info.push_back( PlaneItInfo(
 						const_cast<Plane&>( aligner.image( j )[i] ) //TODO: FIX!!!
-					,	round( aligner.pos(j).x()*scale_x )
-					,	round( aligner.pos(j).y()*scale_y )
+					,	round( aligner.pos(j).x*scale_x )
+					,	round( aligner.pos(j).y*scale_y )
 					) );
 				
 				if( use_plane_alpha ){
@@ -217,8 +217,8 @@ ImageEx SimpleRender::render( const AContainer& aligner, unsigned max_count, APr
 					
 					info.push_back( PlaneItInfo(
 							const_cast<Plane&>(current_alpha ? current_alpha : fake_alpha) //TODO: FIX!!!
-						,	round( aligner.pos(j).x()*scale_x )
-						,	round( aligner.pos(j).y()*scale_y )
+						,	round( aligner.pos(j).x*scale_x )
+						,	round( aligner.pos(j).y*scale_y )
 						) );
 				}
 			}
@@ -230,14 +230,14 @@ ImageEx SimpleRender::render( const AContainer& aligner, unsigned max_count, APr
 					watcher->setCurrent( i*2000 + (j * 1000 / max_count) );
 				
 				Plane p = aligner.image( j )[i].scale_cubic( aligner.image( j )[i].get_width(), aligner.image( j )[i].get_height() );
-				QPoint pos = aligner.pos(j).toPoint();
+				auto pos = aligner.pos(j).round();
 				temp.push_back( p );
-				info.push_back( PlaneItInfo( temp[temp.size()-1], pos.x(),pos.y() ) );
+				info.push_back( PlaneItInfo( temp[temp.size()-1], pos.x,pos.y ) );
 				
 				if( use_plane_alpha ){
 					//Alpha
 					const Plane& current_alpha = aligner.alpha( j );
-					info.push_back( PlaneItInfo( const_cast<Plane&>(current_alpha ? current_alpha : fake_alpha), pos.x(),pos.y() ) );  //TODO: FIX!!!
+					info.push_back( PlaneItInfo( const_cast<Plane&>(current_alpha ? current_alpha : fake_alpha), pos.x,pos.y ) );  //TODO: FIX!!!
 				}
 			}
 		}
