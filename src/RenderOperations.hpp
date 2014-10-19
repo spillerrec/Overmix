@@ -152,7 +152,7 @@ class RenderPipeThreshold : public ARenderPipe{
 							temp.apply( &Plane::dilate, size );
 					break;
 					
-				case 2: temp[0].binarize_adaptive( size, threshold ); break;
+				case 2: temp[0].binarize_adaptive( size, threshold >> 6 ); break;
 				case 3: temp[0].binarize_dither(); break;
 				default: break;
 			}

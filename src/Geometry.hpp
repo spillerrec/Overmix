@@ -141,8 +141,8 @@ struct Point{
 	}
 	template<typename T2>
 	Point<T>& operator/=( T2 other ) const{
-		x *= other;
-		y *= other;
+		x /= other;
+		y /= other;
 		return *this;
 	}
 	
