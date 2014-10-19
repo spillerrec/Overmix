@@ -164,7 +164,7 @@ ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AP
 	//Determine if we need to care about alpha per plane
 	bool use_plane_alpha = false;
 	for( unsigned i=0; i<max_count; ++i )
-		if( aligner.alpha( i ) ){
+		if( aligner.alpha( i ) || aligner.imageMask( i ) >= 0 ){
 			use_plane_alpha = true;
 			break;
 		}

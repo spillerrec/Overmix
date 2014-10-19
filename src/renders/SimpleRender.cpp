@@ -107,7 +107,14 @@ static void render_average_alpha( MultiPlaneIterator &it, unsigned offset, AProc
 			it[1] = color::WHITE;
 		}
 		else{
-			it[0] = color::BLACK;
+			precision_color_type full_avg = 0;
+			unsigned count = 0;
+			for( unsigned i=2; i<it.size(); i+=2 )
+				if( it.valid( i ) ){
+					full_avg += it[i];
+					count++;
+				}
+			it[0] = count != 0 ? full_avg / count : color::BLACK;
 			it[1] = color::BLACK;
 		}
 	}, watcher, offset );

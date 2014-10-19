@@ -19,6 +19,7 @@
 #include "DiffRender.hpp"
 #include "SimpleRender.hpp"
 #include "../containers/AContainer.hpp"
+#include "../containers/DelegatedContainer.hpp"
 #include "../color.hpp"
 #include "../ImageEx.hpp"
 
@@ -63,34 +64,27 @@ class StaticDiff{
 		}
 };
 
-ImageEx DiffRender::render( const AContainer& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
-	if( max_count > aligner.count() )
-		max_count = aligner.count();
-	
+class FakeMask : public DelegatedContainer{
+	public:
+		Plane fakemask;
+		FakeMask( const AContainer& con, Plane mask ) : DelegatedContainer(con), fakemask(mask) { }
+		
+		virtual const Plane& mask( unsigned ) const override{ return fakemask; }
+		virtual const Plane& alpha( unsigned ) const override{ return fakemask; }
+		virtual int imageMask( unsigned ) const override{ return 0; }
+		virtual unsigned maskCount() const override{ return 1; }
+};
+
+Plane DiffRender::iteration( const AContainer& aligner, unsigned max_count, Size<unsigned> size ) const{
 	//Normal render
 	ImageEx avg = SimpleRender( SimpleRender::FOR_MERGING ).render( aligner, max_count );
 	
-	//Find the smallest shared size
-	QSize size = aligner.size().size(); //No image is larger than the final result
-	for( unsigned i=0; i<max_count; i++ ){
-		size.setWidth( min( (unsigned)size.width(), aligner.image(i).get_width() ) );
-		size.setHeight( min( (unsigned)size.height(), aligner.image(i).get_height() ) );
-	}
-	
 	//Create final output image based on the smallest size
-	ImageEx img( ImageEx::GRAY );
-	img.create( size.width(), size.height() );
-	Plane& output = img[0];
-	
-	if( watcher )
-		watcher->setTotal( 1000 );
+	Plane output( size );
 	
 	//Iterate over each pixel in the output image
 	for( unsigned iy=0; iy<output.get_height(); iy++ ){
-		if( watcher )
-			watcher->setCurrent( iy * 1000 / output.get_height() );
-		
-		color_type* out = output.scan_line( iy );
+		auto out = output.scan_line( iy );
 		for( unsigned ix=0; ix<output.get_width(); ix++ ){
 			//Set the pixel to the static difference of all the images until max_count
 			StaticDiff diff( aligner, avg, ix, iy );
@@ -102,7 +96,34 @@ ImageEx DiffRender::render( const AContainer& aligner, unsigned max_count, AProc
 		}
 	}
 	
-	img.apply( &Plane::normalize );
+	return output.normalize();
+}
+
+ImageEx DiffRender::render( const AContainer& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
+	if( max_count > aligner.count() )
+		max_count = aligner.count();
+	
+	//Find the smallest shared size
+	Size<unsigned> size = aligner.size().size(); //No image is larger than the final result
+	for( unsigned i=0; i<max_count; i++ ){
+		size.width() = min( size.width(), aligner.image(i).get_width() );
+		size.height() = min( size.height(), aligner.image(i).get_height() );
+	}
+	
+	Plane init( size );
+	init.fill( color::WHITE );
+	FakeMask fake( aligner, init );
+	
+	for( int i=0; i<2; i++ ){
+		fake.fakemask.binarize_threshold( color::WHITE / 2 );
+		fake.fakemask = fake.fakemask.dilate( 10 );
+		fake.fakemask = iteration( fake, max_count, size );
+	}
+	
+	//Create output image
+	ImageEx img( ImageEx::GRAY );
+	img.create( size.width(), size.height() );
+	img[0] = fake.fakemask;
 	return img;
 }
 

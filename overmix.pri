@@ -10,7 +10,7 @@ HEADERS += $$PWD/src/MultiPlaneIterator.hpp $$PWD/src/color.hpp $$PWD/src/ImageE
 SOURCES += $$PWD/src/MultiPlaneIterator.cpp $$PWD/src/color.cpp $$PWD/src/ImageEx.cpp $$PWD/src/Deteleciner.cpp  $$PWD/src/Preprocessor.cpp
 
 # Containers
-HEADERS += $$PWD/src/containers/AContainer.hpp $$PWD/src/containers/ImageContainer.hpp $$PWD/src/containers/ImageGroup.hpp
+HEADERS += $$PWD/src/containers/AContainer.hpp $$PWD/src/containers/ImageContainer.hpp $$PWD/src/containers/ImageGroup.hpp $$PWD/src/containers/DelegatedContainer.hpp
 SOURCES += $$PWD/src/containers/AContainer.cpp $$PWD/src/containers/ImageContainer.cpp
 
 # Planes

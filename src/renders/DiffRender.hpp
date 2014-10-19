@@ -20,7 +20,13 @@
 
 #include "ARender.hpp"
 
+#include "../Geometry.hpp"
+
+class Plane;
+
 class DiffRender : public ARender{
+	private:
+		Plane iteration( const AContainer& aligner, unsigned max_count, Size<unsigned> size ) const;
 	public:
 		virtual ImageEx render( const AContainer& aligner, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const override;
 };
