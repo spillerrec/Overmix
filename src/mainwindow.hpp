@@ -26,6 +26,7 @@
 #include "ImageEx.hpp"
 #include "viewer/imageViewer.h"
 
+#include "Deteleciner.hpp"
 #include "RenderOperations.hpp"
 
 class AImageAligner;
@@ -50,7 +51,7 @@ class main_widget: public QMainWindow{
 		
 		AImageAligner *aligner{ nullptr };
 		ImageEx temp_ex;
-		Deteleciner *detelecine{ nullptr };
+		Deteleciner detelecine;
 		
 		int alpha_mask{ -1 };
 		

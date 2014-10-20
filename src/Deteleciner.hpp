@@ -22,6 +22,8 @@
 
 class Deteleciner{
 	private:
+		bool active{ false };
+		
 		ImageEx frame;
 		bool interlaced{ false };
 		
@@ -29,10 +31,16 @@ class Deteleciner{
 		ImageEx addProgressive( ImageEx image );
 		
 	public:
-		~Deteleciner(){ clear(); }
-		
-		bool empty() const{ return !frame.is_valid(); }
-		void clear(){ frame = ImageEx(); }
+		bool isActive() const{ return active; }
+		void setEnabled( bool on ){
+			active = on;
+			if( !active )
+				clear();
+		}
+		void clear(){
+			interlaced = false;
+			frame = ImageEx();
+		}
 		ImageEx process( ImageEx img );
 };
 

@@ -144,7 +144,6 @@ void main_widget::resize_color(){        resize_groupbox( ui->color_group ); }
 
 main_widget::~main_widget(){
 	clear_image();
-	delete detelecine;
 }
 
 
@@ -211,8 +210,8 @@ void main_widget::process_urls( QList<QUrl> urls ){
 		loading_delay += delay.elapsed();
 		
 		//De-telecine
-		if( detelecine )
-			img = detelecine->process( img );
+		if( detelecine.isActive() )
+			img = detelecine.process( img );
 		if( !img.is_valid() )
 			continue;
 		
@@ -394,9 +393,7 @@ void main_widget::clear_cache(){
 void main_widget::clear_image(){
 	clear_cache();
 	clear_mask();
-	
-	if( detelecine )
-		detelecine->clear();
+	detelecine.clear();
 	
 	pipe_scaling.invalidate();
 	pipe_deconvolve.invalidate();
@@ -460,25 +457,7 @@ void main_widget::subpixel_align_image(){
 }
 
 void main_widget::change_interlace(){
-	bool value = ui->cbx_interlaced->isChecked();
-	if( value ){
-		if( !detelecine )
-			detelecine = new Deteleciner();
-		ui->cbx_interlaced->setChecked( true );
-	}
-	else{
-		if( detelecine ){
-			if( !detelecine->empty() ){
-				ui->cbx_interlaced->setChecked( true );
-				return; //We can't change, detelecining still in progress
-			}
-				
-			delete detelecine;
-			detelecine = nullptr;
-		}
-		
-		ui->cbx_interlaced->setChecked( false );
-	}
+	detelecine.setEnabled( ui->cbx_interlaced->isChecked() );
 }
 
 void main_widget::set_alpha_mask(){

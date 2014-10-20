@@ -62,6 +62,9 @@ ImageEx Deteleciner::addProgressive( ImageEx image ){
 }
 
 ImageEx Deteleciner::process( ImageEx image ){
+	if( !active )
+		return image;
+	
 	if( image.is_interlaced() )
 		return addInterlaced( image );
 	else
