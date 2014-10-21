@@ -79,8 +79,10 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	,	settings( "spillerrec", "overmix" )
 #endif
 	,	viewer( settings, (QWidget*)this )
+	,	browser( settings, (QWidget*)this )
 	,	preprocessor( preprocessor )
 	,	images( images )
+	,	img_model( images )
 {
 	ui->setupUi(this);
 	
@@ -128,9 +130,14 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	//Refresh info labels
 	refresh_text();
 	
+	//Init files model
+	ui->files_view->setModel( &img_model );
+	
 	setAcceptDrops( true );
-	ui->main_layout->addWidget( &viewer );
-	viewer.setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
+	ui->preview_layout->addWidget( &viewer );
+	ui->files_layout  ->addWidget( &browser );
+	viewer .setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
+	browser.setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
 	
 	save_dir = settings.value( "save_directory", "." ).toString();
 	if( settings.value( "remember_position", true ).toBool() )
@@ -198,6 +205,7 @@ void main_widget::process_urls( QList<QUrl> urls ){
 	QFuture<ImageEx> img_loader = QtConcurrent::run( load, urls[0] );
 	
 	for( int i=0; i<urls.count(); i++ ){
+		auto file = urls[i].toLocalFile();
 		progress.setValue( i );
 		
 		QTime delay;
@@ -210,8 +218,11 @@ void main_widget::process_urls( QList<QUrl> urls ){
 		loading_delay += delay.elapsed();
 		
 		//De-telecine
-		if( detelecine.isActive() )
+		if( detelecine.isActive() ){
 			img = detelecine.process( img );
+			file = ""; //The result might be a bit of several files
+			//TODO: somehow provide info about the detelecine process?
+		}
 		if( !img.is_valid() )
 			continue;
 		
@@ -231,7 +242,7 @@ void main_widget::process_urls( QList<QUrl> urls ){
 		preprocessor.scale_y = ui->pre_scale_height->value();
 		
 		preprocessor.processFile( img );
-		images.addImage( std::move( img ), alpha_mask ); //TODO: get filename
+		images.addImage( std::move( img ), alpha_mask, -1, file );
 		
 		if( progress.wasCanceled() )
 			break;
@@ -243,6 +254,7 @@ void main_widget::process_urls( QList<QUrl> urls ){
 	refresh_text();
 	update_draw();
 	update();
+	ui->files_view->reset();
 }
 
 

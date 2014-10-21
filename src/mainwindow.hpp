@@ -26,6 +26,8 @@
 #include "ImageEx.hpp"
 #include "viewer/imageViewer.h"
 
+#include "gui/ImagesModel.hpp"
+
 #include "Deteleciner.hpp"
 #include "RenderOperations.hpp"
 
@@ -45,6 +47,7 @@ class main_widget: public QMainWindow{
 		QString save_dir;
 		
 		imageViewer viewer;
+		imageViewer browser;
 		Preprocessor& preprocessor;
 		ImageContainer& images;
 		QImage temp;
@@ -54,6 +57,8 @@ class main_widget: public QMainWindow{
 		Deteleciner detelecine;
 		
 		int alpha_mask{ -1 };
+		
+		ImagesModel img_model;
 		
 		void clear_cache();
 		

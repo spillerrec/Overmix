@@ -20,7 +20,7 @@
 
 void ImageContainer::addImage( ImageEx&& img, int mask, int group, QString filepath ){
 	if( groups.size() == 0 )
-		groups.emplace_back( "", masks );
+		groups.emplace_back( "Auto group", masks );
 	
 	ImageItem item{ filepath, std::move(img) };
 	item.setSharedMask( mask );

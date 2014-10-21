@@ -58,11 +58,8 @@ class PlaneBase{
 		
 	//Drawing methods
 		void fill( T value ){
-			for( unsigned iy=0; iy<get_height(); ++iy ){
-				T* row = scan_line( iy );
-				for( unsigned ix=0; ix<get_width(); ++ix )
-					row[ix] = value;
-			}
+			for( auto& x : data )
+				x = value;
 		}
 		void copy( int x, int y, const PlaneBase& from ){
 			//TODO: check ranges

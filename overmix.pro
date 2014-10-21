@@ -11,10 +11,13 @@ unix{
 
 include(overmix.pri)
 
+QMAKE_CXXFLAGS_DEBUG += -pg
+QMAKE_LFLAGS_DEBUG += -pg
+
 # Interface
 FORMS += src/mainwindow.ui
-HEADERS += src/mainwindow.hpp
-SOURCES += src/mainwindow.cpp src/main.cpp
+HEADERS += src/mainwindow.hpp src/gui/ImagesModel.hpp
+SOURCES += src/mainwindow.cpp src/gui/ImagesModel.cpp src/main.cpp
 
 #Viewer
 HEADERS += src/viewer/colorManager.h \

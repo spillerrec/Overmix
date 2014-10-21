@@ -26,17 +26,17 @@
 
 class ImageItem{
 	private:
-		QString filename;
 		ImageEx img;
 		Plane mask;
 		int mask_id{ -1 };
 		
 	public:
+		QString filename;
 		Point<double> offset;
 		int frame{ -1 };
 		
 		ImageItem( QString filename, ImageEx&& img )
-			:	filename(filename), img(img) { }
+			:	img(img), filename(filename) { }
 		
 		const ImageEx& image() const{ return img; }
 		int maskId() const{ return mask_id; }
