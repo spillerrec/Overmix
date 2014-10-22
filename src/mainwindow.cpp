@@ -132,6 +132,7 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	
 	//Init files model
 	ui->files_view->setModel( &img_model );
+	ui->files_view->setColumnWidth( 0, 120 );
 	
 	setAcceptDrops( true );
 	ui->preview_layout->addWidget( &viewer );

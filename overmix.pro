@@ -11,8 +11,7 @@ unix{
 
 include(overmix.pri)
 
-QMAKE_CXXFLAGS_DEBUG += -pg
-QMAKE_LFLAGS_DEBUG += -pg
+QMAKE_CXXFLAGS_DEBUG += -O2
 
 # Interface
 FORMS += src/mainwindow.ui

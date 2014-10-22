@@ -18,6 +18,8 @@
 
 #include "ImagesModel.hpp"
 
+#include <QFileInfo>
+
 
 QModelIndex ImagesModel::index( int row, int column, const QModelIndex& parent ) const{
 	//Root/Group level
@@ -80,11 +82,25 @@ QVariant ImagesModel::data( const QModelIndex& index, int role ) const{
 	auto& item = group.items[index.row()];
 	
 	switch( index.column() ){
-		case 0: return item.filename;
+		case 0: return QFileInfo( item.filename ).fileName();
 		case 1: return item.offset.x;
 		case 2: return item.offset.y;
 		case 3: return item.maskId();
 		case 4: return item.frame;
+		default: return QVariant();
+	}
+}
+
+QVariant ImagesModel::headerData( int section, Qt::Orientation orien, int role ) const{
+	if( orien!=Qt::Horizontal || role != Qt::DisplayRole || section >= 5 )
+		return QVariant();
+	
+	switch( section ){
+		case 0: return "File";
+		case 1: return "x";
+		case 2: return "y";
+		case 3: return "Mask";
+		case 4: return "Frame";
 		default: return QVariant();
 	}
 }
