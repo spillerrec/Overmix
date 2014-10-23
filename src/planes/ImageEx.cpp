@@ -80,19 +80,63 @@ bool ImageEx::read_dump_plane( QIODevice &dev ){
 	return true;
 }
 
+bool ImageEx::from_dump( QIODevice& dev ){
+	while( read_dump_plane( dev ) ); //Load all planes
+	
+	//Use last plane as Alpha
+	auto amount = planes.size();
+	if( amount == 2 || amount == 4 ){
+		alpha = std::move( planes.back() );
+		planes.pop_back();
+	}
+	
+	//Find type and validate
+	type = (amount == 1) ? GRAY : YUV;
+	return amount < 4;
+}
+
 bool ImageEx::from_dump( QString path ){
 	QFile f( path );
 	if( !f.open( QIODevice::ReadOnly ) )
 		return false;
 	
-	bool result = true;
-	result &= read_dump_plane( f );
-	result &= read_dump_plane( f );
-	result &= read_dump_plane( f );
+	return from_dump( f );
+}
+
+static DumpPlane toDumpPlane( const Plane& plane, unsigned depth ){
+	bool multi_byte = depth > 8;
+	auto power = std::pow( 2, depth ) - 1;
+	vector<uint8_t> data( plane.get_width() * plane.get_height() * (multi_byte?2:1) );
 	
-	type = YUV;
+	for( unsigned iy=0; iy<plane.get_height(); iy++ ){
+		auto *row = plane.const_scan_line( iy );
+		if( multi_byte )
+			for( unsigned ix=0; ix<plane.get_width(); ix++ ){
+				uint16_t val = color::asDouble( row[ix] ) * power;
+				data[ix*2 + 0 + plane.get_width()*iy*2] = val & 0x00FF;
+				data[ix*2 + 1 + plane.get_width()*iy*2] = (val & 0xFF00) >> 8;
+			}
+		else
+			for( unsigned ix=0; ix<plane.get_width(); ix++ ){
+				uint16_t val = color::asDouble( row[ix] ) * power;
+				data[ix + plane.get_width()*iy] = val;
+			}
+	}
 	
-	return result;
+	return DumpPlane( plane.get_width(), plane.get_height(), depth, data );
+}
+
+bool ImageEx::saveDump( QIODevice& dev, unsigned depth, bool compression ) const{
+	auto method = compression ? DumpPlane::LZMA : DumpPlane::NONE;
+	for( auto& plane : planes )
+		if( !toDumpPlane( plane, depth ).write( dev, method ) )
+			return false;
+	
+	if( alpha )
+		if( !toDumpPlane( alpha, depth ).write( dev, method ) )
+			return false;
+	
+	return true;
 }
 
 bool ImageEx::saveDump( QString path, unsigned depth ) const{
@@ -100,32 +144,7 @@ bool ImageEx::saveDump( QString path, unsigned depth ) const{
 	if( !f.open( QIODevice::WriteOnly ) )
 		return false;
 	
-	bool multi_byte = depth > 8;
-	
-	for( auto& plane : planes ){
-		vector<uint8_t> data( plane.get_width() * plane.get_height() * (multi_byte?2:1) );
-		auto power = std::pow( 2, depth ) - 1;
-		
-		for( unsigned iy=0; iy<plane.get_height(); iy++ ){
-			auto *row = plane.const_scan_line( iy );
-			if( multi_byte )
-				for( unsigned ix=0; ix<plane.get_width(); ix++ ){
-					uint16_t val = color::asDouble( row[ix] ) * power;
-					data[ix*2 + 0 + plane.get_width()*iy*2] = val & 0x00FF;
-					data[ix*2 + 1 + plane.get_width()*iy*2] = (val & 0xFF00) >> 8;
-				}
-			else
-				for( unsigned ix=0; ix<plane.get_width(); ix++ ){
-					uint16_t val = color::asDouble( row[ix] ) * power;
-					data[ix + plane.get_width()*iy] = val;
-				}
-		}
-		
-		if( !DumpPlane( plane.get_width(), plane.get_height(), depth, data ).write( f ) )
-			return false;
-	}
-	
-	return true;
+	return saveDump( f, depth, true );
 }
 
 static int read_chunk_callback_thing( png_structp, png_unknown_chunkp ){

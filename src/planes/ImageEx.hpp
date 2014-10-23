@@ -48,7 +48,8 @@ class ImageEx{
 		std::vector<Plane> planes;
 		Plane alpha;
 		system type;
-		bool read_dump_plane( QIODevice &dev );
+		bool read_dump_plane( QIODevice& dev );
+		bool from_dump( QIODevice& dev );
 		bool from_dump( QString path );
 		bool from_png( const char* path );
 		bool from_qimage( QString path );
@@ -102,6 +103,7 @@ class ImageEx{
 		bool is_valid() const{ return planes.size() > 0; }
 		
 		bool read_file( QString path );
+		bool saveDump( QIODevice& dev, unsigned depth, bool compression ) const;
 		bool saveDump( QString path, unsigned depth=10 ) const;
 		Plane& alpha_plane(){ return alpha; }
 		const Plane& alpha_plane() const{ return alpha; }
