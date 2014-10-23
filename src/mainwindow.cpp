@@ -46,6 +46,7 @@
 #include <QMimeData>
 #include <QDragEnterEvent>
 #include <QDropEvent>
+#include <QInputDialog>
 #include <QImage>
 #include <QPainter>
 #include <QFileDialog>
@@ -137,6 +138,7 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	ui->files_view->setSelectionModel( &img_selection );
 	connect( &img_selection, SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&))
 			, this, SLOT(browserChangeImage(const QItemSelection&, const QItemSelection&)) );
+	connect( ui->btn_add_group, SIGNAL(clicked()), this, SLOT(addGroup()) );
 	
 	setAcceptDrops( true );
 	ui->preview_layout->addWidget( &viewer );
@@ -505,10 +507,17 @@ void main_widget::update_draw(){
 }
 
 
+void main_widget::addGroup(){
+	auto name = QInputDialog::getText( this, tr("New group"), tr("Enter group name") );
+	if( !name.isEmpty() ){
+		images.addGroup( name );
+		ui->files_view->reset();
+	}
+}
+
 void main_widget::browserChangeImage( const QItemSelection& selected, const QItemSelection& ){
 	if( selected.indexes().size() > 0 ){
 		auto index = selected.indexes().front();
-		
 		browser.change_image( new imageCache( img_model.getImage( index ) ), true );
 	}
 }

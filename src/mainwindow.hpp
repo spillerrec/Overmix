@@ -115,6 +115,8 @@ class main_widget: public QMainWindow{
 		void set_alpha_mask();
 		void clear_mask();
 		
+	//Related to the Files tab
+		void addGroup();
 		void browserChangeImage( const QItemSelection& selected, const QItemSelection& deselected );
 };
 
