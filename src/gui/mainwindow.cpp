@@ -21,22 +21,22 @@
 
 #include "viewer/imageCache.h"
 
-#include "color.hpp"
-#include "renders/AverageRender.hpp"
-#include "renders/SimpleRender.hpp"
-#include "renders/DiffRender.hpp"
-#include "renders/FloatRender.hpp"
-#include "renders/DifferenceRender.hpp"
-#include "aligners/AverageAligner.hpp"
-#include "aligners/RecursiveAligner.hpp"
-#include "aligners/AnimatedAligner.hpp"
-#include "aligners/LayeredAligner.hpp"
-#include "aligners/FakeAligner.hpp"
-#include "Deteleciner.hpp"
-#include "Preprocessor.hpp"
-#include "containers/ImageContainer.hpp"
+#include "../color.hpp"
+#include "../renders/AverageRender.hpp"
+#include "../renders/SimpleRender.hpp"
+#include "../renders/DiffRender.hpp"
+#include "../renders/FloatRender.hpp"
+#include "../renders/DifferenceRender.hpp"
+#include "../aligners/AverageAligner.hpp"
+#include "../aligners/RecursiveAligner.hpp"
+#include "../aligners/AnimatedAligner.hpp"
+#include "../aligners/LayeredAligner.hpp"
+#include "../aligners/FakeAligner.hpp"
+#include "../Deteleciner.hpp"
+#include "../Preprocessor.hpp"
+#include "../containers/ImageContainer.hpp"
 
-#include "debug.hpp"
+#include "../debug.hpp"
 
 #include <vector>
 #include <utility>

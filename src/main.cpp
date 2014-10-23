@@ -14,7 +14,7 @@
 	You should have received a copy of the GNU General Public License
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "mainwindow.hpp"
+#include "gui/mainwindow.hpp"
 
 #include "Preprocessor.hpp"
 #include "containers/ImageContainer.hpp"

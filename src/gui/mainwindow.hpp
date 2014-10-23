@@ -24,13 +24,13 @@
 #include <QSettings>
 #include <QUrl>
 
-#include "ImageEx.hpp"
+#include "../ImageEx.hpp"
 #include "viewer/imageViewer.h"
 
-#include "gui/ImagesModel.hpp"
+#include "ImagesModel.hpp"
 
-#include "Deteleciner.hpp"
-#include "RenderOperations.hpp"
+#include "../Deteleciner.hpp"
+#include "../RenderOperations.hpp"
 
 class AImageAligner;
 class Deteleciner;

@@ -14,19 +14,19 @@ include(overmix.pri)
 QMAKE_CXXFLAGS_DEBUG += -O2
 
 # Interface
-FORMS += src/mainwindow.ui
-HEADERS += src/mainwindow.hpp src/gui/ImagesModel.hpp
-SOURCES += src/mainwindow.cpp src/gui/ImagesModel.cpp src/main.cpp
+FORMS   += src/gui/mainwindow.ui
+HEADERS += src/gui/mainwindow.hpp src/gui/ImagesModel.hpp
+SOURCES += src/gui/mainwindow.cpp src/gui/ImagesModel.cpp src/main.cpp
 
 #Viewer
-HEADERS += src/viewer/colorManager.h \
-           src/viewer/imageCache.h \
-           src/viewer/imageViewer.h \
-           src/viewer/qrect_extras.h
-SOURCES += src/viewer/colorManager.cpp \
-           src/viewer/imageCache.cpp \
-           src/viewer/imageViewer.cpp \
-           src/viewer/qrect_extras.cpp
+HEADERS += src/gui/viewer/colorManager.h \
+           src/gui/viewer/imageCache.h \
+           src/gui/viewer/imageViewer.h \
+           src/gui/viewer/qrect_extras.h
+SOURCES += src/gui/viewer/colorManager.cpp \
+           src/gui/viewer/imageCache.cpp \
+           src/gui/viewer/imageViewer.cpp \
+           src/gui/viewer/qrect_extras.cpp
 win32{
 	DEFINES += PORTABLE
 }
