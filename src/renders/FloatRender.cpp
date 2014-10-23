@@ -19,7 +19,7 @@
 #include "FloatRender.hpp"
 #include "AverageRender.hpp"
 #include "../containers/AContainer.hpp"
-#include "../ImageEx.hpp"
+#include "../planes/ImageEx.hpp"
 #include "../color.hpp"
 
 #include <QTime>

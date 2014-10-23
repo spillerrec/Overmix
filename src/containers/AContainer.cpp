@@ -18,7 +18,7 @@
 
 #include "AContainer.hpp"
 
-#include "../ImageEx.hpp"
+#include "../planes/ImageEx.hpp"
 
 
 const Plane& AContainer::alpha( unsigned index ) const{

@@ -19,10 +19,11 @@
 #define PREPROCESSOR_HPP
 
 #include "Geometry.hpp"
-#include "ImageEx.hpp"
 
 #include <QString>
 #include <vector>
+
+class ImageEx;
 
 class Preprocessor{
 	private:

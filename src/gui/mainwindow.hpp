@@ -24,7 +24,7 @@
 #include <QSettings>
 #include <QUrl>
 
-#include "../ImageEx.hpp"
+#include "../planes/ImageEx.hpp"
 #include "viewer/imageViewer.h"
 
 #include "ImagesModel.hpp"

@@ -19,7 +19,7 @@
 #define A_IMAGE_ALIGNER_HPP
 
 #include "../planes/Plane.hpp"
-#include "../ImageEx.hpp"
+#include "../planes/ImageEx.hpp"
 #include "../containers/AContainer.hpp"
 
 #include <vector>

@@ -18,7 +18,7 @@
 
 #include "AnimationSaver.hpp"
 
-#include "../ImageEx.hpp"
+#include "../planes/ImageEx.hpp"
 #include "../containers/FrameContainer.hpp"
 
 #include <QDir>

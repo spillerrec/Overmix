@@ -22,7 +22,7 @@
 
 
 #include "../aligners/AImageAligner.hpp"
-#include "../ImageEx.hpp"
+#include "../planes/ImageEx.hpp"
 
 #include <QTime>
 #include <QRect>

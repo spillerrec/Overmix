@@ -18,7 +18,7 @@
 #ifndef A_RENDER_PIPE_HPP
 #define A_RENDER_PIPE_HPP
 
-#include "ImageEx.hpp"
+#include "planes/ImageEx.hpp"
 
 #include <utility>
 

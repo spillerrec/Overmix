@@ -17,7 +17,7 @@
 
 
 #include "Deteleciner.hpp"
-#include "ImageEx.hpp"
+#include "planes/ImageEx.hpp"
 
 ImageEx Deteleciner::addInterlaced( ImageEx image ){
 	if( !frame.is_valid() ){

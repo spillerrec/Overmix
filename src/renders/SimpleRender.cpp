@@ -18,7 +18,7 @@
 
 #include "SimpleRender.hpp"
 #include "../containers/AContainer.hpp"
-#include "../ImageEx.hpp"
+#include "../planes/ImageEx.hpp"
 #include "../color.hpp"
 
 #include "../MultiPlaneIterator.hpp"

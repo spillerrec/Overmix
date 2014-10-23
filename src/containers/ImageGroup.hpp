@@ -18,7 +18,7 @@
 #ifndef IMAGE_GROUP_HPP
 #define IMAGE_GROUP_HPP
 
-#include "../ImageEx.hpp"
+#include "../planes/ImageEx.hpp"
 #include "AContainer.hpp"
 
 #include <QString>

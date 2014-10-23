@@ -18,7 +18,7 @@
 #ifndef DETELECINER_HPP
 #define DETELECINER_HPP
 
-#include "ImageEx.hpp"
+#include "planes/ImageEx.hpp"
 
 class Deteleciner{
 	private:

@@ -18,7 +18,7 @@
 #ifndef IMAGE_EX_HPP
 #define IMAGE_EX_HPP
 
-#include "planes/Plane.hpp"
+#include "Plane.hpp"
 #include <QString>
 #include <QFile>
 #include <QImage>

@@ -16,17 +16,18 @@
 */
 
 #include "ImageEx.hpp"
-#include "MultiPlaneIterator.hpp"
-#include "color.hpp"
+
+#include "../MultiPlaneIterator.hpp"
+#include "../color.hpp"
 #include "dump/DumpPlane.hpp"
+
+#include <QtConcurrentMap>
+#include <QFileInfo>
 
 #include <stdint.h>
 #include <limits>
 #include <vector>
 #include <png.h>
-#include <QtConcurrentMap>
-
-#include <QFileInfo>
 
 using namespace std;
 

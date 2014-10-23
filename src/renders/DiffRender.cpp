@@ -21,7 +21,7 @@
 #include "../containers/AContainer.hpp"
 #include "../containers/DelegatedContainer.hpp"
 #include "../color.hpp"
-#include "../ImageEx.hpp"
+#include "../planes/ImageEx.hpp"
 
 #include <vector>
 using namespace std;

@@ -18,6 +18,8 @@
 
 #include "Preprocessor.hpp"
 
+#include "planes/ImageEx.hpp"
+
 static bool round_comp( double x, double y )
 	{ return std::fabs( x - y ) < std::numeric_limits<double>::epsilon(); }
 

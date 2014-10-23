@@ -20,7 +20,6 @@
 
 #include "ARenderPipe.hpp"
 #include "color.hpp"
-#include "ImageEx.hpp"
 
 class RenderPipeScaling : public ARenderPipe{
 	private:
