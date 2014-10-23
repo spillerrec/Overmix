@@ -21,6 +21,7 @@
 #include "../containers/ImageContainer.hpp"
 
 #include <QAbstractItemModel>
+#include <QImage>
 
 
 class ImagesModel : public QAbstractItemModel{
@@ -39,6 +40,8 @@ class ImagesModel : public QAbstractItemModel{
 		virtual int columnCount( const QModelIndex& parent=QModelIndex() ) const override;
 		virtual QVariant data( const QModelIndex& index, int role=Qt::DisplayRole ) const override;
 		virtual QVariant headerData( int section, Qt::Orientation orien, int role=Qt::DisplayRole ) const override;
+		
+		QImage getImage( const QModelIndex& index ) const;
 };
 
 #endif

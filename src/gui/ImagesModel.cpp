@@ -105,3 +105,15 @@ QVariant ImagesModel::headerData( int section, Qt::Orientation orien, int role )
 	}
 }
 
+QImage ImagesModel::getImage( const QModelIndex& index ) const{
+	auto id = index.internalId();
+	if( index.isValid() && id > 0 )
+		if( unsigned(id-1) < images.groupAmount() ){
+			auto& group = images.getConstGroup( id-1 );
+			if( index.row() >= 0 && (unsigned)index.row() < group.items.size() )
+				return ImageEx( group.image(index.row()) ).to_qimage( ImageEx::SYSTEM_REC709 );
+		}
+	
+	return QImage();
+}
+

@@ -20,6 +20,7 @@
 
 #include <QMainWindow>
 #include <QImage>
+#include <QItemSelectionModel>
 #include <QSettings>
 #include <QUrl>
 
@@ -59,6 +60,7 @@ class main_widget: public QMainWindow{
 		int alpha_mask{ -1 };
 		
 		ImagesModel img_model;
+		QItemSelectionModel img_selection;
 		
 		void clear_cache();
 		
@@ -112,6 +114,8 @@ class main_widget: public QMainWindow{
 		
 		void set_alpha_mask();
 		void clear_mask();
+		
+		void browserChangeImage( const QItemSelection& selected, const QItemSelection& deselected );
 };
 
 #endif

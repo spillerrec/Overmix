@@ -83,6 +83,7 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	,	preprocessor( preprocessor )
 	,	images( images )
 	,	img_model( images )
+	,	img_selection( &img_model )
 {
 	ui->setupUi(this);
 	
@@ -133,6 +134,9 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	//Init files model
 	ui->files_view->setModel( &img_model );
 	ui->files_view->setColumnWidth( 0, 120 );
+	ui->files_view->setSelectionModel( &img_selection );
+	connect( &img_selection, SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&))
+			, this, SLOT(browserChangeImage(const QItemSelection&, const QItemSelection&)) );
 	
 	setAcceptDrops( true );
 	ui->preview_layout->addWidget( &viewer );
@@ -498,4 +502,13 @@ void main_widget::update_draw(){
 		ui->btn_refresh->setText( tr( "Draw" ) );
 	
 	ui->btn_refresh->setEnabled( images.count() > 0 );
+}
+
+
+void main_widget::browserChangeImage( const QItemSelection& selected, const QItemSelection& ){
+	if( selected.indexes().size() > 0 ){
+		auto index = selected.indexes().front();
+		
+		browser.change_image( new imageCache( img_model.getImage( index ) ), true );
+	}
 }
