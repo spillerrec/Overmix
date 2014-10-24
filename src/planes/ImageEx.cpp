@@ -49,15 +49,18 @@ void ImageEx::to_grayscale(){
 	type = GRAY;
 }
 
+template<typename T> void copyLine( color_type* out, const T* in, unsigned width, double scale ){
+	for( unsigned ix=0; ix<width; ++ix )
+		out[ix] = color::fromDouble( in[ix] / scale );
+}
+
 void process_dump_line( color_type *out, const uint8_t* in, unsigned width, uint16_t depth ){
-	unsigned byte_count = (depth + 7) / 8;
 	double scale = pow( 2.0, depth ) - 1.0;
-	if( byte_count == 1 )
-		for( unsigned ix=0; ix<width; ++ix, ++out )
-			*out = color::fromDouble( (in[ix]) / scale );
+	
+	if( depth <= 8 )
+		copyLine( out, in, width, scale );
 	else
-		for( unsigned ix=0; ix<width; ++ix, ++out )
-			*out = color::fromDouble( ((uint16_t*)in)[ix] / scale );
+		copyLine( out, reinterpret_cast<const uint16_t*>(in), width, scale );
 }
 
 bool ImageEx::read_dump_plane( QIODevice &dev ){
@@ -72,8 +75,8 @@ bool ImageEx::read_dump_plane( QIODevice &dev ){
 	
 	//Convert data
 	for( unsigned iy=0; iy<height; ++iy ){
-		auto* line_buf = dump_plane.constScanline( iy );
-		color_type *row = p.scan_line( iy );
+		auto line_buf = dump_plane.constScanline( iy );
+		auto row = p.scan_line( iy );
 		process_dump_line( row, line_buf, width, dump_plane.getDepth() );
 	}
 	
@@ -106,21 +109,19 @@ bool ImageEx::from_dump( QString path ){
 static DumpPlane toDumpPlane( const Plane& plane, unsigned depth ){
 	bool multi_byte = depth > 8;
 	auto power = std::pow( 2, depth ) - 1;
-	vector<uint8_t> data( plane.get_width() * plane.get_height() * (multi_byte?2:1) );
+	vector<uint8_t> data;
+	data.reserve( plane.get_width() * plane.get_height() * (multi_byte?2:1) );
 	
 	for( unsigned iy=0; iy<plane.get_height(); iy++ ){
-		auto *row = plane.const_scan_line( iy );
-		if( multi_byte )
-			for( unsigned ix=0; ix<plane.get_width(); ix++ ){
+		auto row = plane.const_scan_line( iy );
+		for( unsigned ix=0; ix<plane.get_width(); ix++ )
+			if( multi_byte ){
 				uint16_t val = color::asDouble( row[ix] ) * power;
-				data[ix*2 + 0 + plane.get_width()*iy*2] = val & 0x00FF;
-				data[ix*2 + 1 + plane.get_width()*iy*2] = (val & 0xFF00) >> 8;
+				data.push_back( val & 0x00FF );
+				data.push_back( (val & 0xFF00) >> 8 );
 			}
-		else
-			for( unsigned ix=0; ix<plane.get_width(); ix++ ){
-				uint16_t val = color::asDouble( row[ix] ) * power;
-				data[ix + plane.get_width()*iy] = val;
-			}
+			else
+				data.push_back( color::asDouble( row[ix] ) * power );
 	}
 	
 	return DumpPlane( plane.get_width(), plane.get_height(), depth, data );
