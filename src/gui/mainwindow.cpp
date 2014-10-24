@@ -124,6 +124,7 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	connect( ui->rbtn_static_diff,  SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
 	connect( ui->rbtn_subpixel,     SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
 	connect( ui->cbx_chroma,        SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
+	connect( &img_model, SIGNAL( dataChanged(const QModelIndex&, const QModelIndex&) ), this, SLOT( resetImage() ) );
 	
 	//Add images
 	qRegisterMetaType<QList<QUrl> >( "QList<QUrl>" );

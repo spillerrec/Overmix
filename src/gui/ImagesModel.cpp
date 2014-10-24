@@ -117,3 +117,60 @@ QImage ImagesModel::getImage( const QModelIndex& index ) const{
 	return QImage();
 }
 
+Qt::ItemFlags ImagesModel::flags( const QModelIndex& ) const{
+	return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
+	//TODO: Use Qt::ItemNeverHasChildren ?
+}
+
+//TODO: make a generic variant of this stuff
+static bool checkingToInt( const QVariant& value, int& output ){
+	bool ok;
+	int val = value.toInt( &ok );
+	if( ok )
+		output = val;
+	return ok;
+}
+
+static bool checkingToDouble( const QVariant& value, double& output ){
+	bool ok;
+	double val = value.toDouble( &ok );
+	if( ok )
+		output = val;
+	return ok;
+}
+
+bool ImagesModel::setData( const QModelIndex& index, const QVariant& value, int role ){
+	if( !index.isValid() )
+		return false;
+	//TODO: we really need some way of abstracting from the how we use QModelIndex...
+	
+	if( index.internalId() == 0 ){
+		if( index.column() != 0 || index.row() >= images.groupAmount() )
+			return false;
+		images.getGroup( index.row() ).name = value.toString();
+	}
+	else{
+		unsigned id = index.internalId() - 1;
+		if( id > images.groupAmount() || index.column() >= 5 )
+			return false;
+		auto& item = images.getGroup( id ).items[index.row()];
+		switch( index.column() ){
+			case 1: if( !checkingToDouble( value, item.offset.x ) ) return false; break;
+			case 2: if( !checkingToDouble( value, item.offset.y ) ) return false; break;
+			case 4: if( !checkingToInt   ( value, item.frame    ) ) return false; break;
+			case 3: {
+					bool ok;
+					int out = value.toInt( &ok );
+					if( !ok || out >= (int)images.maskCount() )
+						return false;
+					item.setSharedMask( out );
+				} break;
+			default: return false;
+		}
+	}
+	
+	//Everything went fine
+	emit dataChanged( index, index );
+	return true;
+}
+
