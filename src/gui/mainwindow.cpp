@@ -527,4 +527,5 @@ void main_widget::removeFiles(){
 	if( indexes.size() > 0 )
 		img_model.removeRows( indexes.front().row(), indexes.size(), img_model.parent(indexes.front()) );
 	refresh_text();
+	resetImage();
 }
