@@ -21,67 +21,99 @@
 #include <QFileInfo>
 
 
-QModelIndex ImagesModel::index( int row, int column, const QModelIndex& parent ) const{
-	//Root/Group level
+class ImagesIndex{
+	private:
+		const QModelIndex& index;
+		const ImageContainer& images;
+		
+		//These are valid only as long as index is valid, otherwise they contain garbage!
+	public:
+		unsigned group{ 0 };
+		unsigned item{ 0 };
+		unsigned column{ 0 };
+		
+	public:
+		ImagesIndex( const QModelIndex& index, const ImageContainer& images )
+			: index(index), images(images) {
+			
+			if( isGroup() )
+				group = index.row();
+			else{
+				group = index.internalId() - 1;
+				item = index.row();
+			}
+			column = index.column();
+		}
+		
+		bool isGroup() const{ return index.internalId() == 0; }
+		
+		bool isValid() const{
+			if( !index.isValid() )
+				return false;
+			
+			if( group >= images.groupAmount() )
+				return false;
+			
+			if( column >= (isGroup() ? 1 : 5) )
+				return false;
+			
+			if( !isGroup() && item >= images.getConstGroup(group).items.size() )
+				return false;
+			
+			return true;
+		}
+		
+		const ImageGroup& getGroup() const{ return images.getConstGroup( group ); }
+		const ImageItem& getItem() const{ return getGroup().items[item];}
+		
+		//non-const versions
+		ImageGroup& getGroup( ImageContainer& images ){ return images.getGroup( group ); }
+		ImageItem&  getItem ( ImageContainer& images ){ return getGroup(images).items[item];}
+};
+
+
+QModelIndex ImagesModel::index( int row, int column, const QModelIndex& model_parent ) const{
+	ImagesIndex parent( model_parent, images );
+	
 	if( !parent.isValid() )
 		return createIndex( row, column, 0ull );
 	
-	//Item level
-	if( parent.internalId() == 0 ){
-		auto pos = parent.row();
-		if( (unsigned)pos < images.groupAmount() )
-			return createIndex( row, column, pos + 1 );
+	if( parent.isGroup() )
+		return createIndex( row, column, parent.group + 1 );
+	else
 		return QModelIndex();
-	}
-	
-	//level is too high!
-	return QModelIndex();
 }
 
 QModelIndex ImagesModel::parent( const QModelIndex& child ) const{
 	auto id = child.internalId();
-	if( !child.isValid() ||id == 0 )
+	if( !child.isValid() || id == 0 )
 		return QModelIndex();
 	return index( id-1, 0 );
 }
 
 int ImagesModel::rowCount( const QModelIndex &parent ) const{
-	if( !parent.isValid() )
+	ImagesIndex index( parent, images );
+	if( !index.isValid() )
 		return images.groupAmount();
 	
-	auto pos = parent.row();
-	if( (unsigned)pos < images.groupAmount() && parent.internalId() == 0 )
-		return images.getConstGroup( pos ).count();
-	else
-		return 0;
+	return index.isGroup() ? index.getGroup().count() : 0;
 }
 
 int ImagesModel::columnCount( const QModelIndex& parent ) const{
 	return parent.isValid() ? 5 : 5; //TODO:
 }
 
-QVariant ImagesModel::data( const QModelIndex& index, int role ) const{
-	auto id = index.internalId();
+QVariant ImagesModel::data( const QModelIndex& model_index, int role ) const{
+	ImagesIndex index( model_index, images );
 	if( !index.isValid() || role != Qt::DisplayRole )
 		return QVariant();
 	
 	//Root/Group level
-	if( id == 0 ){
-		auto row = index.row();
-		if( (unsigned)row >= images.groupAmount() || index.column() != 0 )
-			return QVariant(); //Out-of-bounds, invalid 
-		return images.getConstGroup( row ).name;
-	}
+	if( index.isGroup() )
+		return index.getGroup().name;
 	
-	if( id-1 >= images.groupAmount() )
-		return QVariant();
-	
-	auto& group = images.getConstGroup( id-1 );
-	if( (unsigned)index.row() >= group.count() )
-		return QVariant();
-	auto& item = group.items[index.row()];
-	
-	switch( index.column() ){
+	auto& item = index.getItem();
+	switch( index.column ){
 		case 0: return QFileInfo( item.filename ).fileName();
 		case 1: return item.offset.x;
 		case 2: return item.offset.y;
@@ -105,15 +137,11 @@ QVariant ImagesModel::headerData( int section, Qt::Orientation orien, int role )
 	}
 }
 
-QImage ImagesModel::getImage( const QModelIndex& index ) const{
-	auto id = index.internalId();
-	if( index.isValid() && id > 0 )
-		if( unsigned(id-1) < images.groupAmount() ){
-			auto& group = images.getConstGroup( id-1 );
-			if( index.row() >= 0 && (unsigned)index.row() < group.items.size() )
-				return ImageEx( group.image(index.row()) ).to_qimage( ImageEx::SYSTEM_REC709 );
-		}
+QImage ImagesModel::getImage( const QModelIndex& model_index ) const{
+	ImagesIndex index( model_index, images );
 	
+	if( index.isValid() && !index.isGroup() )
+		return ImageEx( index.getItem().image() ).to_qimage( ImageEx::SYSTEM_REC709 );
 	return QImage();
 }
 
@@ -139,22 +167,16 @@ static bool checkingToDouble( const QVariant& value, double& output ){
 	return ok;
 }
 
-bool ImagesModel::setData( const QModelIndex& index, const QVariant& value, int role ){
-	if( !index.isValid() )
+bool ImagesModel::setData( const QModelIndex& model_index, const QVariant& value, int role ){
+	ImagesIndex index( model_index, images );
+	if( !index.isValid() || role != Qt::EditRole )
 		return false;
-	//TODO: we really need some way of abstracting from the how we use QModelIndex...
 	
-	if( index.internalId() == 0 ){
-		if( index.column() != 0 || index.row() >= images.groupAmount() )
-			return false;
-		images.getGroup( index.row() ).name = value.toString();
-	}
+	if( index.isGroup() )
+		index.getGroup(images).name = value.toString();
 	else{
-		unsigned id = index.internalId() - 1;
-		if( id > images.groupAmount() || index.column() >= 5 )
-			return false;
-		auto& item = images.getGroup( id ).items[index.row()];
-		switch( index.column() ){
+		auto& item = index.getItem(images);
+		switch( index.column ){
 			case 1: if( !checkingToDouble( value, item.offset.x ) ) return false; break;
 			case 2: if( !checkingToDouble( value, item.offset.y ) ) return false; break;
 			case 4: if( !checkingToInt   ( value, item.frame    ) ) return false; break;
@@ -170,7 +192,7 @@ bool ImagesModel::setData( const QModelIndex& index, const QVariant& value, int 
 	}
 	
 	//Everything went fine
-	emit dataChanged( index, index );
+	emit dataChanged( model_index, model_index );
 	return true;
 }
 
