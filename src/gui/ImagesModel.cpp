@@ -174,8 +174,11 @@ bool ImagesModel::setData( const QModelIndex& model_index, const QVariant& value
 	if( !index.isValid() || role != Qt::EditRole )
 		return false;
 	
-	if( index.isGroup() )
-		index.getGroup(images).name = value.toString();
+	if( index.isGroup() ){
+		auto new_name = value.toString();
+		if( !new_name.isEmpty() )
+			index.getGroup(images).name = new_name;
+	}
 	else{
 		auto& item = index.getItem(images);
 		switch( index.column ){
