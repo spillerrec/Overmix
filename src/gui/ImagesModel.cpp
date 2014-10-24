@@ -18,6 +18,8 @@
 
 #include "ImagesModel.hpp"
 
+#include "../utils/utils.hpp"
+
 #include <QFileInfo>
 
 
@@ -193,6 +195,26 @@ bool ImagesModel::setData( const QModelIndex& model_index, const QVariant& value
 	
 	//Everything went fine
 	emit dataChanged( model_index, model_index );
+	return true;
+}
+
+bool ImagesModel::removeRows( int row, int count, const QModelIndex& model_parent ){
+	ImagesIndex parent( model_parent, images );
+	if( !parent.isValid() )
+		return false;
+	
+	emit beginRemoveRows( model_parent, row, row+count );
+	//TODO: this is likely incorrect, we probably can't call it before we will know it will succeed
+	if( parent.isGroup() ){
+		if( !util::removeItems( parent.getGroup( images ).items, row, count ) )
+			return false;
+		images.rebuildIndexes(); //TODO: this is kinda hackish
+	}
+	else
+		if( !images.removeGroups( row, count ) )
+			return false;
+	emit endRemoveRows();
+	
 	return true;
 }
 

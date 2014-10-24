@@ -20,7 +20,7 @@
 
 #include <QMainWindow>
 #include <QImage>
-#include <QItemSelectionModel>
+#include <QItemSelection>
 #include <QSettings>
 #include <QUrl>
 
@@ -60,7 +60,6 @@ class main_widget: public QMainWindow{
 		int alpha_mask{ -1 };
 		
 		ImagesModel img_model;
-		QItemSelectionModel img_selection;
 		
 		void clear_cache();
 		
@@ -117,6 +116,7 @@ class main_widget: public QMainWindow{
 		
 	//Related to the Files tab
 		void addGroup();
+		void removeFiles();
 		void browserChangeImage( const QItemSelection& selected, const QItemSelection& deselected );
 };
 

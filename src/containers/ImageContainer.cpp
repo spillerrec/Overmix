@@ -18,6 +18,8 @@
 
 #include "ImageContainer.hpp"
 
+#include "../utils/utils.hpp"
+
 void ImageContainer::addImage( ImageEx&& img, int mask, int group, QString filepath ){
 	if( groups.size() == 0 )
 		groups.emplace_back( "Auto group", masks );
@@ -28,6 +30,20 @@ void ImageContainer::addImage( ImageEx&& img, int mask, int group, QString filep
 	unsigned index = ( group >= 0 ) ? group : groups.size()-1;
 	groups[index].items.emplace_back( item );
 	indexes.emplace_back( index, groups[index].count()-1 );
+}
+
+bool ImageContainer::removeGroups( unsigned from, unsigned amount ){
+	if( !util::removeItems( groups, from, amount ) )
+		return false;
+	rebuildIndexes();
+	return true;
+}
+
+void ImageContainer::rebuildIndexes(){
+	indexes.clear();
+	for( unsigned ig=0; ig<groups.size(); ig++ )
+		for( unsigned ii=0; ii<groups[ig].items.size(); ii++ )
+			indexes.emplace_back( ig, ii );
 }
 
 unsigned ImageContainer::count() const{ return indexes.size(); }

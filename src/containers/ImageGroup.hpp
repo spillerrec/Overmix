@@ -35,6 +35,7 @@ class ImageItem{
 		Point<double> offset;
 		int frame{ -1 };
 		
+		ImageItem() { }
 		ImageItem( QString filename, ImageEx&& img )
 			:	img(img), filename(filename) { }
 		
@@ -59,17 +60,18 @@ class ImageGroup : public AContainer{
 	public:
 		QString name;
 		std::vector<ImageItem> items;
-		const std::vector<Plane>& masks;
+		const std::vector<Plane>* masks;
 		
-		ImageGroup( QString name, const std::vector<Plane>& masks ) : name(name), masks(masks) { }
+		ImageGroup() : masks{nullptr} { } //NOTE: don't use this!
+		ImageGroup( QString name, const std::vector<Plane>& masks ) : name(name), masks(&masks) { }
 		
 	public: //AContainer implementation
 		virtual unsigned count() const{ return items.size(); }
 		virtual const ImageEx& image( unsigned index ) const{ return items[index].image(); }
 		virtual int imageMask( unsigned index ) const{ return items[index].maskId(); }
-		virtual const Plane& alpha( unsigned index ) const override{ return items[index].alpha( masks ); }
-		virtual const Plane& mask( unsigned index ) const override{ return masks[index]; }
-		virtual unsigned maskCount() const override{ return masks.size(); }
+		virtual const Plane& alpha( unsigned index ) const override{ return items[index].alpha( *masks ); }
+		virtual const Plane& mask( unsigned index ) const override{ return (*masks)[index]; }
+		virtual unsigned maskCount() const override{ return masks->size(); }
 		virtual Point<double> pos( unsigned index ) const{ return items[index].offset; }
 		virtual void setPos( unsigned index, Point<double> newVal ){ items[index].offset = newVal; }
 		virtual int frame( unsigned index ) const{ return items[index].frame; }

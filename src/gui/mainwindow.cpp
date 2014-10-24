@@ -84,7 +84,6 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	,	preprocessor( preprocessor )
 	,	images( images )
 	,	img_model( images )
-	,	img_selection( &img_model )
 {
 	ui->setupUi(this);
 	
@@ -136,10 +135,10 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	//Init files model
 	ui->files_view->setModel( &img_model );
 	ui->files_view->setColumnWidth( 0, 120 );
-	ui->files_view->setSelectionModel( &img_selection );
-	connect( &img_selection, SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&))
+	connect( ui->files_view->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&))
 			, this, SLOT(browserChangeImage(const QItemSelection&, const QItemSelection&)) );
 	connect( ui->btn_add_group, SIGNAL(clicked()), this, SLOT(addGroup()) );
+	connect( ui->btn_delete_files,   SIGNAL(clicked()), this, SLOT(removeFiles()) );
 	
 	setAcceptDrops( true );
 	ui->preview_layout->addWidget( &viewer );
@@ -521,4 +520,11 @@ void main_widget::browserChangeImage( const QItemSelection& selected, const QIte
 		auto index = selected.indexes().front();
 		browser.change_image( new imageCache( img_model.getImage( index ) ), true );
 	}
+}
+
+void main_widget::removeFiles(){
+	auto indexes = ui->files_view->selectionModel()->selectedRows();
+	if( indexes.size() > 0 )
+		img_model.removeRows( indexes.front().row(), indexes.size(), img_model.parent(indexes.front()) );
+	refresh_text();
 }

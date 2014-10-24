@@ -1385,6 +1385,9 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::ContiguousSelection</enum>
+            </property>
             <attribute name="headerDefaultSectionSize">
              <number>40</number>
             </attribute>
@@ -1396,6 +1399,13 @@
              <widget class="QPushButton" name="btn_add_group">
               <property name="text">
                <string>Add group</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_delete_files">
+              <property name="text">
+               <string>Delete</string>
               </property>
              </widget>
             </item>

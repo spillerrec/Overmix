@@ -73,6 +73,9 @@ class ImageContainer : public AContainer{
 		
 		void removeImage( unsigned group, unsigned img );
 		
+		bool removeGroups( unsigned from, unsigned amount );
+		void rebuildIndexes();
+		
 		//TODO: Get group thing
 		
 		//TODO: Get render thing

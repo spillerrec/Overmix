@@ -43,6 +43,7 @@ class ImagesModel : public QAbstractItemModel{
 		
 		virtual Qt::ItemFlags flags( const QModelIndex& index ) const override;
 		virtual bool setData( const QModelIndex& index, const QVariant& value, int role=Qt::EditRole ) override;
+		virtual bool removeRows( int row, int count, const QModelIndex& parent=QModelIndex() ) override;
 		
 		QImage getImage( const QModelIndex& index ) const;
 };
