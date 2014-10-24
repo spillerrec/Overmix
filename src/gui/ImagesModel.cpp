@@ -101,8 +101,8 @@ int ImagesModel::rowCount( const QModelIndex &parent ) const{
 	return index.isGroup() ? index.getGroup().count() : 0;
 }
 
-int ImagesModel::columnCount( const QModelIndex& parent ) const{
-	return parent.isValid() ? 5 : 5; //TODO:
+int ImagesModel::columnCount( const QModelIndex& ) const{
+	return 5;
 }
 
 QVariant ImagesModel::data( const QModelIndex& model_index, int role ) const{
@@ -147,9 +147,20 @@ QImage ImagesModel::getImage( const QModelIndex& model_index ) const{
 	return QImage();
 }
 
-Qt::ItemFlags ImagesModel::flags( const QModelIndex& ) const{
-	return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
-	//TODO: Use Qt::ItemNeverHasChildren ?
+Qt::ItemFlags ImagesModel::flags( const QModelIndex& model_index ) const{
+	ImagesIndex index( model_index, images );
+	
+	if( index.isValid() ){
+		Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
+		if( !index.isGroup() ){
+			if( index.column == 0 ) //We can't change filename!
+				flags &= ~Qt::ItemIsEditable;
+			flags |= Qt::ItemNeverHasChildren;
+		}
+		return flags;
+	}
+	
+	return Qt::NoItemFlags;
 }
 
 //TODO: make a generic variant of this stuff
