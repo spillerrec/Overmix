@@ -43,6 +43,7 @@
 #include <vector>
 #include <utility>
 
+#include <QDesktopServices>
 #include <QFileInfo>
 #include <QFile>
 #include <QMimeData>
@@ -126,6 +127,17 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	connect( ui->rbtn_subpixel,     SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
 	connect( ui->cbx_chroma,        SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
 	connect( &img_model, SIGNAL( dataChanged(const QModelIndex&, const QModelIndex&) ), this, SLOT( resetImage() ) );
+	
+	//Menubar
+	connect( ui->action_add_files,    SIGNAL( triggered() ), this, SLOT( open_image() ) );
+	connect( ui->action_save,         SIGNAL( triggered() ), this, SLOT( save_image() ) );
+	connect( ui->action_exit,         SIGNAL( triggered() ), this, SLOT( close() ) );
+	connect( ui->action_show_menubar, SIGNAL( triggered() ), this, SLOT( toggleMenubar() ) );
+	connect( ui->action_fullscreen,   SIGNAL( triggered() ), this, SLOT( showFullscreen() ) );
+	connect( ui->action_online_wiki,  SIGNAL( triggered() ), this, SLOT( openOnlineHelp() ) );
+	ui->action_show_menubar->setChecked( settings.value( "show_menubar", true ).toBool() );
+	toggleMenubar();
+	
 	
 	//Add images
 	qRegisterMetaType<QList<QUrl> >( "QList<QUrl>" );
@@ -539,4 +551,20 @@ void main_widget::showFullscreen(){
 	if( !temp.isNull() )
 		FullscreenViewer::show( settings, temp );
 	//TODO: enable same fuctionallity for Files tab?
+}
+
+
+void main_widget::open_image(){
+	
+}
+
+void main_widget::toggleMenubar(){
+	if( ui->action_show_menubar->isChecked() )
+		ui->menuBar->show();
+	else
+		ui->menuBar->hide();
+}
+
+void main_widget::openOnlineHelp(){
+	QDesktopServices::openUrl( QUrl( "https://github.com/spillerrec/Overmix/wiki" ) );
 }

@@ -101,10 +101,13 @@ class main_widget: public QMainWindow{
 	public slots:
 		void process_urls( QList<QUrl> urls );
 		void showFullscreen();
+		void toggleMenubar();
+		void openOnlineHelp();
 		
 	private slots:
 		void refresh_text();
 		void refresh_image();
+		void open_image();
 		void save_image();
 		void clear_image();
 		void subpixel_align_image();
