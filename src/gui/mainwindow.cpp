@@ -425,6 +425,8 @@ void main_widget::clear_image(){
 	pipe_threshold.invalidate();
 	
 	images.clear();
+	browser.change_image( nullptr );
+	ui->files_view->reset();
 	
 	refresh_text();
 	update_draw();
