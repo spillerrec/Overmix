@@ -37,6 +37,7 @@ class FullscreenViewer : public imageViewer{
 		
 	protected:
 		virtual void focusOutEvent( QFocusEvent* ) override{ close(); }
+		virtual void keyPressEvent( QKeyEvent* event ) override;
 };
 
 #endif

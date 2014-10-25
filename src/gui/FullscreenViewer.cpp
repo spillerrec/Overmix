@@ -33,3 +33,11 @@ FullscreenViewer::FullscreenViewer( QSettings& settings, QImage img ) : imageVie
 	connect( this, SIGNAL(double_clicked()), this, SLOT(close()) );
 }
 
+void FullscreenViewer::keyPressEvent( QKeyEvent* event ){
+	switch( event->key() ){
+		case Qt::Key_F11:
+		case Qt::Key_Escape: close(); break;
+		default: event->ignore();
+	}
+}
+
