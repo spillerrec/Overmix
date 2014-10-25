@@ -51,6 +51,7 @@
 #include <QDropEvent>
 #include <QInputDialog>
 #include <QImage>
+#include <QImageReader>
 #include <QPainter>
 #include <QFileDialog>
 #include <QProgressDialog>
@@ -555,7 +556,16 @@ void main_widget::showFullscreen(){
 
 
 void main_widget::open_image(){
+	auto formats = QImageReader::supportedImageFormats();
+	auto filter = QString( "*.dump" );
+	for( auto f : formats )
+		filter += " *." + f;
 	
+	auto files = QFileDialog::getOpenFileNames( this, "Select images", "", "Images (" + filter + ")" );
+	QList<QUrl> urls;
+	for( auto file : files )
+		urls.push_back( QUrl::fromLocalFile( file ) );
+	process_urls( urls );
 }
 
 void main_widget::toggleMenubar(){
