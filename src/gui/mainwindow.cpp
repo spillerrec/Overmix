@@ -533,11 +533,18 @@ void main_widget::addGroup(){
 	}
 }
 
-void main_widget::browserChangeImage( const QItemSelection& selected, const QItemSelection& ){
-	if( selected.indexes().size() > 0 ){
-		auto index = selected.indexes().front();
-		browser.change_image( new imageCache( img_model.getImage( index ) ), true );
+static QImage fromSelection( const ImagesModel& model, const QModelIndexList& indexes ){
+	if( indexes.size() > 0 ){
+		auto index = indexes.front();
+		return model.getImage( index );
 	}
+	return QImage();
+}
+
+void main_widget::browserChangeImage( const QItemSelection& selected, const QItemSelection& ){
+	auto img = fromSelection( img_model, selected.indexes() );
+	if( !img.isNull() )
+		browser.change_image( new imageCache( img ), true );
 }
 
 void main_widget::removeFiles(){
@@ -549,9 +556,12 @@ void main_widget::removeFiles(){
 }
 
 void main_widget::showFullscreen(){
-	if( !temp.isNull() )
-		FullscreenViewer::show( settings, temp );
-	//TODO: enable same fuctionallity for Files tab?
+	QImage img = temp;
+	if( ui->tab_pages->currentIndex() != 0 )
+		img = fromSelection( img_model, ui->files_view->selectionModel()->selectedIndexes() );
+		
+	if( !img.isNull() )
+		FullscreenViewer::show( settings, img );
 }
 
 
