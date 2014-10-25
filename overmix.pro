@@ -15,8 +15,8 @@ QMAKE_CXXFLAGS_DEBUG += -O2
 
 # Interface
 FORMS   += src/gui/mainwindow.ui
-HEADERS += src/gui/mainwindow.hpp src/gui/ImagesModel.hpp
-SOURCES += src/gui/mainwindow.cpp src/gui/ImagesModel.cpp src/main.cpp
+HEADERS += src/gui/mainwindow.hpp src/gui/ImagesModel.hpp src/gui/FullscreenViewer.hpp
+SOURCES += src/gui/mainwindow.cpp src/gui/ImagesModel.cpp src/gui/FullscreenViewer.cpp src/main.cpp
 
 #Viewer
 HEADERS += src/gui/viewer/colorManager.h \

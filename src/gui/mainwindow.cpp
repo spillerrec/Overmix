@@ -21,6 +21,8 @@
 
 #include "viewer/imageCache.h"
 
+#include "FullscreenViewer.hpp"
+
 #include "../color.hpp"
 #include "../renders/AverageRender.hpp"
 #include "../renders/SimpleRender.hpp"
@@ -145,6 +147,7 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	ui->files_layout  ->addWidget( &browser );
 	viewer .setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
 	browser.setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
+	connect( &viewer, SIGNAL(double_clicked()), this, SLOT(showFullscreen()) );
 	
 	save_dir = settings.value( "save_directory", "." ).toString();
 	if( settings.value( "remember_position", true ).toBool() )
@@ -528,4 +531,10 @@ void main_widget::removeFiles(){
 		img_model.removeRows( indexes.front().row(), indexes.size(), img_model.parent(indexes.front()) );
 	refresh_text();
 	resetImage();
+}
+
+void main_widget::showFullscreen(){
+	if( !temp.isNull() )
+		FullscreenViewer::show( settings, temp );
+	//TODO: enable same fuctionallity for Files tab?
 }

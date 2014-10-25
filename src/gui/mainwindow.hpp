@@ -100,6 +100,7 @@ class main_widget: public QMainWindow{
 	
 	public slots:
 		void process_urls( QList<QUrl> urls );
+		void showFullscreen();
 		
 	private slots:
 		void refresh_text();
