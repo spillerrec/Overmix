@@ -295,6 +295,43 @@ static color_type color_from_spinbox( QSpinBox* spinbox ){
 	return color::fromDouble( spinbox->value() / (double)spinbox->maximum() );
 }
 
+const ImageEx& main_widget::postProcess( const ImageEx& input, bool new_image ){
+	pipe_scaling.setWidth( ui->dsbx_scale_width->value() );
+	pipe_scaling.setHeight( ui->dsbx_scale_height->value() );
+	
+	pipe_deconvolve.setDeviation( ui->dsbx_deviation->value() );
+	pipe_deconvolve.setIterations( ui->sbx_iterations->value() );
+	
+	pipe_blurring.setMethod( ui->cbx_blur->currentIndex() );
+	pipe_blurring.setWidth( ui->spbx_blur_x->value() );
+	pipe_blurring.setHeight( ui->spbx_blur_y->value() );
+	
+	pipe_edge.setMethod( ui->cbx_edge_filter->currentIndex() );
+	
+	pipe_level.setLimitMin( color_from_spinbox( ui->sbx_limit_min ) );
+	pipe_level.setLimitMax( color_from_spinbox( ui->sbx_limit_max ) );
+	pipe_level.setOutMin( color_from_spinbox( ui->sbx_out_min ) );
+	pipe_level.setOutMax( color_from_spinbox( ui->sbx_out_max ) );
+	pipe_level.setGamma( ui->dsbx_gamma->value() );
+	
+	//TODO: Sharpen
+//	if( ui->cbx_sharpen->isChecked() )
+//		edge->substract( *(*temp_ex)[0] );
+	
+	pipe_threshold.setThreshold( color_from_spinbox( ui->threshold_threshold ) );
+	pipe_threshold.setSize( ui->threshold_size->value() );
+	pipe_threshold.setMethod( ui->threshold_method->currentIndex() );
+	
+	return pipe_threshold.get( 
+			pipe_level.get( 
+			pipe_edge.get( 
+			pipe_blurring.get( 
+			pipe_deconvolve.get( 
+			pipe_scaling.get( 
+				{ input, new_image } ) ) ) ) ) ).first
+		;
+}
+
 #include <QMessageBox>
 void main_widget::refresh_image(){
 	if( !aligner ) //TODO: we need new way of deciding when to align
@@ -343,36 +380,8 @@ void main_widget::refresh_image(){
 		QTime t;
 		t.start();
 		
-		pipe_scaling.setWidth( ui->dsbx_scale_width->value() );
-		pipe_scaling.setHeight( ui->dsbx_scale_height->value() );
-		
-		pipe_deconvolve.setDeviation( ui->dsbx_deviation->value() );
-		pipe_deconvolve.setIterations( ui->sbx_iterations->value() );
-		
-		pipe_blurring.setMethod( ui->cbx_blur->currentIndex() );
-		pipe_blurring.setWidth( ui->spbx_blur_x->value() );
-		pipe_blurring.setHeight( ui->spbx_blur_y->value() );
-		
-		pipe_edge.setMethod( ui->cbx_edge_filter->currentIndex() );
-		
-		pipe_level.setLimitMin( color_from_spinbox( ui->sbx_limit_min ) );
-		pipe_level.setLimitMax( color_from_spinbox( ui->sbx_limit_max ) );
-		pipe_level.setOutMin( color_from_spinbox( ui->sbx_out_min ) );
-		pipe_level.setOutMax( color_from_spinbox( ui->sbx_out_max ) );
-		pipe_level.setGamma( ui->dsbx_gamma->value() );
-		
-		//TODO: Sharpen
-	//	if( ui->cbx_sharpen->isChecked() )
-	//		edge->substract( *(*temp_ex)[0] );
-		
-		pipe_threshold.setThreshold( color_from_spinbox( ui->threshold_threshold ) );
-		pipe_threshold.setSize( ui->threshold_size->value() );
-		pipe_threshold.setMethod( ui->threshold_method->currentIndex() );
-		
-		ImageEx img_temp( pipe_threshold.get( pipe_level.get( pipe_edge.get( pipe_blurring.get( pipe_deconvolve.get( pipe_scaling.get( { temp_ex, new_image } ) ) ) ) ) ).first );
-		
 		//TODO: why no const on to_qimage?
-		temp = QImage( img_temp.to_qimage( system, setting ) );
+		temp = QImage( ImageEx( postProcess( temp_ex, new_image ) ).to_qimage( system, setting ) );
 		
 		qDebug( "to_qimage() took: %d", t.elapsed() );
 	}
@@ -395,7 +404,7 @@ void main_widget::save_image(){
 	if( !filename.isEmpty() ){
 		if( QFileInfo( filename ).suffix() == "dump" ){
 			if( temp_ex.is_valid() )
-				temp_ex.saveDump( filename );
+				postProcess( temp_ex, false ).saveDump( filename );
 		}
 		else if( !temp.isNull() )
 			temp.save( filename );
