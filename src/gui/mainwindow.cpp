@@ -38,6 +38,8 @@
 #include "../Preprocessor.hpp"
 #include "../containers/ImageContainer.hpp"
 
+#include "savers/DumpSaver.hpp"
+
 #include "../debug.hpp"
 
 #include <vector>
@@ -404,7 +406,7 @@ void main_widget::save_image(){
 	if( !filename.isEmpty() ){
 		if( QFileInfo( filename ).suffix() == "dump" ){
 			if( temp_ex.is_valid() )
-				postProcess( temp_ex, false ).saveDump( filename );
+				DumpSaver( postProcess( temp_ex, false ), filename ).exec();
 		}
 		else if( !temp.isNull() )
 			temp.save( filename );

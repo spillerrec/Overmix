@@ -18,6 +18,11 @@ FORMS   += src/gui/mainwindow.ui
 HEADERS += src/gui/mainwindow.hpp src/gui/ImagesModel.hpp src/gui/FullscreenViewer.hpp
 SOURCES += src/gui/mainwindow.cpp src/gui/ImagesModel.cpp src/gui/FullscreenViewer.cpp src/main.cpp
 
+# File savers
+FORMS   += src/gui/savers/DumpSaver.ui
+HEADERS += src/gui/savers/DumpSaver.hpp src/gui/savers/ASaver.hpp
+SOURCES += src/gui/savers/DumpSaver.cpp
+
 #Viewer
 HEADERS += src/gui/viewer/colorManager.h \
            src/gui/viewer/imageCache.h \
