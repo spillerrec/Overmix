@@ -91,6 +91,7 @@ bool ImageEx::from_dump( QIODevice& dev ){
 	if( amount == 2 || amount == 4 ){
 		alpha = std::move( planes.back() );
 		planes.pop_back();
+		amount--;
 	}
 	
 	//Find type and validate
@@ -238,12 +239,10 @@ bool ImageEx::from_qimage( QString path ){
 		planes.emplace_back( width, height );
 	
 	for( int iy=0; iy<height; ++iy ){
-		color_type* r = planes[0].scan_line( iy );
-		color_type* g = planes[1].scan_line( iy );
-		color_type* b = planes[2].scan_line( iy );
-		color_type* a = nullptr;
-		if( alpha )
-			a = alpha.scan_line( iy );
+		auto r = planes[0].scan_line( iy );
+		auto g = planes[1].scan_line( iy );
+		auto b = planes[2].scan_line( iy );
+		auto a = alpha ? alpha.scan_line( iy ) : nullptr;
 		
 		auto in = (const QRgb*)img.constScanLine( iy );
 		
