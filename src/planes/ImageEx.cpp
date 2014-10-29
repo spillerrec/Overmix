@@ -227,11 +227,12 @@ bool ImageEx::from_qimage( QString path ){
 		return false;
 	
 	type = RGB;
-	int width = img.width();
-	int height = img.height();
+	auto width = img.width();
+	auto height = img.height();
 	
 	if( img.hasAlphaChannel() )
 		alpha = Plane( width, height );
+	img = img.convertToFormat( QImage::Format_ARGB32 );
 	
 	for( int i=0; i<3; i++ )
 		planes.emplace_back( width, height );
@@ -244,7 +245,7 @@ bool ImageEx::from_qimage( QString path ){
 		if( alpha )
 			a = alpha.scan_line( iy );
 		
-		const QRgb* in = (const QRgb*)img.constScanLine( iy );
+		auto in = (const QRgb*)img.constScanLine( iy );
 		
 		for( int ix=0; ix<width; ++ix, ++in ){
 			*(r++) = color::from8bit( qRed( *in ) );
