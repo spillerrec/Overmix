@@ -100,6 +100,7 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	connect( ui->btn_subpixel, SIGNAL( clicked() ), this, SLOT( subpixel_align_image() ) );
 	connect( ui->pre_alpha_mask, SIGNAL( clicked() ), this, SLOT( set_alpha_mask() ) );
 	connect( ui->pre_clear_mask, SIGNAL( clicked() ), this, SLOT( clear_mask() ) );
+	connect( ui->btn_as_mask, SIGNAL( clicked() ), this, SLOT( use_current_as_mask() ) );
 	update_draw();
 	
 	//Checkboxes
@@ -390,6 +391,7 @@ void main_widget::refresh_image(){
 	else
 		temp = QImage();
 	
+	ui->btn_as_mask->setEnabled( temp_ex.is_valid() && temp_ex.get_system() == ImageEx::GRAY );
 	viewer.change_image( new imageCache( temp ), true );
 	refresh_text();
 	ui->btn_save->setEnabled( true );
@@ -524,6 +526,11 @@ void main_widget::set_alpha_mask(){
 void main_widget::clear_mask(){
 	alpha_mask = -1;
 	ui->pre_clear_mask->setEnabled( false );
+}
+
+void main_widget::use_current_as_mask(){
+	alpha_mask = images.addMask( Plane( postProcess(temp_ex, false)[0] ) );
+	images.onAllItems( [=]( ImageItem& item ){ item.setSharedMask( alpha_mask ); } );
 }
 
 void main_widget::update_draw(){

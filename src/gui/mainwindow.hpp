@@ -119,6 +119,7 @@ class main_widget: public QMainWindow{
 		
 		void set_alpha_mask();
 		void clear_mask();
+		void use_current_as_mask();
 		
 	//Related to the Files tab
 		void addGroup();

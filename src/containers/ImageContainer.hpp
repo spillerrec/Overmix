@@ -76,6 +76,15 @@ class ImageContainer : public AContainer{
 		bool removeGroups( unsigned from, unsigned amount );
 		void rebuildIndexes();
 		
+		void onAllItems( void update( ImageItem& item ) );
+
+		template<typename T>
+		void onAllItems( T update ){
+			for( auto& group : groups )
+				for( auto& item : group.items )
+					update( item );
+		}
+		
 		//TODO: Get group thing
 		
 		//TODO: Get render thing
