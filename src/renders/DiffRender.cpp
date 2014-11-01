@@ -33,7 +33,7 @@ class StaticDiff{
 		const AContainer& aligner;
 		const ImageEx& reference;
 		
-		unsigned amount{ 0 };
+		double amount{ 0.0 };
 		precision_color_type sum{ color::BLACK };
 		
 		Point<double> offset;
@@ -49,14 +49,16 @@ class StaticDiff{
 		void add_image( unsigned index ){
 			//Get the actual color
 			color_type actual = aligner.image( index )[0].pixel( offset.x, offset.y );
+			auto& alpha = aligner.alpha( index );
+			auto a = alpha ? color::fromDouble( alpha.pixel( offset.x, offset.y ) ) : 1.0;
 			
 			//Find the expected color
 			auto pos = (aligner.pos( index ) + offset - absolute).round();
 			color_type expected = reference[0].pixel( pos.x, pos.y );
 			
 			//Add it to the sum
-			sum += abs( actual - expected );
-			amount++;
+			sum += abs( actual - expected ) * a;
+			amount += a;
 		}
 		
 		color_type result() const{
@@ -65,17 +67,35 @@ class StaticDiff{
 };
 
 class FakeMask : public DelegatedContainer{
-	public:
-		Plane fakemask;
-		FakeMask( const AContainer& con, Plane mask ) : DelegatedContainer(con), fakemask(mask) { }
+	private:
+		vector<Plane> masks;
 		
-		virtual const Plane& mask( unsigned ) const override{ return fakemask; }
-		virtual const Plane& alpha( unsigned ) const override{ return fakemask; }
-		virtual int imageMask( unsigned ) const override{ return 0; }
-		virtual unsigned maskCount() const override{ return 1; }
+	public:
+		void setMask( const Plane& fakemask );
+		FakeMask( const AContainer& con, const Plane& mask ) : DelegatedContainer(con)
+			{ setMask( mask ); }
+		
+		virtual const Plane& mask( unsigned index ) const override{ return masks[index]; }
+		virtual const Plane& alpha( unsigned index ) const override{ return masks[imageMask(index)]; }
+		virtual int imageMask( unsigned index ) const override{
+			auto pos = DelegatedContainer::imageMask( index );
+			return (pos < 0) ? 0 : pos;
+		}
+		virtual unsigned maskCount() const override{ return masks.size(); }
 };
 
-Plane DiffRender::iteration( const AContainer& aligner, unsigned max_count, Size<unsigned> size ) const{
+void FakeMask::setMask( const Plane& fakemask ){
+	masks.clear();
+	auto amount = DelegatedContainer::maskCount();
+	
+	if( amount == 0 )
+		masks.push_back( fakemask );
+	else
+		for( unsigned i=0; i<amount; i++ )
+			masks.push_back( fakemask.minPlane( DelegatedContainer::mask(i)) );
+}
+
+Plane DiffRender::iteration( const AContainer& aligner, const AContainer& real, unsigned max_count, Size<unsigned> size ) const{
 	//Normal render
 	ImageEx avg = SimpleRender( SimpleRender::FOR_MERGING ).render( aligner, max_count );
 	
@@ -87,7 +107,7 @@ Plane DiffRender::iteration( const AContainer& aligner, unsigned max_count, Size
 		auto out = output.scan_line( iy );
 		for( unsigned ix=0; ix<output.get_width(); ix++ ){
 			//Set the pixel to the static difference of all the images until max_count
-			StaticDiff diff( aligner, avg, ix, iy );
+			StaticDiff diff( real, avg, ix, iy );
 			
 			for( unsigned j=0; j<max_count; j++ )
 				diff.add_image( j );
@@ -115,15 +135,22 @@ ImageEx DiffRender::render( const AContainer& aligner, unsigned max_count, AProc
 	FakeMask fake( aligner, init );
 	
 	for( int i=0; i<2; i++ ){
-		fake.fakemask.binarize_threshold( color::WHITE / 2 );
-		fake.fakemask = fake.fakemask.dilate( 10 );
-		fake.fakemask = iteration( fake, max_count, size );
+		init.binarize_threshold( color::WHITE / 2 );
+		init = init.dilate( 10 );
+		fake.setMask( init );
+		init = iteration( fake, aligner, max_count, size );
+		//ImageEx( init ).to_qimage( ImageEx::SYSTEM_KEEP, ImageEx::SETTING_NONE ).save( "staticdiff" + QString::number( i ) + ".png" );
 	}
+	
+	//Combine masks
+	//TODO: we need some way of returning them all individually!
+	for( unsigned i=0; i<aligner.maskCount(); ++i )
+		init = init.minPlane( aligner.mask( i ) );
 	
 	//Create output image
 	ImageEx img( ImageEx::GRAY );
 	img.create( size.width(), size.height() );
-	img[0] = fake.fakemask;
+	img[0] = init;
 	return img;
 }
 

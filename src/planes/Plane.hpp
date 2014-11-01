@@ -106,6 +106,9 @@ class Plane : public PlaneBase<color_type>{
 			) const;
 		Plane normalize() const;
 		
+		Plane minPlane( const Plane& p ) const;
+		Plane maxPlane( const Plane& p ) const;
+		
 	//Difference
 		double diff( const Plane& p, int x, int y, unsigned stride=1 ) const;
 		double diffAlpha( const Plane& p, const Plane& alpha, const Plane& alpha_p, int x, int y, unsigned stride=1 ) const;

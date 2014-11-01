@@ -21,6 +21,7 @@
 #include <limits>
 #include <vector>
 #include <cstring> //For memcpy
+#include <cassert>
 
 #include <QtConcurrent>
 #include <QDebug>
@@ -141,5 +142,29 @@ void Plane::combine_line( const Plane &p, bool top ){
 
 Plane Plane::normalize() const{
 	return level( min_value(), max_value(), color::BLACK, color::WHITE, 1.0 );
+}
+
+Plane Plane::maxPlane( const Plane& p ) const{
+	assert( getSize() == p.getSize() );
+	auto out = *this;
+	for( unsigned iy=0; iy<get_height(); ++iy ){
+		auto row_in = p.const_scan_line( iy );
+		auto row_out = out.scan_line( iy );
+		for( unsigned ix=0; ix<get_width(); ++ix )
+			row_out[ix] = max( row_out[ix], row_in[ix] );
+	}
+	return out;
+}
+
+Plane Plane::minPlane( const Plane& p ) const{
+	assert( getSize() == p.getSize() );
+	auto out = *this;
+	for( unsigned iy=0; iy<get_height(); ++iy ){
+		auto row_in = p.const_scan_line( iy );
+		auto row_out = out.scan_line( iy );
+		for( unsigned ix=0; ix<get_width(); ++ix )
+			row_out[ix] = min( row_out[ix], row_in[ix] );
+	}
+	return out;
 }
 
