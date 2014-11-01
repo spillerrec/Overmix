@@ -29,7 +29,8 @@ void AverageAligner::align( AProcessWatcher* watcher ){
 	if( watcher )
 		watcher->setTotal( count() );
 	
- 	setPos( 0, QPointF( 0,0 ) );
+	for( unsigned i=0; i<count(); ++i )
+		setPos( i, { 0,0 } );
 	for( unsigned i=1; i<count(); i++ ){
 		if( watcher )
 			watcher->setCurrent( i );
