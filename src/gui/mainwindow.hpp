@@ -85,6 +85,8 @@ class main_widget: public QMainWindow{
 		void make_slide();
 		
 		const ImageEx& postProcess( const ImageEx& input, bool new_image=true );
+		
+		QString getSavePath( QString title, QString file_types );
 	
 	signals:
 		void urls_retrived( QList<QUrl> urls );

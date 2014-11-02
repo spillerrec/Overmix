@@ -49,6 +49,7 @@
 #include <QDesktopServices>
 #include <QFileInfo>
 #include <QFile>
+#include <QMessageBox>
 #include <QMimeData>
 #include <QDragEnterEvent>
 #include <QDropEvent>
@@ -337,7 +338,6 @@ const ImageEx& main_widget::postProcess( const ImageEx& input, bool new_image ){
 		;
 }
 
-#include <QMessageBox>
 void main_widget::refresh_image(){
 	if( !aligner ) //TODO: we need new way of deciding when to align
 		subpixel_align_image();
@@ -399,14 +399,20 @@ void main_widget::refresh_image(){
 	ui->btn_save->setEnabled( true );
 }
 
-void main_widget::save_image(){
-	/*
-	if( temp ){
-		debug::make_low_res( *temp, "lr", 4 );
-		//debug::make_slide( *temp, "createdslide/upscale", 1.0/0.8 );
+QString main_widget::getSavePath( QString title, QString file_types ){
+	auto filename = QFileDialog::getSaveFileName( this, title, save_dir, file_types );
+	
+	//Remember the folder we saved in
+	if( !filename.isEmpty() ){
+		save_dir = QFileInfo( filename ).dir().absolutePath();
+		settings.setValue( "save_directory", save_dir );
 	}
-	/*/
-	QString filename = QFileDialog::getSaveFileName( this, tr("Save image"), save_dir, tr("PNG files (*.png)") );
+	
+	return filename;
+}
+
+void main_widget::save_image(){
+	QString filename = getSavePath( tr("Save image"), tr("PNG files (*.png)") );
 	if( !filename.isEmpty() ){
 		if( QFileInfo( filename ).suffix() == "dump" ){
 			if( temp_ex.is_valid() )
@@ -414,22 +420,16 @@ void main_widget::save_image(){
 		}
 		else if( !temp.isNull() )
 			temp.save( filename );
-		
-		//Remember the folder we saved in
-		save_dir = QFileInfo( filename ).dir().absolutePath();
-		settings.setValue( "save_directory", save_dir );
 	}
-	//*/
 }
 
 void main_widget::save_files(){
-	auto filename = QFileDialog::getSaveFileName( this, tr("Save alignment"), save_dir, tr("XML (*.overmix.xml)") );
-	if( !filename.isEmpty() ){
+	auto filename = getSavePath( tr("Save alignment"), tr("XML (*.overmix.xml)") );
+	if( !filename.isEmpty() )
 		if( !ImageContainerSaver::save( images, filename ) )
 			QMessageBox::warning( this, tr("Could not save alignment")
 				,	tr("Was not possible to save alignment. Note: De-telecined input cannot be saved.")
 				);
-	}
 }
 
 
@@ -523,7 +523,7 @@ void main_widget::change_interlace(){
 }
 
 void main_widget::set_alpha_mask(){
-	QString filename = QFileDialog::getOpenFileName( this, tr("Open alpha mask"), "", tr("PNG files (*.png)") );
+	QString filename = QFileDialog::getOpenFileName( this, tr("Open alpha mask"), save_dir, tr("PNG files (*.png)") );
 	
 	if( !filename.isEmpty() ){
 		ImageEx img;
