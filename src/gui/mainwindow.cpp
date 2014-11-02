@@ -226,6 +226,22 @@ static ImageEx load( QUrl url ){
 void main_widget::process_urls( QList<QUrl> urls ){
 	QProgressDialog progress( tr("Loading images"), tr("Stop"), 0, urls.count(), this );
 	progress.setWindowModality( Qt::WindowModal );
+		
+//Update preprocessor settings, TODO: move to separate function?
+	//Crop
+	preprocessor.crop_left   = ui->crop_left  ->value();
+	preprocessor.crop_right  = ui->crop_right ->value();
+	preprocessor.crop_top    = ui->crop_top   ->value();
+	preprocessor.crop_bottom = ui->crop_bottom->value();
+	
+	//Deconvolve
+	preprocessor.deviation = ui->pre_deconvolve_deviation->value();
+	preprocessor.dev_iterations = ui->pre_deconvolve_iterations->value();
+	
+	//Scale
+	//TODO: method
+	preprocessor.scale_x = ui->pre_scale_width->value();
+	preprocessor.scale_y = ui->pre_scale_height->value();
 	
 	QTime t;
 	t.start();
@@ -246,32 +262,28 @@ void main_widget::process_urls( QList<QUrl> urls ){
 			img_loader = QtConcurrent::run( load, urls[i+1] );
 		loading_delay += delay.elapsed();
 		
-		//De-telecine
-		if( detelecine.isActive() ){
-			img = detelecine.process( img );
-			file = ""; //The result might be a bit of several files
-			//TODO: somehow provide info about the detelecine process?
+		
+		if( QFileInfo( file ).completeSuffix() == "overmix.xml" ){
+			//Handle aligner xml
+			if( !ImageContainerSaver::load( images, file ) )
+				QMessageBox::warning( this, tr("Could not load alignment")
+					,	tr("Some error happened while loading alignement xml")
+					);
+			//TODO: pass preprocessor
 		}
-		if( !img.is_valid() )
-			continue;
-		
-		//Crop
-		preprocessor.crop_left   = ui->crop_left  ->value();
-		preprocessor.crop_right  = ui->crop_right ->value();
-		preprocessor.crop_top    = ui->crop_top   ->value();
-		preprocessor.crop_bottom = ui->crop_bottom->value();
-		
-		//Deconvolve
-		preprocessor.deviation = ui->pre_deconvolve_deviation->value();
-		preprocessor.dev_iterations = ui->pre_deconvolve_iterations->value();
-		
-		//Scale
-		//TODO: method
-		preprocessor.scale_x = ui->pre_scale_width->value();
-		preprocessor.scale_y = ui->pre_scale_height->value();
-		
-		preprocessor.processFile( img );
-		images.addImage( std::move( img ), alpha_mask, -1, file );
+		else{
+			//De-telecine
+			if( detelecine.isActive() ){
+				img = detelecine.process( img );
+				file = ""; //The result might be a bit of several files
+				//TODO: somehow provide info about the detelecine process?
+			}
+			if( !img.is_valid() )
+				continue;
+			
+			preprocessor.processFile( img );
+			images.addImage( std::move( img ), alpha_mask, -1, file );
+		}
 		
 		if( progress.wasCanceled() )
 			break;

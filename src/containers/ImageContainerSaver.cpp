@@ -39,8 +39,61 @@ const auto NODE_ITEM_OFFSET    = "offset";
 const auto ATTR_ITEM_OFFSET_X  = "x";
 const auto ATTR_ITEM_OFFSET_Y  = "y";
 
-bool ImageContainerSaver::load( ImageContainer& container, QString file ){
-	return false;
+static QString getStringAttr( const xml_node& node, const char* name )
+	{ return QString::fromUtf8( node.attribute( name ).value() ); }
+
+static QString getString( const xml_node& node, const char* name )
+	{ return QString::fromUtf8( node.child( name ).text().get() ); }
+
+bool ImageContainerSaver::load( ImageContainer& container, QString filename ){
+	//TODO: progress monitoring
+	xml_document doc;
+	auto folder = QFileInfo( filename ).dir();
+	
+	if( !doc.load_file( filename.toLocal8Bit().constData() ) ) //TODO: unicode
+		return false;
+	auto root = doc.child( NODE_ROOT );
+	
+	//Load masks
+	std::vector<int> mask_ids;
+	for( auto mask : root.child( NODE_MASKS ).children( NODE_MASK ) ){
+		auto filename = folder.absolutePath() + "/" + QString::fromUtf8( mask.text().get() );
+		ImageEx img;
+		if( !img.read_file( filename ) )
+			return false;
+		
+		mask_ids.emplace_back( container.addMask( std::move( img[0] ) ) );
+	}
+	
+	for( auto group : root.child( NODE_GROUPS ).children( NODE_GROUP ) ){
+		container.addGroup( getStringAttr( group, ATTR_GROUP_NAME ) );
+		
+		for( auto item : group.children( NODE_ITEM ) ){
+			auto file = folder.absolutePath() + "/" + getString( item, NODE_ITEM_PATH );
+			auto mask  = item.child( NODE_ITEM_MASK  ).text().as_int( -1 );
+			auto frame = item.child( NODE_ITEM_FRAME ).text().as_int( -1 );
+			
+			//Translate mask id
+			if( mask >= 0 ){
+				if( unsigned(mask) >= mask_ids.size() )
+					return false;
+				mask = mask_ids[mask];
+			}
+			
+			ImageEx img;
+			if( !img.read_file( file ) )
+				return false;
+			auto& img_item = container.addImage( std::move(img), mask, -1, file );
+			
+			img_item.frame = frame;
+			
+			auto offset_node = item.child( NODE_ITEM_OFFSET );
+			img_item.offset.x = offset_node.attribute( ATTR_ITEM_OFFSET_X ).as_double( 0.0 );
+			img_item.offset.y = offset_node.attribute( ATTR_ITEM_OFFSET_Y ).as_double( 0.0 );
+		}
+	}
+	
+	return true;
 }
 
 //Convenience functions for adding xml elements containing only of a text node

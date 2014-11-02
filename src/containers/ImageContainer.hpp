@@ -63,7 +63,7 @@ class ImageContainer : public AContainer{
 		virtual       void   setFrame( unsigned index, int newVal ) override;
 		
 	public:
-		void addImage( ImageEx&& img, int mask=-1, int group=-1, QString filepath="" );
+		ImageItem& addImage( ImageEx&& img, int mask=-1, int group=-1, QString filepath="" );
 		
 		int addMask( Plane&& mask ){
 			masks.emplace_back( mask );
