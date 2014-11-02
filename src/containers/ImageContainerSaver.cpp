@@ -19,21 +19,44 @@
 #include "ImageContainerSaver.hpp"
 #include "ImageContainer.hpp"
 
+#include <QDir>
+#include <QFileInfo>
+
 #include "pugixml/pugixml.hpp"
 using namespace pugi;
 
-const auto NODE_ROOT       = "alignment";
-const auto NODE_GROUP      = "group";
-const auto ATTR_GROUP_NAME = "name";
-const auto NODE_ITEM       = "item";
-const auto NODE_ITEM_PATH  = "filepath";
+const auto NODE_ROOT           = "alignment";
+const auto NODE_MASKS          = "masks";
+const auto NODE_MASK           = "mask";
+const auto NODE_GROUPS         = "groups";
+const auto NODE_GROUP          = "group";
+const auto ATTR_GROUP_NAME     = "name";
+const auto NODE_ITEM           = "item";
+const auto NODE_ITEM_PATH      = "filepath";
+const auto NODE_ITEM_MASK      = "mask";
+const auto NODE_ITEM_FRAME     = "frame";
+const auto NODE_ITEM_OFFSET    = "offset";
+const auto ATTR_ITEM_OFFSET_X  = "x";
+const auto ATTR_ITEM_OFFSET_Y  = "y";
 
 bool ImageContainerSaver::load( ImageContainer& container, QString file ){
 	return false;
 }
 
+//Convenience functions for adding xml elements containing only of a text node
+static void addXmlItem( xml_node& node, const char* name, const char* value )
+	{ node.append_child( name ).append_child( node_pcdata ).set_value( value ); }
+static void addXmlItem( xml_node& node, const char* name, QString value )
+	{ addXmlItem( node, name, value.toUtf8().constData() ); }
+
+template<typename T>
+void addXmlItem( xml_node& node, const char* name, T value )
+	{ addXmlItem( node, name, std::to_string( value ).c_str() ); }
+
 bool ImageContainerSaver::save( const ImageContainer& container, QString filename ){
+	//NOTE: we do not support alpha planes stored directly in the ImageEx, it will be ignored!
 	xml_document doc;
+	auto folder = QFileInfo( filename ).dir();
 	
 	auto param = doc.append_child( node_declaration );
 	param.append_attribute( "version"  ) = 1.0;
@@ -41,18 +64,39 @@ bool ImageContainerSaver::save( const ImageContainer& container, QString filenam
 	
 	auto root = doc.append_child( NODE_ROOT );
 	
+	auto groups = root.append_child( NODE_GROUPS );
 	for( auto& group : container ){
-		auto group_node = root.append_child( NODE_GROUP );
+		auto group_node = groups.append_child( NODE_GROUP );
 		group_node.append_attribute( ATTR_GROUP_NAME ) = group.name.toUtf8().constData();
 		
 		for( auto& item : group ){
+			if( item.filename.isEmpty() ) //Abort if no filename
+				return false;
+			
 			auto item_node = group_node.append_child( NODE_ITEM );
-			auto file_node = item_node.append_child( NODE_ITEM_PATH );
-			file_node.append_child( node_pcdata ).set_value( item.filename.toUtf8().constData() );
-			//TODO: Make item.filename relative to filename
-			//TODO: fail if path is empty (detelecine)
+			addXmlItem( item_node, NODE_ITEM_PATH , folder.relativeFilePath( item.filename ) );
+			addXmlItem( item_node, NODE_ITEM_MASK , item.maskId() );
+			addXmlItem( item_node, NODE_ITEM_FRAME, item.frame );
+			
+			auto offset_node = item_node.append_child( NODE_ITEM_OFFSET );
+			offset_node.append_attribute( ATTR_ITEM_OFFSET_X ) = item.offset.x;
+			offset_node.append_attribute( ATTR_ITEM_OFFSET_Y ) = item.offset.y;
 		}
 	}
 	
+	if( container.getMasks().size() > 0 ){
+		//Save masks
+		auto masks = root.append_child( NODE_MASKS );
+		auto mask_folder = QFileInfo( filename ).baseName() + "_masks";
+		folder.mkdir( mask_folder );
+		int id = 0;
+		for( auto& mask : container.getMasks() ){
+			auto mask_file = mask_folder + "/" + QString::number( id++ ) + ".dump";
+			ImageEx( mask ).saveDump( folder.absolutePath() + "/" + mask_file );
+			addXmlItem( masks, NODE_MASK, mask_file );
+		}
+	}
+	
+	//TODO: support unicode
 	return doc.save_file( filename.toLocal8Bit().constData() );
 }
