@@ -24,6 +24,7 @@
 #include <QtConcurrentMap>
 #include <QFileInfo>
 
+#include <cassert>
 #include <stdint.h>
 #include <limits>
 #include <vector>
@@ -436,4 +437,24 @@ MergeResult ImageEx::best_round( const ImageEx& img, int level, double range_x, 
 		);
 }
 
+static QRgb setQRgbAlpha( QRgb in, int alpha )
+	{ return qRgba( qRed(in), qGreen(in), qBlue(in), alpha ); }
+
+QImage setQImageAlpha( QImage img, const Plane& alpha ){
+	if( !alpha )
+		return img;
+	
+	assert( img.width() == (int)alpha.get_width() );
+	assert( img.height() == (int)alpha.get_height() );
+	
+	img = img.convertToFormat( QImage::Format_ARGB32 );
+	for( int iy=0; iy<img.height(); ++iy ){
+		auto out = (QRgb*)img.scanLine( iy );
+		auto in = alpha.const_scan_line( iy );
+		for( int ix=0; ix<img.width(); ++ix )
+			out[ix] = setQRgbAlpha( out[ix], color::as8bit( in[ix] ) );
+	}
+	
+	return img;
+}
 

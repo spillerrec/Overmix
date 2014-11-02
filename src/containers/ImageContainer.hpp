@@ -64,6 +64,7 @@ class ImageContainer : public AContainer{
 			masks.emplace_back( mask );
 			return masks.size() - 1;
 		}
+		const std::vector<Plane>& getMasks() const{ return masks; }	
 		
 		void addGroup( QString name ){ groups.emplace_back( name, masks ); }
 		

@@ -154,4 +154,6 @@ class ImageEx{
 		const Plane& operator[]( unsigned index ) const{ return planes[index]; }
 };
 
+QImage setQImageAlpha( QImage img, const Plane& alpha );
+
 #endif
