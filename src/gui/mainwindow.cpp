@@ -37,6 +37,7 @@
 #include "../Deteleciner.hpp"
 #include "../Preprocessor.hpp"
 #include "../containers/ImageContainer.hpp"
+#include "../containers/ImageContainerSaver.hpp"
 
 #include "savers/DumpSaver.hpp"
 
@@ -97,6 +98,7 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	connect( ui->btn_clear, SIGNAL( clicked() ), this, SLOT( clear_image() ) );
 	connect( ui->btn_refresh, SIGNAL( clicked() ), this, SLOT( refresh_image() ) );
 	connect( ui->btn_save, SIGNAL( clicked() ), this, SLOT( save_image() ) );
+	connect( ui->btn_save_files, SIGNAL( clicked() ), this, SLOT( save_files() ) );
 	connect( ui->btn_subpixel, SIGNAL( clicked() ), this, SLOT( subpixel_align_image() ) );
 	connect( ui->pre_alpha_mask, SIGNAL( clicked() ), this, SLOT( set_alpha_mask() ) );
 	connect( ui->pre_clear_mask, SIGNAL( clicked() ), this, SLOT( clear_mask() ) );
@@ -418,6 +420,16 @@ void main_widget::save_image(){
 		settings.setValue( "save_directory", save_dir );
 	}
 	//*/
+}
+
+void main_widget::save_files(){
+	auto filename = QFileDialog::getSaveFileName( this, tr("Save alignment"), save_dir, tr("XML (*.overmix.xml)") );
+	if( !filename.isEmpty() ){
+		if( !ImageContainerSaver::save( images, filename ) )
+			QMessageBox::warning( this, tr("Could not save alignment")
+				,	tr("Was not possible to save alignment. Note: De-telecined input cannot be saved.")
+				);
+	}
 }
 
 

@@ -111,6 +111,7 @@ class main_widget: public QMainWindow{
 		void refresh_image();
 		void open_image();
 		void save_image();
+		void save_files();
 		void clear_image();
 		void subpixel_align_image();
 		void toggled_hor();

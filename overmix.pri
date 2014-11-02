@@ -13,6 +13,13 @@ SOURCES += $$PWD/src/MultiPlaneIterator.cpp $$PWD/src/color.cpp $$PWD/src/Detele
 HEADERS += $$PWD/src/containers/AContainer.hpp $$PWD/src/containers/ImageContainer.hpp $$PWD/src/containers/ImageGroup.hpp $$PWD/src/containers/DelegatedContainer.hpp
 SOURCES += $$PWD/src/containers/AContainer.cpp $$PWD/src/containers/ImageContainer.cpp
 
+# Container saver
+HEADERS += $$PWD/src/containers/ImageContainerSaver.hpp
+SOURCES += $$PWD/src/containers/ImageContainerSaver.cpp
+# pugixml
+HEADERS += $$PWD/src/containers/pugixml/pugixml.hpp $$PWD/src/containers/pugixml/pugiconfig.hpp
+SOURCES += $$PWD/src/containers/pugixml/pugixml.cpp
+
 # Planes
 HEADERS += $$PWD/src/planes/ImageEx.hpp $$PWD/src/planes/Plane.hpp $$PWD/src/planes/FourierPlane.hpp $$PWD/src/planes/PlaneBase.hpp
 SOURCES += $$PWD/src/planes/ImageEx.cpp $$PWD/src/planes/Plane.cpp $$PWD/src/planes/FourierPlane.cpp

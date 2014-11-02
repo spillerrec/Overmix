@@ -45,6 +45,11 @@ class ImageContainer : public AContainer{
 			indexes.clear();
 		}
 		
+		std::vector<ImageGroup>::iterator        begin()       { return groups.begin(); }
+		std::vector<ImageGroup>::const_iterator  begin()  const{ return groups.begin(); }
+		std::vector<ImageGroup>::iterator        end()         { return groups.end();   }
+		std::vector<ImageGroup>::const_iterator  end()    const{ return groups.end();   }
+		
 	public: //AContainer implementation
 		virtual       unsigned  count() const;
 		virtual const ImageEx&  image( unsigned index ) const override;

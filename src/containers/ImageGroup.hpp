@@ -65,6 +65,11 @@ class ImageGroup : public AContainer{
 		ImageGroup() : masks{nullptr} { } //NOTE: don't use this!
 		ImageGroup( QString name, const std::vector<Plane>& masks ) : name(name), masks(&masks) { }
 		
+		std::vector<ImageItem>::iterator        begin()       { return items.begin(); }
+		std::vector<ImageItem>::const_iterator  begin()  const{ return items.begin(); }
+		std::vector<ImageItem>::iterator        end()         { return items.end();   }
+		std::vector<ImageItem>::const_iterator  end()    const{ return items.end();   }
+		
 	public: //AContainer implementation
 		virtual unsigned count() const{ return items.size(); }
 		virtual const ImageEx& image( unsigned index ) const{ return items[index].image(); }
