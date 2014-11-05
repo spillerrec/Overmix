@@ -53,7 +53,6 @@ class main_widget: public QMainWindow{
 		ImageContainer& images;
 		QImage temp;
 		
-		AImageAligner *aligner{ nullptr };
 		ImageEx temp_ex;
 		Deteleciner detelecine;
 		
@@ -98,7 +97,6 @@ class main_widget: public QMainWindow{
 		void resize_postprogress();
 		void resize_color();
 		
-		void resetAligner();
 		void resetImage(){ temp_ex = ImageEx(); }
 		void update_draw();
 	

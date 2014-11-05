@@ -31,12 +31,14 @@ ImageItem& ImageContainer::addImage( ImageEx&& img, int mask, int group, QString
 	groups[index].items.emplace_back( item );
 	indexes.emplace_back( index, groups[index].count()-1 );
 	
+	setUnaligned();
 	return groups[index].items.back();
 }
 
 bool ImageContainer::removeGroups( unsigned from, unsigned amount ){
 	if( !util::removeItems( groups, from, amount ) )
 		return false;
+	setUnaligned();
 	rebuildIndexes();
 	return true;
 }
@@ -74,6 +76,7 @@ Point<double> ImageContainer::pos( unsigned index ) const{
 void ImageContainer::setPos( unsigned index, Point<double> newVal ){
 	auto pos = indexes[index];
 	groups[pos.group].setPos( pos.index, newVal );
+	aligned = true;
 }
 
 int ImageContainer::frame( unsigned index ) const{

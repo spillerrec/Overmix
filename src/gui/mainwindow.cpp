@@ -183,14 +183,6 @@ main_widget::~main_widget(){
 }
 
 
-void main_widget::resetAligner(){
-	delete aligner;
-	aligner = nullptr;
-	ui->btn_save->setEnabled( false );
-	resetImage();
-}
-
-
 void main_widget::dragEnterEvent( QDragEnterEvent *event ){
 	if( event->mimeData()->hasUrls() )
 		event->acceptProposedAction();
@@ -269,7 +261,6 @@ void main_widget::process_urls( QList<QUrl> urls ){
 				QMessageBox::warning( this, tr("Could not load alignment")
 					,	tr("Some error happened while loading alignement xml")
 					);
-			//TODO: pass preprocessor
 		}
 		else{
 			//De-telecine
@@ -300,7 +291,7 @@ void main_widget::process_urls( QList<QUrl> urls ){
 
 
 void main_widget::refresh_text(){
-	QRect s = (aligner) ? aligner->size() : QRect();
+	QRect s = images.size();
 	ui->lbl_info->setText(
 			tr( "Size: " )
 		+	QString::number(s.width()) + "x"
@@ -351,7 +342,7 @@ const ImageEx& main_widget::postProcess( const ImageEx& input, bool new_image ){
 }
 
 void main_widget::refresh_image(){
-	if( !aligner ) //TODO: we need new way of deciding when to align
+	if( !images.isAligned() ) //TODO: we need new way of deciding when to align
 		subpixel_align_image();
 	
 	bool new_image = !temp_ex.is_valid();
@@ -457,7 +448,9 @@ void main_widget::toggled_ver(){
 }
 
 void main_widget::clear_cache(){
-	resetAligner();
+	//TODO: a lot of this should probably be in resetImage!
+	ui->btn_save->setEnabled( false );
+	resetImage();
 	temp = QImage();
 	viewer.change_image( NULL, true );
 }
@@ -498,11 +491,9 @@ void main_widget::subpixel_align_image(){
 		else
 			method = AImageAligner::ALIGN_VER;
 	}
+	AImageAligner* aligner = nullptr;
 	
 	int scale = ui->merge_scale->value();
-	
-	if( aligner )
-		resetAligner();
 	
 	int merge_index = ui->merge_method->currentIndex();
 	switch( merge_index ){
@@ -525,6 +516,8 @@ void main_widget::subpixel_align_image(){
 	
 	aligner->addImages();
 	aligner->align( &watcher );
+	
+	delete aligner; //TODO: fix this
 	
 	refresh_text();
 	update_draw();
@@ -558,7 +551,7 @@ void main_widget::use_current_as_mask(){
 }
 
 void main_widget::update_draw(){
-	if( !aligner )
+	if( !images.isAligned() )
 		ui->btn_refresh->setText( tr( "Align&&Draw" ) );
 	else
 		ui->btn_refresh->setText( tr( "Draw" ) );

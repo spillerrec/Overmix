@@ -34,6 +34,8 @@ class ImageContainer : public AContainer{
 		std::vector<Plane> masks;
 		std::vector<ImagePosition> indexes;
 		
+		bool aligned{ false };
+		
 	public:
 		unsigned groupAmount() const{ return groups.size(); }
 		const ImageGroup& getConstGroup( unsigned index ) const{ return groups[index]; }
@@ -63,6 +65,10 @@ class ImageContainer : public AContainer{
 		virtual       void   setFrame( unsigned index, int newVal ) override;
 		
 	public:
+		bool isAligned() const{ return aligned; }
+		void setUnaligned(){ aligned = false; }
+		void setAligned(){ aligned = true; }
+		
 		ImageItem& addImage( ImageEx&& img, int mask=-1, int group=-1, QString filepath="" );
 		
 		int addMask( Plane&& mask ){

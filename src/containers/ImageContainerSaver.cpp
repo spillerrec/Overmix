@@ -96,6 +96,7 @@ bool ImageContainerSaver::load( ImageContainer& container, QString filename, Pre
 		}
 	}
 	
+	container.setAligned();
 	return true;
 }
 
