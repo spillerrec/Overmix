@@ -21,10 +21,11 @@
 #include <QString>
 
 class ImageContainer;
+class Preprocessor;
 
 class ImageContainerSaver{
 	public:
-		static bool load( ImageContainer& container, QString file );
+		static bool load( ImageContainer& container, QString file, Preprocessor* processor=nullptr );
 		static bool save( const ImageContainer& container, QString filename );
 };
 

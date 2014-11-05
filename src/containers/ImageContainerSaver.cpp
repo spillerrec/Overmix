@@ -18,6 +18,7 @@
 
 #include "ImageContainerSaver.hpp"
 #include "ImageContainer.hpp"
+#include "../Preprocessor.hpp"
 
 #include <QDir>
 #include <QFileInfo>
@@ -45,7 +46,7 @@ static QString getStringAttr( const xml_node& node, const char* name )
 static QString getString( const xml_node& node, const char* name )
 	{ return QString::fromUtf8( node.child( name ).text().get() ); }
 
-bool ImageContainerSaver::load( ImageContainer& container, QString filename ){
+bool ImageContainerSaver::load( ImageContainer& container, QString filename, Preprocessor* processor ){
 	//TODO: progress monitoring
 	xml_document doc;
 	auto folder = QFileInfo( filename ).dir();
@@ -83,6 +84,8 @@ bool ImageContainerSaver::load( ImageContainer& container, QString filename ){
 			ImageEx img;
 			if( !img.read_file( file ) )
 				return false;
+			if( processor )
+				processor->processFile( img );
 			auto& img_item = container.addImage( std::move(img), mask, -1, file );
 			
 			img_item.frame = frame;
