@@ -88,3 +88,24 @@ void ImageContainer::setFrame( unsigned index, int newVal ){
 	groups[pos.group].setFrame( pos.index, newVal );
 }
 
+static void addToFrames( std::vector<int>& frames, int frame ){
+	for( auto& item : frames )
+		if( item == frame )
+			return;
+	frames.push_back( frame );
+}
+
+std::vector<int> ImageContainer::getFrames() const{
+	std::vector<int> frames;
+	for( auto& group : groups )
+		for( auto& item : group.items )
+			if( item.frame >= 0 )
+				addToFrames( frames, item.frame );
+	
+	//Make sure to include at least include
+	if( frames.size() == 0 )
+		frames.push_back( -1 );
+	
+	return frames;
+}
+

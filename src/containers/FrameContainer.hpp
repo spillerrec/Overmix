@@ -40,7 +40,7 @@ class FrameContainer : public AContainer{
 	public:
 		FrameContainer( AContainer& container, int frame ) : container(container) {
 			for( unsigned i=0; i<container.count(); i++ )
-				if( container.frame( i ) == frame )
+				if( container.frame( i ) == frame || container.frame( i ) < 0 )
 					indexes.push_back( i );
 		}
 		

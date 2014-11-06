@@ -24,6 +24,8 @@
 #include <QSettings>
 #include <QUrl>
 
+#include <vector>
+
 #include "../planes/ImageEx.hpp"
 #include "viewer/imageViewer.h"
 
@@ -32,6 +34,7 @@
 #include "../Deteleciner.hpp"
 #include "../RenderOperations.hpp"
 
+class AContainer;
 class AImageAligner;
 class Deteleciner;
 class ImageContainer;
@@ -51,9 +54,10 @@ class main_widget: public QMainWindow{
 		imageViewer browser;
 		Preprocessor& preprocessor;
 		ImageContainer& images;
-		QImage temp;
 		
-		ImageEx temp_ex;
+		std::vector<ImageEx> renders;
+		std::vector<QImage> qrenders;
+		
 		Deteleciner detelecine;
 		
 		int alpha_mask{ -1 };
@@ -70,6 +74,11 @@ class main_widget: public QMainWindow{
 		RenderPipeEdgeDetection pipe_edge;
 		RenderPipeLevel pipe_level;
 		RenderPipeThreshold pipe_threshold;
+		
+		ImageEx renderImage( const AContainer& container );
+		QImage qrenderImage( const ImageEx& img );
+		
+		void updateViewer();
 	
 	public:
 		explicit main_widget( Preprocessor& preprocessor, ImageContainer& images );
@@ -97,7 +106,7 @@ class main_widget: public QMainWindow{
 		void resize_postprogress();
 		void resize_color();
 		
-		void resetImage(){ temp_ex = ImageEx(); }
+		void resetImage(){ renders.clear(); }
 		void update_draw();
 	
 	public slots:

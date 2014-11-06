@@ -36,6 +36,7 @@
 #include "../aligners/FakeAligner.hpp"
 #include "../Deteleciner.hpp"
 #include "../Preprocessor.hpp"
+#include "../containers/FrameContainer.hpp"
 #include "../containers/ImageContainer.hpp"
 #include "../containers/ImageContainerSaver.hpp"
 
@@ -341,13 +342,8 @@ const ImageEx& main_widget::postProcess( const ImageEx& input, bool new_image ){
 		;
 }
 
-void main_widget::refresh_image(){
-	if( !images.isAligned() ) //TODO: we need new way of deciding when to align
-		subpixel_align_image();
-	
-	bool new_image = !temp_ex.is_valid();
-	
-	if( new_image ){
+
+ImageEx main_widget::renderImage( const AContainer& container ){
 		//Select filter
 		bool chroma_upscale = ui->cbx_chroma->isChecked();
 		
@@ -357,17 +353,20 @@ void main_widget::refresh_image(){
 		DialogWatcher watcher( progress );
 		
 		if( ui->rbtn_diff->isChecked() )
-			temp_ex = DifferenceRender().render( images, INT_MAX, &watcher );
+			return DifferenceRender().render( container, INT_MAX, &watcher );
 		else if( ui->rbtn_static_diff->isChecked() )
-			temp_ex = DiffRender().render( images, INT_MAX, &watcher );
+			return DiffRender().render( container, INT_MAX, &watcher );
 		else if( ui->rbtn_dehumidifier->isChecked() )
-			temp_ex = SimpleRender( SimpleRender::DARK_SELECT, true ).render( images, INT_MAX, &watcher );
+			return SimpleRender( SimpleRender::DARK_SELECT, true ).render( container, INT_MAX, &watcher );
 		else if( ui->rbtn_subpixel->isChecked() )
-			temp_ex = FloatRender().render( images, INT_MAX, &watcher );
+			return FloatRender().render( container, INT_MAX, &watcher );
 		else
-		//	temp_ex = SimpleRender( SimpleRender::AVERAGE, chroma_upscale ).render( images, INT_MAX, &watcher );
-			temp_ex = AverageRender( chroma_upscale ).render( images, INT_MAX, &watcher );
-	}
+			return AverageRender( chroma_upscale ).render( container, INT_MAX, &watcher );
+}
+
+QImage main_widget::qrenderImage( const ImageEx& img ){
+	if( !img.is_valid() )
+		return QImage();
 	
 	//Set color system
 	ImageEx::YuvSystem system = ImageEx::SYSTEM_KEEP;
@@ -384,20 +383,35 @@ void main_widget::refresh_image(){
 		setting = setting | ImageEx::SETTING_GAMMA;
 	
 	//Render image
-	if( temp_ex.is_valid() ){	
-		QTime t;
-		t.start();
-		
-		//TODO: why no const on to_qimage?
-		temp = QImage( ImageEx( postProcess( temp_ex, new_image ) ).to_qimage( system, setting ) );
-		
-		qDebug( "to_qimage() took: %d", t.elapsed() );
-	}
-	else
-		temp = QImage();
+	//TODO: fix const on to_qimage
+	//TODO: fix postProcess
+	return ImageEx( postProcess( img, true ) ).to_qimage( system, setting );
+}
+
+void main_widget::updateViewer(){
+	//TODO: support animation
+	viewer.change_image( new imageCache( qrenders.size() > 0 ? qrenders[0] : QImage() ), true );
+}
+
+
+void main_widget::refresh_image(){
+	if( !images.isAligned() )
+		subpixel_align_image();
 	
-	ui->btn_as_mask->setEnabled( temp_ex.is_valid() && temp_ex.get_system() == ImageEx::GRAY );
-	viewer.change_image( new imageCache( temp ), true );
+	if( renders.size() == 0 ){
+		auto frames = images.getFrames();
+		renders.reserve( frames.size() );
+		qrenders.clear();
+		
+		for( auto& frame : frames ){
+			FrameContainer current( images, frame );
+			renders.emplace_back( renderImage( current ) );
+			qrenders.push_back( qrenderImage( renders.back() ) );
+		}
+	}
+	
+	ui->btn_as_mask->setEnabled( renders.size() == 0 && renders[0].get_system() == ImageEx::GRAY );
+	updateViewer();
 	refresh_text();
 	ui->btn_save->setEnabled( true );
 }
@@ -415,14 +429,16 @@ QString main_widget::getSavePath( QString title, QString file_types ){
 }
 
 void main_widget::save_image(){
-	QString filename = getSavePath( tr("Save image"), tr("PNG files (*.png)") );
-	if( !filename.isEmpty() ){
-		if( QFileInfo( filename ).suffix() == "dump" ){
-			if( temp_ex.is_valid() )
-				DumpSaver( postProcess( temp_ex, false ), filename ).exec();
+	//TODO: assert for equal size
+	
+	for( unsigned i=0; i<renders.size(); i++ ){
+		QString filename = getSavePath( tr("Save image"), tr("PNG files (*.png)") );
+		if( !filename.isEmpty() ){
+			if( QFileInfo( filename ).suffix() == "dump" )
+				DumpSaver( postProcess( renders[i], true ), filename ).exec(); //TODO: fix postProcess
+			else
+				qrenders[i].save( filename );
 		}
-		else if( !temp.isNull() )
-			temp.save( filename );
 	}
 }
 
@@ -451,7 +467,7 @@ void main_widget::clear_cache(){
 	//TODO: a lot of this should probably be in resetImage!
 	ui->btn_save->setEnabled( false );
 	resetImage();
-	temp = QImage();
+	qrenders.clear();
 	viewer.change_image( NULL, true );
 }
 
@@ -546,8 +562,11 @@ void main_widget::clear_mask(){
 }
 
 void main_widget::use_current_as_mask(){
-	alpha_mask = images.addMask( Plane( postProcess(temp_ex, false)[0] ) );
-	images.onAllItems( [=]( ImageItem& item ){ item.setSharedMask( alpha_mask ); } );
+	if( renders.size() == 1 ){
+		//TODO: postProcess cache no longer valid as we have several frames
+		alpha_mask = images.addMask( Plane( postProcess(renders[0], false)[0] ) );
+		images.onAllItems( [=]( ImageItem& item ){ item.setSharedMask( alpha_mask ); } );
+	}
 }
 
 void main_widget::update_draw(){
@@ -591,7 +610,10 @@ void main_widget::removeFiles(){
 }
 
 void main_widget::showFullscreen(){
-	QImage img = temp;
+	if( qrenders.size() == 0 )
+		return;
+	
+	QImage img = qrenders[0]; //TODO: support animation!
 	if( ui->tab_pages->currentIndex() != 0 )
 		img = fromSelection( img_model, ui->files_view->selectionModel()->selectedIndexes() );
 		
