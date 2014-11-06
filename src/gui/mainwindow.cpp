@@ -401,16 +401,18 @@ void main_widget::refresh_image(){
 	if( renders.size() == 0 ){
 		auto frames = images.getFrames();
 		renders.reserve( frames.size() );
-		qrenders.clear();
 		
 		for( auto& frame : frames ){
 			FrameContainer current( images, frame );
 			renders.emplace_back( renderImage( current ) );
-			qrenders.push_back( qrenderImage( renders.back() ) );
 		}
 	}
 	
-	ui->btn_as_mask->setEnabled( renders.size() == 0 && renders[0].get_system() == ImageEx::GRAY );
+	qrenders.clear();
+	for( auto& render : renders )
+		qrenders.push_back( qrenderImage( render ) );
+	
+	ui->btn_as_mask->setEnabled( renders.size() == 1 && renders[0].get_system() == ImageEx::GRAY );
 	updateViewer();
 	refresh_text();
 	ui->btn_save->setEnabled( true );
