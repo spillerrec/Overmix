@@ -388,7 +388,7 @@ QImage main_widget::qrenderImage( const ImageEx& img ){
 	return ImageEx( postProcess( img, true ) ).to_qimage( system, setting );
 }
 
-void main_widget::updateViewer(){
+imageCache* main_widget::createViewerCache() const{
 	auto full_size = images.size();
 	
 	//TODO: proper frame timings
@@ -404,7 +404,7 @@ void main_widget::updateViewer(){
 		cache->add_frame( current, 1000*3/25 ); //3 frame animation delay, with 25 frames a second
 	}
 	cache->set_fully_loaded();
-	viewer.change_image( cache, true );
+	return cache;
 }
 
 
@@ -427,7 +427,7 @@ void main_widget::refresh_image(){
 		render.qimg = qrenderImage( render.raw );
 	
 	ui->btn_as_mask->setEnabled( renders.size() == 1 && renders[0].raw.get_system() == ImageEx::GRAY );
-	updateViewer();
+	viewer.change_image( createViewerCache(), true );
 	refresh_text();
 	ui->btn_save->setEnabled( true );
 }
@@ -485,7 +485,7 @@ void main_widget::clear_cache(){
 	resetImage();
 	for( auto& render : renders )
 		render.qimg = QImage();
-	viewer.change_image( NULL, true );
+	viewer.change_image( nullptr );
 }
 
 void main_widget::clear_image(){
@@ -627,15 +627,13 @@ void main_widget::removeFiles(){
 }
 
 void main_widget::showFullscreen(){
-	if( renders.size() == 0 )
-		return;
-	
-	QImage img = renders[0].qimg; //TODO: support animation!
-	if( ui->tab_pages->currentIndex() != 0 )
-		img = fromSelection( img_model, ui->files_view->selectionModel()->selectedIndexes() );
-		
-	if( !img.isNull() )
-		FullscreenViewer::show( settings, img );
+	if( ui->tab_pages->currentIndex() != 0 ){
+		auto img = fromSelection( img_model, ui->files_view->selectionModel()->selectedIndexes() );
+		if( !img.isNull() )
+			FullscreenViewer::show( settings, img );
+	}
+	else if( renders.size() > 0 )
+		FullscreenViewer::show( settings, createViewerCache() );
 }
 
 

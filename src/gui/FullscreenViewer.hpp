@@ -29,10 +29,12 @@ class FullscreenViewer : public imageViewer{
 	Q_OBJECT
 	
 	private:
+		FullscreenViewer( QSettings& settings, imageCache* cache );
 		FullscreenViewer( QSettings& settings, QImage img );
 		
 	public:
-		static void show( QSettings& settings, QImage img )
+		template<typename T>
+		static void show( QSettings& settings, T img )
 			{ new FullscreenViewer( settings, img ); }
 		
 	protected:

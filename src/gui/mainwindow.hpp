@@ -41,6 +41,8 @@ class ImageContainer;
 class Preprocessor;
 class QGroupBox;
 
+class imageCache;
+
 class main_widget: public QMainWindow{
 	Q_OBJECT
 	
@@ -84,7 +86,7 @@ class main_widget: public QMainWindow{
 		ImageEx renderImage( const AContainer& container );
 		QImage qrenderImage( const ImageEx& img );
 		
-		void updateViewer();
+		imageCache* createViewerCache() const;
 	
 	public:
 		explicit main_widget( Preprocessor& preprocessor, ImageContainer& images );

@@ -20,10 +20,9 @@
 
 #include "viewer/imageCache.h"
 
-#include <QLayout>
 
-FullscreenViewer::FullscreenViewer( QSettings& settings, QImage img ) : imageViewer( settings ){
-	change_image( new imageCache( img ), true );
+FullscreenViewer::FullscreenViewer( QSettings& settings, imageCache* cache ) : imageViewer( settings ){
+	change_image( cache, true );
 	setStyleSheet( "* {background: black;}" );
 	showFullScreen();
 	setAttribute( Qt::WA_DeleteOnClose, true );
@@ -32,6 +31,9 @@ FullscreenViewer::FullscreenViewer( QSettings& settings, QImage img ) : imageVie
 	setFocus( Qt::PopupFocusReason );
 	connect( this, SIGNAL(double_clicked()), this, SLOT(close()) );
 }
+
+FullscreenViewer::FullscreenViewer( QSettings& settings, QImage img )
+	:	FullscreenViewer( settings, new imageCache( img ) ) { }
 
 void FullscreenViewer::keyPressEvent( QKeyEvent* event ){
 	switch( event->key() ){
