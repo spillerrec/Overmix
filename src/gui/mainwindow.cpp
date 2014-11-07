@@ -389,8 +389,22 @@ QImage main_widget::qrenderImage( const ImageEx& img ){
 }
 
 void main_widget::updateViewer(){
-	//TODO: support animation
-	viewer.change_image( new imageCache( qrenders.size() > 0 ? qrenders[0] : QImage() ), true );
+	auto full_size = images.size();
+	
+	//TODO: proper frame timings
+	auto cache = new imageCache();
+	cache->set_info( renders.size(), true, -1 );
+	for( auto& render : renders ){
+		QImage current( full_size.width(), full_size.height(), QImage::Format_ARGB32 );
+		current.fill( qRgba( 0,0,0,0 ) );
+		
+		QPainter painter( &current );
+		painter.drawImage( render.offset.x, render.offset.y, render.qimg );
+		
+		cache->add_frame( current, 1000*3/25 ); //3 frame animation delay, with 25 frames a second
+	}
+	cache->set_fully_loaded();
+	viewer.change_image( cache, true );
 }
 
 
@@ -398,21 +412,21 @@ void main_widget::refresh_image(){
 	if( !images.isAligned() )
 		subpixel_align_image();
 	
+	auto start = images.minPoint();
 	if( renders.size() == 0 ){
 		auto frames = images.getFrames();
 		renders.reserve( frames.size() );
 		
 		for( auto& frame : frames ){
 			FrameContainer current( images, frame );
-			renders.emplace_back( renderImage( current ) );
+			renders.emplace_back( renderImage( current ), current.minPoint()-start );
 		}
 	}
 	
-	qrenders.clear();
 	for( auto& render : renders )
-		qrenders.push_back( qrenderImage( render ) );
+		render.qimg = qrenderImage( render.raw );
 	
-	ui->btn_as_mask->setEnabled( renders.size() == 1 && renders[0].get_system() == ImageEx::GRAY );
+	ui->btn_as_mask->setEnabled( renders.size() == 1 && renders[0].raw.get_system() == ImageEx::GRAY );
 	updateViewer();
 	refresh_text();
 	ui->btn_save->setEnabled( true );
@@ -433,13 +447,13 @@ QString main_widget::getSavePath( QString title, QString file_types ){
 void main_widget::save_image(){
 	//TODO: assert for equal size
 	
-	for( unsigned i=0; i<renders.size(); i++ ){
+	for( auto& render : renders ){
 		QString filename = getSavePath( tr("Save image"), tr("PNG files (*.png)") );
 		if( !filename.isEmpty() ){
 			if( QFileInfo( filename ).suffix() == "dump" )
-				DumpSaver( postProcess( renders[i], true ), filename ).exec(); //TODO: fix postProcess
+				DumpSaver( postProcess( render.raw, true ), filename ).exec(); //TODO: fix postProcess
 			else
-				qrenders[i].save( filename );
+				render.qimg.save( filename );
 		}
 	}
 }
@@ -469,7 +483,8 @@ void main_widget::clear_cache(){
 	//TODO: a lot of this should probably be in resetImage!
 	ui->btn_save->setEnabled( false );
 	resetImage();
-	qrenders.clear();
+	for( auto& render : renders )
+		render.qimg = QImage();
 	viewer.change_image( NULL, true );
 }
 
@@ -566,7 +581,7 @@ void main_widget::clear_mask(){
 void main_widget::use_current_as_mask(){
 	if( renders.size() == 1 ){
 		//TODO: postProcess cache no longer valid as we have several frames
-		alpha_mask = images.addMask( Plane( postProcess(renders[0], false)[0] ) );
+		alpha_mask = images.addMask( Plane( postProcess(renders[0].raw, false)[0] ) );
 		images.onAllItems( [=]( ImageItem& item ){ item.setSharedMask( alpha_mask ); } );
 	}
 }
@@ -612,10 +627,10 @@ void main_widget::removeFiles(){
 }
 
 void main_widget::showFullscreen(){
-	if( qrenders.size() == 0 )
+	if( renders.size() == 0 )
 		return;
 	
-	QImage img = qrenders[0]; //TODO: support animation!
+	QImage img = renders[0].qimg; //TODO: support animation!
 	if( ui->tab_pages->currentIndex() != 0 )
 		img = fromSelection( img_model, ui->files_view->selectionModel()->selectedIndexes() );
 		

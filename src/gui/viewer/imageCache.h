@@ -76,7 +76,7 @@ class imageCache: public QObject{
 		}
 		explicit imageCache( QImage img ){
 			init();
-			set_info( 1, false );
+			set_info( 1, false, -1 );
 			add_frame( img, 0 );
 			set_fully_loaded();
 		}

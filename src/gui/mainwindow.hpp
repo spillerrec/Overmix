@@ -55,8 +55,14 @@ class main_widget: public QMainWindow{
 		Preprocessor& preprocessor;
 		ImageContainer& images;
 		
-		std::vector<ImageEx> renders;
-		std::vector<QImage> qrenders;
+		struct RenderCache{
+			ImageEx raw;
+			QImage qimg;
+			Point<double> offset;
+			
+			RenderCache( ImageEx raw, Point<double> offset ) : raw(raw), offset(offset) { }
+		};
+		std::vector<RenderCache> renders;
 		
 		Deteleciner detelecine;
 		
