@@ -31,6 +31,7 @@ class FullscreenViewer : public imageViewer{
 	private:
 		FullscreenViewer( QSettings& settings, imageCache* cache );
 		FullscreenViewer( QSettings& settings, QImage img );
+		~FullscreenViewer() { change_image( nullptr ); }
 		
 	public:
 		template<typename T>
