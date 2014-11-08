@@ -51,8 +51,8 @@ static QString getStringAttr( const xml_node& node, const char* name )
 static QString getString( const xml_node& node, const char* name )
 	{ return QString::fromUtf8( node.child( name ).text().get() ); }
 
-static QString baseDir( QDir dir )
-	{ return dir.isRelative() ? dir.absolutePath() + "/" : ""; }
+static QString baseDir( QDir dir, QString file )
+	{ return QDir::isRelativePath( file ) ? dir.absolutePath() + "/" + file : file; }
 
 bool ImageContainerSaver::load( ImageContainer& container, QString filename, Preprocessor* processor ){
 	//TODO: progress monitoring
@@ -66,7 +66,7 @@ bool ImageContainerSaver::load( ImageContainer& container, QString filename, Pre
 	//Load masks
 	std::vector<int> mask_ids;
 	for( auto mask : root.child( NODE_MASKS ).children( NODE_MASK ) ){
-		auto filename = baseDir( folder ) + QString::fromUtf8( mask.text().get() );
+		auto filename = baseDir( folder, QString::fromUtf8( mask.text().get() ) );
 		ImageEx img;
 		if( !img.read_file( filename ) )
 			return false;
@@ -78,7 +78,7 @@ bool ImageContainerSaver::load( ImageContainer& container, QString filename, Pre
 		container.addGroup( getStringAttr( group, ATTR_GROUP_NAME ) );
 		
 		for( auto item : group.children( NODE_ITEM ) ){
-			auto file = baseDir( folder ) + getString( item, NODE_ITEM_PATH );
+			auto file = baseDir( folder, getString( item, NODE_ITEM_PATH ) );
 			auto mask  = item.child( NODE_ITEM_MASK  ).text().as_int( -1 );
 			auto frame = item.child( NODE_ITEM_FRAME ).text().as_int( -1 );
 			
