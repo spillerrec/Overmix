@@ -65,22 +65,6 @@ color_type Plane::mean_value() const{
 	return color::WHITE;
 }
 
-Plane Plane::crop( unsigned x, unsigned y, unsigned width, unsigned height ) const{
-	//TODO: do input validation and error checking!
-	//TODO: reduce loops?
-	Plane cropped( width, height );
-	
-	for( unsigned iy=0; iy<height; iy++ ){
-		auto input = const_scan_line( iy+y ) + x;
-		auto output = cropped.scan_line( iy );
-		for( unsigned ix=0; ix<width; ix++ ){
-			output[ix] = input[ix];
-		}
-	}
-	
-	return cropped;
-}
-
 bool Plane::is_interlaced() const{
 	double avg2_uneven = 0, avg2_even = 0;
 	for( unsigned iy=0; iy<get_height()/4*4; ){

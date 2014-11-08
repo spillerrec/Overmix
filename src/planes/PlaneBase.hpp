@@ -27,14 +27,19 @@
 template<typename T>
 class PlaneBase{
 	protected:
+		Size<unsigned> realsize{ 0, 0 };
+		Point<unsigned> offset{ 0, 0 };
 		Size<unsigned> size{ 0, 0 };
 		unsigned line_width{ 0 };
 		std::vector<T> data;
 		
+		unsigned getOffset( unsigned x, unsigned y ) const
+			{ return x + offset.x + (y + offset.y) * line_width; }
+		
 	public:
 		PlaneBase() { }
 		PlaneBase( Size<unsigned> size )
-			:	size(size), line_width( size.width() ), data( size.height() * line_width ) { }
+			:	realsize(size), size(size), line_width( size.width() ), data( size.height() * line_width ) { }
 		PlaneBase( unsigned w, unsigned h )
 			:	PlaneBase( Size<unsigned>( w, h ) ) { }
 		
@@ -52,9 +57,17 @@ class PlaneBase{
 		}
 		
 	//Pixel/Row query
-		const T& pixel( unsigned x, unsigned y ) const{ return data[ x + y*line_width ]; }
-		T* scan_line( unsigned y ) { return data.data() + y*line_width; } //TODO: !!!!!!!!
-		const T* const_scan_line( unsigned y ) const{ return data.data() + y*line_width; }
+		const T& pixel( unsigned x, unsigned y ) const{ return data[ getOffset( x, y ) ]; }
+		T* scan_line( unsigned y ) { return data.data() + getOffset( 0, y ); } //TODO: !!!!!!!!
+		const T* const_scan_line( unsigned y ) const{ return data.data() + getOffset( 0, y ); }
+		
+	//Resizing
+		void crop( Point<unsigned> pos, Size<unsigned> newsize ){
+			offset += pos;
+			size = newsize;
+		}
+		Point<unsigned> getOffset() const{ return offset; }
+		Size<unsigned> getRealSize() const{ return realsize; }
 		
 	//Drawing methods
 		void fill( T value ){

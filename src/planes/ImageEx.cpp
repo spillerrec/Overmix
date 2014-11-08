@@ -304,23 +304,23 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ){
 	//Create iterator
 	std::vector<PlaneItInfo> info;
 	std::vector<Plane> temp( 2 );
-	info.push_back( PlaneItInfo( planes[0], 0,0 ) );
+	info.emplace_back( planes[0], 0,0 );
 	if( type != GRAY ){
 		if( planes[0].equalSize( planes[1] ) )
-			info.push_back( PlaneItInfo( planes[1], 0,0 ) );
+			info.emplace_back( planes[1], 0,0 );
 		else{
 			temp[0] = planes[1].scale_cubic( planes[0].get_width(), planes[0].get_height() );
-			info.push_back( PlaneItInfo( temp[0], 0,0 ) );
+			info.emplace_back( temp[0], 0,0 );
 		}
 		if( planes[0].equalSize( planes[2] ) )
-			info.push_back( PlaneItInfo( planes[2], 0,0 ) );
+			info.emplace_back( planes[2], 0,0 );
 		else{
 			temp[1] = planes[2].scale_cubic( planes[0].get_width(), planes[0].get_height() );
-			info.push_back( PlaneItInfo( temp[1], 0,0 ) );
+			info.emplace_back( temp[1], 0,0 );
 		}
 	}
 	if( alpha_plane() )
-		info.push_back( PlaneItInfo( alpha_plane(), 0,0 ) );
+		info.emplace_back( alpha_plane(), 0,0 );
 	MultiPlaneIterator it( info );
 	it.iterate_all();
 	
@@ -397,20 +397,21 @@ void ImageEx::combine_line( ImageEx& img, bool top ){
 }
 
 void ImageEx::crop( unsigned left, unsigned top, unsigned right, unsigned bottom ){
-	unsigned width = right + left;
-	unsigned height = top + bottom;
+	Point<unsigned> pos( left, top );
+	Size<unsigned> decrease( right + left, top + bottom );
+	
 	if( type == YUV ){
-		planes[0] = planes[0].crop( left*2, top*2, planes[0].get_width()-width*2, planes[0].get_height()-height*2 );
-		planes[1] = planes[1].crop( left, top, planes[1].get_width()-width, planes[1].get_height()-height );
-		planes[2] = planes[2].crop( left, top, planes[2].get_width()-width, planes[2].get_height()-height );
+		planes[0].crop( pos*2, planes[0].getSize() - decrease*2 );
+		planes[1].crop( pos,   planes[1].getSize() - decrease   );
+		planes[2].crop( pos,   planes[2].getSize() - decrease   );
 		if( alpha )
-			alpha = alpha.crop( left*2, top*2, alpha.get_width()-width*2, alpha.get_height()-height*2 );
+			alpha.crop( pos*2, alpha.getSize() - decrease*2 );
 	}
 	else{
 		for( auto& plane : planes )
-			plane = plane.crop( left, top, plane.get_width()-width, plane.get_height()-height );
+			plane.crop( pos, plane.getSize() - decrease );
 		if( alpha )
-			alpha = alpha.crop( left, top, alpha.get_width()-width, alpha.get_height()-height );
+			alpha.crop( pos, alpha.getSize() - decrease );
 	}
 };
 
