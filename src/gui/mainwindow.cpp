@@ -80,6 +80,17 @@ class DialogWatcher : public AProcessWatcher{
 		}
 };
 
+void foldableGroupBox( QWidget* widget, bool enabled, QGroupBox* box ){
+	auto update = [=]( bool checked )
+		{ box->setMaximumHeight( checked ? QWIDGETSIZE_MAX : 20 ); };
+	//TODO: find proper size
+	
+	widget->connect( box, &QGroupBox::clicked, update );
+	box->setCheckable( true );
+	box->setChecked( enabled );
+	update( enabled );
+}
+
 main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	:	QMainWindow()
 	,	ui(new Ui_main_widget)
@@ -112,16 +123,14 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	change_interlace();
 	
 	//Groupboxes
-	connect( ui->preprocess_group, SIGNAL(clicked(bool)), this, SLOT(resize_preprocess()) );
-	connect( ui->merge_group, SIGNAL(clicked(bool)), this, SLOT(resize_merge()) );
-	connect( ui->render_group, SIGNAL(clicked(bool)), this, SLOT(resize_render()) );
-	connect( ui->postprocess_group, SIGNAL(clicked(bool)), this, SLOT(resize_postprogress()) );
-	connect( ui->color_group, SIGNAL(clicked(bool)), this, SLOT(resize_color()) );
-	resize_preprocess();
-	resize_merge();
-	resize_render();
-	resize_postprogress();
-	resize_color();
+	foldableGroupBox( this, false, ui->preprocess_group  );
+	foldableGroupBox( this, true,  ui->merge_group       );
+	foldableGroupBox( this, false, ui->render_group      );
+	foldableGroupBox( this, false, ui->postprocess_group );
+	foldableGroupBox( this, false, ui->color_group       );
+	//foldableGroupBox( this, true,  ui->images_group      );
+	foldableGroupBox( this, false, ui->masks_group       );
+	foldableGroupBox( this, false, ui->selection_group   );
 	
 	//Merge method
 	connect( ui->cbx_merge_h, SIGNAL( toggled(bool) ), this, SLOT( toggled_hor() ) );
@@ -173,11 +182,6 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	if( settings.value( "remember_position", true ).toBool() )
 		restoreGeometry( settings.value( "window_position" ).toByteArray() );
 }
-void main_widget::resize_preprocess(){   resize_groupbox( ui->preprocess_group ); }
-void main_widget::resize_merge(){        resize_groupbox( ui->merge_group ); }
-void main_widget::resize_render(){       resize_groupbox( ui->render_group ); }
-void main_widget::resize_postprogress(){ resize_groupbox( ui->postprocess_group ); }
-void main_widget::resize_color(){        resize_groupbox( ui->color_group ); }
 
 main_widget::~main_widget(){
 	clear_image();
@@ -202,12 +206,6 @@ void main_widget::closeEvent( QCloseEvent *event ){
 	QWidget::closeEvent( event );
 }
 
-void main_widget::resize_groupbox( QGroupBox* box ){
-	if( box->isChecked() )
-		box->setMaximumSize( QWIDGETSIZE_MAX, QWIDGETSIZE_MAX );
-	else
-		box->setMaximumHeight( 20 );
-}
 
 //Load an image for mapped, doesn't work with lambdas appearently...
 static ImageEx load( QUrl url ){

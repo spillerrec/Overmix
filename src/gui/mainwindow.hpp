@@ -97,7 +97,6 @@ class main_widget: public QMainWindow{
 		void dropEvent( QDropEvent *event );
 		void closeEvent( QCloseEvent *event );
 		
-		void resize_groupbox( QGroupBox* box );
 		void make_slide();
 		
 		const ImageEx& postProcess( const ImageEx& input, bool new_image=true );
@@ -108,12 +107,6 @@ class main_widget: public QMainWindow{
 		void urls_retrived( QList<QUrl> urls );
 		
 	private slots:
-		void resize_preprocess();
-		void resize_merge();
-		void resize_render();
-		void resize_postprogress();
-		void resize_color();
-		
 		void resetImage(){ renders.clear(); }
 		void update_draw();
 	
