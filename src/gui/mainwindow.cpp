@@ -108,14 +108,14 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	ui->setupUi(this);
 	
 	//Buttons
-	connect( ui->btn_clear, SIGNAL( clicked() ), this, SLOT( clear_image() ) );
-	connect( ui->btn_refresh, SIGNAL( clicked() ), this, SLOT( refresh_image() ) );
-	connect( ui->btn_save, SIGNAL( clicked() ), this, SLOT( save_image() ) );
-	connect( ui->btn_save_files, SIGNAL( clicked() ), this, SLOT( save_files() ) );
-	connect( ui->btn_subpixel, SIGNAL( clicked() ), this, SLOT( subpixel_align_image() ) );
-	connect( ui->pre_alpha_mask, SIGNAL( clicked() ), this, SLOT( set_alpha_mask() ) );
-	connect( ui->pre_clear_mask, SIGNAL( clicked() ), this, SLOT( clear_mask() ) );
-	connect( ui->btn_as_mask, SIGNAL( clicked() ), this, SLOT( use_current_as_mask() ) );
+	connect( ui->btn_clear,      SIGNAL( clicked() ), this, SLOT( clear_image()          ) );
+	connect( ui->btn_refresh,    SIGNAL( clicked() ), this, SLOT( refresh_image()        ) );
+	connect( ui->btn_save,       SIGNAL( clicked() ), this, SLOT( save_image()           ) );
+	connect( ui->btn_save_files, SIGNAL( clicked() ), this, SLOT( save_files()           ) );
+	connect( ui->btn_subpixel,   SIGNAL( clicked() ), this, SLOT( subpixel_align_image() ) );
+	connect( ui->pre_alpha_mask, SIGNAL( clicked() ), this, SLOT( set_alpha_mask()       ) );
+	connect( ui->pre_clear_mask, SIGNAL( clicked() ), this, SLOT( clear_mask()           ) );
+	connect( ui->btn_as_mask,    SIGNAL( clicked() ), this, SLOT( use_current_as_mask()  ) );
 	update_draw();
 	
 	//Checkboxes
@@ -146,10 +146,10 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	connect( &img_model, SIGNAL( dataChanged(const QModelIndex&, const QModelIndex&) ), this, SLOT( resetImage() ) );
 	
 	//Menubar
-	connect( ui->action_add_files,    SIGNAL( triggered() ), this, SLOT( open_image() ) );
-	connect( ui->action_save,         SIGNAL( triggered() ), this, SLOT( save_image() ) );
-	connect( ui->action_exit,         SIGNAL( triggered() ), this, SLOT( close() ) );
-	connect( ui->action_show_menubar, SIGNAL( triggered() ), this, SLOT( toggleMenubar() ) );
+	connect( ui->action_add_files,    SIGNAL( triggered() ), this, SLOT( open_image()     ) );
+	connect( ui->action_save,         SIGNAL( triggered() ), this, SLOT( save_image()     ) );
+	connect( ui->action_exit,         SIGNAL( triggered() ), this, SLOT( close()          ) );
+	connect( ui->action_show_menubar, SIGNAL( triggered() ), this, SLOT( toggleMenubar()  ) );
 	connect( ui->action_fullscreen,   SIGNAL( triggered() ), this, SLOT( showFullscreen() ) );
 	connect( ui->action_online_wiki,  SIGNAL( triggered() ), this, SLOT( openOnlineHelp() ) );
 	ui->action_show_menubar->setChecked( settings.value( "show_menubar", true ).toBool() );
@@ -166,10 +166,10 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	//Init files model
 	ui->files_view->setModel( &img_model );
 	ui->files_view->setColumnWidth( 0, 120 );
-	connect( ui->files_view->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&))
-			, this, SLOT(browserChangeImage(const QItemSelection&, const QItemSelection&)) );
-	connect( ui->btn_add_group, SIGNAL(clicked()), this, SLOT(addGroup()) );
-	connect( ui->btn_delete_files,   SIGNAL(clicked()), this, SLOT(removeFiles()) );
+	connect( ui->files_view->selectionModel(), &QItemSelectionModel::selectionChanged
+		,	this, &main_widget::browserChangeImage );
+	connect( ui->btn_add_group,    SIGNAL(clicked()), this, SLOT(addGroup()) );
+	connect( ui->btn_delete_files, SIGNAL(clicked()), this, SLOT(removeFiles()) );
 	
 	setAcceptDrops( true );
 	ui->preview_layout->addWidget( &viewer );
@@ -238,20 +238,10 @@ void main_widget::process_urls( QList<QUrl> urls ){
 	t.start();
 	int loading_delay = 0;
 	
-	QFuture<ImageEx> img_loader = QtConcurrent::run( load, urls[0] );
-	
+	QFuture<ImageEx> img_loader = QtConcurrent::mapped( urls, load );
 	for( int i=0; i<urls.count(); i++ ){
 		auto file = urls[i].toLocalFile();
 		progress.setValue( i );
-		
-		QTime delay;
-		delay.start();
-		//Get and start loading next image
-		ImageEx img = img_loader.result();
-		//TODO: QtConcurrent is probably not optimized for move semantics
-		if( i+1 < urls.count() )
-			img_loader = QtConcurrent::run( load, urls[i+1] );
-		loading_delay += delay.elapsed();
 		
 		
 		if( QFileInfo( file ).completeSuffix() == "overmix.xml" ){
@@ -262,11 +252,16 @@ void main_widget::process_urls( QList<QUrl> urls ){
 					);
 		}
 		else{
+			QTime delay;
+			delay.start();
+			//Get and start loading next image
+			ImageEx img( img_loader.resultAt( i ) );
+			loading_delay += delay.elapsed();
+			
 			//De-telecine
 			if( detelecine.isActive() ){
 				img = detelecine.process( img );
-				file = ""; //The result might be a bit of several files
-				//TODO: somehow provide info about the detelecine process?
+				file = ""; //The result might be a combination of several files
 			}
 			if( !img.is_valid() )
 				continue;
