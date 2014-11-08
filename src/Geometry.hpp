@@ -61,6 +61,9 @@ struct Point{
 	template<typename T2>
 	Point<T2> to() const{ return { static_cast<T2>(x), static_cast<T2>(y) }; }
 	
+	Point<T> max( Point<T> other ) const { return { std::max( x, other.x ), std::max( y, other.y ) } ; }
+	Point<T> min( Point<T> other ) const { return { std::min( x, other.x ), std::min( y, other.y ) } ; }
+	
 	Point<int> abs()     const{ return { (int)std::abs( x ),   (int)std::abs( y )   }; }
 	Point<int> floor()   const{ return { (int)std::floor( x ), (int)std::floor( y ) }; }
 	Point<int> ceil()    const{ return { (int)std::ceil( x ),  (int)std::ceil( y )  }; }
@@ -168,5 +171,12 @@ struct Point{
 template<typename T=int>
 using Size=Point<T>;
 
+template<typename T=int>
+struct Rectangle{
+	Point<T> pos;
+	Size<T> size;
+	
+	Rectangle( Point<T> pos, Size<T> size ) : pos(pos), size(size) { }
+};
 
 #endif

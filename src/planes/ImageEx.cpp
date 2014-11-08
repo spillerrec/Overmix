@@ -415,6 +415,14 @@ void ImageEx::crop( unsigned left, unsigned top, unsigned right, unsigned bottom
 	}
 };
 
+Rectangle<unsigned> ImageEx::getCrop() const{
+	if( planes.size() == 0 )
+		return { {0,0}, {0,0} };
+	
+	auto& cropped = planes[ (type == YUV) ? 1 : 0 ];
+	return { cropped.getOffset(), cropped.getRealSize() - cropped.getSize() - cropped.getOffset() };
+}
+
 MergeResult ImageEx::best_round( const ImageEx& img, int level, double range_x, double range_y, DiffCache *cache ) const{
 	//Bail if invalid settings
 	if(	level < 1

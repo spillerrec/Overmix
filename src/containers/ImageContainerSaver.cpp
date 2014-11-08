@@ -39,12 +39,20 @@ const auto NODE_ITEM_FRAME     = "frame";
 const auto NODE_ITEM_OFFSET    = "offset";
 const auto ATTR_ITEM_OFFSET_X  = "x";
 const auto ATTR_ITEM_OFFSET_Y  = "y";
+const auto NODE_ITEM_CROP      = "crop";
+const auto ATTR_ITEM_CROP_L    = "left";
+const auto ATTR_ITEM_CROP_T    = "top";
+const auto ATTR_ITEM_CROP_B    = "bottom";
+const auto ATTR_ITEM_CROP_R    = "right";
 
 static QString getStringAttr( const xml_node& node, const char* name )
 	{ return QString::fromUtf8( node.attribute( name ).value() ); }
 
 static QString getString( const xml_node& node, const char* name )
 	{ return QString::fromUtf8( node.child( name ).text().get() ); }
+
+static QString baseDir( QDir dir )
+	{ return dir.isRelative() ? dir.absolutePath() + "/" : ""; }
 
 bool ImageContainerSaver::load( ImageContainer& container, QString filename, Preprocessor* processor ){
 	//TODO: progress monitoring
@@ -58,7 +66,7 @@ bool ImageContainerSaver::load( ImageContainer& container, QString filename, Pre
 	//Load masks
 	std::vector<int> mask_ids;
 	for( auto mask : root.child( NODE_MASKS ).children( NODE_MASK ) ){
-		auto filename = folder.absolutePath() + "/" + QString::fromUtf8( mask.text().get() );
+		auto filename = baseDir( folder ) + QString::fromUtf8( mask.text().get() );
 		ImageEx img;
 		if( !img.read_file( filename ) )
 			return false;
@@ -70,7 +78,7 @@ bool ImageContainerSaver::load( ImageContainer& container, QString filename, Pre
 		container.addGroup( getStringAttr( group, ATTR_GROUP_NAME ) );
 		
 		for( auto item : group.children( NODE_ITEM ) ){
-			auto file = folder.absolutePath() + "/" + getString( item, NODE_ITEM_PATH );
+			auto file = baseDir( folder ) + getString( item, NODE_ITEM_PATH );
 			auto mask  = item.child( NODE_ITEM_MASK  ).text().as_int( -1 );
 			auto frame = item.child( NODE_ITEM_FRAME ).text().as_int( -1 );
 			
@@ -84,6 +92,15 @@ bool ImageContainerSaver::load( ImageContainer& container, QString filename, Pre
 			ImageEx img;
 			if( !img.read_file( file ) )
 				return false;
+			
+			auto crop_node = item.child( NODE_ITEM_CROP );
+			img.crop(
+					crop_node.attribute( ATTR_ITEM_CROP_L ).as_int( 0 )
+				,	crop_node.attribute( ATTR_ITEM_CROP_T ).as_int( 0 )
+				,	crop_node.attribute( ATTR_ITEM_CROP_R ).as_int( 0 )
+				,	crop_node.attribute( ATTR_ITEM_CROP_B ).as_int( 0 )
+				);
+				
 			if( processor )
 				processor->processFile( img );
 			auto& img_item = container.addImage( std::move(img), mask, -1, file );
@@ -138,6 +155,13 @@ bool ImageContainerSaver::save( const ImageContainer& container, QString filenam
 			auto offset_node = item_node.append_child( NODE_ITEM_OFFSET );
 			offset_node.append_attribute( ATTR_ITEM_OFFSET_X ) = item.offset.x;
 			offset_node.append_attribute( ATTR_ITEM_OFFSET_Y ) = item.offset.y;
+			
+			auto crop_node = item_node.append_child( NODE_ITEM_CROP );
+			auto crop = item.image().getCrop();
+			crop_node.append_attribute( ATTR_ITEM_CROP_L ) = crop.pos.x;
+			crop_node.append_attribute( ATTR_ITEM_CROP_T ) = crop.pos.y;
+			crop_node.append_attribute( ATTR_ITEM_CROP_R ) = crop.size.width();
+			crop_node.append_attribute( ATTR_ITEM_CROP_B ) = crop.size.height();
 		}
 	}
 	

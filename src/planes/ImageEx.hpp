@@ -110,19 +110,14 @@ class ImageEx{
 		
 		QImage to_qimage( YuvSystem system, unsigned setting=SETTING_NONE );
 		
-		unsigned get_width() const{
-			if( planes.size() == 0 )
-				return 0;
-			return std::max_element( planes.begin(), planes.end()
-				,	[]( const Plane& p1, const Plane& p2 ){ return p1.get_width() < p2.get_width(); } )->get_width();
+		Point<unsigned> getSize() const{
+			return std::accumulate( planes.begin(), planes.end(), Point<unsigned>( 0, 0 )
+				,	[]( const Plane& p1, const Plane& p2 ){ return p1.getSize().max( p2.getSize() ); } );
 		}
-		unsigned get_height() const{
-			if( planes.size() == 0 )
-				return 0;
-			return std::max_element( planes.begin(), planes.end()
-				,	[]( const Plane& p1, const Plane& p2 ){ return p1.get_height() < p2.get_height(); } )->get_height();
-		}
-		Point<unsigned> getSize() const{ return { get_width(), get_height() }; }
+		unsigned get_width()  const{ return getSize().width(); }
+		unsigned get_height() const{ return getSize().height(); }
+		
+		Rectangle<unsigned> getCrop() const;
 		
 		system get_system() const{ return type; }
 		
