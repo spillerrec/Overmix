@@ -393,7 +393,7 @@ imageCache* main_widget::createViewerCache() const{
 	
 	//TODO: proper frame timings
 	auto cache = new imageCache();
-	cache->set_info( renders.size(), true, -1 );
+	cache->set_info( renders.size(), renders.size() > 1, -1 );
 	for( auto& render : renders ){
 		QImage current( full_size.width(), full_size.height(), QImage::Format_ARGB32 );
 		current.fill( qRgba( 0,0,0,0 ) );
