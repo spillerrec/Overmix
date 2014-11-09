@@ -246,7 +246,7 @@ void main_widget::process_urls( QList<QUrl> urls ){
 		
 		if( QFileInfo( file ).completeSuffix() == "overmix.xml" ){
 			//Handle aligner xml
-			if( !ImageContainerSaver::load( images, file, &preprocessor ) )
+			if( !ImageContainerSaver::load( images, file ) )
 				QMessageBox::warning( this, tr("Could not load alignment")
 					,	tr("Some error happened while loading alignement xml")
 					);

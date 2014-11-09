@@ -18,7 +18,6 @@
 
 #include "ImageContainerSaver.hpp"
 #include "ImageContainer.hpp"
-#include "../Preprocessor.hpp"
 
 #include <cassert>
 
@@ -67,7 +66,7 @@ QFuture<ImageEx> loadImages( QStringList& filepaths ){
 	return QtConcurrent::mapped( filepaths, load );
 }
 
-bool ImageContainerSaver::load( ImageContainer& container, QString filename, Preprocessor* processor ){
+bool ImageContainerSaver::load( ImageContainer& container, QString filename ){
 	//TODO: progress monitoring
 	xml_document doc;
 	auto folder = QFileInfo( filename ).dir();
@@ -125,9 +124,7 @@ bool ImageContainerSaver::load( ImageContainer& container, QString filename, Pre
 				,	crop_node.attribute( ATTR_ITEM_CROP_R ).as_int( 0 )
 				,	crop_node.attribute( ATTR_ITEM_CROP_B ).as_int( 0 )
 				);
-				
-			if( processor )
-				processor->processFile( img );
+			
 			auto& img_item = container.addImage( std::move(img), mask, -1, file );
 			
 			img_item.frame = frame;
