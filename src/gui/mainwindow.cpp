@@ -246,10 +246,9 @@ void main_widget::process_urls( QList<QUrl> urls ){
 		
 		if( QFileInfo( file ).completeSuffix() == "overmix.xml" ){
 			//Handle aligner xml
-			if( !ImageContainerSaver::load( images, file ) )
-				QMessageBox::warning( this, tr("Could not load alignment")
-					,	tr("Some error happened while loading alignement xml")
-					);
+			auto error = ImageContainerSaver::load( images, file );
+			if( !error.isEmpty() )
+				QMessageBox::warning( this, tr("Could not load alignment"), error );
 		}
 		else{
 			QTime delay;
@@ -453,11 +452,11 @@ void main_widget::save_image(){
 
 void main_widget::save_files(){
 	auto filename = getSavePath( tr("Save alignment"), tr("XML (*.overmix.xml)") );
-	if( !filename.isEmpty() )
-		if( !ImageContainerSaver::save( images, filename ) )
-			QMessageBox::warning( this, tr("Could not save alignment")
-				,	tr("Was not possible to save alignment. Note: De-telecined input cannot be saved.")
-				);
+	if( !filename.isEmpty() ){
+		auto error = ImageContainerSaver::save( images, filename );
+		if( !error.isEmpty() )
+			QMessageBox::warning( this, tr("Could not save alignment"), error );
+	}
 }
 
 

@@ -66,13 +66,13 @@ QFuture<ImageEx> loadImages( QStringList& filepaths ){
 	return QtConcurrent::mapped( filepaths, load );
 }
 
-bool ImageContainerSaver::load( ImageContainer& container, QString filename ){
+QString ImageContainerSaver::load( ImageContainer& container, QString filename ){
 	//TODO: progress monitoring
 	xml_document doc;
 	auto folder = QFileInfo( filename ).dir();
 	
 	if( !doc.load_file( filename.toLocal8Bit().constData() ) ) //TODO: unicode
-		return false;
+		return QObject::tr( "The file did not contain valid XML" );
 	auto root = doc.child( NODE_ROOT );
 	
 	//Load masks
@@ -86,8 +86,10 @@ bool ImageContainerSaver::load( ImageContainer& container, QString filename ){
 		auto img = mask_future.resultAt( i );
 		if( img.is_valid() )
 			mask_ids.emplace_back( container.addMask( std::move( img[0] ) ) );
-		else
-			return false;
+		else{
+			mask_future.cancel();
+			return QObject::tr( "The following mask failed loading: " ) + mask_paths[i];
+		}
 	}
 	
 	QStringList file_paths;
@@ -109,13 +111,15 @@ bool ImageContainerSaver::load( ImageContainer& container, QString filename ){
 			//Translate mask id
 			if( mask >= 0 ){
 				if( unsigned(mask) >= mask_ids.size() )
-					return false;
+					return QObject::tr( "The mask id was invalid, got: " ) + QString::number( mask );
 				mask = mask_ids[mask];
 			}
 			
 			auto img = file_future.resultAt( files_added++ );
-			if( !img.is_valid() )
-				return false;
+			if( !img.is_valid() ){
+				file_future.cancel();
+				return QObject::tr( "Could not load the file: " ) + file;
+			}
 			
 			auto crop_node = item.child( NODE_ITEM_CROP );
 			img.crop(
@@ -136,7 +140,7 @@ bool ImageContainerSaver::load( ImageContainer& container, QString filename ){
 	}
 	
 	container.setAligned();
-	return true;
+	return "";
 }
 
 //Convenience functions for adding xml elements containing only of a text node
@@ -149,7 +153,7 @@ template<typename T>
 void addXmlItem( xml_node& node, const char* name, T value )
 	{ addXmlItem( node, name, std::to_string( value ).c_str() ); }
 
-bool ImageContainerSaver::save( const ImageContainer& container, QString filename ){
+QString ImageContainerSaver::save( const ImageContainer& container, QString filename ){
 	//NOTE: we do not support alpha planes stored directly in the ImageEx, it will be ignored!
 	xml_document doc;
 	auto folder = QFileInfo( filename ).dir();
@@ -167,7 +171,7 @@ bool ImageContainerSaver::save( const ImageContainer& container, QString filenam
 		
 		for( auto& item : group ){
 			if( item.filename.isEmpty() ) //Abort if no filename
-				return false;
+				return QObject::tr( "Does not support saving generated images" );
 			
 			auto item_node = group_node.append_child( NODE_ITEM );
 			addXmlItem( item_node, NODE_ITEM_PATH , folder.relativeFilePath( item.filename ) );
@@ -201,5 +205,5 @@ bool ImageContainerSaver::save( const ImageContainer& container, QString filenam
 	}
 	
 	//TODO: support unicode
-	return doc.save_file( filename.toLocal8Bit().constData() );
+	return doc.save_file( filename.toLocal8Bit().constData() ) ? "" : QObject::tr("Could not save XML");
 }

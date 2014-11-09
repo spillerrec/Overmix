@@ -24,8 +24,8 @@ class ImageContainer;
 
 class ImageContainerSaver{
 	public:
-		static bool load( ImageContainer& container, QString file );
-		static bool save( const ImageContainer& container, QString filename );
+		static QString load( ImageContainer& container, QString file );
+		static QString save( const ImageContainer& container, QString filename );
 };
 
 #endif
