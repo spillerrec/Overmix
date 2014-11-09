@@ -545,6 +545,7 @@ void main_widget::subpixel_align_image(){
 	
 	delete aligner; //TODO: fix this
 	
+	clear_cache();
 	refresh_text();
 	update_draw();
 }
