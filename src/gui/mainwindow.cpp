@@ -110,7 +110,7 @@ main_widget::main_widget( ImageContainer& images )
 	connect( ui->btn_refresh,    SIGNAL( clicked() ), this, SLOT( refresh_image()        ) );
 	connect( ui->btn_save,       SIGNAL( clicked() ), this, SLOT( save_image()           ) );
 	connect( ui->btn_save_files, SIGNAL( clicked() ), this, SLOT( save_files()           ) );
-	connect( ui->btn_subpixel,   SIGNAL( clicked() ), this, SLOT( subpixel_align_image() ) );
+	connect( ui->btn_subpixel,   SIGNAL( clicked() ), this, SLOT( alignImage() ) );
 	connect( ui->pre_alpha_mask, SIGNAL( clicked() ), this, SLOT( set_alpha_mask()       ) );
 	connect( ui->pre_clear_mask, SIGNAL( clicked() ), this, SLOT( clear_mask()           ) );
 	connect( ui->btn_as_mask,    SIGNAL( clicked() ), this, SLOT( use_current_as_mask()  ) );
@@ -156,8 +156,8 @@ main_widget::main_widget( ImageContainer& images )
 	
 	
 	//Add images
-	qRegisterMetaType<QList<QUrl> >( "QList<QUrl>" );
-	connect( this, SIGNAL( urls_retrived(QList<QUrl>) ), this, SLOT( process_urls(QList<QUrl>) ), Qt::QueuedConnection );
+	//qRegisterMetaType<QList<QUrl> >( "QStringList" );
+	connect( this, SIGNAL( urls_retrived(QStringList) ), this, SLOT( process_urls(QStringList) ), Qt::QueuedConnection );
 
 	//Refresh info labels
 	refresh_text();
@@ -183,7 +183,9 @@ main_widget::main_widget( ImageContainer& images )
 }
 
 main_widget::~main_widget(){
-	clear_image();
+	//TODO: fix imageViewer, so it cleans itself up!
+	browser.change_image( nullptr );
+	viewer.change_image( nullptr );
 }
 
 
@@ -194,10 +196,12 @@ void main_widget::dragEnterEvent( QDragEnterEvent *event ){
 void main_widget::dropEvent( QDropEvent *event ){
 	if( event->mimeData()->hasUrls() ){
 		event->setDropAction( Qt::CopyAction );
-		
-		emit urls_retrived( event->mimeData()->urls() );
-		
 		event->accept();
+		
+		QStringList files;
+		for( auto url : event->mimeData()->urls() )
+			files << url.toLocalFile();
+		emit urls_retrived( files );
 	}
 }
 void main_widget::closeEvent( QCloseEvent *event ){
@@ -206,24 +210,17 @@ void main_widget::closeEvent( QCloseEvent *event ){
 }
 
 
-//Load an image for mapped, doesn't work with lambdas appearently...
-static ImageEx load( QUrl url ){
-	ImageEx img;
-	img.read_file( url.toLocalFile() );
-	return img;
-}
-
-void main_widget::process_urls( QList<QUrl> urls ){
-	QProgressDialog progress( tr("Loading images"), tr("Stop"), 0, urls.count(), this );
+void main_widget::process_urls( QStringList files ){
+	QProgressDialog progress( tr("Loading images"), tr("Stop"), 0, files.count(), this );
 	progress.setWindowModality( Qt::WindowModal );
 	
 	QTime t;
 	t.start();
 	int loading_delay = 0;
 	
-	QFuture<ImageEx> img_loader = QtConcurrent::mapped( urls, load );
-	for( int i=0; i<urls.count(); i++ ){
-		auto file = urls[i].toLocalFile();
+	QFuture<ImageEx> img_loader = QtConcurrent::mapped( files, ImageEx::fromFile );
+	for( int i=0; i<files.count(); i++ ){
+		auto file = files[i];
 		progress.setValue( i );
 		
 		
@@ -318,24 +315,24 @@ const ImageEx& main_widget::postProcess( const ImageEx& input, bool new_image ){
 
 
 ImageEx main_widget::renderImage( const AContainer& container ){
-		//Select filter
-		bool chroma_upscale = ui->cbx_chroma->isChecked();
-		
-		QProgressDialog progress( this );
-		progress.setLabelText( "Rendering" );
-		progress.setWindowModality( Qt::WindowModal );
-		DialogWatcher watcher( progress );
-		
-		if( ui->rbtn_diff->isChecked() )
-			return DifferenceRender().render( container, INT_MAX, &watcher );
-		else if( ui->rbtn_static_diff->isChecked() )
-			return DiffRender().render( container, INT_MAX, &watcher );
-		else if( ui->rbtn_dehumidifier->isChecked() )
-			return SimpleRender( SimpleRender::DARK_SELECT, true ).render( container, INT_MAX, &watcher );
-		else if( ui->rbtn_subpixel->isChecked() )
-			return FloatRender().render( container, INT_MAX, &watcher );
-		else
-			return AverageRender( chroma_upscale ).render( container, INT_MAX, &watcher );
+	//Select filter
+	bool chroma_upscale = ui->cbx_chroma->isChecked();
+	
+	QProgressDialog progress( this );
+	progress.setLabelText( "Rendering" );
+	progress.setWindowModality( Qt::WindowModal );
+	DialogWatcher watcher( progress );
+	
+	if( ui->rbtn_diff->isChecked() )
+		return DifferenceRender().render( container, INT_MAX, &watcher );
+	else if( ui->rbtn_static_diff->isChecked() )
+		return DiffRender().render( container, INT_MAX, &watcher );
+	else if( ui->rbtn_dehumidifier->isChecked() )
+		return SimpleRender( SimpleRender::DARK_SELECT, true ).render( container, INT_MAX, &watcher );
+	else if( ui->rbtn_subpixel->isChecked() )
+		return FloatRender().render( container, INT_MAX, &watcher );
+	else
+		return AverageRender( chroma_upscale ).render( container, INT_MAX, &watcher );
 }
 
 QImage main_widget::qrenderImage( const ImageEx& img ){
@@ -384,7 +381,7 @@ imageCache* main_widget::createViewerCache() const{
 
 void main_widget::refresh_image(){
 	if( !images.isAligned() )
-		subpixel_align_image();
+		alignImage();
 	
 	auto start = images.minPoint();
 	if( renders.size() == 0 ){
@@ -480,7 +477,7 @@ void main_widget::clear_image(){
 	update_draw();
 }
 
-void main_widget::subpixel_align_image(){
+void main_widget::alignImage(){
 	QProgressDialog progress( this );
 	progress.setLabelText( "Aligning" );
 	progress.setWindowModality( Qt::WindowModal );
@@ -606,11 +603,7 @@ void main_widget::open_image(){
 	for( auto f : formats )
 		filter += " *." + f;
 	
-	auto files = QFileDialog::getOpenFileNames( this, "Select images", "", "Images (" + filter + ")" );
-	QList<QUrl> urls;
-	for( auto file : files )
-		urls.push_back( QUrl::fromLocalFile( file ) );
-	process_urls( urls );
+	process_urls( QFileDialog::getOpenFileNames( this, "Select images", "", "Images (" + filter + ")" ) );
 }
 
 void main_widget::toggleMenubar(){

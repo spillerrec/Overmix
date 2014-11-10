@@ -104,14 +104,14 @@ class main_widget: public QMainWindow{
 		QString getSavePath( QString title, QString file_types );
 	
 	signals:
-		void urls_retrived( QList<QUrl> urls );
+		void urls_retrived( QStringList files );
 		
 	private slots:
 		void resetImage(){ renders.clear(); }
 		void update_draw();
 	
 	public slots:
-		void process_urls( QList<QUrl> urls );
+		void process_urls( QStringList files );
 		void showFullscreen();
 		void toggleMenubar();
 		void openOnlineHelp();
@@ -125,7 +125,7 @@ class main_widget: public QMainWindow{
 		void save_image();
 		void save_files();
 		void clear_image();
-		void subpixel_align_image();
+		void alignImage();
 		void toggled_hor();
 		void toggled_ver();
 		void change_interlace();

@@ -31,11 +31,8 @@ int main( int argc, char *argv[] ){
 	
 	for( auto arg : args ){
 		//TODO: handle arguments
-		if( !arg.startsWith( "-" ) ){
-			ImageEx img;
-			img.read_file( arg );
-			images.addImage( std::move( img ), -1, -1, arg );
-		}
+		if( !arg.startsWith( "-" ) )
+			images.addImage( ImageEx::fromFile( arg ), -1, -1, arg );
 	}
 	
 	main_widget w( images );
