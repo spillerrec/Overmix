@@ -1336,15 +1336,10 @@
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_9">
              <item>
-              <widget class="QComboBox" name="comboBox_2">
+              <widget class="QComboBox" name="selection_selector">
                <property name="enabled">
-                <bool>false</bool>
+                <bool>true</bool>
                </property>
-               <item>
-                <property name="text">
-                 <string>Custom</string>
-                </property>
-               </item>
                <item>
                 <property name="text">
                  <string>Everything</string>
@@ -1358,6 +1353,11 @@
                <item>
                 <property name="text">
                  <string>Frame</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Custom</string>
                 </property>
                </item>
               </widget>

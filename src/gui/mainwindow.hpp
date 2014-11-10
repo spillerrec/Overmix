@@ -24,6 +24,7 @@
 #include <QSettings>
 #include <QUrl>
 
+#include <memory>
 #include <vector>
 
 #include "../planes/ImageEx.hpp"
@@ -54,6 +55,7 @@ class main_widget: public QMainWindow{
 		imageViewer viewer;
 		imageViewer browser;
 		ImageContainer& images;
+		std::unique_ptr<AContainer> selection;
 		
 		struct RenderCache{
 			ImageEx raw;
@@ -133,6 +135,7 @@ class main_widget: public QMainWindow{
 		void set_alpha_mask();
 		void clear_mask();
 		void use_current_as_mask();
+		void updateSelection();
 		
 	//Related to the Files tab
 		void addGroup();

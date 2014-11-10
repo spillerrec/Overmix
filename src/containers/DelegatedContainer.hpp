@@ -20,8 +20,8 @@
 
 #include "AContainer.hpp"
 
-class DelegatedContainer : public AContainer{
-	private:
+class ConstDelegatedContainer : public AContainer{
+	protected:
 		ImageEx* temp; //TODO: avoid? used in imageRef
 		const AContainer& container;
 		
@@ -39,7 +39,20 @@ class DelegatedContainer : public AContainer{
 		virtual void setFrame( unsigned, int ) override{  }
 		
 	public:
-		DelegatedContainer( const AContainer& container ) : container(container) { }
+		ConstDelegatedContainer( const AContainer& container ) : container(container) { }
+};
+
+class DelegatedContainer : public ConstDelegatedContainer{
+	private:
+		AContainer& container;
+		
+	public: //AContainer implementation
+		virtual ImageEx& imageRef( unsigned index ) override{ return container.imageRef( index ); }
+		virtual void setPos( unsigned index, Point<double> pos ) override{ container.setPos( index, pos ); }
+		virtual void setFrame( unsigned index, int frame ) override{ container.setFrame( index, frame ); }
+		
+	public:
+		DelegatedContainer( AContainer& container ) : ConstDelegatedContainer(container), container(container) { }
 };
 
 #endif

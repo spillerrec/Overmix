@@ -66,19 +66,19 @@ class StaticDiff{
 		}
 };
 
-class FakeMask : public DelegatedContainer{
+class FakeMask : public ConstDelegatedContainer{
 	private:
 		vector<Plane> masks;
 		
 	public:
 		void setMask( const Plane& fakemask );
-		FakeMask( const AContainer& con, const Plane& mask ) : DelegatedContainer(con)
+		FakeMask( const AContainer& con, const Plane& mask ) : ConstDelegatedContainer(con)
 			{ setMask( mask ); }
 		
 		virtual const Plane& mask( unsigned index ) const override{ return masks[index]; }
 		virtual const Plane& alpha( unsigned index ) const override{ return masks[imageMask(index)]; }
 		virtual int imageMask( unsigned index ) const override{
-			auto pos = DelegatedContainer::imageMask( index );
+			auto pos = ConstDelegatedContainer::imageMask( index );
 			return (pos < 0) ? 0 : pos;
 		}
 		virtual unsigned maskCount() const override{ return masks.size(); }
@@ -86,13 +86,13 @@ class FakeMask : public DelegatedContainer{
 
 void FakeMask::setMask( const Plane& fakemask ){
 	masks.clear();
-	auto amount = DelegatedContainer::maskCount();
+	auto amount = ConstDelegatedContainer::maskCount();
 	
 	if( amount == 0 )
 		masks.push_back( fakemask );
 	else
 		for( unsigned i=0; i<amount; i++ )
-			masks.push_back( fakemask.minPlane( DelegatedContainer::mask(i)) );
+			masks.push_back( fakemask.minPlane( ConstDelegatedContainer::mask(i)) );
 }
 
 Plane DiffRender::iteration( const AContainer& aligner, const AContainer& real, unsigned max_count, Size<unsigned> size ) const{

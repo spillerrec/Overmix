@@ -35,6 +35,7 @@
 #include "../aligners/LayeredAligner.hpp"
 #include "../aligners/FakeAligner.hpp"
 #include "../Deteleciner.hpp"
+#include "../containers/DelegatedContainer.hpp"
 #include "../containers/FrameContainer.hpp"
 #include "../containers/ImageContainer.hpp"
 #include "../containers/ImageContainerSaver.hpp"
@@ -169,6 +170,8 @@ main_widget::main_widget( ImageContainer& images )
 		,	this, &main_widget::browserChangeImage );
 	connect( ui->btn_add_group,    SIGNAL(clicked()), this, SLOT(addGroup()) );
 	connect( ui->btn_delete_files, SIGNAL(clicked()), this, SLOT(removeFiles()) );
+	
+	connect( ui->selection_selector, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSelection()) );
 	
 	setAcceptDrops( true );
 	ui->preview_layout->addWidget( &viewer );
@@ -473,6 +476,9 @@ void main_widget::clear_image(){
 	browser.change_image( nullptr );
 	ui->files_view->reset();
 	
+	selection = nullptr;
+	ui->selection_selector->setCurrentIndex( 0 );
+	
 	refresh_text();
 	update_draw();
 }
@@ -618,7 +624,7 @@ void main_widget::openOnlineHelp(){
 }
 
 AContainer& main_widget::getAlignedImages(){
-	return images;
+	return selection ? *selection : images;
 }
 
 void main_widget::applyModifications(){
@@ -638,12 +644,41 @@ void main_widget::applyModifications(){
 	
 	auto& container = getAlignedImages();
 	for( unsigned i=0; i<container.count(); ++i ){
-		container.cropImage( i, left, top, right, bottom );
-		
 		if( deviation > 0.0009 && dev_iterations > 0 )
 			container.imageRef( i ).apply( &Plane::deconvolve_rl, deviation, dev_iterations );
 		
+		container.cropImage( i, left, top, right, bottom );
 		container.scaleImage( i, scale );
+	}
+	
+	clear_cache();
+}
+
+void main_widget::updateSelection(){
+	//TODO: use make_unique
+	switch( ui->selection_selector->currentIndex() ){
+		case 1: {
+				auto group_count = images.groupAmount();
+				bool ok;
+				auto group = QInputDialog::getInt( this, tr( "Select group" ), tr( "Select the group number" )
+					,	0, 0, group_count-1, 1, &ok );
+				if( ok )
+					selection = std::unique_ptr<AContainer>( new DelegatedContainer( images.getGroup( group ) ) );
+			} break;
+		case 2: { //Select frame
+				auto frames = images.getFrames();
+				auto frame_count = frames.size();
+				bool ok;
+				auto frame = QInputDialog::getInt( this, tr( "Select frame" ), tr( "Select the frame number" )
+					,	0, 0, frame_count-1, 1, &ok );
+				if( ok )
+					selection = std::unique_ptr<AContainer>( new FrameContainer( images, frames[frame] ) );
+			} break;
+			
+		case 3: QMessageBox::warning( this, tr("Not implemented"), tr("Custom selection not yet implemented") );
+			//TODO: implement this obviously
+		case 0:
+		default: selection = nullptr; break;
 	}
 	
 	clear_cache();
