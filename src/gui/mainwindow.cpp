@@ -171,7 +171,7 @@ main_widget::main_widget( ImageContainer& images )
 	connect( ui->btn_add_group,    SIGNAL(clicked()), this, SLOT(addGroup()) );
 	connect( ui->btn_delete_files, SIGNAL(clicked()), this, SLOT(removeFiles()) );
 	
-	connect( ui->selection_selector, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSelection()) );
+	connect( ui->selection_selector, SIGNAL(activated(int)), this, SLOT(updateSelection()) );
 	
 	setAcceptDrops( true );
 	ui->preview_layout->addWidget( &viewer );
