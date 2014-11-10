@@ -109,6 +109,13 @@ const ImageEx& AImageAligner::image( unsigned index ) const{
 		return container.image( index );
 }
 
+ImageEx& AImageAligner::imageRef( unsigned index ){
+	if( raw && images[index].is_valid() )
+		return images[index];
+	else
+		return container.imageRef( index );
+}
+
 Point<double> AImageAligner::pos( unsigned index ) const{
 	auto pos = container.pos( index );
 	if( raw )

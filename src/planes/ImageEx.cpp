@@ -396,7 +396,7 @@ void ImageEx::combine_line( ImageEx& img, bool top ){
 		alpha.combine_line( img.alpha_plane(), top );
 }
 
-void ImageEx::crop( unsigned left, unsigned top, unsigned right, unsigned bottom ){
+Point<unsigned> ImageEx::crop( unsigned left, unsigned top, unsigned right, unsigned bottom ){
 	Point<unsigned> pos( left, top );
 	Size<unsigned> decrease( right + left, top + bottom );
 	
@@ -406,12 +406,14 @@ void ImageEx::crop( unsigned left, unsigned top, unsigned right, unsigned bottom
 		planes[2].crop( pos,   planes[2].getSize() - decrease   );
 		if( alpha )
 			alpha.crop( pos*2, alpha.getSize() - decrease*2 );
+		return pos*2;
 	}
 	else{
 		for( auto& plane : planes )
 			plane.crop( pos, plane.getSize() - decrease );
 		if( alpha )
 			alpha.crop( pos, alpha.getSize() - decrease );
+		return pos;
 	}
 };
 

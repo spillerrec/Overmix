@@ -86,6 +86,8 @@ class main_widget: public QMainWindow{
 		ImageEx renderImage( const AContainer& container );
 		QImage qrenderImage( const ImageEx& img );
 		
+		AContainer& getAlignedImages();
+		
 		imageCache* createViewerCache() const;
 	
 	public:
@@ -115,6 +117,8 @@ class main_widget: public QMainWindow{
 		void showFullscreen();
 		void toggleMenubar();
 		void openOnlineHelp();
+		
+		void applyModifications();
 		
 	private slots:
 		void refresh_text();

@@ -71,9 +71,10 @@ class AImageAligner : public AContainer{
 		std::vector<ImageEx> images;
 	public:
 		//Accessors
-		unsigned count() const{ return container.count(); }
-		const ImageEx& image( unsigned index ) const;
-		const Plane& alpha( unsigned index ) const{ return container.alpha( index ); }
+		unsigned count() const override{ return container.count(); }
+		const ImageEx& image( unsigned index ) const override;
+		ImageEx& imageRef( unsigned index ) override;
+		const Plane& alpha( unsigned index ) const override{ return container.alpha( index ); }
 		int imageMask( unsigned index ) const override{ return container.imageMask( index ); }
 		const Plane& mask( unsigned index ) const override{ return container.mask( index ); }
 		unsigned maskCount() const override{ return container.maskCount(); }

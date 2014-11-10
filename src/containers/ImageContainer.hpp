@@ -54,15 +54,16 @@ class ImageContainer : public AContainer{
 		
 	public: //AContainer implementation
 		virtual       unsigned  count() const;
-		virtual const ImageEx&  image( unsigned index ) const override;
-		virtual const Plane&    alpha( unsigned index ) const override;
-		virtual       int   imageMask( unsigned index ) const override;
-		virtual const Plane&     mask( unsigned index ) const override{ return masks[index]; }
+		virtual const ImageEx&     image( unsigned index ) const override;
+		virtual       ImageEx&  imageRef( unsigned index ) override;
+		virtual const Plane&       alpha( unsigned index ) const override;
+		virtual       int      imageMask( unsigned index ) const override;
+		virtual const Plane&        mask( unsigned index ) const override{ return masks[index]; }
 		virtual       unsigned maskCount()              const override{ return masks.size(); }
-		virtual       Point<double> pos( unsigned index ) const override;
-		virtual       void     setPos( unsigned index, Point<double> newVal ) override;
-		virtual       int       frame( unsigned index ) const override;
-		virtual       void   setFrame( unsigned index, int newVal ) override;
+		virtual       Point<double>  pos( unsigned index ) const override;
+		virtual       void        setPos( unsigned index, Point<double> newVal ) override;
+		virtual       int          frame( unsigned index ) const override;
+		virtual       void      setFrame( unsigned index, int newVal ) override;
 		
 	public:
 		bool isAligned() const{ return aligned; }

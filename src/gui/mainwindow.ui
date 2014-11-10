@@ -1363,10 +1363,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
+              <widget class="QPushButton" name="btn_apply_mods">
                <property name="text">
                 <string>Apply modifications</string>
                </property>

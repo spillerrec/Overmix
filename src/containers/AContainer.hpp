@@ -28,6 +28,7 @@ class AContainer{
 	public:
 		virtual unsigned count() const = 0;
 		virtual const ImageEx& image( unsigned index ) const = 0;
+		virtual ImageEx& imageRef( unsigned index ) = 0;
 		virtual const Plane& alpha( unsigned index ) const = 0;
 		virtual int imageMask( unsigned ) const{ return -1; }
 		virtual const Plane& mask( unsigned index ) const;
@@ -37,6 +38,9 @@ class AContainer{
 		virtual int frame( unsigned index ) const = 0;
 		virtual void setFrame( unsigned index, int newVal ) = 0;
 		virtual ~AContainer() { }
+		
+	public:
+		void cropImage( unsigned index, unsigned left, unsigned top, unsigned right, unsigned bottom );
 		
 	public:
 		QRect size() const;

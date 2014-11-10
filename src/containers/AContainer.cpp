@@ -28,6 +28,12 @@ const Plane& AContainer::alpha( unsigned index ) const{
 //NOTE: this makes no sense, throw something instead?
 const Plane& AContainer::mask( unsigned index ) const{ return alpha( index ); }
 
+void AContainer::cropImage( unsigned index, unsigned left, unsigned top, unsigned right, unsigned bottom ){
+	auto& img = imageRef( index );
+	auto offset = img.crop( left, top, right, bottom );
+	setPos( index, pos( index ) + offset );
+}
+
 QRect AContainer::size() const{
 	QRectF total;
 	

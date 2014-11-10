@@ -57,6 +57,11 @@ const ImageEx& ImageContainer::image( unsigned index ) const{
 	return groups[pos.group].image( pos.index );
 }
 
+ImageEx& ImageContainer::imageRef( unsigned index ){
+	auto pos = indexes[index];
+	return groups[pos.group].imageRef( pos.index );
+}
+
 
 int ImageContainer::imageMask( unsigned index ) const{
 	auto pos = indexes[index];

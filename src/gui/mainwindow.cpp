@@ -116,6 +116,7 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 	connect( ui->pre_alpha_mask, SIGNAL( clicked() ), this, SLOT( set_alpha_mask()       ) );
 	connect( ui->pre_clear_mask, SIGNAL( clicked() ), this, SLOT( clear_mask()           ) );
 	connect( ui->btn_as_mask,    SIGNAL( clicked() ), this, SLOT( use_current_as_mask()  ) );
+	connect( ui->btn_apply_mods, SIGNAL( clicked() ), this, SLOT( applyModifications()  ) );
 	update_draw();
 	
 	//Checkboxes
@@ -652,4 +653,21 @@ void main_widget::toggleMenubar(){
 
 void main_widget::openOnlineHelp(){
 	QDesktopServices::openUrl( QUrl( "https://github.com/spillerrec/Overmix/wiki" ) );
+}
+
+AContainer& main_widget::getAlignedImages(){
+	return images;
+}
+
+void main_widget::applyModifications(){
+	auto left   = ui->crop_left  ->value();
+	auto top    = ui->crop_top   ->value();
+	auto right  = ui->crop_right ->value();
+	auto bottom = ui->crop_bottom->value();
+	
+	auto& container = getAlignedImages();
+	for( unsigned i=0; i<container.count(); ++i )
+		container.cropImage( i, left, top, right, bottom );
+	
+	clear_cache();
 }

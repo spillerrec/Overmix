@@ -22,11 +22,13 @@
 
 class DelegatedContainer : public AContainer{
 	private:
+		ImageEx* temp; //TODO: avoid? used in imageRef
 		const AContainer& container;
 		
 	public: //AContainer implementation
 		virtual unsigned count() const override{ return container.count(); }
 		virtual const ImageEx& image( unsigned index ) const override{ return container.image( index ); }
+		virtual ImageEx& imageRef( unsigned ) override{ return *temp; } //TODO: throw exception
 		virtual int imageMask( unsigned index ) const override{ return container.imageMask( index ); }
 		virtual const Plane& alpha( unsigned index ) const override{ return container.alpha( index ); }
 		virtual const Plane& mask( unsigned index ) const override{ return container.mask( index ); }
