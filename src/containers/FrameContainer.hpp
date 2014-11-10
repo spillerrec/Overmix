@@ -35,8 +35,8 @@ class FrameContainer : public AContainer{
 		virtual unsigned maskCount() const override{ return container.maskCount(); }
 		virtual Point<double> pos( unsigned index ) const override{ return container.pos( indexes[index] ); }
 		virtual void setPos( unsigned index, Point<double> newVal ) override{ return container.setPos( indexes[index], newVal ); }
-		virtual int frame( unsigned index ) const override{ return container.frame( index ); }
-		virtual void setFrame( unsigned index, int newVal ) override{ return container.setFrame( index, newVal ); }
+		virtual int frame( unsigned index ) const override{ return container.frame( indexes[index] ); }
+		virtual void setFrame( unsigned index, int newVal ) override{ return container.setFrame( indexes[index], newVal ); }
 		
 	public:
 		FrameContainer( AContainer& container, int frame ) : container(container) {
