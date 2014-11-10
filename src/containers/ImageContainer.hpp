@@ -98,7 +98,6 @@ class ImageContainer : public AContainer{
 					update( item );
 		}
 		
-		std::vector<int> getFrames() const;
 		//TODO: Get group thing
 		
 		//TODO: Get render thing

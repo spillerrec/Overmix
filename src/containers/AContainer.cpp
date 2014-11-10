@@ -75,3 +75,23 @@ void AContainer::offsetAll( double dx, double dy ){
 	for( unsigned i=0; i<count(); i++ )
 		setPos( i, pos( i ) + offset );
 }
+
+static void addToFrames( std::vector<int>& frames, int frame ){
+	for( auto& item : frames )
+		if( item == frame )
+			return;
+	frames.push_back( frame );
+}
+
+std::vector<int> AContainer::getFrames() const{
+	std::vector<int> frames;
+	for( unsigned i=0; i<count(); ++i )
+			if( frame( i ) >= 0 )
+				addToFrames( frames, frame( i ) );
+	
+	//Make sure to include at least include
+	if( frames.size() == 0 )
+		frames.push_back( -1 );
+	
+	return frames;
+}

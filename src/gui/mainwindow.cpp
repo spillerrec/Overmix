@@ -407,11 +407,11 @@ void main_widget::refresh_image(){
 	
 	auto start = images.minPoint();
 	if( renders.size() == 0 ){
-		auto frames = images.getFrames();
+		auto frames = getAlignedImages().getFrames();
 		renders.reserve( frames.size() );
 		
 		for( auto& frame : frames ){
-			FrameContainer current( images, frame );
+			FrameContainer current( getAlignedImages(), frame );
 			renders.emplace_back( renderImage( current ), current.minPoint()-start );
 		}
 	}
@@ -524,15 +524,15 @@ void main_widget::subpixel_align_image(){
 	int merge_index = ui->merge_method->currentIndex();
 	switch( merge_index ){
 		case 0: //Fake
-			aligner = new FakeAligner( images ); break;
+			aligner = new FakeAligner( getAlignedImages() ); break;
 		case 1: //Ordered
-			aligner = new AverageAligner( images, method, scale ); break;
+			aligner = new AverageAligner( getAlignedImages(), method, scale ); break;
 		case 2: //Recursive
-			aligner = new RecursiveAligner( images, method, scale ); break;
+			aligner = new RecursiveAligner( getAlignedImages(), method, scale ); break;
 		case 3: //Layered
-			aligner = new LayeredAligner( images, method, scale ); break;
+			aligner = new LayeredAligner( getAlignedImages(), method, scale ); break;
 		case 4: //Animated
-			aligner = new AnimatedAligner( images, method, scale ); break;
+			aligner = new AnimatedAligner( getAlignedImages(), method, scale ); break;
 	}
 	
 	double movement = ui->merge_movement->value() / 100.0;

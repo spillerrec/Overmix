@@ -47,6 +47,7 @@ class AContainer{
 		Point<double> minPoint() const;
 		void resetPosition();
 		void offsetAll( double dx, double dy );
+		std::vector<int> getFrames() const;
 };
 
 #endif
