@@ -41,6 +41,7 @@ class AContainer{
 		
 	public:
 		void cropImage( unsigned index, unsigned left, unsigned top, unsigned right, unsigned bottom );
+		void scaleImage( unsigned index, Point<double> scale );
 		
 	public:
 		QRect size() const;

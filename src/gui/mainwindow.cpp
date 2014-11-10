@@ -35,7 +35,6 @@
 #include "../aligners/LayeredAligner.hpp"
 #include "../aligners/FakeAligner.hpp"
 #include "../Deteleciner.hpp"
-#include "../Preprocessor.hpp"
 #include "../containers/FrameContainer.hpp"
 #include "../containers/ImageContainer.hpp"
 #include "../containers/ImageContainerSaver.hpp"
@@ -91,7 +90,7 @@ void foldableGroupBox( QWidget* widget, bool enabled, QGroupBox* box ){
 	update( enabled );
 }
 
-main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
+main_widget::main_widget( ImageContainer& images )
 	:	QMainWindow()
 	,	ui(new Ui_main_widget)
 #ifdef PORTABLE //Portable settings
@@ -101,7 +100,6 @@ main_widget::main_widget( Preprocessor& preprocessor, ImageContainer& images )
 #endif
 	,	viewer( settings, (QWidget*)this )
 	,	browser( settings, (QWidget*)this )
-	,	preprocessor( preprocessor )
 	,	images( images )
 	,	img_model( images )
 {
@@ -218,22 +216,6 @@ static ImageEx load( QUrl url ){
 void main_widget::process_urls( QList<QUrl> urls ){
 	QProgressDialog progress( tr("Loading images"), tr("Stop"), 0, urls.count(), this );
 	progress.setWindowModality( Qt::WindowModal );
-		
-//Update preprocessor settings, TODO: move to separate function?
-	//Crop
-	preprocessor.crop_left   = ui->crop_left  ->value();
-	preprocessor.crop_right  = ui->crop_right ->value();
-	preprocessor.crop_top    = ui->crop_top   ->value();
-	preprocessor.crop_bottom = ui->crop_bottom->value();
-	
-	//Deconvolve
-	preprocessor.deviation = ui->pre_deconvolve_deviation->value();
-	preprocessor.dev_iterations = ui->pre_deconvolve_iterations->value();
-	
-	//Scale
-	//TODO: method
-	preprocessor.scale_x = ui->pre_scale_width->value();
-	preprocessor.scale_y = ui->pre_scale_height->value();
 	
 	QTime t;
 	t.start();
@@ -266,7 +248,6 @@ void main_widget::process_urls( QList<QUrl> urls ){
 			if( !img.is_valid() )
 				continue;
 			
-			preprocessor.processFile( img );
 			images.addImage( std::move( img ), alpha_mask, -1, file );
 		}
 		
@@ -438,8 +419,6 @@ QString main_widget::getSavePath( QString title, QString file_types ){
 }
 
 void main_widget::save_image(){
-	//TODO: assert for equal size
-	
 	for( auto& render : renders ){
 		QString filename = getSavePath( tr("Save image"), tr("PNG files (*.png)") );
 		if( !filename.isEmpty() ){
@@ -558,11 +537,7 @@ void main_widget::set_alpha_mask(){
 	QString filename = QFileDialog::getOpenFileName( this, tr("Open alpha mask"), save_dir, tr("PNG files (*.png)") );
 	
 	if( !filename.isEmpty() ){
-		ImageEx img;
-		img.read_file( filename );
-		img.to_grayscale();
-		
-		alpha_mask = images.addMask( std::move( img[0] ) );
+		alpha_mask = images.addMask( std::move( ImageEx::fromFile( filename )[0] ) );
 		ui->pre_clear_mask->setEnabled( true );
 	}
 }
@@ -581,11 +556,7 @@ void main_widget::use_current_as_mask(){
 }
 
 void main_widget::update_draw(){
-	if( !images.isAligned() )
-		ui->btn_refresh->setText( tr( "Align&&Draw" ) );
-	else
-		ui->btn_refresh->setText( tr( "Draw" ) );
-	
+	ui->btn_refresh->setText( images.isAligned() ? tr( "Draw" ) : tr( "Align&&Draw" ) );
 	ui->btn_refresh->setEnabled( images.count() > 0 );
 }
 
@@ -599,10 +570,8 @@ void main_widget::addGroup(){
 }
 
 static QImage fromSelection( const ImagesModel& model, const QModelIndexList& indexes ){
-	if( indexes.size() > 0 ){
-		auto index = indexes.front();
-		return model.getImage( index );
-	}
+	if( indexes.size() > 0 )
+		return model.getImage( indexes.front() );
 	return QImage();
 }
 
@@ -660,14 +629,29 @@ AContainer& main_widget::getAlignedImages(){
 }
 
 void main_widget::applyModifications(){
+	//Crop
 	auto left   = ui->crop_left  ->value();
 	auto top    = ui->crop_top   ->value();
 	auto right  = ui->crop_right ->value();
 	auto bottom = ui->crop_bottom->value();
 	
+	//Deconvolve
+	double   deviation      = ui->pre_deconvolve_deviation ->value();
+	unsigned dev_iterations = ui->pre_deconvolve_iterations->value();
+	
+	//Scale
+	//TODO: method
+	Point<double> scale( ui->pre_scale_width->value(), ui->pre_scale_height->value() );
+	
 	auto& container = getAlignedImages();
-	for( unsigned i=0; i<container.count(); ++i )
+	for( unsigned i=0; i<container.count(); ++i ){
 		container.cropImage( i, left, top, right, bottom );
+		
+		if( deviation > 0.0009 && dev_iterations > 0 )
+			container.imageRef( i ).apply( &Plane::deconvolve_rl, deviation, dev_iterations );
+		
+		container.scaleImage( i, scale );
+	}
 	
 	clear_cache();
 }

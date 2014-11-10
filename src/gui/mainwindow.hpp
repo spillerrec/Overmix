@@ -38,7 +38,6 @@ class AContainer;
 class AImageAligner;
 class Deteleciner;
 class ImageContainer;
-class Preprocessor;
 class QGroupBox;
 
 class imageCache;
@@ -54,7 +53,6 @@ class main_widget: public QMainWindow{
 		
 		imageViewer viewer;
 		imageViewer browser;
-		Preprocessor& preprocessor;
 		ImageContainer& images;
 		
 		struct RenderCache{
@@ -91,7 +89,7 @@ class main_widget: public QMainWindow{
 		imageCache* createViewerCache() const;
 	
 	public:
-		explicit main_widget( Preprocessor& preprocessor, ImageContainer& images );
+		explicit main_widget( ImageContainer& images );
 		~main_widget();
 	
 	protected:

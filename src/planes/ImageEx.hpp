@@ -103,6 +103,11 @@ class ImageEx{
 		bool is_valid() const{ return planes.size() > 0; }
 		
 		bool read_file( QString path );
+		static ImageEx fromFile( QString path ){
+			ImageEx temp;
+			return temp.read_file( path ) ? temp : ImageEx();
+		}
+		
 		bool saveDump( QIODevice& dev, unsigned depth, bool compression ) const;
 		bool saveDump( QString path, unsigned depth=10 ) const;
 		Plane& alpha_plane(){ return alpha; }

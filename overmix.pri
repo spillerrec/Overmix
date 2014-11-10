@@ -6,8 +6,8 @@ LIBS += -lfftw3-3 -lm -lpng -lz -llzma
 QMAKE_CXXFLAGS += -std=c++11
 
 # Core logic
-HEADERS += $$PWD/src/MultiPlaneIterator.hpp $$PWD/src/color.hpp $$PWD/src/Deteleciner.hpp $$PWD/src/Preprocessor.hpp
-SOURCES += $$PWD/src/MultiPlaneIterator.cpp $$PWD/src/color.cpp $$PWD/src/Deteleciner.cpp  $$PWD/src/Preprocessor.cpp
+HEADERS += $$PWD/src/MultiPlaneIterator.hpp $$PWD/src/color.hpp $$PWD/src/Deteleciner.hpp
+SOURCES += $$PWD/src/MultiPlaneIterator.cpp $$PWD/src/color.cpp $$PWD/src/Deteleciner.cpp
 
 # Containers
 HEADERS += $$PWD/src/containers/AContainer.hpp $$PWD/src/containers/ImageContainer.hpp $$PWD/src/containers/ImageGroup.hpp $$PWD/src/containers/DelegatedContainer.hpp

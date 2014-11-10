@@ -16,7 +16,6 @@
 */
 #include "gui/mainwindow.hpp"
 
-#include "Preprocessor.hpp"
 #include "containers/ImageContainer.hpp"
 
 #include <QApplication>
@@ -28,7 +27,6 @@ int main( int argc, char *argv[] ){
 	auto args = a.arguments();
 	args.removeFirst();
 	
-	Preprocessor processor;
 	ImageContainer images;
 	
 	for( auto arg : args ){
@@ -36,12 +34,11 @@ int main( int argc, char *argv[] ){
 		if( !arg.startsWith( "-" ) ){
 			ImageEx img;
 			img.read_file( arg );
-			processor.processFile( img );
 			images.addImage( std::move( img ), -1, -1, arg );
 		}
 	}
 	
-	main_widget w( processor, images );
+	main_widget w( images );
 	w.show();
 
 	return a.exec();

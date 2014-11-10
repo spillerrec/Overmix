@@ -37,8 +37,8 @@ win32{
 }
 
 # Use link-time optimization in release builds
-Release:QMAKE_CXXFLAGS += -flto
-Release:QMAKE_LFLAGS += -flto -O3 #-mtune=native -ftree-vectorize -ftree-slp-vectorize #-ftree-vectorizer-verbose=3 
+# Release:QMAKE_CXXFLAGS += -flto
+# Release:QMAKE_LFLAGS += -flto -O3 #-mtune=native -ftree-vectorize -ftree-slp-vectorize #-ftree-vectorizer-verbose=3 
 
 # Generate both debug and release on Linux
 CONFIG += debug_and_release
