@@ -59,10 +59,18 @@ class AnimFrame{
 			//Initialize container
 			FrameContainer container( aligner, frame );
 			
+			RecursiveAligner average( container, aligner.get_method(), aligner.get_scale() );
+			average.set_movement( aligner.get_movement() );
+		//	average.set_edges( use_edges );
+			average.addImages();
+			average.align();
+			
 			//Find offset
 			//TODO: optimize if scale == 1.0
 			ImageEx img2 = FloatRender(aligner.x_scale(), aligner.y_scale()).render( container );
 			auto offset = aligner.find_offset( background[0], img2[0], background.alpha_plane(), img2.alpha_plane() );
+			auto aligner_offsets = aligner.minPoint() - container.minPoint();
+			average.offsetAll( aligner_offsets.x+offset.distance_x/aligner.get_scale(), aligner_offsets.y+offset.distance_y/aligner.get_scale() );
 			
 			//Render this frame
 			ImageEx img = FloatRender().render( container );
