@@ -26,8 +26,6 @@
 #include <vector>
 using namespace std;
 
-#include <QSize>
-
 class StaticDiff{
 	private:
 		const AContainer& aligner;
@@ -40,11 +38,8 @@ class StaticDiff{
 		Point<double> absolute;
 		
 	public:
-		StaticDiff( const AContainer& aligner, const ImageEx& ref, unsigned x, unsigned y )
-			: aligner(aligner), reference(ref) {
-			offset = QPoint( x, y );
-			absolute = aligner.size().topLeft();
-		}
+		StaticDiff( const AContainer& aligner, Point<double> absolute, const ImageEx& ref, unsigned x, unsigned y )
+			: aligner(aligner), reference(ref), offset( x, y ), absolute(absolute) { }
 		
 		void add_image( unsigned index ){
 			//Get the actual color
@@ -98,6 +93,7 @@ void FakeMask::setMask( const Plane& fakemask ){
 Plane DiffRender::iteration( const AContainer& aligner, const AContainer& real, unsigned max_count, Size<unsigned> size ) const{
 	//Normal render
 	ImageEx avg = SimpleRender( SimpleRender::FOR_MERGING ).render( aligner, max_count );
+	auto real_size = real.size().topLeft();
 	
 	//Create final output image based on the smallest size
 	Plane output( size );
@@ -107,7 +103,7 @@ Plane DiffRender::iteration( const AContainer& aligner, const AContainer& real, 
 		auto out = output.scan_line( iy );
 		for( unsigned ix=0; ix<output.get_width(); ix++ ){
 			//Set the pixel to the static difference of all the images until max_count
-			StaticDiff diff( real, avg, ix, iy );
+			StaticDiff diff( real, real_size, avg, ix, iy );
 			
 			for( unsigned j=0; j<max_count; j++ )
 				diff.add_image( j );
@@ -125,10 +121,8 @@ ImageEx DiffRender::render( const AContainer& aligner, unsigned max_count, AProc
 	
 	//Find the smallest shared size
 	Size<unsigned> size = aligner.size().size(); //No image is larger than the final result
-	for( unsigned i=0; i<max_count; i++ ){
-		size.width() = min( size.width(), aligner.image(i).get_width() );
-		size.height() = min( size.height(), aligner.image(i).get_height() );
-	}
+	for( unsigned i=0; i<max_count; i++ )
+		size = size.min( aligner.image(i).getSize() );
 	
 	Plane init( size );
 	init.fill( color::WHITE );
