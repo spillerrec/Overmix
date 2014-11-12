@@ -497,6 +497,37 @@ void main_widget::clear_image(){
 	update_draw();
 }
 
+static void alignContainer( AContainer& container, int merge_index, AImageAligner::AlignMethod method, int scale, double movement, bool edges, DialogWatcher& watcher ){
+	AImageAligner* aligner = nullptr;
+	
+	switch( merge_index ){
+		case 0: //Fake
+			aligner = new FakeAligner( container ); break;
+		case 1: //Ordered
+			aligner = new AverageAligner( container, method, scale ); break;
+		case 2: //Recursive
+			aligner = new RecursiveAligner( container, method, scale ); break;
+		case 3: //Layered
+			aligner = new LayeredAligner( container, method, scale ); break;
+		case 4: //Animated
+			aligner = new AnimatedAligner( container, method, scale ); break;
+		case 5: //Separate Frames
+		case 6: //Align Frames
+			aligner = new AnimationSeparator( container, method, scale ); break;
+			
+	}
+	
+	aligner->set_movement( movement );
+	
+	aligner->set_edges( edges );
+	
+	aligner->addImages();
+	aligner->align( &watcher );
+	
+	delete aligner; //TODO: fix this
+
+}
+
 void main_widget::alignImage(){
 	QProgressDialog progress( this );
 	progress.setLabelText( "Aligning" );
@@ -513,37 +544,21 @@ void main_widget::alignImage(){
 		else
 			method = AImageAligner::ALIGN_VER;
 	}
-	AImageAligner* aligner = nullptr;
 	
-	int scale = ui->merge_scale->value();
+	auto merge_index = ui->merge_method->currentIndex();
+	auto scale = ui->merge_scale->value();
+	auto movement = ui->merge_movement->value() / 100.0;
+	auto edges = ui->cbx_edges->isChecked();
 	
-	int merge_index = ui->merge_method->currentIndex();
-	switch( merge_index ){
-		case 0: //Fake
-			aligner = new FakeAligner( getAlignedImages() ); break;
-		case 1: //Ordered
-			aligner = new AverageAligner( getAlignedImages(), method, scale ); break;
-		case 2: //Recursive
-			aligner = new RecursiveAligner( getAlignedImages(), method, scale ); break;
-		case 3: //Layered
-			aligner = new LayeredAligner( getAlignedImages(), method, scale ); break;
-		case 4: //Animated
-			aligner = new AnimatedAligner( getAlignedImages(), method, scale ); break;
-		case 5: //Separate Frames
-		case 6: //Align Frames
-			aligner = new AnimationSeparator( getAlignedImages(), method, scale ); break;
-			
+	if( ui->cbx_each_frame->isChecked() ){
+		//TODO: support displaying several frames in watcher
+		for( auto frame : getAlignedImages().getFrames() ){
+			FrameContainer container( getAlignedImages(), frame );
+			alignContainer( container, merge_index, method, scale, movement, edges, watcher );
+		}
 	}
-	
-	double movement = ui->merge_movement->value() / 100.0;
-	aligner->set_movement( movement );
-	
-	aligner->set_edges( ui->cbx_edges->isChecked() );
-	
-	aligner->addImages();
-	aligner->align( &watcher );
-	
-	delete aligner; //TODO: fix this
+	else
+		alignContainer( getAlignedImages(), merge_index, method, scale, movement, edges, watcher );
 	
 	clear_cache();
 	refresh_text();

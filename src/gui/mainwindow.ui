@@ -75,6 +75,29 @@
                <property name="spacing">
                 <number>3</number>
                </property>
+               <item row="7" column="1">
+                <widget class="QSpinBox" name="merge_scale">
+                 <property name="toolTip">
+                  <string>Subpixel alignment factor</string>
+                 </property>
+                 <property name="suffix">
+                  <string>x</string>
+                 </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>10</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="0">
+                <widget class="QLabel" name="label_18">
+                 <property name="text">
+                  <string>Precision:</string>
+                 </property>
+                </widget>
+               </item>
                <item row="4" column="1">
                 <widget class="QCheckBox" name="cbx_merge_v">
                  <property name="text">
@@ -92,49 +115,23 @@
                  </property>
                 </widget>
                </item>
-               <item row="6" column="1">
-                <widget class="QSpinBox" name="merge_scale">
+               <item row="5" column="1">
+                <widget class="QCheckBox" name="cbx_each_frame">
                  <property name="toolTip">
-                  <string>Subpixel alignment factor</string>
+                  <string>Perform the alignment on each frame separately</string>
                  </property>
-                 <property name="suffix">
-                  <string>x</string>
-                 </property>
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <number>10</number>
+                 <property name="text">
+                  <string>On each frame</string>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1">
+               <item row="5" column="0">
                 <widget class="QCheckBox" name="cbx_edges">
                  <property name="toolTip">
                   <string>Align using only the edges, can improve results with lightning changes</string>
                  </property>
                  <property name="text">
                   <string>Use edges</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="0">
-                <widget class="QCheckBox" name="cbx_average">
-                 <property name="enabled">
-                  <bool>false</bool>
-                 </property>
-                 <property name="text">
-                  <string>Use average</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="0">
-                <widget class="QLabel" name="label_18">
-                 <property name="text">
-                  <string>Precision:</string>
                  </property>
                 </widget>
                </item>
