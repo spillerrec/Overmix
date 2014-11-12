@@ -81,6 +81,7 @@ class DialogWatcher : public AProcessWatcher{
 		virtual void setCurrent( int current ) override{
 			dialog.setValue( current );
 		}
+		virtual int getCurrent() const override{ return dialog.value(); }
 };
 
 void foldableGroupBox( QWidget* widget, bool enabled, QGroupBox* box ){

@@ -32,51 +32,44 @@ pair<ImageEx,Point<double>> RecursiveAligner::combine( const ImageEx& first, con
 	ImageContainer container;
 	container.addImage( ImageEx( first ) ); //We are having copies here!!
 	container.addImage( ImageEx( second ) );
-	container.getGroup( 0 ).items[1].offset = offset_f;
+	container.setPos( 1, offset_f );
 	
 	//Render it
-	ImageEx merged = SimpleRender( SimpleRender::FOR_MERGING ).render( container );
-	
-	return make_pair( merged, offset_f );
+	return { SimpleRender( SimpleRender::FOR_MERGING ).render( container ), offset_f };
+}
+
+static void addToWatcher( AProcessWatcher* watcher, int add ){
+	if( watcher )
+		watcher->setCurrent( watcher->getCurrent() + add );
 }
 
 ImageEx RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsigned end ){
 	auto amount = end - begin;
 	switch( amount ){
 		case 0: qFatal( "No images to align!" );
-		case 1: return image( begin )[0]; //Just return this one
+		case 1: addToWatcher( watcher, 1 );
+				return { image( begin )[0], alpha( begin) }; //Just return this one
 		case 2: { //Optimization for two images
 				ImageEx first ( image( begin   )[0], alpha( begin   ) );
 				ImageEx second( image( begin+1 )[0], alpha( begin+1 ) );
 				auto offset = combine( first, second );
-				setPos( begin+1, offset.second );
+				setPos( begin+1, pos(begin) + offset.second );
+				addToWatcher( watcher, 2 );
 				return offset.first;
 			}
 		default: { //More than two images
-				//Reset position
-				for( unsigned i=begin; i<end; i++ )
-					setPos( i, Point<double>() );
-				
 				//Solve sub-areas recursively
 				unsigned middle = amount / 2 + begin;
-				auto first = align( watcher, begin, middle );
-				auto second = align( watcher, middle, end );
-				
-				//Find the offset between these two images
-				auto offset = combine( first, second );
+				auto offset = combine( align( watcher, begin, middle ), align( watcher, middle, end ) );
 				
 				//Find top-left corner of first
 				auto corner1 = Point<double>( numeric_limits<double>::max(), numeric_limits<double>::max() );
 				auto corner2 = corner1;
-				for( unsigned i=begin; i<middle; i++ ){
-					corner1.x = min( corner1.x, pos(i).x );
-					corner1.y = min( corner1.y, pos(i).y );
-				}
+				for( unsigned i=begin; i<middle; i++ )
+					corner1 = corner1.min( pos(i) );
 				//Find top-left corner of second
-				for( unsigned i=middle; i<end; i++ ){
-					corner2.x = min( corner2.x, pos(i).x );
-					corner2.y = min( corner2.y, pos(i).y );
-				}
+				for( unsigned i=middle; i<end; i++ )
+					corner2 = corner2.min( pos(i) );
 				
 				//move all in "middle to end" using the offset
 				for( unsigned i=middle; i<end; i++ )
@@ -91,10 +84,11 @@ void RecursiveAligner::align( AProcessWatcher* watcher ){
 	if( count() == 0 )
 		return;
 	
+	if( watcher )
+		watcher->setTotal( count() );
+	
 	raw = true;
-	
 	align( watcher, 0, count() );
-	
 	raw = false;
 }
 

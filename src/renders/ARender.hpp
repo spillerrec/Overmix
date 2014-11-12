@@ -25,6 +25,7 @@ class AProcessWatcher{
 	public:
 		virtual void setTotal( int total ) = 0;
 		virtual void setCurrent( int current ) = 0;
+		virtual int getCurrent() const = 0;
 };
 
 class ARender{
