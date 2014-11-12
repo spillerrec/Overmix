@@ -231,6 +231,16 @@
                    <string>Animated</string>
                   </property>
                  </item>
+                 <item>
+                  <property name="text">
+                   <string>Separate Frames</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Align Frames</string>
+                  </property>
+                 </item>
                 </widget>
                </item>
                <item>

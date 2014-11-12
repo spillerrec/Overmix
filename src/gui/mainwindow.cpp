@@ -30,6 +30,7 @@
 #include "../renders/FloatRender.hpp"
 #include "../renders/DifferenceRender.hpp"
 #include "../renders/MedianRender.hpp"
+#include "../aligners/AnimationSeparator.hpp"
 #include "../aligners/AverageAligner.hpp"
 #include "../aligners/RecursiveAligner.hpp"
 #include "../aligners/AnimatedAligner.hpp"
@@ -528,6 +529,10 @@ void main_widget::alignImage(){
 			aligner = new LayeredAligner( getAlignedImages(), method, scale ); break;
 		case 4: //Animated
 			aligner = new AnimatedAligner( getAlignedImages(), method, scale ); break;
+		case 5: //Separate Frames
+		case 6: //Align Frames
+			aligner = new AnimationSeparator( getAlignedImages(), method, scale ); break;
+			
 	}
 	
 	double movement = ui->merge_movement->value() / 100.0;
