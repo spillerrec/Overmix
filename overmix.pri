@@ -26,8 +26,8 @@ SOURCES += $$PWD/src/planes/ImageEx.cpp $$PWD/src/planes/Plane.cpp $$PWD/src/pla
 SOURCES += $$PWD/src/planes/Plane-scaling.cpp $$PWD/src/planes/Plane-edgedetection.cpp $$PWD/src/planes/Plane-blurring.cpp $$PWD/src/planes/Plane-diff.cpp $$PWD/src/planes/Plane-pixel.cpp $$PWD/src/planes/Plane-binarize.cpp
 
 # Aligners
-HEADERS += $$PWD/src/aligners/AImageAligner.hpp $$PWD/src/aligners/AverageAligner.hpp $$PWD/src/aligners/AnimatedAligner.hpp $$PWD/src/aligners/ImageAligner.hpp $$PWD/src/aligners/LayeredAligner.hpp $$PWD/src/aligners/RecursiveAligner.hpp $$PWD/src/aligners/AnimationSeparator.hpp
-SOURCES += $$PWD/src/aligners/AImageAligner.cpp $$PWD/src/aligners/AverageAligner.cpp $$PWD/src/aligners/AnimatedAligner.cpp $$PWD/src/aligners/ImageAligner.cpp $$PWD/src/aligners/LayeredAligner.cpp $$PWD/src/aligners/RecursiveAligner.cpp $$PWD/src/aligners/AnimationSeparator.cpp
+HEADERS += $$PWD/src/aligners/AImageAligner.hpp $$PWD/src/aligners/AverageAligner.hpp $$PWD/src/aligners/AnimatedAligner.hpp $$PWD/src/aligners/ImageAligner.hpp $$PWD/src/aligners/LayeredAligner.hpp $$PWD/src/aligners/RecursiveAligner.hpp $$PWD/src/aligners/AnimationSeparator.hpp $$PWD/src/aligners/FrameAligner.hpp
+SOURCES += $$PWD/src/aligners/AImageAligner.cpp $$PWD/src/aligners/AverageAligner.cpp $$PWD/src/aligners/AnimatedAligner.cpp $$PWD/src/aligners/ImageAligner.cpp $$PWD/src/aligners/LayeredAligner.cpp $$PWD/src/aligners/RecursiveAligner.cpp $$PWD/src/aligners/AnimationSeparator.cpp $$PWD/src/aligners/FrameAligner.cpp
 
 # Renders
 HEADERS += $$PWD/src/renders/AverageRender.hpp $$PWD/src/renders/SimpleRender.hpp $$PWD/src/renders/FloatRender.hpp $$PWD/src/renders/DiffRender.hpp $$PWD/src/renders/PlaneRender.hpp $$PWD/src/renders/DifferenceRender.hpp $$PWD/src/renders/MedianRender.hpp $$PWD/src/renders/ARender.hpp
