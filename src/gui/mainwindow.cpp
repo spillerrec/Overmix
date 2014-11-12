@@ -29,6 +29,7 @@
 #include "../renders/DiffRender.hpp"
 #include "../renders/FloatRender.hpp"
 #include "../renders/DifferenceRender.hpp"
+#include "../renders/MedianRender.hpp"
 #include "../aligners/AverageAligner.hpp"
 #include "../aligners/RecursiveAligner.hpp"
 #include "../aligners/AnimatedAligner.hpp"
@@ -142,6 +143,7 @@ main_widget::main_widget( ImageContainer& images )
 	connect( ui->rbtn_diff,         SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
 	connect( ui->rbtn_static_diff,  SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
 	connect( ui->rbtn_subpixel,     SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
+	connect( ui->rbtn_median,       SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
 	connect( ui->cbx_chroma,        SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
 	connect( &img_model, SIGNAL( dataChanged(const QModelIndex&, const QModelIndex&) ), this, SLOT( resetImage() ) );
 	
@@ -334,6 +336,8 @@ ImageEx main_widget::renderImage( const AContainer& container ){
 		return SimpleRender( SimpleRender::DARK_SELECT, true ).render( container, INT_MAX, &watcher );
 	else if( ui->rbtn_subpixel->isChecked() )
 		return FloatRender().render( container, INT_MAX, &watcher );
+	else if( ui->rbtn_median->isChecked() )
+		return MedianRender().render( container, INT_MAX, &watcher );
 	else
 		return AverageRender( chroma_upscale ).render( container, INT_MAX, &watcher );
 }
