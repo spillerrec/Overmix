@@ -367,7 +367,16 @@ QImage main_widget::qrenderImage( const ImageEx& img ){
 }
 
 imageCache* main_widget::createViewerCache() const{
-	auto full_size = images.size();
+	if( renders.size() == 0 )
+		return new imageCache();
+	
+	auto min_point = renders[0].offset;
+	auto max_point = min_point;
+	for( auto& render : renders ){
+		min_point = min_point.min( render.offset );
+		max_point = max_point.max( render.offset + render.raw.getSize() );
+	}
+	auto full_size = max_point - min_point;
 	
 	//TODO: proper frame timings
 	auto cache = new imageCache();

@@ -64,12 +64,8 @@ Point<double> AContainer::minPoint() const{
 		return { 0, 0 };
 	
 	Point<double> min = pos( 0 );
-	for( unsigned i=0; i<count(); i++ ){
-		if( pos(i).x < min.x )
-			min.x = pos(i).x;
-		if( pos(i).y < min.y )
-			min.y = pos(i).y;
-	}
+	for( unsigned i=0; i<count(); i++ )
+		min = min.min( pos(i) );
 	
 	return min;
 }
