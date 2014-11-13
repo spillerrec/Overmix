@@ -84,8 +84,7 @@ void RecursiveAligner::align( AProcessWatcher* watcher ){
 	if( count() == 0 )
 		return;
 	
-	if( watcher )
-		watcher->setTotal( count() );
+	ProgressWrapper( watcher ).setTotal( count() );
 	
 	raw = true;
 	align( watcher, 0, count() );

@@ -24,6 +24,7 @@
 #include <fstream>
 #include <QDebug>
 
+#include "../renders/ARender.hpp"
 #include "../debug.hpp"
 
 using namespace std;
@@ -46,11 +47,14 @@ class AnimFrame{
 			{ return aligner.findOffset( indexes.back(), index ).error; }
 };
 
-double AnimationSeparator::find_threshold(){
+double AnimationSeparator::find_threshold( AProcessWatcher* watcher ){
+	ProgressWrapper progress( watcher );
 	vector<color_type> errors;
 	set_raw( true ); //TODO: remove the need of this
-	for( unsigned i=0; i<count()-1; ++i )
+	for( unsigned i=0; i<count()-1; ++i ){
 		errors.push_back( findOffset( i, i+1 ).error );
+		progress.add();
+	}
 	set_raw( false );
 	
 	auto errors2 = errors;
@@ -84,42 +88,39 @@ double AnimationSeparator::find_threshold(){
 		error_csv.add( threshold );
 		error_csv.stop();
 	}
+	progress.add();
 	
 	return threshold;
 }
 
 void AnimationSeparator::align( AProcessWatcher* watcher ){
+	ProgressWrapper progress( watcher );
+	progress.setTotal( count() * 2 );
 	if( count() == 0 )
 		return;
 	
 	double factor = 1.0;//QInputDialog::getDouble( nullptr, "Specify threshold", "Threshold", 1.0, 0.01, 9.99, 2 );
-	double threshold = find_threshold() * factor;
+	double threshold = find_threshold( watcher ) * factor;
 	
 	//Init
 	std::vector<int> backlog;
 	for( unsigned i=0; i<count(); i++ )
 		backlog.push_back( i );
 	
-	int iteration = 0;
-	while( true ){
+	for( int iteration=0; true; iteration++ ){
 		AnimFrame frame( *this );
 		
 		for( int& index : backlog )
-			if( index >= 0 ){
-				if( frame.size() == 0 ){
+			if( index >= 0 )
+				if( frame.size() == 0 || frame.find_error( index ) < threshold ){
 					frame.add_index( index, iteration );
 					index = -1;
+					progress.add();
 				}
-				else if( frame.find_error( index ) < threshold ){
-					frame.add_index( index, iteration );
-					index = -1;
-				}
-			}
 		
 		//Stop if no images
 		if( frame.size() == 0 )
 			break;
-		iteration++;
 	}
 }
 

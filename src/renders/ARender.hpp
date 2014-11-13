@@ -28,6 +28,19 @@ class AProcessWatcher{
 		virtual int getCurrent() const = 0;
 };
 
+class ProgressWrapper{
+	private:
+		AProcessWatcher* watcher;
+		
+	public:
+		ProgressWrapper( AProcessWatcher* watcher ) : watcher(watcher) { }
+		void setTotal  ( int total   ){ if( watcher ) watcher->setTotal( total ); }
+		void setCurrent( int current ){ if( watcher ) watcher->setCurrent( current ); }
+		int  getCurrent()       const { return watcher ? watcher->getCurrent() : 0; }
+		
+		void add( int amount=1 ){ setCurrent( getCurrent() + amount ); }
+};
+
 class ARender{
 	public:
 		virtual ImageEx render( const AContainer& group, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const = 0;

@@ -22,7 +22,7 @@
 
 class AnimationSeparator : public AImageAligner{
 	private:
-		double find_threshold();
+		double find_threshold( AProcessWatcher* watcher );
 	public:
 		AnimationSeparator( AContainer& container, AlignMethod method, double scale=1.0 )
 			:	AImageAligner( container, method, scale ){ }
