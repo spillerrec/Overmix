@@ -232,7 +232,7 @@ void main_widget::process_urls( QStringList files ){
 		progress.setValue( i );
 		
 		
-		if( QFileInfo( file ).completeSuffix() == "overmix.xml" ){
+		if( QFileInfo( file ).completeSuffix() == "xml.overmix" ){
 			//Handle aligner xml
 			auto error = ImageContainerSaver::load( images, file );
 			if( !error.isEmpty() )
@@ -447,7 +447,7 @@ void main_widget::save_image(){
 }
 
 void main_widget::save_files(){
-	auto filename = getSavePath( tr("Save alignment"), tr("XML (*.overmix.xml)") );
+	auto filename = getSavePath( tr("Save alignment"), tr("XML (*.xml.overmix)") );
 	if( !filename.isEmpty() ){
 		auto error = ImageContainerSaver::save( images, filename );
 		if( !error.isEmpty() )

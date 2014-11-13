@@ -17,8 +17,10 @@
 #include "gui/mainwindow.hpp"
 
 #include "containers/ImageContainer.hpp"
+#include "containers/ImageContainerSaver.hpp"
 
 #include <QApplication>
+#include <QFileInfo>
 #include <QStringList>
 #include <QUrl>
 
@@ -31,8 +33,12 @@ int main( int argc, char *argv[] ){
 	
 	for( auto arg : args ){
 		//TODO: handle arguments
-		if( !arg.startsWith( "-" ) )
-			images.addImage( ImageEx::fromFile( arg ), -1, -1, arg );
+		if( !arg.startsWith( "-" ) ){
+			if( QFileInfo( arg ).completeSuffix() == "xml.overmix" )
+				ImageContainerSaver::load( images, arg );
+			else
+				images.addImage( ImageEx::fromFile( arg ), -1, -1, arg );
+		}
 	}
 	
 	main_widget w( images );
