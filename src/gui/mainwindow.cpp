@@ -31,7 +31,6 @@
 #include "../renders/DifferenceRender.hpp"
 #include "../renders/MedianRender.hpp"
 #include "../aligners/AnimationSeparator.hpp"
-#include "../aligners/AnimatedAligner.hpp"
 #include "../aligners/AverageAligner.hpp"
 #include "../aligners/FakeAligner.hpp"
 #include "../aligners/FrameAligner.hpp"
@@ -511,11 +510,9 @@ static void alignContainer( AContainer& container, int merge_index, AImageAligne
 			aligner = new RecursiveAligner( container, method, scale ); break;
 		case 3: //Layered
 			aligner = new LayeredAligner( container, method, scale ); break;
-		case 4: //Animated
-			aligner = new AnimatedAligner( container, method, scale ); break;
-		case 5: //Separate Frames
+		case 4: //Separate Frames
 			aligner = new AnimationSeparator( container, method, scale ); break;
-		case 6: //Align Frames
+		case 5: //Align Frames
 			aligner = new FrameAligner( container, method, scale ); break;
 		default: return;
 	}
