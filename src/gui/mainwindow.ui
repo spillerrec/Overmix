@@ -364,7 +364,7 @@
                 </attribute>
                 <layout class="QVBoxLayout" name="verticalLayout">
                  <item>
-                  <widget class="QComboBox" name="comboBox">
+                  <widget class="QComboBox" name="post_scaling">
                    <property name="currentIndex">
                     <number>2</number>
                    </property>

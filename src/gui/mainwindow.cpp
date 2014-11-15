@@ -283,9 +283,21 @@ static color_type color_from_spinbox( QSpinBox* spinbox ){
 	return color::fromDouble( spinbox->value() / (double)spinbox->maximum() );
 }
 
+static ScalingFunction translateScaling( int id ){
+	switch( id ){
+		case 0:  return ScalingFunction::SCALE_NEAREST;
+		case 1:  return ScalingFunction::SCALE_LINEAR;
+		case 2:  return ScalingFunction::SCALE_MITCHELL;
+		case 3:  return ScalingFunction::SCALE_LANCZOS;
+		default: return ScalingFunction::SCALE_NEAREST;
+	}
+}
+
 const ImageEx& main_widget::postProcess( const ImageEx& input, bool new_image ){
 	pipe_scaling.setWidth( ui->dsbx_scale_width->value() );
 	pipe_scaling.setHeight( ui->dsbx_scale_height->value() );
+	pipe_scaling.setScaling( translateScaling( ui->post_scaling->currentIndex() ) );
+	
 	
 	pipe_deconvolve.setDeviation( ui->dsbx_deviation->value() );
 	pipe_deconvolve.setIterations( ui->sbx_iterations->value() );
@@ -673,6 +685,7 @@ void main_widget::applyModifications(){
 	
 	//Scale
 	//TODO: method
+	auto scale_method = translateScaling( ui->pre_scale_method->currentIndex() );
 	Point<double> scale( ui->pre_scale_width->value(), ui->pre_scale_height->value() );
 	
 	auto& container = getAlignedImages();
@@ -681,7 +694,7 @@ void main_widget::applyModifications(){
 			container.imageRef( i ).apply( &Plane::deconvolve_rl, deviation, dev_iterations );
 		
 		container.cropImage( i, left, top, right, bottom );
-		container.scaleImage( i, scale );
+		container.scaleImage( i, scale, scale_method );
 	}
 	
 	clear_cache();

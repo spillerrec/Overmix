@@ -23,6 +23,7 @@
 
 class ImageEx;
 class Plane;
+enum class ScalingFunction;
 
 class AContainer{
 	public:
@@ -41,7 +42,7 @@ class AContainer{
 		
 	public:
 		void cropImage( unsigned index, unsigned left, unsigned top, unsigned right, unsigned bottom );
-		void scaleImage( unsigned index, Point<double> scale );
+		void scaleImage( unsigned index, Point<double> scale, ScalingFunction scaling );
 		
 	public:
 		QRect size() const;

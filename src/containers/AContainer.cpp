@@ -34,13 +34,13 @@ void AContainer::cropImage( unsigned index, unsigned left, unsigned top, unsigne
 	setPos( index, pos( index ) + offset );
 }
 
-void AContainer::scaleImage( unsigned index, Point<double> scale ){
+void AContainer::scaleImage( unsigned index, Point<double> scale, ScalingFunction scaling ){
 	setPos( index, pos( index ) * scale );
 	
 	auto& img = imageRef( index );
 	if( img.getSize() == (img.getSize() * scale).round() )
 		return; //Don't attempt to scale, if it will not change the size
-	img.scale( scale.x, scale.y );
+	img.scale( scale, scaling );
 }
 
 QRect AContainer::size() const{

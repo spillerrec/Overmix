@@ -132,14 +132,14 @@ class ImageEx{
 		void replace_line( ImageEx& img, bool top );
 		void combine_line( ImageEx& img, bool top );
 		
-		void scale( unsigned width, unsigned height ){
+		void scale( Point<unsigned> size, ScalingFunction scaling=ScalingFunction::SCALE_MITCHELL ){
 			for( auto& plane : planes )
-				plane = plane.scale_cubic( width, height );
+				plane = plane.scale_select( size, scaling );
 			if( alpha_plane() )
-				alpha_plane() = alpha_plane().scale_cubic( width, height );
+				alpha_plane() = alpha_plane().scale_select( size, scaling );
 		}
-		void scaleFactor( double factor_x, double factor_y )
-			{ scale( get_width() * factor_x + 0.5, get_height() * factor_y + 0.5 ); }
+		void scaleFactor( Size<double> factor )
+			{ scale( ( getSize() * factor ).round() ); }
 		Point<unsigned> crop( unsigned left, unsigned top, unsigned right, unsigned bottom );
 		
 		MergeResult best_vertical( const ImageEx& img, int level, double range, DiffCache *cache=nullptr ) const{

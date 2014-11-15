@@ -186,7 +186,7 @@ ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, APro
 	if( !isSubpixel( aligner, max_count ) ){
 		ImageEx render = AverageRender().render( aligner );
 		if( scale_x != 1.0 && scale_y != 1.0 )
-			render.scale( render.get_width()*scale_x, render.get_height()*scale_y );
+			render.scale( (render.getSize() * Size<double>( scale_x, scale_y )).round() );
 		return render;
 	}
 	

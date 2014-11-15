@@ -60,6 +60,14 @@ struct Kernel{
 	}
 };
 
+enum class ScalingFunction{
+		SCALE_NEAREST
+	,	SCALE_LINEAR
+	,	SCALE_MITCHELL
+	,	SCALE_SPLINE
+	,	SCALE_LANCZOS
+};
+
 class Plane : public PlaneBase<color_type>{
 	public:
 		Plane() { }
@@ -139,6 +147,17 @@ class Plane : public PlaneBase<color_type>{
 			return scale_generic( wanted_width, wanted_height, 2, mitchell );
 		}
 		Plane scale_lanczos( unsigned wanted_width, unsigned wanted_height ) const;
+		
+		Plane scale_select( Point<unsigned> size, ScalingFunction scaling ) const{
+			switch( scaling ){
+				case ScalingFunction::SCALE_NEAREST : return scale_nearest( size.width(), size.height() );
+				case ScalingFunction::SCALE_LINEAR  : return scale_linear( size.width(), size.height() );
+				case ScalingFunction::SCALE_MITCHELL: return scale_cubic( size.width(), size.height() );
+				case ScalingFunction::SCALE_SPLINE  : return scale_generic( size.width(), size.height(), 2, spline );
+			//	case ScalingFunction::SCALE_LANCZOS : return scale_lanczos( size.width(), size.height() );
+				default: return Plane();
+			}
+		}
 		
 	//Edge-detection
 	private:

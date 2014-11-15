@@ -23,22 +23,24 @@
 
 class RenderPipeScaling : public ARenderPipe{
 	private:
-		double width{ 1.0 }, height{ 1.0 };
+		Point<double> size;
+		ScalingFunction scaling;
 		
 	protected:
 		virtual bool renderNeeded() const override{
-			return width <= 0.9999 || width >= 1.0001 || height <= 0.9999 || height >= 1.0001;
+			return size.width() <= 0.9999 || size.width() >= 1.0001 || size.height() <= 0.9999 || size.height() >= 1.0001;
 		}
 		virtual ImageEx render( const ImageEx& img ) const override{
 			//TODO: support multiple scaling methods?
 			ImageEx temp( img );
-			temp.scale( temp.get_width() * width + 0.5, temp.get_height() * height + 0.5 );
+			temp.scale( (temp.getSize() * size ).round(), scaling );
 			return temp;
 		}
 		
 	public:
-		void setWidth( double width ){ set( this->width, width ); }
-		void setHeight( double height ){ set( this->height, height ); }
+		void setWidth( double width ){ set( this->size.width(), width ); }
+		void setHeight( double height ){ set( this->size.height(), height ); }
+		void setScaling( ScalingFunction scaling ){ set( this->scaling, scaling ); }
 };
 
 class RenderPipeDeconvolve : public ARenderPipe{
