@@ -23,6 +23,7 @@
 
 #include <kplotwidget.h>
 #include <kplotobject.h>
+#include <kplotaxis.h>
 
 #include <QDebug>
 #include <QHBoxLayout>
@@ -59,11 +60,14 @@ static void setLimit( KPlotWidget* plot, const AContainer& images, Point<bool> m
 			moves.x ? min_point.x : 0, moves.x ? max_point.x : images.count()
 		,	moves.y ? min_point.y : 0, moves.y ? max_point.y : images.count()
 		);
+	
+	plot->axis( KPlotWidget::LeftAxis   )->setLabel( moves.y ? QObject::tr("Y") : QObject::tr("Id") );
+	plot->axis( KPlotWidget::BottomAxis )->setLabel( moves.x ? QObject::tr("X") : QObject::tr("Id") );
 }
 
 QColor getColor( int frame ){
 	if( frame < 0 )
-		return Qt::white;
+		return Qt::black;
 	
 	switch( frame ){
 		case 0: return Qt::red;
@@ -80,6 +84,13 @@ MovementGraph::MovementGraph( ImageContainer& images ) : QWidget(nullptr), image
 	auto plot = new KPlotWidget( this );
 	setLayout( new QHBoxLayout( this ) );
 	layout()->addWidget( plot );
+	layout()->setContentsMargins( 0, 0, 0, 0 );
+	
+	plot->setTopPadding(    4 );
+	plot->setRightPadding(  4 );
+	plot->setBackgroundColor( Qt::white );
+	plot->setForegroundColor( Qt::black );
+	plot->setAntialiasing( true );
 	
 	auto moves = imagesMoves( images );
 	setLimit( plot, images, moves );
@@ -94,5 +105,6 @@ MovementGraph::MovementGraph( ImageContainer& images ) : QWidget(nullptr), image
 		plot->addPlotObject( line );
 	}
 	
+	resize( 640, 480 );
 	show();
 }
