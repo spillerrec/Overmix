@@ -2,7 +2,7 @@ TEMPLATE = app
 TARGET = Overmix
 
 # Libraries used
-QT += widgets
+QT += widgets KPlotting
 LIBS += -llcms2
 unix{
 	QT += x11extras
@@ -22,6 +22,11 @@ SOURCES += src/gui/mainwindow.cpp src/gui/ImagesModel.cpp src/gui/FullscreenView
 FORMS   += src/gui/savers/DumpSaver.ui
 HEADERS += src/gui/savers/DumpSaver.hpp src/gui/savers/ASaver.hpp
 SOURCES += src/gui/savers/DumpSaver.cpp
+
+# Visualisation
+HEADERS += src/gui/visualisations/MovementGraph.hpp
+SOURCES += src/gui/visualisations/MovementGraph.cpp
+
 
 #Viewer
 HEADERS += src/gui/viewer/colorManager.h \

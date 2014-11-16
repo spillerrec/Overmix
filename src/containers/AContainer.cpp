@@ -70,6 +70,17 @@ Point<double> AContainer::minPoint() const{
 	return min;
 }
 
+Point<double> AContainer::maxPoint() const{
+	if( count() == 0 )
+		return { 0, 0 };
+	
+	Point<double> max = pos( 0 );
+	for( unsigned i=0; i<count(); i++ )
+		max = max.max( pos(i) );
+	
+	return max;
+}
+
 void AContainer::resetPosition(){
 	for( unsigned i=0; i<count(); i++ )
 		setPos( i, { 0.0, 0.0 } );

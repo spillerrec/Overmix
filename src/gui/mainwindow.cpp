@@ -43,6 +43,7 @@
 #include "../containers/ImageContainerSaver.hpp"
 
 #include "savers/DumpSaver.hpp"
+#include "visualisations/MovementGraph.hpp"
 
 #include "../debug.hpp"
 
@@ -158,6 +159,8 @@ main_widget::main_widget( ImageContainer& images )
 	connect( ui->action_online_wiki,  SIGNAL( triggered() ), this, SLOT( openOnlineHelp() ) );
 	ui->action_show_menubar->setChecked( settings.value( "show_menubar", true ).toBool() );
 	toggleMenubar();
+	
+	connect( ui->action_movement_graph, &QAction::triggered, [&](){ new MovementGraph( images ); } );
 	
 	
 	//Add images

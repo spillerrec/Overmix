@@ -1522,6 +1522,7 @@
     </property>
     <addaction name="action_show_menubar"/>
     <addaction name="action_fullscreen"/>
+    <addaction name="action_movement_graph"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -1588,6 +1589,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="action_movement_graph">
+   <property name="text">
+    <string>Display movement graph</string>
    </property>
   </action>
  </widget>

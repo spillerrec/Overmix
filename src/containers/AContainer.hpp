@@ -47,6 +47,7 @@ class AContainer{
 	public:
 		QRect size() const;
 		Point<double> minPoint() const;
+		Point<double> maxPoint() const;
 		void resetPosition();
 		void offsetAll( double dx, double dy );
 		std::vector<int> getFrames() const;
