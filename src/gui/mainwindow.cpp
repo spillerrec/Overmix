@@ -383,30 +383,45 @@ QImage main_widget::qrenderImage( const ImageEx& img ){
 	return ImageEx( postProcess( img, true ) ).to_qimage( system, setting );
 }
 
-imageCache* main_widget::createViewerCache() const{
+void main_widget::refreshQImageCache(){
 	if( renders.size() == 0 )
-		return new imageCache();
+		return;
 	
-	auto min_point = renders[0].offset;
+	//Render images and calculate offsets first
+	//TODO: this is because the offset requires pipe_scaling to be updated, which is done by qrenderImage(). Improve?
+	for( auto& render : renders ){
+		render.qimg = qrenderImage( render.raw );
+		render.qoffset = render.offset * pipe_scaling.getSize();
+	}
+	
+	//Calculate full size, based on the qimage
+	auto min_point = renders[0].qoffset;
 	auto max_point = min_point;
 	for( auto& render : renders ){
-		min_point = min_point.min( render.offset );
-		max_point = max_point.max( render.offset + render.raw.getSize() );
+		min_point = min_point.min( render.qoffset );
+		max_point = max_point.max( render.qoffset + Point<int>( render.qimg.size() ) );
 	}
 	auto full_size = max_point - min_point;
 	
-	//TODO: proper frame timings
-	auto cache = new imageCache();
-	cache->set_info( renders.size(), renders.size() > 1, -1 );
+	//Expand the qimage with transparent areas, in order to have the same size, keeping them aligned with the offset
 	for( auto& render : renders ){
 		QImage current( full_size.width(), full_size.height(), QImage::Format_ARGB32 );
 		current.fill( qRgba( 0,0,0,0 ) );
 		
 		QPainter painter( &current );
-		painter.drawImage( render.offset.x, render.offset.y, render.qimg );
+		painter.drawImage( render.qoffset.x, render.qoffset.y, render.qimg );
 		
-		cache->add_frame( current, 1000*3/25 ); //3 frame animation delay, with 25 frames a second
+		render.qimg = current;
 	}
+}
+
+imageCache* main_widget::createViewerCache() const{
+	//TODO: proper frame timings
+	auto cache = new imageCache();
+	cache->set_info( renders.size(), renders.size() > 1, -1 );
+	for( auto& render : renders )
+		cache->add_frame( render.qimg, 1000*3/25 ); //3 frame animation delay, with 25 frames a second
+	
 	cache->set_fully_loaded();
 	return cache;
 }
@@ -427,8 +442,7 @@ void main_widget::refresh_image(){
 		}
 	}
 	
-	for( auto& render : renders )
-		render.qimg = qrenderImage( render.raw );
+	refreshQImageCache();
 	
 	ui->btn_as_mask->setEnabled( renders.size() == 1 && renders[0].raw.get_system() == ImageEx::GRAY );
 	viewer.change_image( createViewerCache(), true );
@@ -687,7 +701,6 @@ void main_widget::applyModifications(){
 	unsigned dev_iterations = ui->pre_deconvolve_iterations->value();
 	
 	//Scale
-	//TODO: method
 	auto scale_method = translateScaling( ui->pre_scale_method->currentIndex() );
 	Point<double> scale( ui->pre_scale_width->value(), ui->pre_scale_height->value() );
 	

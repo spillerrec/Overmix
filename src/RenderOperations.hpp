@@ -41,6 +41,8 @@ class RenderPipeScaling : public ARenderPipe{
 		void setWidth( double width ){ set( this->size.width(), width ); }
 		void setHeight( double height ){ set( this->size.height(), height ); }
 		void setScaling( ScalingFunction scaling ){ set( this->scaling, scaling ); }
+		
+		Point<double> getSize() const{ return size; }
 };
 
 class RenderPipeDeconvolve : public ARenderPipe{

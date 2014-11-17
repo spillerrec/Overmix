@@ -61,6 +61,7 @@ class main_widget: public QMainWindow{
 			ImageEx raw;
 			QImage qimg;
 			Point<double> offset;
+			Point<double> qoffset;
 			
 			RenderCache( ImageEx raw, Point<double> offset ) : raw(raw), offset(offset) { }
 		};
@@ -88,6 +89,7 @@ class main_widget: public QMainWindow{
 		
 		AContainer& getAlignedImages();
 		
+		void refreshQImageCache();
 		imageCache* createViewerCache() const;
 	
 	public:
