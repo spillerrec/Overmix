@@ -93,13 +93,7 @@ AImageAligner::ImageOffset AImageAligner::find_offset( const Plane& img1, const 
 			);
 	}while( result.second > 0.10*color::WHITE && level++ < 6 ); //TODO: magic number!
 	
-	ImageOffset offset;
-	offset.distance_x = result.first.x;
-	offset.distance_y = result.first.y;
-	offset.error = result.second;
-	offset.overlap = calculate_overlap( result.first, img1, img2 );
-	
-	return offset;
+	return { result.first, result.second, calculate_overlap( result.first, img1, img2 ) };
 }
 
 const ImageEx& AImageAligner::image( unsigned index ) const{
@@ -128,38 +122,5 @@ void AImageAligner::setPos( unsigned index, Point<double> newVal ){
 		container.setPos( index, { newVal.x / x_scale(), newVal.y / y_scale() } );
 	else
 		container.setPos( index, newVal );
-}
-
-void AImageAligner::debug( QString csv_file ) const{
-	//Open output file
-	const char* path = csv_file.toLocal8Bit().constData();
-	std::fstream rel( path, std::fstream::out );
-	if( !rel.is_open() ){
-		qWarning( "AImageAligner::debug( \"%s\" ), couldn't open file", path );
-		return;
-	}
-	
-	//Write header
-	rel << "\"Scale: " << scale << "\", ";
-	rel << "\"x\", ";
-	rel << "\"y\", ";
-	rel << "\"dx\", ";
-	rel << "\"dy\"\n";
-	
-	//Write alignment info
-	for( unsigned i=0; i<count(); i++ ){
-		rel << i+1 << ", ";
-		rel << pos(i).x << ", ";
-		rel << pos(i).y << ", ";
-		
-		if( i > 0 ){
-			auto diff = pos(i) - pos(i-1);
-			rel << diff.x << ", ";
-			rel << diff.y;
-		}
-		rel << "\n";
-	}
-	
-	rel.close();
 }
 

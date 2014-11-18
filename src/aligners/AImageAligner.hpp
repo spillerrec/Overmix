@@ -38,10 +38,11 @@ class AImageAligner : public AContainer{
 		
 	protected:
 		struct ImageOffset{
-			double distance_x;
-			double distance_y;
+			Point<double> distance;
 			double error;
 			double overlap;
+			ImageOffset( Point<double> distance, double error, double overlap )
+				: distance(distance), error(error), overlap(overlap) { }
 		};
 		static double calculate_overlap( Point<> offset, const Plane& img1, const Plane& img2 );
 		
@@ -106,8 +107,6 @@ class AImageAligner : public AContainer{
 		double get_edges() const{ return use_edges; }
 		
 		virtual void align( AProcessWatcher* watcher=nullptr ) = 0;
-		
-		void debug( QString csv_file ) const;
 };
 
 #endif

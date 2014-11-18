@@ -29,16 +29,13 @@ void AverageAligner::align( AProcessWatcher* watcher ){
 	if( watcher )
 		watcher->setTotal( count() );
 	
-	for( unsigned i=0; i<count(); ++i )
-		setPos( i, { 0,0 } );
+	resetPosition();
 	for( unsigned i=1; i<count(); i++ ){
 		if( watcher )
 			watcher->setCurrent( i );
 		
 		ImageEx img = SimpleRender( SimpleRender::FOR_MERGING ).render( *this, i );
-		
-		ImageOffset offset = find_offset( img[0], image( i )[0], img.alpha_plane(), alpha( i ) );
-		setPos( i, Point<double>( offset.distance_x, offset.distance_y ) + minPoint() );
+		setPos( i, minPoint() + find_offset( img[0], image( i )[0], img.alpha_plane(), alpha( i ) ).distance );
 	}
 	
 	raw = false;

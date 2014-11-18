@@ -24,18 +24,17 @@
 using namespace std;
 
 pair<ImageEx,Point<double>> RecursiveAligner::combine( const ImageEx& first, const ImageEx& second ) const{
-	ImageOffset offset = findOffset( first, second );
-	Point<double> offset_f( offset.distance_x, offset.distance_y );
+	auto offset = findOffset( first, second ).distance;
 	
 	//Wrap planes in ImageContainer
 	//TODO: Optimize this
 	ImageContainer container;
 	container.addImage( ImageEx( first ) ); //We are having copies here!!
 	container.addImage( ImageEx( second ) );
-	container.setPos( 1, offset_f );
+	container.setPos( 1, offset );
 	
 	//Render it
-	return { SimpleRender( SimpleRender::FOR_MERGING ).render( container ), offset_f };
+	return { SimpleRender( SimpleRender::FOR_MERGING ).render( container ), offset };
 }
 
 static void addToWatcher( AProcessWatcher* watcher, int add ){

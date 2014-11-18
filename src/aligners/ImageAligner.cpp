@@ -35,8 +35,7 @@ void ImageAligner::on_add(){
 ImageAligner::ImageOffset ImageAligner::get_offset( unsigned img1, unsigned img2 ) const{
 	if( img1 == img2 ){
 		qWarning( "Attempting to get offset of the same image!" );
-		ImageOffset pos = { 0, 0, 0, 1 };
-		return pos;
+		return { {0, 0}, 0, 1 };
 	}
 	
 	unsigned base = std::max( img1, img2 );
@@ -50,8 +49,8 @@ ImageAligner::ImageOffset ImageAligner::get_offset( unsigned img1, unsigned img2
 	
 	//Reverse distances if indexes where switched
 	if( img2 < img1 ){
-		offset.distance_x = -offset.distance_x;
-		offset.distance_y = -offset.distance_y;
+		offset.distance.x = -offset.distance.x;
+		offset.distance.y = -offset.distance.y;
 	}
 	
 	return offset;
@@ -94,8 +93,7 @@ void ImageAligner::rough_align(){
 		//Use that offset as the positioning for this image
 		unsigned next = unset[best_unset];
 		unsigned old = set[best_set];
-		ImageOffset offset = get_offset( old, next );
-		setPos( next, pos( old ) + Point<double>( offset.distance_x, offset.distance_y ) );
+		setPos( next, pos( old ) + get_offset( old, next ).distance );
 		
 		//Update lists;
 		std::swap( unset[best_unset], unset[unset.size()-1] );
@@ -124,8 +122,8 @@ double ImageAligner::total_error() const{
 			ImageOffset offset = get_offset( i, j );
 			if( offset.overlap > 0.25 ){
 				double w = weight_sum / offset.error; //TODO: offset.error == 0 !
-				local_error += std::abs(pos( j ).x + offset.distance_x - pos( i ).x) * w;
-				local_error += std::abs(pos( j ).y + offset.distance_y - pos( i ).y) * w;
+				auto error = (pos( j ) + offset.distance - pos( i )).abs() * w;
+				local_error += error.x + error.y;
 				weight += w;
 			}
 		}
@@ -177,7 +175,8 @@ void ImageAligner::align( AProcessWatcher* watcher ){
 		rel << "Error at iteration " << iterations << ": " << total_error() << "\n";
 		
 		for( unsigned i=0; i<count(); ++i ){
-			double x=0, y=0, weight=0, weight_sum=0;
+			Point<double> pos( 0, 0 );
+			double weight=0, weight_sum=0;
 			for( unsigned j=0; j<count(); ++j ){
 				if( j == i )
 					continue;
@@ -194,13 +193,12 @@ void ImageAligner::align( AProcessWatcher* watcher ){
 				ImageOffset offset = get_offset( j, i );
 				if( offset.overlap > 0.25 ){
 					double w = weight_sum / offset.error * offset.overlap; //TODO: offset.error == 0 !
-					x += (pos( j ).x + offset.distance_x) * w;
-					y += (pos( j ).y + offset.distance_y) * w;
+					pos += (this->pos( j ) + offset.distance) * w;
 					weight += w;
 				}
 			}
 			
-			setPos( i, { x / weight, y / weight } );
+			setPos( i, pos / weight );
 		}
 	}
 	rel << "Fine alignment took: " << t.restart() << " msec\n";
