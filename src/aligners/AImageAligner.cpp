@@ -27,11 +27,8 @@ AImageAligner::AImageAligner( AContainer& container, AlignMethod method, double 
 	
 }
 
-static Plane scalePlane( const Plane& p, Point<double> scale ){
-	//TODO: this sems stupid...
-	auto size = (p.getSize() * scale).round();
-	return p.scale_cubic( size.width(), size.height() );
-}
+static Plane scalePlane( const Plane& p, Point<double> scale )
+	{ return p.scale_cubic( (p.getSize() * scale).round() ); }
 
 Plane AImageAligner::prepare_plane( const Plane& p ){
 	if( use_edges ){

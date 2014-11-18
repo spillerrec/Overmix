@@ -24,13 +24,13 @@
 
 using namespace std;
 
-Plane Plane::scale_nearest( unsigned wanted_width, unsigned wanted_height ) const{
-	Plane scaled( wanted_width, wanted_height );
+Plane Plane::scale_nearest( Point<unsigned> wanted ) const{
+	Plane scaled( wanted );
 	
-	for( unsigned iy=0; iy<wanted_height; iy++ ){
+	for( unsigned iy=0; iy<wanted.height(); iy++ ){
 		color_type* row = scaled.scan_line( iy );
-		for( unsigned ix=0; ix<wanted_width; ix++ ){
-			Point<unsigned> pos = (Size<double>( ix, iy ) / (scaled.getSize()-1) * (getSize()-1)).round();
+		for( unsigned ix=0; ix<wanted.height(); ix++ ){
+			Point<unsigned> pos = (Size<double>( ix, iy ) / (wanted-1) * (getSize()-1)).round();
 			row[ix] = pixel( pos.x, pos.y );
 		}
 	}
@@ -123,23 +123,23 @@ void do_line( const ScaleLine& line ){
 	}
 }
 
-Plane Plane::scale_generic( unsigned wanted_width, unsigned wanted_height, double window, Plane::Filter f ) const{
-	Plane scaled( wanted_width, wanted_height );
+Plane Plane::scale_generic( Point<unsigned> wanted, double window, Plane::Filter f ) const{
+	Plane scaled( wanted );
 	
 	QTime t;
 	t.start();
 	
 	//Calculate all x-weights
 	std::vector<ScalePoint> points;
-	points.reserve( wanted_width );
-	for( unsigned ix=0; ix<wanted_width; ++ix ){
-		ScalePoint p( ix, size.width(), wanted_width, window, f );
+	points.reserve( wanted.width() );
+	for( unsigned ix=0; ix<wanted.width(); ++ix ){
+		ScalePoint p( ix, size.width(), wanted.width(), window, f );
 		points.push_back( p );
 	}
 	
 	//Calculate all y-lines
 	std::vector<ScaleLine> lines;
-	for( unsigned iy=0; iy<wanted_height; ++iy ){
+	for( unsigned iy=0; iy<wanted.height(); ++iy ){
 		ScaleLine line( points, scaled, iy, size.height() );
 		line.row = const_scan_line( iy );
 		line.line_width = line_width;

@@ -309,13 +309,13 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ){
 		if( planes[0].equalSize( planes[1] ) )
 			info.emplace_back( planes[1], 0,0 );
 		else{
-			temp[0] = planes[1].scale_cubic( planes[0].get_width(), planes[0].get_height() );
+			temp[0] = planes[1].scale_cubic( planes[0].getSize() );
 			info.emplace_back( temp[0], 0,0 );
 		}
 		if( planes[0].equalSize( planes[2] ) )
 			info.emplace_back( planes[2], 0,0 );
 		else{
-			temp[1] = planes[2].scale_cubic( planes[0].get_width(), planes[0].get_height() );
+			temp[1] = planes[2].scale_cubic( planes[0].getSize() );
 			info.emplace_back( temp[1], 0,0 );
 		}
 	}

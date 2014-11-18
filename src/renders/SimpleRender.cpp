@@ -236,7 +236,7 @@ ImageEx SimpleRender::render( const AContainer& aligner, unsigned max_count, APr
 				if( watcher )
 					watcher->setCurrent( i*2000 + (j * 1000 / max_count) );
 				
-				Plane p = aligner.image( j )[i].scale_cubic( aligner.image( j )[i].get_width(), aligner.image( j )[i].get_height() );
+				Plane p = aligner.image( j )[i].scale_cubic( aligner.image( j ).getSize() );
 				auto pos = aligner.pos(j).round();
 				temp.push_back( p );
 				info.push_back( PlaneItInfo( temp[temp.size()-1], pos.x,pos.y ) );

@@ -137,24 +137,24 @@ class Plane : public PlaneBase<color_type>{
 		static double linear( double x );
 		static double mitchell( double x ){ return cubic( 1.0/3, 1.0/3, x ); }
 		static double spline( double x ){ return cubic( 1.0, 1.0, x ); }
-		Plane scale_generic( unsigned wanted_width, unsigned wanted_height, double window, Filter f ) const;
+		Plane scale_generic( Point<unsigned> size, double window, Filter f ) const;
 	public:
-		Plane scale_nearest( unsigned wanted_width, unsigned wanted_height ) const;
-		Plane scale_linear( unsigned wanted_width, unsigned wanted_height ) const{
-			return scale_generic( wanted_width, wanted_height, 1, linear );
+		Plane scale_nearest( Point<unsigned> size ) const;
+		Plane scale_linear( Point<unsigned> size ) const{
+			return scale_generic( size, 1, linear );
 		}
-		Plane scale_cubic( unsigned wanted_width, unsigned wanted_height ) const{
-			return scale_generic( wanted_width, wanted_height, 2, mitchell );
+		Plane scale_cubic( Point<unsigned> size ) const{
+			return scale_generic( size, 2, mitchell );
 		}
-		Plane scale_lanczos( unsigned wanted_width, unsigned wanted_height ) const;
+		Plane scale_lanczos( Point<unsigned> size ) const;
 		
 		Plane scale_select( Point<unsigned> size, ScalingFunction scaling ) const{
 			switch( scaling ){
-				case ScalingFunction::SCALE_NEAREST : return scale_nearest( size.width(), size.height() );
-				case ScalingFunction::SCALE_LINEAR  : return scale_linear( size.width(), size.height() );
-				case ScalingFunction::SCALE_MITCHELL: return scale_cubic( size.width(), size.height() );
-				case ScalingFunction::SCALE_SPLINE  : return scale_generic( size.width(), size.height(), 2, spline );
-			//	case ScalingFunction::SCALE_LANCZOS : return scale_lanczos( size.width(), size.height() );
+				case ScalingFunction::SCALE_NEAREST : return scale_nearest( size );
+				case ScalingFunction::SCALE_LINEAR  : return scale_linear(  size );
+				case ScalingFunction::SCALE_MITCHELL: return scale_cubic(   size );
+				case ScalingFunction::SCALE_SPLINE  : return scale_generic( size, 2, spline );
+			//	case ScalingFunction::SCALE_LANCZOS : return scale_lanczos( size );
 				default: return Plane();
 			}
 		}

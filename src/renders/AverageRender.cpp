@@ -38,7 +38,7 @@ class ScaledPlane{
 	public:
 		ScaledPlane( const Plane& p, Size<unsigned> size ) : original( p ){
 			if( p.getSize() != size )
-				scaled = p.scale_cubic( size.width(), size.height() );
+				scaled = p.scale_cubic( size );
 		}
 		
 		ScaledPlane( const Plane& p, const Plane& wanted_size )
