@@ -27,27 +27,19 @@ AImageAligner::AImageAligner( AContainer& container, AlignMethod method, double 
 	
 }
 
-double AImageAligner::x_scale() const{
-	return (method != ALIGN_VER) ? scale : 1.0;
-}
-double AImageAligner::y_scale() const{
-	return (method != ALIGN_HOR) ? scale : 1.0;
-}
-
-static Plane scalePlane( const Plane& p, double x_scale, double y_scale ){
-	return p.scale_cubic(
-			p.get_width() * x_scale + 0.5
-		,	p.get_height() * y_scale + 0.5
-		);
+static Plane scalePlane( const Plane& p, Point<double> scale ){
+	//TODO: this sems stupid...
+	auto size = (p.getSize() * scale).round();
+	return p.scale_cubic( size.width(), size.height() );
 }
 
 Plane AImageAligner::prepare_plane( const Plane& p ){
 	if( use_edges ){
 		Plane edges = p.edge_sobel();
-		return ( scale != 1.0 ) ? scalePlane( edges, x_scale(), y_scale() ) : edges;
+		return ( scale != 1.0 ) ? scalePlane( edges, scales() ) : edges;
 	}
 	else if( scale != 1.0 )
-			return scalePlane( p, x_scale(), y_scale() );
+			return scalePlane( p, scales() );
 	else
 		return Plane();
 }
@@ -112,15 +104,9 @@ ImageEx& AImageAligner::imageRef( unsigned index ){
 
 Point<double> AImageAligner::pos( unsigned index ) const{
 	auto pos = container.pos( index );
-	if( raw )
-		return { pos.x * x_scale(), pos.y * y_scale() };
-	else
-		return pos;
+	return raw ? pos * scales() : pos;
 }
 void AImageAligner::setPos( unsigned index, Point<double> newVal ){
-	if( raw )
-		container.setPos( index, { newVal.x / x_scale(), newVal.y / y_scale() } );
-	else
-		container.setPos( index, newVal );
+	container.setPos( index, raw ? newVal / scales() : newVal );
 }
 

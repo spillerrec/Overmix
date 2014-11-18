@@ -64,8 +64,8 @@ class AImageAligner : public AContainer{
 		AContainer& container;
 		
 	public:
-		double x_scale() const;
-		double y_scale() const;
+		Point<double> scales() const
+			{ return { (method != ALIGN_VER) ? scale : 1.0, (method != ALIGN_HOR) ? scale : 1.0 }; }
 		AContainer& getContainer(){ return container; }
 		
 	private:
