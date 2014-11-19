@@ -45,7 +45,9 @@ void AContainer::scaleImage( unsigned index, Point<double> scale, ScalingFunctio
 
 Rectangle<double> AContainer::size() const{
 	auto min = minPoint();
-	auto max = maxPoint();
+	auto max = min;
+	for( unsigned i=0; i<count(); ++i )
+		max = max.max( image(i).getSize().to<double>() + pos(i) );
 	return { min, max-min };
 }
 

@@ -179,7 +179,7 @@ ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AP
 	}
 	
 	auto min_point = aligner.minPoint();
-	auto full = aligner.maxPoint() - min_point;
+	auto full = aligner.size().size;
 	for( unsigned c=0; c<planes_amount; c++ ){
 		//Determine local size
 		auto scale = upscale_chroma ? Point<double>(1,1)
