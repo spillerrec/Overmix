@@ -21,8 +21,6 @@
 #include <cmath>
 #include <QSize>
 #include <QSizeF>
-#include <QPoint>
-#include <QPointF>
 
 template<typename T=int>
 struct Point{
@@ -39,9 +37,6 @@ struct Point{
 	
 	template<typename T2>
 	Point( Point<T2> p ) : x( p.x ), y( p.y ) { }
-	
-	Point<T>( QPoint p )  : x( p.x() ), y( p.y() ) { }
-	Point<T>( QPointF p ) : x( p.x() ), y( p.y() ) { }
 	
 	Point<T>( QSize p ) : x( p.width() ), y( p.height() ) { }
 	Point<T>( QSizeF p ) : x( p.width() ), y( p.height() ) { }

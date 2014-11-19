@@ -167,7 +167,7 @@ struct img_comp{
 		if( level > 0 )
 			return img1.best_round_sub( img2, a1, a2, level, left, right, top, bottom, cache );
 		else
-			return MergeResult(QPoint( h_middle, v_middle ),diff);
+			return MergeResult( {h_middle, v_middle}, diff);
 	}
 	
 	double checkedPercentage(){
@@ -270,7 +270,7 @@ MergeResult Plane::best_round_sub( const Plane& p, const Plane& a1, const Plane&
 	
 	if( !best ){
 		qDebug( "ERROR! no result to continue on!!" );
-		return MergeResult(QPoint(),DOUBLE_MAX);
+		return MergeResult( {0,0}, DOUBLE_MAX );
 	}
 	
 	return best->result( cache );

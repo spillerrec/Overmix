@@ -23,7 +23,6 @@
 #include "../containers/AContainer.hpp"
 
 #include <vector>
-#include <QPointF>
 
 class AProcessWatcher;
 class ImageContainer;

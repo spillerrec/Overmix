@@ -18,7 +18,6 @@
 #ifndef PLANE_HPP
 #define PLANE_HPP
 
-#include <QPoint>
 #include <QList>
 #include <cstdio>
 #include <vector>
@@ -27,7 +26,7 @@
 #include "PlaneBase.hpp"
 
 typedef unsigned short color_type;
-typedef std::pair<QPoint,double> MergeResult;
+typedef std::pair<Point<>, double> MergeResult;
 
 class DiffCache{
 	private:

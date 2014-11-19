@@ -22,7 +22,6 @@
 #include "../color.hpp"
 
 #include <QTime>
-#include <QRect>
 #include <vector>
 using namespace std;
 

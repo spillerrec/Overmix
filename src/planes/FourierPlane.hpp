@@ -20,7 +20,6 @@
 
 #include "Plane.hpp"
 
-#include <QPoint>
 #include <QList>
 #include <cstdio>
 #include <string>

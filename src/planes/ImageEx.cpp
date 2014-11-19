@@ -432,7 +432,7 @@ MergeResult ImageEx::best_round( const ImageEx& img, int level, double range_x, 
 		||	!is_valid()
 		||	!img.is_valid()
 		)
-		return MergeResult(QPoint(),DOUBLE_MAX);
+		return MergeResult({0,0}, DOUBLE_MAX);
 	
 	//Make sure cache exists
 	DiffCache temp;
