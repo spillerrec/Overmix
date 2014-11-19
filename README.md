@@ -17,10 +17,10 @@ Development is now geared towards understanding the more theoretical parts about
 - Deconvolution for sharpening images
 - Logo/credits detection and removal
 - Steam minimization (colors kinda broken right now though...)
+- Detection of cyclic animations
 
 ### Current work
 
-- Detection of cyclic animations
 - Separation of foreground and background in slides where foreground and background moves with different speeds
 - Super resolution
 
