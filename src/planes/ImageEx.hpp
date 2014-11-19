@@ -60,16 +60,13 @@ class ImageEx{
 			if( p.valid() )
 				planes.push_back( p );
 		}
-		ImageEx( Plane p, Plane a ) : type( GRAY ){
-			if( p.valid() )
-				planes.push_back( p );
-			alpha = a;
-		}
+		ImageEx( Plane p, Plane a ) : ImageEx( p )
+			{ alpha = a; }
 		
 		unsigned size() const{ return planes.size(); }
 		void to_grayscale();
 		
-		bool create( unsigned width, unsigned height, bool alpha=false );
+		bool create( Point<unsigned> size, bool alpha=false );
 		
 		template<typename... Args>
 		void apply( Plane (Plane::*func)( Args... ) const, Args... args ){

@@ -87,7 +87,7 @@ class PointRenderBase{
 					QPointF distance = toAbsolute( QPointF( ix, iy ), offset, scale_x, scale_y ) - pos;
 					distance.setX( distance.x() / scale_x );
 					distance.setY( distance.y() / scale_y );
-					Point p{ sqrt(distance.x()*distance.x() + distance.y()*distance.y()), img.pixel(ix,iy) };
+					Point p{ sqrt(distance.x()*distance.x() + distance.y()*distance.y()), img.pixel( {ix,iy} ) };
 					add_point( p );
 				}
 		}
@@ -196,7 +196,7 @@ ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, APro
 	//Do iterator
 	QRect full = aligner.size();
 	ImageEx img( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
-	img.create( full.width()*scale_x, full.height()*scale_y );
+	img.create( { full.width()*scale_x, full.height()*scale_y } );
 	
 	//Fill alpha
 	Plane alpha( full.width()*scale_x, full.height()*scale_y );

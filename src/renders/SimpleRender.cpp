@@ -169,54 +169,48 @@ ImageEx SimpleRender::render( const AContainer& aligner, unsigned max_count, APr
 		}
 	
 	//Do iterator
-	QRect full = aligner.size();
+	auto min_point = aligner.minPoint();
+	Size<int> full( aligner.size().size() );
 	ImageEx img( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
-	img.create( 1, 1 ); //TODO: set as initialized
+	img.create( { 1, 1 } ); //TODO: set as initialized
 	
 	//Fill alpha
-	Plane alpha( full.width(), full.height() );
+	Plane alpha( full );
 	alpha.fill( color::WHITE );
 	img.alpha_plane() = alpha;
 	
 	//Fake alpha
-	Plane fake_alpha( aligner.image(0)[0].get_width(), aligner.image(0)[0].get_height() );
+	Plane fake_alpha( aligner.image(0)[0].getSize() );
 	fake_alpha.fill( color::WHITE );
 	
 	if( watcher )
 		watcher->setTotal( planes_amount*2000 );
 	for( unsigned i=0; i<planes_amount; i++ ){
 		//Determine local size
-		double scale_x = (double)aligner.image(0)[i].get_width() / aligner.image(0)[0].get_width();
-		double scale_y = (double)aligner.image(0)[i].get_height() / aligner.image(0)[0].get_height();
-		
-		//TODO: something is wrong with the rounding, chroma-channels are slightly off
-		QRect local( 
-				(int)round( full.x()*scale_x )
-			,	(int)round( full.y()*scale_y )
-			,	(int)round( full.width()*scale_x )
-			,	(int)round( full.height()*scale_y )
-			);
-		QRect out_size( upscale_chroma ? full : local );
+		auto scale = aligner.image( 0 )[i].getSize().to<double>() / aligner.image( 0 )[0].getSize().to<double>();
+		auto local = (scale * full).round();
+		auto out_size = upscale_chroma ? full : local;
 		
 		//Create output plane
-		Plane out( out_size.width(), out_size.height() );
+		Plane out( out_size );
 		out.fill( 0 );
 		
 		vector<PlaneItInfo> info;
-		info.push_back( PlaneItInfo( out, out_size.x(),out_size.y() ) );
+		auto plane_offset = min_point * scale;
+		info.push_back( PlaneItInfo( out, plane_offset.x,plane_offset.y ) );
 		
-		info.push_back( PlaneItInfo( alpha, out_size.x(),out_size.y() ) );
+		info.push_back( PlaneItInfo( alpha, plane_offset.x,plane_offset.y ) );
 			//TODO: we still have issues with the chroma planes as the
 			//up-scaled layers doesn't always cover all pixels in the Y plane.
 		
 		vector<Plane> temp;
 		
-		if( out_size == local ){
+		if( out_size == full ){
 			for( unsigned j=0; j<max_count; j++ ){
+				auto pos = (aligner.pos(j) * scale).round();
 				info.push_back( PlaneItInfo(
 						const_cast<Plane&>( aligner.image( j )[i] ) //TODO: FIX!!!
-					,	round( aligner.pos(j).x*scale_x )
-					,	round( aligner.pos(j).y*scale_y )
+					,	pos.x, pos.y
 					) );
 				
 				if( use_plane_alpha ){
@@ -224,8 +218,7 @@ ImageEx SimpleRender::render( const AContainer& aligner, unsigned max_count, APr
 					
 					info.push_back( PlaneItInfo(
 							const_cast<Plane&>(current_alpha ? current_alpha : fake_alpha) //TODO: FIX!!!
-						,	round( aligner.pos(j).x*scale_x )
-						,	round( aligner.pos(j).y*scale_y )
+						,	pos.x, pos.y
 						) );
 				}
 			}

@@ -29,10 +29,8 @@ Plane Plane::scale_nearest( Point<unsigned> wanted ) const{
 	
 	for( unsigned iy=0; iy<wanted.height(); iy++ ){
 		color_type* row = scaled.scan_line( iy );
-		for( unsigned ix=0; ix<wanted.height(); ix++ ){
-			Point<unsigned> pos = (Size<double>( ix, iy ) / (wanted-1) * (getSize()-1)).round();
-			row[ix] = pixel( pos.x, pos.y );
-		}
+		for( unsigned ix=0; ix<wanted.height(); ix++ )
+			row[ix] = pixel( (Size<double>( ix, iy ) / (wanted-1) * (getSize()-1)).round() );
 	}
 	
 	return scaled;

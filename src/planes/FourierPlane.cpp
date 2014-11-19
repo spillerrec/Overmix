@@ -57,7 +57,7 @@ Plane FourierPlane::asPlane() const{
 			max_real = max( max_real, abs( in[ix] ) );
 	}
 	
-	Plane output( get_width(), get_height() );
+	Plane output( getSize() );
 	
 	double scale = 100000;
 	auto half_size = get_height() / 2;
@@ -116,7 +116,7 @@ void FourierPlane::debugResolution( string path ) const{
 }
 
 FourierPlane FourierPlane::reduce( unsigned w, unsigned h ) const{
-	FourierPlane out( w/2+1, h );
+	FourierPlane out( Size<unsigned>( w/2+1, h ) );
 	out.real_width = w;
 	out.scaling = scaling;
 	out.fill( std::complex<double>( 0, 0 ) );

@@ -43,13 +43,13 @@ class StaticDiff{
 		
 		void add_image( unsigned index ){
 			//Get the actual color
-			color_type actual = aligner.image( index )[0].pixel( offset.x, offset.y );
+			color_type actual = aligner.image( index )[0].pixel( offset );
 			auto& alpha = aligner.alpha( index );
-			auto a = alpha ? color::fromDouble( alpha.pixel( offset.x, offset.y ) ) : 1.0;
+			auto a = alpha ? color::fromDouble( alpha.pixel( offset ) ) : 1.0;
 			
 			//Find the expected color
 			auto pos = (aligner.pos( index ) + offset - absolute).round();
-			color_type expected = reference[0].pixel( pos.x, pos.y );
+			color_type expected = reference[0].pixel( pos );
 			
 			//Add it to the sum
 			sum += abs( actual - expected ) * a;
@@ -142,10 +142,7 @@ ImageEx DiffRender::render( const AContainer& aligner, unsigned max_count, AProc
 		init = init.minPlane( aligner.mask( i ) );
 	
 	//Create output image
-	ImageEx img( ImageEx::GRAY );
-	img.create( size.width(), size.height() );
-	img[0] = init;
-	return img;
+	return init;
 }
 
 

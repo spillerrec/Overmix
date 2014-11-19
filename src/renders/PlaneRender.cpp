@@ -38,20 +38,14 @@ ImageEx PlaneRender::render( const AContainer& aligner, unsigned max_count, APro
 	}
 	qDebug( "render_image: image count: %d", (int)max_count );
 	
-	//Do iterator
-	QRect full = aligner.size();
-	ImageEx img( ImageEx::GRAY );
-	img.create( 1, 1 ); //TODO: set as initialized
-	
-	
 	//Create output plane
-	Plane out( full.width(), full.height() );
+	Size<unsigned> full = aligner.size().size();
+	Plane out( full );
 	out.fill( color::BLACK );
-	img[0] = out;
 	
 	//Initialize PlaneItInfos
 	vector<PlaneItInfo> info;
-	info.push_back( PlaneItInfo( img[0], full.x(),full.y() ) );
+	info.push_back( PlaneItInfo( out, full.x,full.y ) );
 	
 	for( unsigned i=0; i<max_count; i++ )
 		info.push_back( PlaneItInfo(
@@ -69,7 +63,7 @@ ImageEx PlaneRender::render( const AContainer& aligner, unsigned max_count, APro
 	it.iterate_all();
 	it.for_all_pixels( pixel(), watcher );
 	
-	return img;
+	return out;
 }
 
 

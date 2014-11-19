@@ -57,7 +57,7 @@ class PlaneBase{
 		}
 		
 	//Pixel/Row query
-		const T& pixel( unsigned x, unsigned y ) const{ return data[ getOffset( x, y ) ]; }
+		const T& pixel( Point<unsigned> pos ) const{ return data[ getOffset( pos.x, pos.y ) ]; }
 		T* scan_line( unsigned y ) { return data.data() + getOffset( 0, y ); } //TODO: !!!!!!!!
 		const T* const_scan_line( unsigned y ) const{ return data.data() + getOffset( 0, y ); }
 		

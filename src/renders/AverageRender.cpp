@@ -95,7 +95,7 @@ class SumPlane {
 		}
 		
 		Plane average() const{
-			Plane avg( sum.get_width(), sum.get_height() );
+			Plane avg( sum.getSize() );
 			
 			for( unsigned iy=0; iy<avg.get_height(); iy++ ){
 				auto sums = sum.const_scan_line( iy );
@@ -114,7 +114,7 @@ class SumPlane {
 		}
 		
 		Plane alpha() const{
-			Plane alpha( amount.get_width(), amount.get_height() );
+			Plane alpha( amount.getSize() );
 			
 			for( unsigned iy=0; iy<alpha.get_height(); iy++ ){
 				auto amounts = amount.const_scan_line( iy );
@@ -170,7 +170,7 @@ ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AP
 		}
 	
 	ImageEx img( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
-	img.create( 1, 1 ); //TODO: set as initialized
+	img.create( { 1, 1 } ); //TODO: set as initialized
 	
 	AlphaScales masks;
 	for( unsigned c=0; c<planes_amount; c++ ){

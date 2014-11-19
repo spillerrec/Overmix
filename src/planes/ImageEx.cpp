@@ -229,17 +229,16 @@ bool ImageEx::from_qimage( QString path ){
 		return false;
 	
 	type = RGB;
-	auto width = img.width();
-	auto height = img.height();
+	Point<unsigned> size( img.size() );
 	
 	if( img.hasAlphaChannel() )
-		alpha = Plane( width, height );
+		alpha = Plane( size );
 	img = img.convertToFormat( QImage::Format_ARGB32 );
 	
 	for( int i=0; i<3; i++ )
-		planes.emplace_back( width, height );
+		planes.emplace_back( size );
 	
-	for( int iy=0; iy<height; ++iy ){
+	for( unsigned iy=0; iy<size.height(); ++iy ){
 		auto r = planes[0].scan_line( iy );
 		auto g = planes[1].scan_line( iy );
 		auto b = planes[2].scan_line( iy );
@@ -247,7 +246,7 @@ bool ImageEx::from_qimage( QString path ){
 		
 		auto in = (const QRgb*)img.constScanLine( iy );
 		
-		for( int ix=0; ix<width; ++ix, ++in ){
+		for( unsigned ix=0; ix<size.width(); ++ix, ++in ){
 			*(r++) = color::from8bit( qRed( *in ) );
 			*(g++) = color::from8bit( qGreen( *in ) );
 			*(b++) = color::from8bit( qBlue( *in ) );
@@ -270,7 +269,7 @@ bool ImageEx::read_file( QString path ){
 	return from_qimage( path );
 }
 
-bool ImageEx::create( unsigned width, unsigned height, bool use_alpha ){
+bool ImageEx::create( Point<unsigned> size, bool use_alpha ){
 	if( is_valid() )
 		return false;
 	
@@ -284,10 +283,10 @@ bool ImageEx::create( unsigned width, unsigned height, bool use_alpha ){
 	}
 	
 	for( unsigned i=0; i<amount; i++ )
-		planes.emplace_back( width, height );
+		planes.emplace_back( size );
 	
 	if( use_alpha )
-		alpha = Plane( width, height );
+		alpha = Plane( size );
 	
 	return true;
 }
