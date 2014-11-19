@@ -30,8 +30,8 @@ HEADERS += $$PWD/src/aligners/AImageAligner.hpp $$PWD/src/aligners/AverageAligne
 SOURCES += $$PWD/src/aligners/AImageAligner.cpp $$PWD/src/aligners/AverageAligner.cpp $$PWD/src/aligners/ImageAligner.cpp $$PWD/src/aligners/LayeredAligner.cpp $$PWD/src/aligners/RecursiveAligner.cpp $$PWD/src/aligners/AnimationSeparator.cpp $$PWD/src/aligners/FrameAligner.cpp
 
 # Renders
-HEADERS += $$PWD/src/renders/AverageRender.hpp $$PWD/src/renders/SimpleRender.hpp $$PWD/src/renders/FloatRender.hpp $$PWD/src/renders/DiffRender.hpp $$PWD/src/renders/PlaneRender.hpp $$PWD/src/renders/StatisticsRender.hpp $$PWD/src/renders/ARender.hpp
-SOURCES += $$PWD/src/renders/AverageRender.cpp $$PWD/src/renders/SimpleRender.cpp $$PWD/src/renders/FloatRender.cpp $$PWD/src/renders/DiffRender.cpp $$PWD/src/renders/PlaneRender.cpp $$PWD/src/renders/StatisticsRender.cpp
+HEADERS += $$PWD/src/renders/AverageRender.hpp $$PWD/src/renders/FloatRender.hpp $$PWD/src/renders/DiffRender.hpp $$PWD/src/renders/PlaneRender.hpp $$PWD/src/renders/StatisticsRender.hpp $$PWD/src/renders/ARender.hpp
+SOURCES += $$PWD/src/renders/AverageRender.cpp $$PWD/src/renders/FloatRender.cpp $$PWD/src/renders/DiffRender.cpp $$PWD/src/renders/PlaneRender.cpp $$PWD/src/renders/StatisticsRender.cpp
 
 # mics
 HEADERS += $$PWD/src/debug.hpp $$PWD/src/aligners/AnimationSaver.hpp $$PWD/src/planes/dump/DumpPlane.hpp $$PWD/src/ARenderPipe.hpp $$PWD/src/RenderOperations.hpp $$PWD/src/Geometry.hpp $$PWD/src/utils/utils.hpp

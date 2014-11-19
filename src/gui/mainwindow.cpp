@@ -25,7 +25,6 @@
 
 #include "../color.hpp"
 #include "../renders/AverageRender.hpp"
-#include "../renders/SimpleRender.hpp"
 #include "../renders/DiffRender.hpp"
 #include "../renders/FloatRender.hpp"
 #include "../renders/StatisticsRender.hpp"

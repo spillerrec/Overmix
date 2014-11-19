@@ -26,6 +26,33 @@
 #include <vector>
 using namespace std;
 
+Plane PlaneRender::renderPlane( const AContainer& aligner, int plane, unsigned max_count, AProcessWatcher* watcher ) const{
+	auto scale = aligner.image( 0 )[plane].getSize().to<double>() / aligner.image( 0 )[0].getSize().to<double>();
+	
+	//Create output plane
+	Plane out( (Point<>( aligner.size().size() ) * scale).round() );
+	out.fill( color::BLACK );
+	
+	//Initialize PlaneItInfos
+	auto full = (Point<>( aligner.size().topLeft() ) * scale ).round();
+	vector<PlaneItInfo> info;
+	info.push_back( PlaneItInfo( out, full.x,full.y ) );
+	
+	for( unsigned i=0; i<max_count; i++ )
+		info.push_back( PlaneItInfo(
+				const_cast<Plane&>( aligner.image( i )[plane] ) //TODO: FIX!!!
+			,	round( aligner.pos(i).x * scale.x )
+			,	round( aligner.pos(i).y * scale.y )
+			) );
+	
+	//Execute
+	MultiPlaneIterator it( info );
+	it.data = data();
+	it.iterate_all();
+	it.for_all_pixels( pixel(), watcher, 1000 * plane );
+	
+	return out;
+}
 
 ImageEx PlaneRender::render( const AContainer& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	if( max_count > aligner.count() )
@@ -38,33 +65,15 @@ ImageEx PlaneRender::render( const AContainer& aligner, unsigned max_count, APro
 	}
 	qDebug( "render_image: image count: %d", (int)max_count );
 	
-	//Create output plane
-	Plane out( Point<unsigned>( aligner.size().size() ) );
-	out.fill( color::BLACK );
 	
-	//Initialize PlaneItInfos
-	Point<unsigned> full = aligner.size().topLeft();
-	vector<PlaneItInfo> info;
-	info.push_back( PlaneItInfo( out, full.x,full.y ) );
-	
-	for( unsigned i=0; i<max_count; i++ )
-		info.push_back( PlaneItInfo(
-				const_cast<Plane&>( aligner.image( i )[0] ) //TODO: FIX!!!
-			,	round( aligner.pos(i).x )
-			,	round( aligner.pos(i).y )
-			) );
-	
+	unsigned planes_amount = aligner.image(0).size();
 	if( watcher )
-		watcher->setTotal( 1000 );
+		watcher->setTotal( 1000 * planes_amount );
 	
-	//Execute
-	MultiPlaneIterator it( info );
-	it.data = data();
-	it.iterate_all();
-	it.for_all_pixels( pixel(), watcher );
-	
-	return out;
+	//Render all planes
+	ImageEx img( aligner.image(0).get_system() );
+	for( unsigned c=0; c<planes_amount; ++c )
+		img.addPlane( renderPlane( aligner, c, max_count, watcher ) );
+	return img;
 }
-
-
 

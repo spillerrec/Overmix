@@ -27,9 +27,11 @@ class PlaneRender : public ARender{
 		virtual void* data() const{ return nullptr; }
 		typedef void pixel_func( MultiPlaneLineIterator &it );
 		virtual pixel_func* pixel() const = 0;
+		
+		Plane renderPlane( const AContainer& aligner, int plane, unsigned max_count, AProcessWatcher* watcher ) const;
+		
 	public:
 		virtual ImageEx render( const AContainer& aligner, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const override;
-		
 };
 
 #endif

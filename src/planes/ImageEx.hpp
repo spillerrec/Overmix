@@ -55,18 +55,17 @@ class ImageEx{
 		bool from_qimage( QString path );
 		
 	public:
-		ImageEx( system type = RGB ) : type( type ){ }
-		ImageEx( Plane p ) : type( GRAY ){
-			if( p.valid() )
-				planes.push_back( p );
-		}
-		ImageEx( Plane p, Plane a ) : ImageEx( p )
-			{ alpha = a; }
+		void addPlane( Plane&& p ){ if( p.valid() ) planes.emplace_back( p ); }
+		
+		ImageEx( system type = RGB ) : type( type ) { }
+		ImageEx( Plane p           ) : type( GRAY ) { addPlane( std::move( p ) ); }
+		ImageEx( Plane p, Plane a  ) : ImageEx( p ) { alpha = a; }
 		
 		unsigned size() const{ return planes.size(); }
 		void to_grayscale();
 		
 		bool create( Point<unsigned> size, bool alpha=false );
+		
 		
 		template<typename... Args>
 		void apply( Plane (Plane::*func)( Args... ) const, Args... args ){
