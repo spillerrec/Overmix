@@ -33,7 +33,7 @@ struct PlaneItInfo{
 	color_type* row_start{ nullptr };
 	color_type* row{ nullptr };
 	
-	PlaneItInfo( Plane& p, int x, int y ) : p(p), x(x), y(y) { }
+	PlaneItInfo( Plane& p, Point<> pos={0,0} ) : p(p), x(pos.x), y(pos.y) { }
 	
 	bool check_x( int x )
 		{ return x >= 0 && (unsigned)x < p.get_width(); }

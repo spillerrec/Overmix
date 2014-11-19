@@ -36,14 +36,11 @@ Plane PlaneRender::renderPlane( const AContainer& aligner, int plane, unsigned m
 	//Initialize PlaneItInfos
 	auto full = (Point<>( aligner.size().topLeft() ) * scale ).round();
 	vector<PlaneItInfo> info;
-	info.push_back( PlaneItInfo( out, full.x,full.y ) );
+	info.emplace_back( out, full );
 	
 	for( unsigned i=0; i<max_count; i++ )
-		info.push_back( PlaneItInfo(
-				const_cast<Plane&>( aligner.image( i )[plane] ) //TODO: FIX!!!
-			,	round( aligner.pos(i).x * scale.x )
-			,	round( aligner.pos(i).y * scale.y )
-			) );
+		info.emplace_back( const_cast<Plane&>( aligner.image( i )[plane] ), (aligner.pos(i) * scale).round() );
+		//TODO: FIX!!!
 	
 	//Execute
 	MultiPlaneIterator it( info );
