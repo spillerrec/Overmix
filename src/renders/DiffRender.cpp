@@ -17,7 +17,7 @@
 
 
 #include "DiffRender.hpp"
-#include "SimpleRender.hpp"
+#include "AverageRender.hpp"
 #include "../containers/AContainer.hpp"
 #include "../containers/DelegatedContainer.hpp"
 #include "../color.hpp"
@@ -92,7 +92,7 @@ void FakeMask::setMask( const Plane& fakemask ){
 
 Plane DiffRender::iteration( const AContainer& aligner, const AContainer& real, unsigned max_count, Size<unsigned> size ) const{
 	//Normal render
-	ImageEx avg = SimpleRender( SimpleRender::FOR_MERGING ).render( aligner, max_count );
+	ImageEx avg = AverageRender( false, true ).render( aligner, max_count );
 	auto real_size = real.size().topLeft();
 	
 	//Create final output image based on the smallest size

@@ -17,7 +17,7 @@
 
 
 #include "AverageAligner.hpp"
-#include "../renders/SimpleRender.hpp"
+#include "../renders/AverageRender.hpp"
 
 
 void AverageAligner::align( AProcessWatcher* watcher ){
@@ -34,7 +34,7 @@ void AverageAligner::align( AProcessWatcher* watcher ){
 		if( watcher )
 			watcher->setCurrent( i );
 		
-		ImageEx img = SimpleRender( SimpleRender::FOR_MERGING ).render( *this, i );
+		ImageEx img = AverageRender( false, true ).render( *this, i );
 		setPos( i, minPoint() + find_offset( img[0], image( i )[0], img.alpha_plane(), alpha( i ) ).distance );
 	}
 	

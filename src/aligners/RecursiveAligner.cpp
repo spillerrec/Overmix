@@ -18,7 +18,7 @@
 
 #include "RecursiveAligner.hpp"
 #include "../containers/ImageContainer.hpp"
-#include "../renders/SimpleRender.hpp"
+#include "../renders/AverageRender.hpp"
 
 #include <limits>
 using namespace std;
@@ -34,7 +34,7 @@ pair<ImageEx,Point<double>> RecursiveAligner::combine( const ImageEx& first, con
 	container.setPos( 1, offset );
 	
 	//Render it
-	return { SimpleRender( SimpleRender::FOR_MERGING ).render( container ), offset };
+	return { AverageRender( false, true ).render( container ), offset };
 }
 
 static void addToWatcher( AProcessWatcher* watcher, int add ){

@@ -51,75 +51,6 @@ using namespace std;
  * 
  */
 
-static void render_average_extended( MultiPlaneIterator &it, unsigned offset, AProcessWatcher* watcher ){
-	if( it.iterate_all() ){
-		it.for_all_pixels( [](MultiPlaneLineIterator &it){
-			precision_color_type avg = 0;
-			for( unsigned i=2; i<it.size(); ++i )
-				avg += it[i];
-			
-			if( it.size() == 2 )
-				it[1] = color::BLACK;
-			else
-				it[0] = avg / (it.size() - 2);
-		}, watcher, offset );
-	}
-	else{
-		it.for_all_pixels( [](MultiPlaneLineIterator &it){
-			precision_color_type avg = 0;
-			double amount = 0;
-			for( unsigned i=2; i<it.size(); ++i )
-				if( it.valid( i ) ){
-					avg += it[i];
-					amount++;
-				}
-			
-			if( amount )
-				it[0] = avg / amount;
-			else
-				it[1] = color::BLACK;
-		}, watcher, offset );
-	}
-}
-
-static void render_average_alpha( MultiPlaneIterator &it, unsigned offset, AProcessWatcher* watcher ){
-	it.iterate_all();
-	it.for_all_pixels( [](MultiPlaneLineIterator &it){
-		precision_color_type avg = 0;
-		double amount = 0;
-
-		for( unsigned i=2; i<it.size(); i+=2 ){
-			if( it.valid( i ) ){
-				if( it.valid( i+1 ) ){
-					double w = color::asDouble( it[i+1] );
-					avg += it[i] * w;
-					amount += w;
-				}
-				else{
-					avg += it[i];
-					amount += 1.0;
-				}
-			}
-		}
-		
-		if( amount ){
-			it[0] = avg / amount;
-			it[1] = color::WHITE;
-		}
-		else{
-			precision_color_type full_avg = 0;
-			unsigned count = 0;
-			for( unsigned i=2; i<it.size(); i+=2 )
-				if( it.valid( i ) ){
-					full_avg += it[i];
-					count++;
-				}
-			it[0] = count != 0 ? full_avg / count : color::BLACK;
-			it[1] = color::BLACK;
-		}
-	}, watcher, offset );
-}
-
 static void render_dark_select( MultiPlaneIterator &it, bool alpha_used, unsigned offset, AProcessWatcher* watcher ){
 	unsigned plane_stride = alpha_used ? 2 : 1;
 	it.data = (void*)&plane_stride;
@@ -156,9 +87,7 @@ ImageEx SimpleRender::render( const AContainer& aligner, unsigned max_count, APr
 	qDebug( "render_image: image count: %d", (int)max_count );
 	
 	//TODO: determine amount of planes!
-	unsigned planes_amount = 3;
-	if( filter == FOR_MERGING && ( aligner.image(0).get_system() == ImageEx::YUV || aligner.image(0).get_system() == ImageEx::GRAY ) )
-		planes_amount = 1;
+	unsigned planes_amount = (aligner.image(0).get_system() == ImageEx::GRAY) ? 1 : 3;
 	
 	//Determine if we need to care about alpha per plane
 	bool use_plane_alpha = false;
@@ -245,12 +174,7 @@ ImageEx SimpleRender::render( const AContainer& aligner, unsigned max_count, APr
 		MultiPlaneIterator it( info );
 		
 		unsigned offset = i*2000 + 1000;
-		if( filter == DARK_SELECT && i == 0 )
-			render_dark_select( it, use_plane_alpha, offset, watcher );
-		else if( use_plane_alpha )
-			render_average_alpha( it, offset, watcher );
-		else
-			render_average_extended( it, offset, watcher );
+		render_dark_select( it, use_plane_alpha, offset, watcher );
 		
 		img[i] = out;
 	}

@@ -23,8 +23,6 @@
 class SimpleRender : public ARender{
 	public:
 		enum Filters{
-			FOR_MERGING,
-			AVERAGE,
 			SIMPLE,
 			SIMPLE_SLIDE,
 			DARK_SELECT
@@ -35,7 +33,7 @@ class SimpleRender : public ARender{
 		bool upscale_chroma;
 		
 	public:
-		SimpleRender( Filters filter=AVERAGE, bool upscale_chroma=true ) : filter( filter ), upscale_chroma( upscale_chroma ) { }
+		SimpleRender( Filters filter=DARK_SELECT, bool upscale_chroma=true ) : filter( filter ), upscale_chroma( upscale_chroma ) { }
 		
 		virtual ImageEx render( const AContainer& aligner, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const override;
 		
