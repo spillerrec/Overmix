@@ -271,7 +271,7 @@ void main_widget::process_urls( QStringList files ){
 
 
 void main_widget::refresh_text(){
-	QRect s = images.size();
+	auto s = images.size().size;
 	ui->lbl_info->setText(
 			tr( "Size: " )
 		+	QString::number(s.width()) + "x"

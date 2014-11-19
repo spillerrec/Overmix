@@ -19,7 +19,6 @@
 #define A_CONTAINER_HPP
 
 #include "../Geometry.hpp"
-#include <QRect>
 
 class ImageEx;
 class Plane;
@@ -45,7 +44,7 @@ class AContainer{
 		void scaleImage( unsigned index, Point<double> scale, ScalingFunction scaling );
 		
 	public:
-		QRect size() const;
+		Rectangle<double> size() const;
 		Point<double> minPoint() const;
 		Point<double> maxPoint() const;
 		void resetPosition();

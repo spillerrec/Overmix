@@ -93,7 +93,7 @@ void FakeMask::setMask( const Plane& fakemask ){
 Plane DiffRender::iteration( const AContainer& aligner, const AContainer& real, unsigned max_count, Size<unsigned> size ) const{
 	//Normal render
 	ImageEx avg = AverageRender( false, true ).render( aligner, max_count );
-	auto real_size = real.size().topLeft();
+	auto real_size = real.size().pos.round();
 	
 	//Create final output image based on the smallest size
 	Plane output( size );
@@ -120,7 +120,7 @@ ImageEx DiffRender::render( const AContainer& aligner, unsigned max_count, AProc
 		max_count = aligner.count();
 	
 	//Find the smallest shared size
-	Size<unsigned> size = aligner.size().size(); //No image is larger than the final result
+	auto size = aligner.size().size; //No image is larger than the final result
 	for( unsigned i=0; i<max_count; i++ )
 		size = size.min( aligner.image(i).getSize() );
 	

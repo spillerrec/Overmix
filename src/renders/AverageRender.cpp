@@ -179,8 +179,8 @@ ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AP
 		masks.addScale( aligner, scale );
 	}
 	
-	Size<int> full( aligner.size().size() );
 	auto min_point = aligner.minPoint();
+	auto full = aligner.maxPoint() - min_point;
 	for( unsigned c=0; c<planes_amount; c++ ){
 		//Determine local size
 		auto scale = upscale_chroma ? Point<double>(1,1)
@@ -188,7 +188,7 @@ ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AP
 		
 		
 		//TODO: something is wrong with the rounding, chroma-channels are slightly off
-		SumPlane sum( (scale * full).round() );
+		SumPlane sum( (scale * full).ceil() );
 		
 		for( unsigned j=0; j<max_count; j++ ){
 			auto& image = aligner.image( j );

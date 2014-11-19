@@ -43,20 +43,10 @@ void AContainer::scaleImage( unsigned index, Point<double> scale, ScalingFunctio
 	img.scale( scale, scaling );
 }
 
-QRect AContainer::size() const{
-	QRectF total;
-	
-	for( unsigned i=0; i<count(); i++ )
-		total = total.united( QRectF( { pos(i).x, pos(i).y }, QSizeF( image(i).get_width(), image(i).get_height() ) ) );
-	
-	//Round so that we only increase size
-	total.setLeft( floor( total.left() ) );
-	total.setTop( floor( total.top() ) );
-	total.setRight( ceil( total.right() ) );
-	total.setBottom( ceil( total.bottom() ) );
-	//TODO: just return a QRectF and let the caller deal with the rounding
-	
-	return total.toRect();
+Rectangle<double> AContainer::size() const{
+	auto min = minPoint();
+	auto max = maxPoint();
+	return { min, max-min };
 }
 
 Point<double> AContainer::minPoint() const{

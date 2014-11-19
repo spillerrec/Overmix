@@ -30,13 +30,12 @@ Plane PlaneRender::renderPlane( const AContainer& aligner, int plane, unsigned m
 	auto scale = aligner.image( 0 )[plane].getSize().to<double>() / aligner.image( 0 )[0].getSize().to<double>();
 	
 	//Create output plane
-	Plane out( (Point<>( aligner.size().size() ) * scale).round() );
+	Plane out( (Point<>( aligner.size().size ) * scale).round() );
 	out.fill( color::BLACK );
 	
 	//Initialize PlaneItInfos
-	auto full = (Point<>( aligner.size().topLeft() ) * scale ).round();
 	vector<PlaneItInfo> info;
-	info.emplace_back( out, full );
+	info.emplace_back( out, (aligner.size().pos * scale).round() );
 	
 	for( unsigned i=0; i<max_count; i++ )
 		info.emplace_back( const_cast<Plane&>( aligner.image( i )[plane] ), (aligner.pos(i) * scale).round() );

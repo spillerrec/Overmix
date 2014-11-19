@@ -194,12 +194,12 @@ ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, APro
 	unsigned planes_amount = 3; //TODO: alpha?
 	
 	//Do iterator
-	QRect full = aligner.size();
+	auto full = aligner.size();
 	ImageEx img( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
-	img.create( { full.width()*scale_x, full.height()*scale_y } );
+	img.create( { full.size.width()*scale_x, full.size.height()*scale_y } );
 	
 	//Fill alpha
-	Plane alpha( full.width()*scale_x, full.height()*scale_y );
+	Plane alpha( full.size.width()*scale_x, full.size.height()*scale_y );
 	alpha.fill( color::WHITE );
 	img.alpha_plane() = alpha;
 	
@@ -224,7 +224,7 @@ ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, APro
 			
 			color_type* row = out.scan_line( iy );
 			for( unsigned ix=0; ix<out.get_width(); ++ix ){
-				PointRender2 p( ix + full.x()*scale_x, iy + full.y()*scale_y/*, points*/ );
+				PointRender2 p( ix + full.pos.x*scale_x, iy + full.pos.y*scale_y/*, points*/ );
 				
 				for( unsigned j=0; j<max_count; ++j ){
 					QPointF pos( aligner.pos( j ).x * scale_x, aligner.pos( j ).y * scale_y );
