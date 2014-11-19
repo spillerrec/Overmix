@@ -204,7 +204,7 @@ ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AP
 		
 		img[c] = sum.average();
 		
-		if( c == 0 )
+		if( c == 0 && use_plane_alpha )
 			img.alpha_plane() = sum.alpha();
 			//TODO: what to do about the rest? We should try to fill in the gaps?
 	}

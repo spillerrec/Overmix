@@ -15,23 +15,26 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef MEDIAN_RENDER_HPP
+#define MEDIAN_RENDER_HPP
 
-#include "MedianRender.hpp"
+#include "PlaneRender.hpp"
 
-#include <algorithm>
-#include <vector>
+enum class Statistics{
+		AVG
+	,	MIN
+	,	MAX
+	,	MEDIAN
+	,	DIFFERENCE
+};
 
-static void median_pixel( MultiPlaneLineIterator &it ){
-	std::vector<color_type> all;
-	for( unsigned i=1; i<it.size(); i++ )
-		if( it.valid( i ) )
-			all.push_back( it[i] );
-	
-	std::sort( all.begin(), all.end() );
-	
-	if( all.size() )
-		it[0] = all[all.size()/2];
-}
-MedianRender::pixel_func* MedianRender::pixel() const{
-	return &median_pixel;
-}
+class StatisticsRender : public PlaneRender{
+	protected:
+		Statistics function;
+		virtual pixel_func* pixel() const override;
+		
+	public:
+		StatisticsRender( Statistics function ) : function(function) { }
+};
+
+#endif

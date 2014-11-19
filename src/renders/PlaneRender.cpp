@@ -39,11 +39,11 @@ ImageEx PlaneRender::render( const AContainer& aligner, unsigned max_count, APro
 	qDebug( "render_image: image count: %d", (int)max_count );
 	
 	//Create output plane
-	Size<unsigned> full = aligner.size().size();
-	Plane out( full );
+	Plane out( Point<unsigned>( aligner.size().size() ) );
 	out.fill( color::BLACK );
 	
 	//Initialize PlaneItInfos
+	Point<unsigned> full = aligner.size().topLeft();
 	vector<PlaneItInfo> info;
 	info.push_back( PlaneItInfo( out, full.x,full.y ) );
 	

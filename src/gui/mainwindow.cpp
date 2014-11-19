@@ -28,8 +28,7 @@
 #include "../renders/SimpleRender.hpp"
 #include "../renders/DiffRender.hpp"
 #include "../renders/FloatRender.hpp"
-#include "../renders/DifferenceRender.hpp"
-#include "../renders/MedianRender.hpp"
+#include "../renders/StatisticsRender.hpp"
 #include "../aligners/AnimationSeparator.hpp"
 #include "../aligners/AverageAligner.hpp"
 #include "../aligners/FakeAligner.hpp"
@@ -345,16 +344,16 @@ ImageEx main_widget::renderImage( const AContainer& container ){
 	progress.setWindowModality( Qt::WindowModal );
 	DialogWatcher watcher( progress );
 	
-	if( ui->rbtn_diff->isChecked() )
-		return DifferenceRender().render( container, INT_MAX, &watcher );
-	else if( ui->rbtn_static_diff->isChecked() )
+	if( ui->rbtn_static_diff->isChecked() )
 		return DiffRender().render( container, INT_MAX, &watcher );
-	else if( ui->rbtn_dehumidifier->isChecked() )
-		return SimpleRender( SimpleRender::DARK_SELECT, true ).render( container, INT_MAX, &watcher );
 	else if( ui->rbtn_subpixel->isChecked() )
 		return FloatRender().render( container, INT_MAX, &watcher );
+	else if( ui->rbtn_diff->isChecked() )
+		return StatisticsRender( Statistics::DIFFERENCE ).render( container, INT_MAX, &watcher );
+	else if( ui->rbtn_dehumidifier->isChecked() )
+		return StatisticsRender( Statistics::MIN ).render( container, INT_MAX, &watcher );
 	else if( ui->rbtn_median->isChecked() )
-		return MedianRender().render( container, INT_MAX, &watcher );
+		return StatisticsRender( Statistics::MEDIAN ).render( container, INT_MAX, &watcher );
 	else
 		return AverageRender( chroma_upscale ).render( container, INT_MAX, &watcher );
 }
