@@ -47,7 +47,7 @@ Rectangle<double> AContainer::size() const{
 	auto min = minPoint();
 	auto max = min;
 	for( unsigned i=0; i<count(); ++i )
-		max = max.max( image(i).getSize().to<double>() + pos(i) );
+		max = max.max( image(i)[0].getSize().to<double>() + pos(i) );
 	return { min, max-min };
 }
 

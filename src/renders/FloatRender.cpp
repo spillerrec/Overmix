@@ -167,7 +167,7 @@ bool isSubpixel( const AContainer& aligner, unsigned max_count ){
 }
 
 
-#include <QMessageBox>
+//#include <QMessageBox>
 ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
 	QTime t;
 	t.start();

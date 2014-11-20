@@ -72,7 +72,7 @@ bool ImageEx::read_dump_plane( QIODevice &dev ){
 	unsigned width = dump_plane.getWidth();
 	unsigned height = dump_plane.getHeight();
 	planes.emplace_back( width, height );
-	auto& p = planes[planes.size()-1];
+	auto& p = planes.back();
 	
 	//Convert data
 	for( unsigned iy=0; iy<height; ++iy ){
@@ -85,6 +85,7 @@ bool ImageEx::read_dump_plane( QIODevice &dev ){
 }
 
 bool ImageEx::from_dump( QIODevice& dev ){
+	planes.reserve( 3 );
 	while( read_dump_plane( dev ) ); //Load all planes
 	
 	//Use last plane as Alpha

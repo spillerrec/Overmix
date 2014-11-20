@@ -147,8 +147,6 @@ class AlphaScales{
 };
 
 ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
-	QTime t;
-	t.start();
 	if( max_count > aligner.count() )
 		max_count = aligner.count();
 	

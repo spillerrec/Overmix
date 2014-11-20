@@ -18,7 +18,6 @@
 
 #include "AnimationSeparator.hpp"
 
-#include <QInputDialog>
 #include <QDir>
 
 #include <fstream>
