@@ -23,18 +23,65 @@
 #include <limits>
 using namespace std;
 
+static void copyLine( Plane& plane_out, const Plane& plane_in, unsigned y_out, unsigned y_in ){
+	auto out = plane_out.scan_line( y_out );
+	auto in = plane_in.const_scan_line( y_in );
+	for( unsigned ix=0; ix<plane_out.get_width(); ++ix )
+		out[ix] = in[ix];
+}
+
+static void mergeLine( Plane& plane_out, const Plane& plane_in1, const Plane& plane_in2, unsigned y_out, unsigned y_in1, unsigned y_in2 ){
+	auto out = plane_out.scan_line( y_out );
+	auto in1 = plane_in1.const_scan_line( y_in1 );
+	auto in2 = plane_in2.const_scan_line( y_in2 );
+	for( unsigned ix=0; ix<plane_out.get_width(); ++ix )
+		out[ix] = (in1[ix] + in2[ix]) / 2; //TODO: use precisison_color_type
+}
+
+static Plane mergeVertical( const Plane& p1, const Plane& p2, int offset ){
+	auto top    = offset < 0 ? p2 : p1;
+	auto bottom = offset < 0 ? p1 : p2;
+	offset = abs(offset);
+	unsigned height = max( top.get_height(), bottom.get_height() + offset );
+	
+	Plane out( p1.get_width(), height );
+	
+	//Copy top part
+	for( int iy=0; iy < abs(offset); ++iy )
+		copyLine( out, top, iy, iy );
+	
+	//Merge the shared middle part
+	auto shared_height = min( top.get_height()-offset, bottom.get_height() );
+	for( unsigned iy=0; iy<shared_height; ++iy )
+		mergeLine( out, top, bottom, iy+offset, iy+offset, iy );
+	
+	//Copy bottom part, might be in the top plane, if it is larger than the bottom plane
+	if( top.get_height() > bottom.get_height() + offset )
+		for( unsigned iy=offset+shared_height; iy<height; ++iy )
+			copyLine( out, top, iy, iy );
+	else
+		for( unsigned iy=shared_height; iy<bottom.get_height(); ++iy )
+			copyLine( out, bottom, iy+offset, iy );
+	
+	return out;
+}
+
 pair<ImageEx,Point<double>> RecursiveAligner::combine( const ImageEx& first, const ImageEx& second ) const{
 	auto offset = findOffset( first, second ).distance;
 	
-	//Wrap planes in ImageContainer
-	//TODO: Optimize this
-	ImageContainer container;
-	container.addImage( ImageEx( first ) ); //We are having copies here!!
-	container.addImage( ImageEx( second ) );
-	container.setPos( 1, offset );
-	
-	//Render it
-	return { AverageRender( false, true ).render( container ), offset };
+	if( offset.x == 0 && !first.alpha_plane() && !second.alpha_plane() && first[0].get_width() == second[0].get_width() )
+		return { mergeVertical( first[0], second[0], offset.y ), offset };
+	else{
+		//Wrap planes in ImageContainer
+		//TODO: Optimize this
+		ImageContainer container;
+		container.addImage( ImageEx( first ) ); //We are having copies here!!
+		container.addImage( ImageEx( second ) );
+		container.setPos( 1, offset );
+		
+		//Render it
+		return { AverageRender( false, true ).render( container ), offset };
+	}
 }
 
 static void addToWatcher( AProcessWatcher* watcher, int add ){
