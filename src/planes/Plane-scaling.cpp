@@ -66,10 +66,9 @@ double Plane::cubic( double b, double c, double x ){
 
 struct ScalePoint{
 	unsigned start;
-	vector<double> weights; //Size of this is end
+	vector<float> weights; //Size of this is end
 	
 	ScalePoint( unsigned index, unsigned width, unsigned wanted_width, double window, Plane::Filter f ){
-		
       double pos = ((double)index / (wanted_width-1)) * (width-1);
 		start = (unsigned)max( (int)ceil( pos-window ), 0 );
 		unsigned end = min( (unsigned)floor( pos+window ), width-1 );
@@ -88,27 +87,30 @@ struct ScaleLine{
 	
 	const color_type* row; //at (0,index)
 	unsigned line_width;
-	double window;
-	Plane::Filter f;
 	
-	ScaleLine( std::vector<ScalePoint>& points, Plane &wanted, unsigned index, unsigned width )
-		:	points(points), wanted(wanted), index(index), width(width) { }
+	ScalePoint ver;
+	
+	ScaleLine( std::vector<ScalePoint>& points, Plane &wanted, unsigned index, unsigned width
+		,	const Plane& input, double window, Plane::Filter f )
+		:	points(points), wanted(wanted), index(index), width(width)
+		,	row( input.const_scan_line( index ) ), line_width( input.get_line_width() )
+		,	ver( index, width, wanted.get_height(), window, f )
+		{ }
 };
 
 void do_line( const ScaleLine& line ){
 	color_type *out = line.wanted.scan_line( line.index );
-	ScalePoint ver( line.index, line.width, line.wanted.get_height(), line.window, line.f );
 	
-	for( auto x : line.points ){
-		double avg = 0;
-		double amount = 0;
-      int offset = ((int)line.index-ver.start)*line.line_width;
+	for( auto& x : line.points ){
+		float avg = 0;
+		float amount = 0;
+      int offset = ((int)line.index-line.ver.start)*line.line_width;
       auto row = line.row - offset + x.start;
 		
-		for( auto wy : ver.weights ){
+		for( auto wy : line.ver.weights ){
 			auto row2 = row;
 			for( auto wx : x.weights ){
-				double weight = wy * wx;
+				float weight = wy * wx;
 				avg += *(row2++) * weight;
 				amount += weight;
 			}
@@ -117,7 +119,6 @@ void do_line( const ScaleLine& line ){
 		}
 		
 		*(out++) = amount != 0.0 ? color::truncate( avg / amount + 0.5 ) : color::BLACK;
-		
 	}
 }
 
@@ -130,25 +131,17 @@ Plane Plane::scale_generic( Point<unsigned> wanted, double window, Plane::Filter
 	//Calculate all x-weights
 	std::vector<ScalePoint> points;
 	points.reserve( wanted.width() );
-	for( unsigned ix=0; ix<wanted.width(); ++ix ){
-		ScalePoint p( ix, size.width(), wanted.width(), window, f );
-		points.push_back( p );
-	}
+	for( unsigned ix=0; ix<wanted.width(); ++ix )
+		points.emplace_back( ix, size.width(), wanted.width(), window, f );
 	
 	//Calculate all y-lines
 	std::vector<ScaleLine> lines;
-	for( unsigned iy=0; iy<wanted.height(); ++iy ){
-		ScaleLine line( points, scaled, iy, size.height() );
-		line.row = const_scan_line( iy );
-		line.line_width = line_width;
-		line.window = window;
-		line.f = f;
-		lines.push_back( line );
-	}
+	lines.reserve( wanted.height() );
+	for( unsigned iy=0; iy<wanted.height(); ++iy )
+		lines.emplace_back( points, scaled, iy, size.height(), *this, window, f );
 	
    QtConcurrent::blockingMap( lines, &do_line );
-   //for( auto l : lines )
-   //   do_line( l );
+   //for( auto l : lines ) do_line( l );
 	
 	qDebug( "Resize took: %d msec", t.restart() );
 	return scaled;

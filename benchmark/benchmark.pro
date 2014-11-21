@@ -9,6 +9,10 @@ include(../overmix.pri)
 
 QMAKE_CXXFLAGS_DEBUG += -O3
 
+# QMAKE_CXXFLAGS += "-fsanitize=address -fno-omit-frame-pointer"
+# QMAKE_CFLAGS   += "-fsanitize=address -fno-omit-frame-pointer"
+# QMAKE_LFLAGS   += "-fsanitize=address"
+
 # Test class
 SOURCES += main.cpp
 
