@@ -106,6 +106,7 @@ double Plane::diffAlpha( const Plane& p, const Plane& alpha, const Plane& alpha_
 	}
 	
 	Sum sum = QtConcurrent::blockingMappedReduced( lines, &diff_alpha_line, &Sum::reduce );
+//	Sum sum; for( auto& p : lines ) sum.reduce( diff_alpha_line( p ) );
 	return sum.total / (double)( height * width / (stride*stride) );
 }
 
@@ -187,10 +188,6 @@ struct img_comp{
 	}
 };
 
-static void do_diff_center( img_comp& comp ){
-	comp.do_diff();
-}
-
 MergeResult Plane::best_round_sub( const Plane& p, const Plane& a1, const Plane& a2, int level, int left, int right, int top, int bottom, DiffCache *cache ) const{
 //	qDebug( "Round %d: %d,%d x %d,%d", level, left, right, top, bottom );
 	std::vector<img_comp> comps;
@@ -216,7 +213,7 @@ MergeResult Plane::best_round_sub( const Plane& p, const Plane& a1, const Plane&
 		
 		double prec_offset = min( h_offset, v_offset );
 		if( h_offset == 0 || v_offset == 0 )
-			prec_offset = min( h_offset, v_offset );
+			prec_offset = max( h_offset, v_offset );
 		double precision = sqrt(prec_offset);
 		
 		for( double iy=top+v_offset; iy<=bottom; iy+=v_add )
@@ -251,7 +248,8 @@ MergeResult Plane::best_round_sub( const Plane& p, const Plane& a1, const Plane&
 		comp.increasePrecision( max_checked );
 	
 	//Calculate diffs
-	QtConcurrent::map( comps, do_diff_center ).waitForFinished();
+	QtConcurrent::map( comps, [](img_comp& comp){ comp.do_diff(); } ).waitForFinished();
+//	for( auto& comp : comps ) comp.do_diff();
 	
 	//Find best comp
 	const img_comp* best = NULL;
