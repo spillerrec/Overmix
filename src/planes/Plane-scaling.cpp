@@ -80,34 +80,33 @@ struct ScalePoint{
 };
 
 struct ScaleLine{
-	std::vector<ScalePoint>& points;
+	const std::vector<ScalePoint>& points;
 	Plane& wanted;
+	const Plane& input;
+	
+	Plane::Filter f;
+	float window;
+	
 	unsigned index;
-	unsigned width;
 	
-	const color_type* row; //at (0,index)
-	unsigned line_width;
-	
-	ScalePoint ver;
-	
-	ScaleLine( std::vector<ScalePoint>& points, Plane &wanted, unsigned index, unsigned width
-		,	const Plane& input, double window, Plane::Filter f )
-		:	points(points), wanted(wanted), index(index), width(width)
-		,	row( input.const_scan_line( index ) ), line_width( input.get_line_width() )
-		,	ver( index, width, wanted.get_height(), window, f )
+	ScaleLine( const std::vector<ScalePoint>& points, Plane &wanted, unsigned index
+		,	const Plane& input, float window, Plane::Filter f )
+		:	points(points), wanted(wanted), input(input), f(f), window(window), index(index)
 		{ }
+		
+	void do_line() const;
 };
 
-void do_line( const ScaleLine& line ){
-	color_type *out = line.wanted.scan_line( line.index );
+void ScaleLine::do_line() const{
+	color_type *out = wanted.scan_line( index );
+	ScalePoint ver( index, input.get_height(), wanted.get_height(), window, f );
 	
-	for( auto& x : line.points ){
+	for( auto& x : points ){
 		float avg = 0;
 		float amount = 0;
-      int offset = ((int)line.index-line.ver.start)*line.line_width;
-      auto row = line.row - offset + x.start;
+		auto row = input.const_scan_line( ver.start ) + x.start;
 		
-		for( auto wy : line.ver.weights ){
+		for( auto wy : ver.weights ){
 			auto row2 = row;
 			for( auto wx : x.weights ){
 				float weight = wy * wx;
@@ -115,12 +114,13 @@ void do_line( const ScaleLine& line ){
 				amount += weight;
 			}
 			
-			row += line.line_width;
+			row += input.get_line_width();
 		}
 		
 		*(out++) = amount != 0.0 ? color::truncate( avg / amount + 0.5 ) : color::BLACK;
 	}
 }
+
 
 Plane Plane::scale_generic( Point<unsigned> wanted, double window, Plane::Filter f ) const{
 	Plane scaled( wanted );
@@ -138,9 +138,9 @@ Plane Plane::scale_generic( Point<unsigned> wanted, double window, Plane::Filter
 	std::vector<ScaleLine> lines;
 	lines.reserve( wanted.height() );
 	for( unsigned iy=0; iy<wanted.height(); ++iy )
-		lines.emplace_back( points, scaled, iy, size.height(), *this, window, f );
+		lines.emplace_back( points, scaled, iy, *this, window, f );
 	
-   QtConcurrent::blockingMap( lines, &do_line );
+   QtConcurrent::blockingMap( lines, []( ScaleLine& t ){ t.do_line(); } );
    //for( auto l : lines ) do_line( l );
 	
 	qDebug( "Resize took: %d msec", t.restart() );
