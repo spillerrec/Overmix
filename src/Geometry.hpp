@@ -19,6 +19,8 @@
 #define GEOMETRY_HPP
 
 #include <cmath>
+#include <QPoint>
+#include <QPointF>
 #include <QSize>
 #include <QSizeF>
 
@@ -38,8 +40,10 @@ struct Point{
 	template<typename T2>
 	Point( Point<T2> p ) : x( p.x ), y( p.y ) { }
 	
-	Point<T>( QSize p ) : x( p.width() ), y( p.height() ) { }
-	Point<T>( QSizeF p ) : x( p.width() ), y( p.height() ) { }
+	Point<T>( QPoint  p ) : x( p.x()     ), y( p.y()      ) { }
+	Point<T>( QPointF p ) : x( p.x()     ), y( p.y()      ) { }
+	Point<T>( QSize   p ) : x( p.width() ), y( p.height() ) { }
+	Point<T>( QSizeF  p ) : x( p.width() ), y( p.height() ) { }
 	
 	double lenght() const{ return std::sqrt( x*x + y*y ); }
 	double manhattanLength() const{ return x+y; }

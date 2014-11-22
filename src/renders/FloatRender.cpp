@@ -22,12 +22,13 @@
 #include "../planes/ImageEx.hpp"
 #include "../color.hpp"
 
-#include <QTime>
+#include <QDebug>
 #include <float.h>
 #include <algorithm>
 #include <vector>
 #include <utility>
 using namespace std;
+using PointF = Point<double>;
 
 static double cubic( double b, double c, double x ){
 	x = abs( x );
@@ -51,56 +52,53 @@ static double cubic( double b, double c, double x ){
 static double spline( double x ){ return cubic( 1.0, 0.0, x ); }
 //TODO: reuse implementation in Plane
 
+QPointF toQPoint( Point<double> point ){ return QPointF( point.x, point.y ); }
+QRectF toQRectF( Point<double> pos, Size<double> size ){ return QRectF( pos.x, pos.y, size.width(), size.height() ); }
+
+
 class PointRenderBase{
 	public:
-		struct Point{
+		struct ValuePos{
 			double distance;
 			color_type value;
-			bool operator<(const Point& other) const{
+			bool operator<(const ValuePos& other) const{
 				return distance < other.distance;
 			}
 		};
 		
 	private:
-		QPoint pos;
+		Point<> pos;
 
-		QPointF toAbsolute( QPointF img_pos, QPointF offset, double scale_x, double scale_y ) const{
-			return QPointF( img_pos.x()*scale_x, img_pos.y()*scale_y ) + offset;
-		}
-		QPointF toRelative( QPointF pos, QPointF offset, double scale_x, double scale_y ) const{
-			QPointF img_pos( pos - offset );
-			return QPointF( img_pos.x()/scale_x, img_pos.y()/scale_y );
-		}
+		PointF toAbsolute( PointF pos, PointF offset, PointF scale ) const{ return pos * scale + offset; }
+		PointF toRelative( PointF pos, PointF offset, PointF scale ) const{ return (pos - offset) / scale; }
 		
 	public:
-		PointRenderBase( int x, int y ) : pos( x, y ) { }
+		PointRenderBase( Point<> pos ) : pos(pos) { }
 		
-		void add_points( const Plane& img, QPointF offset, double scale_x, double scale_y ){
-			QRectF relative( offset, QSizeF( img.get_width()*scale_x, img.get_height()*scale_y ) );
-			QRectF window( pos - QPointF( 2*scale_x,2*scale_y ), QSizeF( 4*scale_x,4*scale_y ) );
-			QRectF usable = window.intersected(relative);
+		void add_points( const Plane& img, Point<double> offset, Point<double> scale ){
+			auto relative = toQRectF( offset, scale*img.getSize() );
+			auto window   = toQRectF( pos - scale*2, scale*4 );
+			auto usable   = window.intersected( relative );
 			
-			QPointF fstart = toRelative( usable.topLeft(), offset, scale_x, scale_y );
-			QPointF fend = toRelative( usable.bottomRight(), offset, scale_x, scale_y );
-			for( int iy=ceil(fstart.y()); iy<floor(fend.y()); ++iy )
-				for( int ix=ceil(fstart.x()); ix<floor(fend.x()); ++ix ){
-					QPointF distance = toAbsolute( QPointF( ix, iy ), offset, scale_x, scale_y ) - pos;
-					distance.setX( distance.x() / scale_x );
-					distance.setY( distance.y() / scale_y );
-					Point p{ sqrt(distance.x()*distance.x() + distance.y()*distance.y()), img.pixel( {ix,iy} ) };
+			auto fstart = toRelative( {usable.topLeft()    }, offset, scale );
+			auto fend   = toRelative( {usable.bottomRight()}, offset, scale );
+			for(    int iy=ceil(fstart.y); iy<floor(fend.y); ++iy )
+				for( int ix=ceil(fstart.x); ix<floor(fend.x); ++ix ){
+					auto distance = (toAbsolute( { ix, iy }, offset, scale ) - pos) / scale;
+					ValuePos p{ sqrt(distance.x*distance.x + distance.y*distance.y), img.pixel( {ix,iy} ) };
 					add_point( p );
 				}
 		}
 		
-		virtual void add_point( Point p ) = 0;
+		virtual void add_point( ValuePos p ) = 0;
 };
 
 class PointRender : public PointRenderBase{
 	protected:
-		vector<Point>& points;
+		vector<ValuePos>& points;
 		
 	public:
-		PointRender( int x, int y, vector<Point>& points ) : PointRenderBase( x, y ), points(points) {
+		PointRender( Point<int> pos, vector<ValuePos>& points ) : PointRenderBase( pos ), points(points) {
 			points.clear();
 		}
 		
@@ -108,7 +106,7 @@ class PointRender : public PointRenderBase{
 			sort( points.begin(), points.end() );
 			double sum = 0.0;
 			double weight = 0.0;
-			for( unsigned i=0; i<min(points.size(),(vector<Point>::size_type)16); ++i ){
+			for( unsigned i=0; i<min(points.size(),(vector<ValuePos>::size_type)16); ++i ){
 				double w = spline( points[i].distance );
 				sum += points[i].value * w;
 				weight += w;
@@ -116,7 +114,7 @@ class PointRender : public PointRenderBase{
 			return (weight!=0.0) ? round(sum / weight) : 0;
 		}
 		
-		virtual void add_point( Point p ) override{
+		virtual void add_point( ValuePos p ) override{
 			points.push_back( p );
 		}
 };
@@ -127,13 +125,13 @@ class PointRender2 : public PointRenderBase{
 		double weight = 0.0;
 		
 	public:
-		PointRender2( int x, int y ) : PointRenderBase( x, y ), sum(0), weight(0) { }
+		PointRender2( Point<int> pos ) : PointRenderBase( pos ), sum(0), weight(0) { }
 		
 		color_type value(){
 			return (weight!=0.0) ? color::truncate(sum / weight) : color::BLACK;
 		}
 		
-		virtual void add_point( Point p ) override{
+		virtual void add_point( ValuePos p ) override{
 			double w = spline( p.distance );
 			sum += p.value * w;
 			weight += w;
@@ -142,16 +140,16 @@ class PointRender2 : public PointRenderBase{
 
 class PointRender3 : public PointRenderBase{
 	protected:
-		Point p{ 99999, 0 };
+		ValuePos p{ 99999, 0 };
 		
 	public:
-		PointRender3( int x, int y ) : PointRenderBase( x, y ) { }
+		PointRender3( Point<int> pos ) : PointRenderBase( pos ) { }
 		
 		color_type value(){
 			return p.value;
 		}
 		
-		virtual void add_point( Point p ) override{
+		virtual void add_point( ValuePos p ) override{
 			this->p = min( this->p, p );
 		}
 		
@@ -167,11 +165,7 @@ bool isSubpixel( const AContainer& aligner, unsigned max_count ){
 }
 
 
-//#include <QMessageBox>
 ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
-	QTime t;
-	t.start();
-	
 	if( max_count > aligner.count() )
 		max_count = aligner.count();
 	
@@ -184,9 +178,10 @@ ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, APro
 	
 	//Fall back to AverageRender if no sub-pixel alignment
 	if( !isSubpixel( aligner, max_count ) ){
+		qDebug( "No subpixel, using AverageRender instead" );
 		ImageEx render = AverageRender().render( aligner );
-		if( scale_x != 1.0 && scale_y != 1.0 )
-			render.scale( (render.getSize() * Size<double>( scale_x, scale_y )).round() );
+		if( scale != PointF( 1.0, 1.0 ) )
+			render.scale( (render.getSize() * scale).round() );
 		return render;
 	}
 	
@@ -196,27 +191,24 @@ ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, APro
 	//Do iterator
 	auto full = aligner.size();
 	ImageEx img( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
-	img.create( { full.size.width()*scale_x, full.size.height()*scale_y } );
+	img.create( full.size*scale );
 	
 	//Fill alpha
-	Plane alpha( full.size.width()*scale_x, full.size.height()*scale_y );
+	Plane alpha( full.size*scale );
 	alpha.fill( color::WHITE );
 	img.alpha_plane() = alpha;
 	
 	if( watcher )
 		watcher->setTotal( planes_amount*1000 );
 	
-	vector<PointRenderBase::Point> points;
+	vector<PointRenderBase::ValuePos> points;
 	for( unsigned i=0; i<planes_amount; i++ ){
-		auto out = img[i];
+		auto& out = img[i];
 		
 		//Pre-calculate scales
-		vector<pair<double,double>> scales;
+		vector<PointF> scales;
 		for( unsigned j=0; j<max_count; ++j )
-			scales.emplace_back(
-					(double)aligner.image( j )[0].get_width() / aligner.image( j )[i].get_width() * scale_x
-				,	(double)aligner.image( j )[0].get_height() / aligner.image( j )[i].get_height() * scale_y
-				);
+			scales.emplace_back( aligner.image( j )[0].getSize().to<double>() / aligner.image( j )[i].getSize().to<double>() * scale );
 		
 		for( unsigned iy=0; iy<out.get_height(); ++iy ){
 			if( watcher )
@@ -224,20 +216,15 @@ ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, APro
 			
 			color_type* row = out.scan_line( iy );
 			for( unsigned ix=0; ix<out.get_width(); ++ix ){
-				PointRender2 p( ix + full.pos.x*scale_x, iy + full.pos.y*scale_y/*, points*/ );
+				PointRender2 p( PointF( ix, iy ) + full.pos*scale/*, points*/ );
 				
-				for( unsigned j=0; j<max_count; ++j ){
-					QPointF pos( aligner.pos( j ).x * scale_x, aligner.pos( j ).y * scale_y );
-					p.add_points( aligner.image( j )[i], pos, scales[j].first, scales[j].second );
-				}
+				for( unsigned j=0; j<max_count; ++j )
+					p.add_points( aligner.image( j )[i], aligner.pos( j ) * scale, scales[j] );
 				
 				row[ix] = p.value();
 			}
 		}
 	}
-	
-	//QMessageBox::information( nullptr, QString("Float Render time"), QString(to_string( t.elapsed() ).c_str()) );
-	qDebug( "float render rest took: %d", t.elapsed() );
 	
 	return img;
 }
