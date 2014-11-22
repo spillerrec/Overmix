@@ -38,7 +38,7 @@ void AContainer::scaleImage( unsigned index, Point<double> scale, ScalingFunctio
 	setPos( index, pos( index ) * scale );
 	
 	auto& img = imageRef( index );
-	if( img.getSize() == (img.getSize() * scale).round() )
+	if( img.getSize() == (img.getSize() * scale).round().to<unsigned>() )
 		return; //Don't attempt to scale, if it will not change the size
 	img.scale( scale, scaling );
 }

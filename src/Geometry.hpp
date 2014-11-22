@@ -48,7 +48,7 @@ struct Point{
 	bool operator==( const Point<T2>& p ) const{ return x == p.x && y == p.y; }
 	
 	template<typename T2>
-	bool operator!=( const Point<T2>& p ) const{ return x != p.x && y != p.y; }
+	bool operator!=( const Point<T2>& p ) const{ return x != p.x || y != p.y; }
 	
 	template<typename T2>
 	operator Point<T2>() const{ return Point<T2>( x, y ); }
