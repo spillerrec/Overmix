@@ -88,7 +88,7 @@ class AImageAligner : public AContainer{
 		
 	protected:
 		//Triggers when inserting
-		virtual Plane prepare_plane( const Plane& );
+		virtual Plane prepare_plane( const Plane& ) const;
 		virtual void on_add(){ }
 	
 	public:

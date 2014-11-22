@@ -21,10 +21,16 @@
 #include "AImageAligner.hpp"
 #include <utility>
 
+class ImageGetter;
+
 class RecursiveAligner : public AImageAligner{
 	protected:
-		std::pair<ImageEx,Point<double>> combine( const ImageEx& first, const ImageEx& second ) const;
-		ImageEx align( AProcessWatcher* watcher, unsigned begin, unsigned end );
+		std::pair<ImageGetter,Point<double>> combine( const ImageGetter& first, const ImageGetter& second ) const;
+		ImageGetter align( AProcessWatcher* watcher, unsigned begin, unsigned end );
+		
+		virtual Plane prepare_plane( const Plane& ) const override{ return Plane(); };
+		ImageGetter getGetter( unsigned index ) const;
+		
 	public:
 		RecursiveAligner( AContainer& container, AlignMethod method, double scale=1.0 )
 			:	AImageAligner( container, method, scale ){ }

@@ -30,7 +30,7 @@ AImageAligner::AImageAligner( AContainer& container, AlignMethod method, double 
 static Plane scalePlane( const Plane& p, Point<double> scale )
 	{ return p.scale_cubic( (p.getSize() * scale).round() ); }
 
-Plane AImageAligner::prepare_plane( const Plane& p ){
+Plane AImageAligner::prepare_plane( const Plane& p ) const{
 	if( use_edges ){
 		Plane edges = p.edge_sobel();
 		return ( scale != 1.0 ) ? scalePlane( edges, scales() ) : edges;

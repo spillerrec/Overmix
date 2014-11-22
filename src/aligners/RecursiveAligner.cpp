@@ -66,21 +66,43 @@ static Plane mergeVertical( const Plane& p1, const Plane& p2, int offset ){
 	return out;
 }
 
-pair<ImageEx,Point<double>> RecursiveAligner::combine( const ImageEx& first, const ImageEx& second ) const{
-	auto offset = findOffset( first, second ).distance;
+class ImageGetter{
+	private:
+		ImageEx render;
+		unsigned val;
+		
+	public:
+		ImageGetter( ImageEx&& img ) : render(img) { }
+		ImageGetter( unsigned index ) : val( index ) { }
+		
+		const Plane& plane( const AContainer& container ) const
+			{ return render.is_valid() ? render[0] : container.image(val)[0]; }
+		const Plane& alpha( const AContainer& container ) const
+			{ return render.is_valid() ? render.alpha_plane() : container.alpha(val); }
+};
+
+ImageGetter RecursiveAligner::getGetter( unsigned index ) const{
+	auto processed = AImageAligner::prepare_plane( image(index)[0] );
+	return processed ? ImageGetter( ImageEx( processed ) ) : ImageGetter( index );
+}
+
+pair<ImageGetter,Point<double>> RecursiveAligner::combine( const ImageGetter& first, const ImageGetter& second ) const{
+	auto offset = find_offset( first.plane(*this), second.plane(*this), first.alpha(*this), second.alpha(*this) ).distance;
 	
-	if( offset.x == 0 && !first.alpha_plane() && !second.alpha_plane() && first[0].get_width() == second[0].get_width() )
-		return { mergeVertical( first[0], second[0], offset.y ), offset };
+	if( offset.x == 0
+		&&	!first.alpha(*this) && !second.alpha(*this)
+		&&	first.plane(*this).get_width() == second.plane(*this).get_width() )
+		return { { ImageEx( mergeVertical( first.plane(*this), second.plane(*this), offset.y ) ) }, offset };
 	else{
 		//Wrap planes in ImageContainer
 		//TODO: Optimize this
 		ImageContainer container;
-		container.addImage( ImageEx( first ) ); //We are having copies here!!
-		container.addImage( ImageEx( second ) );
+		container.addImage( ImageEx(  first.plane(*this),  first.alpha(*this) ) ); //We are having copies here!!
+		container.addImage( ImageEx( second.plane(*this), second.alpha(*this) ) );
 		container.setPos( 1, offset );
 		
 		//Render it
-		return { AverageRender( false, true ).render( container ), offset };
+		return { { AverageRender( false, true ).render( container ) }, offset };
 	}
 }
 
@@ -89,16 +111,14 @@ static void addToWatcher( AProcessWatcher* watcher, int add ){
 		watcher->setCurrent( watcher->getCurrent() + add );
 }
 
-ImageEx RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsigned end ){
+ImageGetter RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsigned end ){
 	auto amount = end - begin;
 	switch( amount ){
 		case 0: qFatal( "No images to align!" );
 		case 1: addToWatcher( watcher, 1 );
-				return { image( begin )[0], alpha( begin) }; //Just return this one
+				return getGetter( begin ); //Just return this one
 		case 2: { //Optimization for two images
-				ImageEx first ( image( begin   )[0], alpha( begin   ) );
-				ImageEx second( image( begin+1 )[0], alpha( begin+1 ) );
-				auto offset = combine( first, second );
+				auto offset = combine( getGetter( begin ), getGetter( begin+1 ) );
 				setPos( begin+1, pos(begin) + offset.second );
 				addToWatcher( watcher, 2 );
 				return offset.first;
