@@ -67,18 +67,18 @@ void TestPlane::testPixel(){
 	//Set all pixels
 	for( unsigned iy=0; iy<height; iy++ )
 		for( unsigned ix=0; ix<width; ix++ )
-			p.pixel(ix,iy) = color::from_8bit( iy+ix % 256 );
+			p.setPixel( {ix,iy}, color::from8bit( iy+ix % 256 ) );
 	
 	//Read all pixels using Plane::pixel
 	for( unsigned iy=0; iy<height; iy++ )
 		for( unsigned ix=0; ix<width; ix++ )
-			QCOMPARE( p.pixel(ix,iy), color::from_8bit( iy+ix % 256 ) );
+			QCOMPARE( p.pixel({ix,iy}), color::from8bit( iy+ix % 256 ) );
 	
 	//Read all pixels using Plane::scan_line
 	for( unsigned iy=0; iy<height; iy++ ){
 		color_type *row = p.scan_line( iy );
 		for( unsigned ix=0; ix<width; ix++ )
-			QCOMPARE( row[ix], color::from_8bit( iy+ix % 256 ) );
+			QCOMPARE( row[ix], color::from8bit( iy+ix % 256 ) );
 	}
 }
 
@@ -91,7 +91,7 @@ void TestPlane::testMin_data(){
 	
 	QTest::newRow( "0,0" ) << 23u << 65u << 0u << 0u << (color_type)color::WHITE;
 	QTest::newRow( "0,0" ) << 23u << 65u << 22u << 64u <<(color_type)color::BLACK;
-	QTest::newRow( "0,0" ) << 23u << 65u << 22u << 2u << color::from_8bit( 25 );
+	QTest::newRow( "0,0" ) << 23u << 65u << 22u << 2u << color::from8bit( 25 );
 }
 void TestPlane::testMin(){
 	QFETCH(unsigned, width);
@@ -102,7 +102,7 @@ void TestPlane::testMin(){
 	
 	Plane p( width, height );
 	p.fill( color::MAX_VAL );
-	p.pixel( x, y ) = value;
+	p.setPixel( {x, y}, value );
 	
 	QCOMPARE( p.min_value(), value );
 }
@@ -116,7 +116,7 @@ void TestPlane::testMax_data(){
 	
 	QTest::newRow( "0,0" ) << 23u << 65u << 0u << 0u << (color_type)color::WHITE;
 	QTest::newRow( "0,0" ) << 23u << 65u << 22u << 64u <<(color_type)color::BLACK;
-	QTest::newRow( "0,0" ) << 23u << 65u << 22u << 2u << color::from_8bit( 25 );
+	QTest::newRow( "0,0" ) << 23u << 65u << 22u << 2u << color::from8bit( 25 );
 }
 void TestPlane::testMax(){
 	QFETCH(unsigned, width);
@@ -127,7 +127,7 @@ void TestPlane::testMax(){
 	
 	Plane p( width, height );
 	p.fill( color::MIN_VAL );
-	p.pixel( x, y ) = value;
+	p.setPixel( {x, y}, value );
 	
 	QCOMPARE( p.max_value(), value );
 }
@@ -162,6 +162,6 @@ void TestPlane::testFill(){
 	
 	for( unsigned iy=0; iy<height; iy++ )
 		for( unsigned ix=0; ix<width; ix++ )
-			QCOMPARE( p.pixel(ix,iy), value );
+			QCOMPARE( p.pixel({ix,iy}), value );
 }
 

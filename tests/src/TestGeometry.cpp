@@ -41,12 +41,12 @@ void TestGeometry::testSizeInit(){
 	QFETCH(unsigned, width);
 	QFETCH(unsigned, height);
 	
-	Size<unsigned> p1( width, height );
+	Size<unsigned>  p1( width, height );
 	Point<unsigned> p2( width, height );
-	QCOMPARE( p1.width, width );
-	QCOMPARE( p2.width, width );
-	QCOMPARE( p1.height, height );
-	QCOMPARE( p2.height, height );
+	QCOMPARE( p1.width(),  width );
+	QCOMPARE( p2.width(),  width );
+	QCOMPARE( p1.height(), height );
+	QCOMPARE( p2.height(), height );
 }
 
 

@@ -30,8 +30,8 @@ class TestGeometry : public QObject{
 		void testSizeInit_data(){ fillTestData(); }
 		void testSizeInit();
 		
-		void testAdd_data(){ fillTestData(); }
-		void testAdd();
+	//	void testAdd_data(){ fillTestData(); }
+	//	void testAdd();
 		
 };
 
