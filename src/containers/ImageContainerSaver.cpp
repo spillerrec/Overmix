@@ -20,6 +20,8 @@
 #include "ImageContainer.hpp"
 
 #include <cassert>
+#include <memory>
+
 
 #include <QDir>
 #include <QFileInfo>
@@ -66,12 +68,19 @@ QFuture<ImageEx> loadImages( QStringList& filepaths ){
 	return QtConcurrent::mapped( filepaths, load );
 }
 
+std::unique_ptr<wchar_t> getUnicodeFilepath( QString filename ){
+	std::unique_ptr<wchar_t> wpath( new wchar_t[filename.size()+1] );
+	auto pos = filename.toWCharArray( wpath.get() );
+	wpath.get()[pos] = 0;
+	return wpath;
+}
+
 QString ImageContainerSaver::load( ImageContainer& container, QString filename ){
 	//TODO: progress monitoring
 	xml_document doc;
 	auto folder = QFileInfo( filename ).dir();
 	
-	if( !doc.load_file( filename.toLocal8Bit().constData() ) ) //TODO: unicode
+	if( !doc.load_file( getUnicodeFilepath(filename).get() ) )
 		return QObject::tr( "The file did not contain valid XML" );
 	auto root = doc.child( NODE_ROOT );
 	
@@ -204,6 +213,5 @@ QString ImageContainerSaver::save( const ImageContainer& container, QString file
 		}
 	}
 	
-	//TODO: support unicode
-	return doc.save_file( filename.toLocal8Bit().constData() ) ? "" : QObject::tr("Could not save XML");
+	return doc.save_file( getUnicodeFilepath(filename).get() ) ? "" : QObject::tr("Could not save XML");
 }
