@@ -46,8 +46,7 @@ void Plane::binarize_dither(){
 	color_type threshold = (color::WHITE - color::BLACK) / 2 + color::BLACK;
 	
 	vector<double> errors( size.width()+1, 0 );
-	for( unsigned iy=0; iy<get_height(); ++iy ){
-		color_type* row = scan_line( iy );
+	for( auto row : *this )
 		for( unsigned ix=0; ix<get_width(); ++ix ){
 			double wanted = row[ix] + errors[ix];
 			color_type binary = wanted > threshold ? color::WHITE : color::BLACK;
@@ -59,17 +58,15 @@ void Plane::binarize_dither(){
 				errors[ix-1] += error / 2;
 			row[ix] = binary;
 		}
-	}
 }
 
 Plane Plane::dilate( int size ) const{
 	Plane blurred = blur_box( size, size );
 	Plane copy(blurred);
 	blurred.for_each_pixel( copy, [](const SimplePixel& pixel){
-			if( *pixel.row2 > color::WHITE*0.5 )
-				*pixel.row1 = *pixel.row1 < color::WHITE ? color::BLACK : color::WHITE;
-			else
-				*pixel.row1 = color::BLACK;
+			*pixel.row1 = 
+				( *pixel.row2 > color::WHITE*0.5 && *pixel.row1 >= color::WHITE )
+				?	color::WHITE : color::BLACK;
 		} );
 	return blurred;
 }

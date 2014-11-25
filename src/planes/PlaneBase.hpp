@@ -59,6 +59,7 @@ class PlaneBase{
 	//Pixel/Row query
 		const T& pixel( Point<unsigned> pos        ) const{ return data[ getOffset( pos.x, pos.y ) ];       }
 		void  setPixel( Point<unsigned> pos, T val )      {        data[ getOffset( pos.x, pos.y ) ] = val; }
+		const T* scan_line( unsigned y ) const { return data.data() + getOffset( 0, y ); } //TODO: !!!!!!!!
 		T* scan_line( unsigned y ) { return data.data() + getOffset( 0, y ); } //TODO: !!!!!!!!
 		const T* const_scan_line( unsigned y ) const{ return data.data() + getOffset( 0, y ); }
 		
@@ -86,6 +87,51 @@ class PlaneBase{
 					dest[ix] = source[ix-x];
 			}
 		}
+		
+		
+	//Iterators
+	public:
+		template<typename T2>
+		class RowIt{
+			private:
+				T2* row;
+				unsigned iy;
+				unsigned w;
+				
+			public:
+				RowIt( T2* row, unsigned iy, unsigned width ) : row(row), iy(iy), w(width) { }
+				
+				T2* line() const{ return row; }
+				unsigned y() const{ return iy; }
+				unsigned width() const{ return w; }
+				
+				T2& operator[]( int index ){ return row[index]; }
+				T2* begin() const{ return row;     }
+				T2* end()   const{ return row + w; }
+		};
+		
+		template<typename T1, typename T2>
+		class LineIt{
+			private:
+				T1* p;
+				unsigned iy;
+			
+			public:
+				LineIt( T1* p, unsigned iy ) : p(p), iy(iy) {}
+				
+				bool operator!=( const LineIt& other ) const { return iy != other.iy; }
+				LineIt& operator++() {
+					iy++;
+					return *this;
+				}
+				RowIt<T2> operator*() { return { p->scan_line( iy ), iy, p->get_width() }; }
+		};
+		
+	public:
+		LineIt<      PlaneBase<T>,       T> begin()       { return { this, 0             }; }
+		LineIt<const PlaneBase<T>, const T> begin() const { return { this, 0             }; }
+		LineIt<      PlaneBase<T>,       T> end()         { return { this, size.height() }; }
+		LineIt<const PlaneBase<T>, const T> end()   const { return { this, size.height() }; }
 };
 
 #endif

@@ -69,17 +69,11 @@ bool ImageEx::read_dump_plane( QIODevice &dev ){
 	if( !dump_plane.read( dev ) )
 		return false;
 		
-	unsigned width = dump_plane.getWidth();
-	unsigned height = dump_plane.getHeight();
-	planes.emplace_back( width, height );
-	auto& p = planes.back();
+	planes.emplace_back( dump_plane.getWidth(), dump_plane.getHeight() );
 	
 	//Convert data
-	for( unsigned iy=0; iy<height; ++iy ){
-		auto line_buf = dump_plane.constScanline( iy );
-		auto row = p.scan_line( iy );
-		process_dump_line( row, line_buf, width, dump_plane.getDepth() );
-	}
+	for( auto&& row : planes.back() )
+		process_dump_line( row.line(), dump_plane.constScanline( row.y() ), row.width(), dump_plane.getDepth() );
 	
 	return true;
 }
@@ -115,16 +109,15 @@ static DumpPlane toDumpPlane( const Plane& plane, unsigned depth ){
 	vector<uint8_t> data;
 	data.reserve( plane.get_width() * plane.get_height() * (multi_byte?2:1) );
 	
-	for( unsigned iy=0; iy<plane.get_height(); iy++ ){
-		auto row = plane.const_scan_line( iy );
-		for( unsigned ix=0; ix<plane.get_width(); ix++ )
+	for( auto row : plane )
+		for( auto pixel : row ){
 			if( multi_byte ){
-				uint16_t val = color::asDouble( row[ix] ) * power;
+				uint16_t val = color::asDouble( pixel ) * power;
 				data.push_back( val & 0x00FF );
 				data.push_back( (val & 0xFF00) >> 8 );
 			}
 			else
-				data.push_back( color::asDouble( row[ix] ) * power );
+				data.push_back( color::asDouble( pixel ) * power );
 	}
 	
 	return DumpPlane( plane.get_width(), plane.get_height(), depth, data );

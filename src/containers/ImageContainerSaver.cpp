@@ -59,19 +59,10 @@ static QString getString( const xml_node& node, const char* name )
 static QString baseDir( QDir dir, QString file )
 	{ return QDir::isRelativePath( file ) ? dir.absolutePath() + "/" + file : file; }
 
-static ImageEx load( QString filepath ){
-	ImageEx img;
-	return img.read_file( filepath ) ? img : ImageEx();
-}
-
-QFuture<ImageEx> loadImages( QStringList& filepaths ){
-	return QtConcurrent::mapped( filepaths, load );
-}
-
 std::unique_ptr<wchar_t> getUnicodeFilepath( QString filename ){
 	std::unique_ptr<wchar_t> wpath( new wchar_t[filename.size()+1] );
-	auto pos = filename.toWCharArray( wpath.get() );
-	wpath.get()[pos] = 0;
+	auto end = filename.toWCharArray( wpath.get() );
+	wpath.get()[end] = 0;
 	return wpath;
 }
 
@@ -90,7 +81,7 @@ QString ImageContainerSaver::load( ImageContainer& container, QString filename )
 		mask_paths << baseDir( folder, QString::fromUtf8( mask.text().get() ) );
 		
 	std::vector<int> mask_ids;
-	auto mask_future = loadImages( mask_paths );
+	auto mask_future = QtConcurrent::mapped( mask_paths, ImageEx::fromFile );
 	for( int i=0; i<mask_paths.size(); i++ ){
 		auto img = mask_future.resultAt( i );
 		if( img.is_valid() )
@@ -105,7 +96,7 @@ QString ImageContainerSaver::load( ImageContainer& container, QString filename )
 	for( auto group : root.child( NODE_GROUPS ).children( NODE_GROUP ) )
 		for( auto item : group.children( NODE_ITEM ) )
 			file_paths << baseDir( folder, getString( item, NODE_ITEM_PATH ) );
-	auto file_future = loadImages( file_paths );
+	auto file_future = QtConcurrent::mapped( file_paths, ImageEx::fromFile );
 	
 	int files_added = 0;
 	for( auto group : root.child( NODE_GROUPS ).children( NODE_GROUP ) ){
