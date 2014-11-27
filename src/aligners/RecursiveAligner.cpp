@@ -39,8 +39,8 @@ static void mergeLine( Plane& plane_out, const Plane& plane_in1, const Plane& pl
 }
 
 static Plane mergeVertical( const Plane& p1, const Plane& p2, int offset ){
-	auto top    = offset < 0 ? p2 : p1;
-	auto bottom = offset < 0 ? p1 : p2;
+	auto& top    = offset < 0 ? p2 : p1;
+	auto& bottom = offset < 0 ? p1 : p2;
 	offset = abs(offset);
 	unsigned height = max( top.get_height(), bottom.get_height() + offset );
 	
@@ -68,22 +68,22 @@ static Plane mergeVertical( const Plane& p1, const Plane& p2, int offset ){
 
 class ImageGetter{
 	private:
-		ImageEx render;
+		Plane p, a;
 		unsigned val;
 		
 	public:
-		ImageGetter( ImageEx&& img ) : render(img) { }
+		ImageGetter( Plane&& p, Plane alpha ) : p(p), a(alpha) { }
 		ImageGetter( unsigned index ) : val( index ) { }
 		
 		const Plane& plane( const AContainer& container ) const
-			{ return render.is_valid() ? render[0] : container.image(val)[0]; }
+			{ return p ? p : container.image(val)[0]; }
 		const Plane& alpha( const AContainer& container ) const
-			{ return render.is_valid() ? render.alpha_plane() : container.alpha(val); }
+			{ return a ? a : container.alpha(val); }
 };
 
 ImageGetter RecursiveAligner::getGetter( unsigned index ) const{
 	auto processed = AImageAligner::prepare_plane( image(index)[0] );
-	return processed ? ImageGetter( ImageEx( processed ) ) : ImageGetter( index );
+	return processed ? ImageGetter( std::move(processed), alpha(index) ) : ImageGetter( index );
 }
 
 pair<ImageGetter,Point<double>> RecursiveAligner::combine( const ImageGetter& first, const ImageGetter& second ) const{
@@ -92,7 +92,7 @@ pair<ImageGetter,Point<double>> RecursiveAligner::combine( const ImageGetter& fi
 	if( offset.x == 0
 		&&	!first.alpha(*this) && !second.alpha(*this)
 		&&	first.plane(*this).get_width() == second.plane(*this).get_width() )
-		return { { ImageEx( mergeVertical( first.plane(*this), second.plane(*this), offset.y ) ) }, offset };
+		return { { mergeVertical( first.plane(*this), second.plane(*this), offset.y ) }, offset };
 	else{
 		//Wrap planes in ImageContainer
 		//TODO: Optimize this
@@ -102,7 +102,8 @@ pair<ImageGetter,Point<double>> RecursiveAligner::combine( const ImageGetter& fi
 		container.setPos( 1, offset );
 		
 		//Render it
-		return { { AverageRender( false, true ).render( container ) }, offset };
+		auto img = AverageRender( false, true ).render( container );
+		return { { std::move(img[0]), img.alpha_plane() }, offset };
 	}
 }
 
