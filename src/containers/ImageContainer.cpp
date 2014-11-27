@@ -20,15 +20,20 @@
 
 #include "../utils/utils.hpp"
 
+void ImageContainer::prepareAdds( unsigned amount ){
+	if( groups.size() == 0 )
+		groups.emplace_back( "Auto group", masks ); //TODO: do not repeat this!
+	auto& items = groups.back().items;
+	items.reserve( items.size() + amount );
+}
+
 ImageItem& ImageContainer::addImage( ImageEx&& img, int mask, int group, QString filepath ){
 	if( groups.size() == 0 )
 		groups.emplace_back( "Auto group", masks );
 	
-	ImageItem item{ filepath, std::move(img) };
-	item.setSharedMask( mask );
-	
-	unsigned index = ( group >= 0 ) ? group : groups.size()-1;
-	groups[index].items.emplace_back( item );
+	auto index = ( group >= 0 ) ? group : groups.size()-1;
+	groups[index].items.emplace_back( filepath, std::move(img) );
+	groups[index].items.back().setSharedMask( mask );
 	indexes.emplace_back( index, groups[index].count()-1 );
 	
 	setUnaligned();

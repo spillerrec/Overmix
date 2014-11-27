@@ -70,6 +70,7 @@ class ImageContainer : public AContainer{
 		void setUnaligned(){ aligned = false; }
 		void setAligned(){ aligned = true; }
 		
+		void prepareAdds( unsigned amount );
 		ImageItem& addImage( ImageEx&& img, int mask=-1, int group=-1, QString filepath="" );
 		
 		int addMask( Plane&& mask ){

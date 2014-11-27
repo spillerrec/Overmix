@@ -101,7 +101,9 @@ class ImageEx{
 		bool read_file( QString path );
 		static ImageEx fromFile( QString path ){
 			ImageEx temp;
-			return temp.read_file( path ) ? temp : ImageEx();
+			if( !temp.read_file( path ) )
+				temp.planes.clear();
+			return temp;
 		}
 		
 		bool saveDump( QIODevice& dev, unsigned depth, bool compression ) const;

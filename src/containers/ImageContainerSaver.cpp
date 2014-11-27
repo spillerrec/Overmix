@@ -101,6 +101,7 @@ QString ImageContainerSaver::load( ImageContainer& container, QString filename )
 	int files_added = 0;
 	for( auto group : root.child( NODE_GROUPS ).children( NODE_GROUP ) ){
 		container.addGroup( getStringAttr( group, ATTR_GROUP_NAME ) );
+		container.prepareAdds( file_paths.count() ); //TODO: find the amount of items in this group
 		
 		for( auto item : group.children( NODE_ITEM ) ){
 			auto file = baseDir( folder, getString( item, NODE_ITEM_PATH ) );
