@@ -72,7 +72,7 @@ class ImageGetter{
 		unsigned val;
 		
 	public:
-		ImageGetter( Plane&& p, Plane alpha ) : p(p), a(alpha) { }
+		ImageGetter( Plane&& p, Plane&& alpha ) : p(std::move(p)), a(std::move(alpha)) {  }
 		ImageGetter( unsigned index ) : val( index ) { }
 		
 		const Plane& plane( const AContainer& container ) const
@@ -83,16 +83,15 @@ class ImageGetter{
 
 ImageGetter RecursiveAligner::getGetter( unsigned index ) const{
 	auto processed = AImageAligner::prepare_plane( image(index)[0] );
-	return processed ? ImageGetter( std::move(processed), alpha(index) ) : ImageGetter( index );
+	return processed ? ImageGetter( std::move(processed), Plane(alpha(index)) ) : ImageGetter( index );
 }
-
 pair<ImageGetter,Point<double>> RecursiveAligner::combine( const ImageGetter& first, const ImageGetter& second ) const{
 	auto offset = find_offset( first.plane(*this), second.plane(*this), first.alpha(*this), second.alpha(*this) ).distance;
 	
 	if( offset.x == 0
 		&&	!first.alpha(*this) && !second.alpha(*this)
 		&&	first.plane(*this).get_width() == second.plane(*this).get_width() )
-		return { { mergeVertical( first.plane(*this), second.plane(*this), offset.y ) }, offset };
+		return { { mergeVertical( first.plane(*this), second.plane(*this), offset.y ), Plane() }, offset };
 	else{
 		//Wrap planes in ImageContainer
 		//TODO: Optimize this
@@ -103,7 +102,7 @@ pair<ImageGetter,Point<double>> RecursiveAligner::combine( const ImageGetter& fi
 		
 		//Render it
 		auto img = AverageRender( false, true ).render( container );
-		return { { std::move(img[0]), img.alpha_plane() }, offset };
+		return { { std::move(img[0]), std::move(img.alpha_plane()) }, offset };
 	}
 }
 
