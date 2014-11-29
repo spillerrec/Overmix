@@ -64,8 +64,6 @@ class ImageEx{
 		unsigned size() const{ return planes.size(); }
 		void to_grayscale();
 		
-		bool create( Point<unsigned> size, bool alpha=false );
-		
 		
 		template<typename... Args>
 		void apply( Plane (Plane::*func)( Args... ) const, Args... args ){

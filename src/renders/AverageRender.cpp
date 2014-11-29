@@ -62,15 +62,13 @@ class SumPlane {
 			//TODO: make multi-threaded //NOTE: haven't been working out too well...
 			for( unsigned iy=0; iy<p.get_height(); iy++ ){
 				//Add to sum
-				auto in = p.const_scan_line( iy );
-				auto out = sum.scan_line( iy + pos.y );
-				for( unsigned ix=0; ix<p.get_width(); ix++ )
-					out[ix+pos.x] += in[ix];
-					
-				//Add a full amount to amount
-				auto a = amount.scan_line( iy + pos.y );
-				for( unsigned ix=0; ix<p.get_width(); ix++ )
-					a[ix+pos.x] += color::WHITE;
+				auto in = p.scan_line( iy );
+				auto out =  sum.scan_line( iy + pos.y ) + pos.x;
+				auto a = amount.scan_line( iy + pos.y ) + pos.x;
+				for( unsigned ix=0; ix<p.get_width(); ix++ ){
+					out[ix] += in[ix];
+					a[ix] += color::WHITE;
+				}
 			}
 		}
 		
@@ -167,7 +165,6 @@ ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AP
 		}
 	
 	ImageEx img( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
-	img.create( { 1, 1 } ); //TODO: set as initialized
 	
 	AlphaScales masks;
 	for( unsigned c=0; c<planes_amount; c++ ){
@@ -199,7 +196,7 @@ ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AP
 				sum.addPlane( plane(), pos );
 		}
 		
-		img[c] = sum.average();
+		img.addPlane( sum.average() );
 		
 		if( c == 0 && use_plane_alpha )
 			img.alpha_plane() = sum.alpha();

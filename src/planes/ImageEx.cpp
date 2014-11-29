@@ -66,14 +66,17 @@ void process_dump_line( color_type *out, const uint8_t* in, unsigned width, uint
 
 bool ImageEx::read_dump_plane( QIODevice &dev ){
 	DumpPlane dump_plane;
-	if( !dump_plane.read( dev ) )
+	if( !dump_plane.readHeader( dev ) )
 		return false;
-		
-	planes.emplace_back( dump_plane.getWidth(), dump_plane.getHeight() );
+	
+	planes.emplace_back( Size<unsigned>{ dump_plane.getWidth(), dump_plane.getHeight() } );
+	//TODO: add assertion that width == line_width !!
+	dump_plane.readData( dev, planes.back().scan_line(0), 15 ); //TODO: constant with bit depth
+	
 	
 	//Convert data
-	for( auto&& row : planes.back() )
-		process_dump_line( row.line(), dump_plane.constScanline( row.y() ), row.width(), dump_plane.getDepth() );
+//	for( auto&& row : planes.back() )
+//		process_dump_line( row.line(), dump_plane.constScanline( row.y() ), row.width(), dump_plane.getDepth() );
 	
 	return true;
 }
@@ -81,6 +84,8 @@ bool ImageEx::read_dump_plane( QIODevice &dev ){
 bool ImageEx::from_dump( QIODevice& dev ){
 	planes.reserve( 3 );
 	while( read_dump_plane( dev ) ); //Load all planes
+//	planes.reserve( 1 ); //For benchmarking other stuff
+//	read_dump_plane( dev );
 	
 	//Use last plane as Alpha
 	auto amount = planes.size();
@@ -261,28 +266,6 @@ bool ImageEx::read_file( QString path ){
 //		return from_png( path );
 	
 	return from_qimage( path );
-}
-
-bool ImageEx::create( Point<unsigned> size, bool use_alpha ){
-	if( is_valid() )
-		return false;
-	
-	unsigned amount;
-	switch( type ){
-		case GRAY: amount = 1; break;
-		case RGB:
-		case YUV: amount = 3; break;
-		
-		default: return false;
-	}
-	
-	for( unsigned i=0; i<amount; i++ )
-		planes.emplace_back( size );
-	
-	if( use_alpha )
-		alpha = Plane( size );
-	
-	return true;
 }
 
 QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ){

@@ -191,7 +191,6 @@ ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, APro
 	//Do iterator
 	auto full = aligner.size();
 	ImageEx img( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
-	img.create( full.size*scale );
 	
 	//Fill alpha
 	Plane alpha( full.size*scale );
@@ -203,7 +202,7 @@ ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, APro
 	
 	vector<PointRenderBase::ValuePos> points;
 	for( unsigned i=0; i<planes_amount; i++ ){
-		auto& out = img[i];
+		Plane out( full.size*scale );
 		
 		//Pre-calculate scales
 		vector<PointF> scales;
@@ -224,6 +223,8 @@ ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, APro
 				row[ix] = p.value();
 			}
 		}
+		
+		img.addPlane( std::move( out ) );
 	}
 	
 	return img;

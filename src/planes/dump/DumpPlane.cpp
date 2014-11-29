@@ -21,16 +21,17 @@
 
 using namespace std;
 
-bool DumpPlane::read( QIODevice &dev ){
+bool DumpPlane::readHeader( QIODevice &dev ){
 	width  = read_32( dev );
 	height = read_32( dev );
 	depth  = read_16( dev );
 	config = read_16( dev );
 //	cout << "settings: " << width << "x" << height << "@" << depth << "p : " << config << endl;
-	
-	if( width == 0 || height == 0 || depth > 32 )
-		return false;
-	
+
+	return width != 0 && height != 0 && depth <= 32;
+}
+
+bool DumpPlane::readRaw( QIODevice &dev, uint8_t* data ){
 	if( config & 0x1 ){
 		uint32_t lenght = read_32( dev );
 		if( lenght == 0 )
@@ -40,8 +41,75 @@ bool DumpPlane::read( QIODevice &dev ){
 		dev.read( buf.data(), lenght );
 		
 		uLongf uncompressed = size();
-		data.resize( uncompressed );
+		if( uncompress( (Bytef*)data, &uncompressed, (Bytef*)buf.data(), lenght ) != Z_OK )
+			return false;
+	}
+	else if( config & 0x2 ){
+		//Initialize decoder
+		lzma_stream strm = LZMA_STREAM_INIT;
+		if( lzma_stream_decoder( &strm, UINT64_MAX, 0 ) != LZMA_OK )
+			return false;
 		
+		//Read data
+		uint32_t lenght = read_32( dev );
+		if( lenght == 0 )
+			return false;
+		
+		vector<char> buf( lenght );
+		dev.read( buf.data(), lenght );
+		
+		//Decompress
+		strm.next_in = (uint8_t*)buf.data();
+		strm.avail_in = buf.size();
+		
+		strm.next_out = data;
+		strm.avail_out = size();
+		
+		if( lzma_code( &strm, LZMA_FINISH ) != LZMA_STREAM_END ){
+			cout << "Shit, didn't finish decompressing!" << endl;
+			return false;
+		}
+		
+		lzma_end(&strm);
+	}
+	else
+		return dev.read( (char*)data, size() ) == size();
+	
+	return true;
+}
+
+bool DumpPlane::readData( QIODevice &dev, uint16_t* data, int wanted_depth ){
+	int transform = 1 << (wanted_depth - depth); //TODO: avoid negative??
+	
+	if( depth > 8 ){
+		if( !readRaw( dev, reinterpret_cast<uint8_t*>(data) ) ) return false;
+		for( unsigned i=0; i<width*height; ++i )
+			data[i] *= transform;
+	}
+	else{
+		std::vector<uint8_t> buf( size() );
+		if( !readRaw( dev, buf.data() ) ) return false;
+		for( int i=0; i<size(); ++i )
+			data[i] = uint16_t(buf[i]) * transform;
+	}
+	
+	return true;
+}
+
+bool DumpPlane::read( QIODevice &dev ){
+	if( !readHeader( dev ) )
+		return false;
+	
+	data.resize( size() );
+	if( config & 0x1 ){
+		uint32_t lenght = read_32( dev );
+		if( lenght == 0 )
+			return false;
+		
+		vector<char> buf( lenght );
+		dev.read( buf.data(), lenght );
+		
+		uLongf uncompressed = size();
 		if( uncompress( (Bytef*)data.data(), &uncompressed, (Bytef*)buf.data(), lenght ) != Z_OK )
 			return false;
 	}
@@ -59,8 +127,6 @@ bool DumpPlane::read( QIODevice &dev ){
 		vector<char> buf( lenght );
 		dev.read( buf.data(), lenght );
 		
-		data.resize( size() );
-		
 		//Decompress
 		strm.next_in = (uint8_t*)buf.data();
 		strm.avail_in = buf.size();
@@ -75,10 +141,8 @@ bool DumpPlane::read( QIODevice &dev ){
 		
 		lzma_end(&strm);
 	}
-	else{
-		data.resize( size() );
+	else
 		return dev.read( (char*)data.data(), size() ) == size();
-	}
 	
 	return true;
 }

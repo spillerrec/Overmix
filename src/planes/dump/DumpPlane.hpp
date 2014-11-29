@@ -60,6 +60,10 @@ struct DumpPlane{
 		bool write( QIODevice &dev, Compression compression=LZMA );
 		int32_t size() const{ return width*height*((depth + 7) / 8); }
 		
+		bool readHeader( QIODevice &dev );
+		bool readRaw( QIODevice &dev, uint8_t* data );
+		bool readData( QIODevice &dev, uint16_t* data, int wanted_depth=16 );
+		
 		uint16_t read_16( QIODevice &dev ){
 			char byte1, byte2;
 			if( !dev.getChar( &byte1 ) )
