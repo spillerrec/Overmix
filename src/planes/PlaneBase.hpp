@@ -31,7 +31,26 @@ class PlaneBase{
 		Point<unsigned> offset{ 0, 0 };
 		Size<unsigned> size{ 0, 0 };
 		unsigned line_width{ 0 };
-		std::vector<T> data;
+		T* data{ nullptr };
+		
+		unsigned dataSize() const{ return size.height() * line_width; }
+		void clearContainer(){
+			delete[] data;
+			size = realsize = { 0,0 };
+		}
+		void copySettings( const PlaneBase<T>& other ){
+			realsize = other.realsize;
+			offset = other.offset;
+			size = other.size;
+			line_width = other.line_width;
+		}
+		void copyAndMove( PlaneBase<T>& other ){
+			//NOTICE: delete anything in 'data' first
+			copySettings( other );
+			data = other.data;
+			other.data = nullptr;
+			other.clearContainer();
+		}
 		
 		unsigned getOffset( unsigned x, unsigned y ) const
 			{ return x + offset.x + (y + offset.y) * line_width; }
@@ -39,13 +58,47 @@ class PlaneBase{
 	public:
 		PlaneBase() { }
 		PlaneBase( Size<unsigned> size )
-			:	realsize(size), size(size), line_width( size.width() ), data( size.height() * line_width ) { }
-		PlaneBase( unsigned w, unsigned h )
-			:	PlaneBase( Size<unsigned>( w, h ) ) { }
+			:	realsize(size), size(size), line_width( size.width() ), data( new T[dataSize()] ) { }
+		PlaneBase( unsigned w, unsigned h ) : PlaneBase( Size<unsigned>( w, h ) ) { }
+		
+	//Memory handling
+		PlaneBase( const PlaneBase<T>& other ){
+			copySettings( other );
+			if( other.data ){
+				data = new T[dataSize()];
+				std::copy( other.data, other.data + dataSize(), data );
+			}
+		}
+		PlaneBase( PlaneBase<T>&& other ){ copyAndMove( other ); }
+		~PlaneBase() { delete[] data; }
+		
+		PlaneBase<T>& operator=( const PlaneBase<T>& other ){
+			if( this != &other ){
+				if( other.data ){
+					//Try to reuse the old allocation if possible
+					if( dataSize() != other.dataSize() || data == nullptr ){
+						delete[] data;
+						data = new T[other.dataSize()];
+					}
+					copySettings( other );
+					std::copy( other.data, other.data + dataSize(), data );
+				}
+				else
+					clearContainer();
+			}
+			return *this;
+		}
+		PlaneBase<T>& operator=( PlaneBase<T>&& other ){
+			if( this != &other ){
+				delete[] data;
+				copyAndMove( other );
+			}
+			return *this;
+		}
 		
 	//Status
 		operator bool() const{ return valid(); }
-		bool valid() const{ return data.size() != 0; }
+		bool valid() const{ return data != nullptr || size.x != 0 || size.y != 0; }
 		unsigned get_height() const{ return size.height(); }
 		unsigned get_width() const{ return size.width(); }
 		unsigned get_line_width() const{ return line_width; }
@@ -59,9 +112,9 @@ class PlaneBase{
 	//Pixel/Row query
 		const T& pixel( Point<unsigned> pos        ) const{ return data[ getOffset( pos.x, pos.y ) ];       }
 		void  setPixel( Point<unsigned> pos, T val )      {        data[ getOffset( pos.x, pos.y ) ] = val; }
-		const T* scan_line( unsigned y ) const { return data.data() + getOffset( 0, y ); } //TODO: !!!!!!!!
-		T* scan_line( unsigned y ) { return data.data() + getOffset( 0, y ); } //TODO: !!!!!!!!
-		const T* const_scan_line( unsigned y ) const{ return data.data() + getOffset( 0, y ); }
+		const T*       scan_line( unsigned y ) const{ return data + getOffset( 0, y ); } //TODO: !!!!!!!!
+		      T*       scan_line( unsigned y )      { return data + getOffset( 0, y ); } //TODO: !!!!!!!!
+		const T* const_scan_line( unsigned y ) const{ return data + getOffset( 0, y ); }
 		
 	//Resizing
 		void crop( Point<unsigned> pos, Size<unsigned> newsize ){
@@ -73,8 +126,8 @@ class PlaneBase{
 		
 	//Drawing methods
 		void fill( T value ){
-			for( auto& x : data )
-				x = value;
+			for( unsigned i=0; i<dataSize(); ++i )
+				data[i] = value;
 		}
 		void copy( int x, int y, const PlaneBase& from ){
 			//TODO: check ranges

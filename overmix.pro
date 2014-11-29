@@ -11,8 +11,6 @@ unix{
 
 include(overmix.pri)
 
-QMAKE_CXXFLAGS_DEBUG += -O2
-
 # Interface
 FORMS   += src/gui/mainwindow.ui
 HEADERS += src/gui/mainwindow.hpp src/gui/ImagesModel.hpp src/gui/FullscreenViewer.hpp
@@ -40,6 +38,10 @@ SOURCES += src/gui/viewer/colorManager.cpp \
 win32{
 	DEFINES += PORTABLE
 }
+
+# Increase optimization level for release builds
+QMAKE_CXXFLAGS_RELEASE -= -O2
+QMAKE_CXXFLAGS_RELEASE += -O3
 
 # Use link-time optimization in release builds
 # Release:QMAKE_CXXFLAGS += -flto

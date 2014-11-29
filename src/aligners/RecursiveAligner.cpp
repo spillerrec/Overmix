@@ -78,7 +78,7 @@ class ImageGetter{
 		const Plane& plane( const AContainer& container ) const
 			{ return p ? p : container.image(val)[0]; }
 		const Plane& alpha( const AContainer& container ) const
-			{ return a ? a : container.alpha(val); }
+			{ return p ? a : container.alpha(val); }
 };
 
 ImageGetter RecursiveAligner::getGetter( unsigned index ) const{
@@ -91,7 +91,7 @@ pair<ImageGetter,Point<double>> RecursiveAligner::combine( const ImageGetter& fi
 	if( offset.x == 0
 		&&	!first.alpha(*this) && !second.alpha(*this)
 		&&	first.plane(*this).get_width() == second.plane(*this).get_width() )
-		return { { mergeVertical( first.plane(*this), second.plane(*this), offset.y ), Plane() }, offset };
+		return { ImageGetter{ mergeVertical( first.plane(*this), second.plane(*this), offset.y ), Plane() }, offset };
 	else{
 		//Wrap planes in ImageContainer
 		//TODO: Optimize this
@@ -121,7 +121,7 @@ ImageGetter RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, u
 				auto offset = combine( getGetter( begin ), getGetter( begin+1 ) );
 				setPos( begin+1, pos(begin) + offset.second );
 				addToWatcher( watcher, 2 );
-				return offset.first;
+				return std::move( offset.first );
 			}
 		default: { //More than two images
 				//Solve sub-areas recursively
@@ -141,7 +141,7 @@ ImageGetter RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, u
 				for( unsigned i=middle; i<end; i++ )
 					setPos( i, pos( i ) + corner1 + offset.second - corner2 );
 				
-				return offset.first; //Return the combined image
+				return std::move( offset.first ); //Return the combined image
 			}
 	}
 }

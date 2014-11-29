@@ -19,7 +19,9 @@
 #include "../src/containers/ImageContainerSaver.hpp"
 
 #include "../src/aligners/RecursiveAligner.hpp"
+#include "../src/aligners/AverageAligner.hpp"
 #include "../src/renders/AverageRender.hpp"
+#include "../src/renders/FloatRender.hpp"
 
 #include <QCoreApplication>
 #include <QFileInfo>
@@ -49,14 +51,23 @@ int main( int argc, char *argv[] ){
 	
 	qDebug() << "Loading took: " << t.restart();
 	
+	//*
 	RecursiveAligner aligner( images, AImageAligner::ALIGN_VER, 1 );
+	//AverageAligner aligner( images, AImageAligner::ALIGN_VER, 1 );
 	aligner.addImages();
+	qDebug() << "Preparing alignment took: " << t.restart();
+	//return 0;
 	aligner.align();
 	qDebug() << "Aligning took: " << t.restart();
+	//return 0;
 	
-	AverageRender().render( images );
+	auto img( AverageRender().render( images ) );
+	//auto img( FloatRender().render( images ) );
 	
 	qDebug() << "Rendering took: " << t.restart();
+	
+	img.to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_GAMMA | ImageEx::SETTING_DITHER );
+	qDebug() << "to_qimage() took: " << t.restart();
 	
 	qDebug() << "Done";
 	

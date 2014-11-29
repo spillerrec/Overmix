@@ -70,18 +70,18 @@ enum class ScalingFunction{
 class Plane : public PlaneBase<color_type>{
 	public:
 		Plane() { }
-		Plane( Size<unsigned> size) : PlaneBase( size ) { }
+		Plane( Size<unsigned> size ) : PlaneBase( size ) { }
 		Plane( unsigned w, unsigned h ) : PlaneBase( w, h ) { }
 		
 		Plane( const Plane& p ) : PlaneBase( p ) { }
-		Plane( Plane&& p ) : PlaneBase( p ) { }
+		Plane( Plane&& p ) : PlaneBase( std::move(p) ) { }
 		
 		Plane& operator=( const Plane& p ){
 			*(PlaneBase<color_type>*)this = p;
 			return *this;
 		}
 		Plane& operator=( Plane&& p ){
-			*(PlaneBase<color_type>*)this = p;
+			*(PlaneBase<color_type>*)this = std::move(p);
 			return *this;
 		}
 		

@@ -37,7 +37,7 @@ class ImageItem{
 		
 		ImageItem() { }
 		ImageItem( QString filename, ImageEx&& img )
-			:	img(img), filename(filename) { }
+			:	img(std::move(img)), filename(filename) { }
 		
 		const ImageEx& image() const{ return img; }
 		ImageEx& imageRef(){ return img; }
