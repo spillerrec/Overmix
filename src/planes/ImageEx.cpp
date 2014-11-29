@@ -420,7 +420,7 @@ MergeResult ImageEx::best_round( const ImageEx& img, int level, double range_x, 
 			img[0], alpha_plane(), img.alpha_plane(), level
 		,	((int)1 - (int)img.get_width()) * range_x, ((int)get_width() - 1) * range_x
 		,	((int)1 - (int)img.get_height()) * range_y, ((int)get_height() - 1) * range_y
-		,	cache
+		,	cache, true
 		);
 }
 

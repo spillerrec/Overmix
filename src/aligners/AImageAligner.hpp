@@ -60,6 +60,7 @@ class AImageAligner : public AContainer{
 		bool use_edges{ false };
 		double movement{ 0.75 };
 		bool raw;
+		bool fast_diffing{ true };
 		AContainer& container;
 		
 	public:

@@ -43,34 +43,45 @@ struct Para{
 	Para( const color_type* c1, const color_type *c2, unsigned width, unsigned stride
 		,	const color_type* a1=nullptr, const color_type *a2=nullptr )
 		:	c1( c1 ), c2( c2 ), a1( a1 ), a2( a2 ), width( width ), stride( stride ) { }
+	
+	template<typename T>
+	precision_color_type sum( T func ) const{
+		//Calculates the sum of func applied on each i, but optimized for stride==1
+		precision_color_type sum = 0;
+		if( stride == 1 ) for( unsigned i=0; i<width; ++i       ) sum += func( i );
+		else              for( unsigned i=0; i<width; i+=stride ) sum += func( i );
+		return sum;
+	}
 };
 static uint64_t diff_alpha_line( Para p ){
-	uint64_t sum = 0;
+	auto abs = [&](unsigned i){ return std::abs( p.c1[i] - p.c2[i] ); };
+	
 	const auto epsilon = 10 / 255.0 * color::WHITE; //TODO: Ad-hoc constant, and perhaps a little high...
+	auto checked = [&](color_type val){ return val > epsilon ? val : 0; };
 	
 	if( !p.a1 && !p.a2 )
-		for( auto end=p.c1+p.width; p.c1<end; p.c1+=p.stride, p.c2+=p.stride ){
-			auto diff = abs( *p.c1 - *p.c2 );
-			if( diff > epsilon )
-				sum += diff;
-		}
+		return p.sum( [&](unsigned i){ return checked( abs( i ) ); } );
 	else if( p.a1 && p.a2 )
-		for( auto end=p.c1+p.width; p.c1<end; p.c1+=p.stride, p.c2+=p.stride, p.a1+=p.stride, p.a2+=p.stride ){
-			auto diff = abs( *p.c1 - *p.c2 ) * color::asDouble( *p.a1 ) * color::asDouble( *p.a2 );
-			if( diff > epsilon )
-				sum += diff;
-		}
+		return p.sum( [&](unsigned i){
+			return checked( abs( i ) * color::asDouble( p.a1[i] ) * color::asDouble( p.a2[i] ) ); } );
 	else{
 		//We have exactly one alpha plane
 		auto a = p.a1 ? p.a1 : p.a2;
-		for( auto end=p.c1+p.width; p.c1<end; p.c1+=p.stride, p.c2+=p.stride, a+=p.stride ){
-			auto diff = abs( *p.c1 - *p.c2 ) * color::asDouble( *a );
-			if( diff > epsilon )
-				sum += diff;
-		}
+		return p.sum( [&](unsigned i){ return checked( abs( i ) * color::asDouble( a[i] ) ); } );
 	}
+}
+static uint64_t fast_diff_alpha_line( Para p ){
+	auto abs = [&](unsigned i){ return std::abs( p.c1[i] - p.c2[i] ); };
 	
-	return sum;
+	if( !p.a1 && !p.a2 )
+		return p.sum( abs );
+	else if( p.a1 && p.a2 )
+		return p.sum( [&](unsigned i){ return abs(i) * color::asDouble( p.a1[i] ) * color::asDouble( p.a2[i] ); } );
+	else{
+		//We have exactly one alpha plane
+		auto a = p.a1 ? p.a1 : p.a2;
+		return p.sum( [&](unsigned i){ return abs(i) * color::asDouble( a[i] ); } );
+	}
 }
 
 double Plane::diff( const Plane& p, int x, int y, unsigned stride ) const{
@@ -78,7 +89,7 @@ double Plane::diff( const Plane& p, int x, int y, unsigned stride ) const{
 	return diffAlpha( p, empty, empty, x, y, stride );
 }
 
-double Plane::diffAlpha( const Plane& p, const Plane& alpha, const Plane& alpha_p, int x, int y, unsigned stride ) const{
+double Plane::diffAlpha( const Plane& p, const Plane& alpha, const Plane& alpha_p, int x, int y, unsigned stride, bool fast ) const{
 	//Find edges
 	int p1_top = y < 0 ? 0 : y;
 	int p2_top = y > 0 ? 0 : -y;
@@ -105,7 +116,8 @@ double Plane::diffAlpha( const Plane& p, const Plane& alpha, const Plane& alpha_
 		a2 += a2 ? alpha_p.line_width * stride : 0;
 	}
 	
-	Sum sum = QtConcurrent::blockingMappedReduced( lines, &diff_alpha_line, &Sum::reduce );
+	auto diff_func = fast ? &fast_diff_alpha_line : &diff_alpha_line;
+	Sum sum = QtConcurrent::blockingMappedReduced( lines, diff_func, &Sum::reduce );
 //	Sum sum; for( auto& p : lines ) sum.reduce( diff_alpha_line( p ) );
 	return sum.total / (double)( height * width / (stride*stride) );
 }
@@ -132,6 +144,7 @@ struct img_comp{
 	const Plane& img2;
 	const Plane& a1;
 	const Plane& a2;
+	bool fast;
 	int h_middle;
 	int v_middle;
 	double diff;
@@ -143,9 +156,10 @@ struct img_comp{
 	double precision;
 	bool diff_set;
 	
-	img_comp( const Plane& image1, const Plane& image2, const Plane& a1, const Plane& a2, int hm, int vm, int lvl=0, int l=0, int r=0, int t=0, int b=0, double p=1 )
+	img_comp( const Plane& image1, const Plane& image2, const Plane& a1, const Plane& a2, bool fast, int hm, int vm, int lvl=0, int l=0, int r=0, int t=0, int b=0, double p=1 )
 		:	img1( image1 ), img2( image2 )
 		,	a1( a1 ), a2( a2 )
+		,	fast(fast)
 		,	h_middle( hm ), v_middle( vm )
 		,	diff( -1 )
 		,	level( lvl )
@@ -156,7 +170,7 @@ struct img_comp{
 		{ }
 	void do_diff(){
 		if( !diff_set )
-			diff = img1.diffAlpha( img2, a1, a2, h_middle, v_middle, precision );
+			diff = img1.diffAlpha( img2, a1, a2, h_middle, v_middle, precision, false );
 	}
 	void set_diff( double new_diff ){
 		diff = new_diff;
@@ -166,7 +180,7 @@ struct img_comp{
 	
 	MergeResult result( DiffCache *cache ) const{
 		if( level > 0 )
-			return img1.best_round_sub( img2, a1, a2, level, left, right, top, bottom, cache );
+			return img1.best_round_sub( img2, a1, a2, level, left, right, top, bottom, cache, fast );
 		else
 			return MergeResult( {h_middle, v_middle}, diff);
 	}
@@ -188,7 +202,7 @@ struct img_comp{
 	}
 };
 
-MergeResult Plane::best_round_sub( const Plane& p, const Plane& a1, const Plane& a2, int level, int left, int right, int top, int bottom, DiffCache *cache ) const{
+MergeResult Plane::best_round_sub( const Plane& p, const Plane& a1, const Plane& a2, int level, int left, int right, int top, int bottom, DiffCache *cache, bool fast ) const{
 //	qDebug( "Round %d: %d,%d x %d,%d", level, left, right, top, bottom );
 	std::vector<img_comp> comps;
 	int amount = level*2 + 2;
@@ -201,7 +215,7 @@ MergeResult Plane::best_round_sub( const Plane& p, const Plane& a1, const Plane&
 		//Check every diff in the remaining area
 		for( int ix=left; ix<=right; ix++ )
 			for( int iy=top; iy<=bottom; iy++ ){
-				img_comp t( *this, p, a1, a2, ix, iy );
+				img_comp t( *this, p, a1, a2, fast, ix, iy );
 				t.set_diff( cache->get_diff( ix, iy, 1 ) );
 				comps.push_back( t );
 			}
@@ -228,7 +242,7 @@ MergeResult Plane::best_round_sub( const Plane& p, const Plane& a1, const Plane&
 				
 				//Create and add
 				img_comp t(
-						*this, p, a1, a2, x, y, level
+						*this, p, a1, a2, fast, x, y, level
 					,	floor( ix - h_offset ), ceil( ix + h_offset )
 					,	floor( iy - v_offset ), ceil( iy + v_offset )
 					,	precision

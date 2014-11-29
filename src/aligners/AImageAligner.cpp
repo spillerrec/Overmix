@@ -78,7 +78,7 @@ AImageAligner::ImageOffset AImageAligner::find_offset( const Plane& img1, const 
 			,	a1, a2, level
 			,	((int)1 - (int)img2.get_width()) * movement_x, ((int)img1.get_width() - 1) * movement_x
 			,	((int)1 - (int)img2.get_height()) * movement_y, ((int)img1.get_height() - 1) * movement_y
-			,	&cache
+			,	&cache, fast_diffing
 			);
 	}while( result.second > 0.10*color::WHITE && level++ < 6 ); //TODO: magic number!
 	

@@ -25,7 +25,7 @@ class AnimationSeparator : public AImageAligner{
 		double find_threshold( AProcessWatcher* watcher );
 	public:
 		AnimationSeparator( AContainer& container, AlignMethod method, double scale=1.0 )
-			:	AImageAligner( container, method, scale ){ }
+			:	AImageAligner( container, method, scale ){ fast_diffing = false; }
 		virtual void align( AProcessWatcher* watcher=nullptr ) override;
 };
 
