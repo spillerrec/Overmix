@@ -170,7 +170,7 @@ struct img_comp{
 		{ }
 	void do_diff(){
 		if( !diff_set )
-			diff = img1.diffAlpha( img2, a1, a2, h_middle, v_middle, precision, false );
+			diff = img1.diffAlpha( img2, a1, a2, h_middle, v_middle, precision, fast );
 	}
 	void set_diff( double new_diff ){
 		diff = new_diff;

@@ -101,50 +101,7 @@ bool DumpPlane::read( QIODevice &dev ){
 		return false;
 	
 	data.resize( size() );
-	if( config & 0x1 ){
-		uint32_t lenght = read_32( dev );
-		if( lenght == 0 )
-			return false;
-		
-		vector<char> buf( lenght );
-		dev.read( buf.data(), lenght );
-		
-		uLongf uncompressed = size();
-		if( uncompress( (Bytef*)data.data(), &uncompressed, (Bytef*)buf.data(), lenght ) != Z_OK )
-			return false;
-	}
-	else if( config & 0x2 ){
-		//Initialize decoder
-		lzma_stream strm = LZMA_STREAM_INIT;
-		if( lzma_stream_decoder( &strm, UINT64_MAX, 0 ) != LZMA_OK )
-			return false;
-		
-		//Read data
-		uint32_t lenght = read_32( dev );
-		if( lenght == 0 )
-			return false;
-		
-		vector<char> buf( lenght );
-		dev.read( buf.data(), lenght );
-		
-		//Decompress
-		strm.next_in = (uint8_t*)buf.data();
-		strm.avail_in = buf.size();
-		
-		strm.next_out = data.data();
-		strm.avail_out = data.size();
-		
-		if( lzma_code( &strm, LZMA_FINISH ) != LZMA_STREAM_END ){
-			cout << "Shit, didn't finish decompressing!" << endl;
-			return false;
-		}
-		
-		lzma_end(&strm);
-	}
-	else
-		return dev.read( (char*)data.data(), size() ) == size();
-	
-	return true;
+	return readRaw( dev, data.data() );
 }
 
 bool DumpPlane::write( QIODevice &dev, DumpPlane::Compression compression ){
