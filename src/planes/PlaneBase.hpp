@@ -33,7 +33,7 @@ class PlaneBase{
 		unsigned line_width{ 0 };
 		T* data{ nullptr };
 		
-		unsigned dataSize() const{ return size.height() * line_width; }
+		unsigned dataSize() const{ return realsize.height() * line_width; }
 		void clearContainer(){
 			delete[] data;
 			size = realsize = { 0,0 };
