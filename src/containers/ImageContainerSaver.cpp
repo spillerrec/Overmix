@@ -18,6 +18,7 @@
 
 #include "ImageContainerSaver.hpp"
 #include "ImageContainer.hpp"
+#include "../utils/ImageLoader.hpp"
 
 #include <cassert>
 #include <memory>
@@ -66,6 +67,13 @@ std::unique_ptr<wchar_t> getUnicodeFilepath( QString filename ){
 	return wpath;
 }
 
+unsigned countChildren( xml_node t, const char* name ){
+	unsigned count=0;
+	for( auto item : t.children( name ) ) //TODO: find a better way of doing this?
+		count++;
+	return count;
+}
+
 QString ImageContainerSaver::load( ImageContainer& container, QString filename ){
 	//TODO: progress monitoring
 	xml_document doc;
@@ -92,52 +100,55 @@ QString ImageContainerSaver::load( ImageContainer& container, QString filename )
 		}
 	}
 	
-	QStringList file_paths;
-	for( auto group : root.child( NODE_GROUPS ).children( NODE_GROUP ) )
-		for( auto item : group.children( NODE_ITEM ) )
-			file_paths << baseDir( folder, getString( item, NODE_ITEM_PATH ) );
-	auto file_future = QtConcurrent::mapped( file_paths, ImageEx::fromFile );
-	
-	int files_added = 0;
 	for( auto group : root.child( NODE_GROUPS ).children( NODE_GROUP ) ){
 		container.addGroup( getStringAttr( group, ATTR_GROUP_NAME ) );
-		container.prepareAdds( file_paths.count() ); //TODO: find the amount of items in this group
+		
+		//Figure out how many images there is in this group
+		//NOTE: needed, as otherwise the references will be broken
+		auto amount = countChildren( group, NODE_ITEM );
+		ImageLoader images( amount );
+		container.prepareAdds( amount );
 		
 		for( auto item : group.children( NODE_ITEM ) ){
-			auto file = baseDir( folder, getString( item, NODE_ITEM_PATH ) );
-			assert( file == file_paths[files_added] );
-			auto mask  = item.child( NODE_ITEM_MASK  ).text().as_int( -1 );
-			auto frame = item.child( NODE_ITEM_FRAME ).text().as_int( -1 );
-			
 			//Translate mask id
+			auto mask  = item.child( NODE_ITEM_MASK  ).text().as_int( -1 );
 			if( mask >= 0 ){
 				if( unsigned(mask) >= mask_ids.size() )
 					return QObject::tr( "The mask id was invalid, got: " ) + QString::number( mask );
 				mask = mask_ids[mask];
 			}
 			
-			auto img = file_future.resultAt( files_added++ );
-			if( !img.is_valid() ){
-				file_future.cancel();
-				return QObject::tr( "Could not load the file: " ) + file;
-			}
+			//Add an image for loading later in parallel
+			auto file = baseDir( folder, getString( item, NODE_ITEM_PATH ) );
+			auto& img_item = container.addImage( ImageEx(), mask, -1, file );
+			images.add( file, img_item.imageRef() );
+			
+			img_item.frame = item.child( NODE_ITEM_FRAME ).text().as_int( -1 );
+			
+			auto offset_node = item.child( NODE_ITEM_OFFSET );
+			img_item.offset.x = offset_node.attribute( ATTR_ITEM_OFFSET_X ).as_double( 0.0 );
+			img_item.offset.y = offset_node.attribute( ATTR_ITEM_OFFSET_Y ).as_double( 0.0 );
+		}
+		
+		auto& items = images.loadAll();
+		
+		//Can't do cropping until the file is loaded
+		int files_added = 0;
+		for( auto item : group.children( NODE_ITEM ) ){
+			assert( baseDir( folder, getString( item, NODE_ITEM_PATH ) ) == items[files_added].first );
 			
 			auto crop_node = item.child( NODE_ITEM_CROP );
-			img.crop(
+			items[files_added].second.crop(
 					crop_node.attribute( ATTR_ITEM_CROP_L ).as_int( 0 )
 				,	crop_node.attribute( ATTR_ITEM_CROP_T ).as_int( 0 )
 				,	crop_node.attribute( ATTR_ITEM_CROP_R ).as_int( 0 )
 				,	crop_node.attribute( ATTR_ITEM_CROP_B ).as_int( 0 )
 				);
 			
-			auto& img_item = container.addImage( std::move(img), mask, -1, file );
-			
-			img_item.frame = frame;
-			
-			auto offset_node = item.child( NODE_ITEM_OFFSET );
-			img_item.offset.x = offset_node.attribute( ATTR_ITEM_OFFSET_X ).as_double( 0.0 );
-			img_item.offset.y = offset_node.attribute( ATTR_ITEM_OFFSET_Y ).as_double( 0.0 );
+			files_added++;
 		}
+		
+		//TODO: clean up images which failed loading!
 	}
 	
 	container.setAligned();
