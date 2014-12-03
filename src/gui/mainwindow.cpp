@@ -39,6 +39,7 @@
 #include "../containers/FrameContainer.hpp"
 #include "../containers/ImageContainer.hpp"
 #include "../containers/ImageContainerSaver.hpp"
+#include "../utils/ImageLoader.hpp"
 
 #include "savers/DumpSaver.hpp"
 #include "visualisations/MovementGraph.hpp"
@@ -226,8 +227,13 @@ void main_widget::process_urls( QStringList files ){
 	t.start();
 	int loading_delay = 0;
 	
-	QFuture<ImageEx> img_loader = QtConcurrent::mapped( files, ImageEx::fromFile );
-	for( int i=0; i<files.count(); i++ ){
+	std::vector<ImageEx> cache( files.count() );
+	ImageLoader loader( files.count() );
+	for( unsigned i=0; i<cache.size(); i++ )
+		loader.add( files[i], cache[i] );
+	loader.loadAll(); //TODO: show progress
+	
+	for( unsigned i=0; i<cache.size(); i++ ){
 		auto file = files[i];
 		progress.setValue( i );
 		
@@ -242,7 +248,7 @@ void main_widget::process_urls( QStringList files ){
 			QTime delay;
 			delay.start();
 			//Get and start loading next image
-			ImageEx img( img_loader.resultAt( i ) );
+			auto img = std::move( cache[i] );
 			loading_delay += delay.elapsed();
 			
 			//De-telecine
