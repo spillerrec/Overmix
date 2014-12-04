@@ -15,32 +15,32 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DEBUG_HPP
-#define DEBUG_HPP
+#ifndef IMAGE_LOADER_HPP
+#define IMAGE_LOADER_HPP
 
-#include "../planes/ImageEx.hpp"
-
-#include <QtConcurrent>
 #include <QString>
+#include <QStringList>
 
 #include <vector>
 #include <utility>
 	
+class Deteleciner;
+class ImageEx;
+class ImageContainer;
+
 class ImageLoader{
 	private:
 		using Item = std::pair<QString,ImageEx&>;
 		std::vector<Item> images;
 		
 	public:	
-		ImageLoader( int reserve=0 ) { images.reserve( reserve ); }
+		ImageLoader( int reserve ) { images.reserve( reserve ); }
 		
 		void add( QString filename, ImageEx& image ) { images.emplace_back( filename, image ); }
-		const std::vector<Item>& loadAll(){
-			QtConcurrent::blockingMap( images, []( Item& item ){
-					item.second = ImageEx::fromFile( item.first );
-				} );
-			return images;
-		}
+		const std::vector<Item>& loadAll();
+		
+		static std::vector<ImageEx> loadImages( QStringList list );
+		static void loadImages( QStringList list, ImageContainer& container, Deteleciner& detele, int alpha_mask=-1 );
 };
 
 #endif

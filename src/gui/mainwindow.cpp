@@ -220,54 +220,10 @@ void main_widget::closeEvent( QCloseEvent *event ){
 
 
 void main_widget::process_urls( QStringList files ){
-	QProgressDialog progress( tr("Loading images"), tr("Stop"), 0, files.count(), this );
-	progress.setWindowModality( Qt::WindowModal );
-	
-	QTime t;
-	t.start();
-	int loading_delay = 0;
-	
-	std::vector<ImageEx> cache( files.count() );
-	ImageLoader loader( files.count() );
-	images.prepareAdds( files.count() );
-	for( unsigned i=0; i<cache.size(); i++ )
-		loader.add( files[i], cache[i] );
-	loader.loadAll(); //TODO: show progress
-	
-	for( unsigned i=0; i<cache.size(); i++ ){
-		auto file = files[i];
-		progress.setValue( i );
-		
-		
-		if( QFileInfo( file ).completeSuffix() == "xml.overmix" ){
-			//Handle aligner xml
-			auto error = ImageContainerSaver::load( images, file );
-			if( !error.isEmpty() )
-				QMessageBox::warning( this, tr("Could not load alignment"), error );
-		}
-		else{
-			QTime delay;
-			delay.start();
-			//Get and start loading next image
-			auto& img = cache[i];
-			loading_delay += delay.elapsed();
-			
-			//De-telecine
-			if( detelecine.isActive() ){
-				img = detelecine.process( img );
-				file = ""; //The result might be a combination of several files
-			}
-			if( !img.is_valid() )
-				continue;
-			
-			images.addImage( std::move( img ), alpha_mask, -1, file );
-		}
-		
-		if( progress.wasCanceled() )
-			break;
-	}
-	qDebug( "Adding images took: %d", t.elapsed() );
-	qDebug( "Loading blocked for: %d ms", loading_delay );
+	//QProgressDialog progress( tr("Loading images"), tr("Stop"), 0, files.count(), this );
+	//progress.setWindowModality( Qt::WindowModal );
+	//TODO: 
+	ImageLoader::loadImages( files, images, detelecine, alpha_mask );
 	
 	clear_cache();
 	refresh_text();
