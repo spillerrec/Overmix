@@ -229,6 +229,7 @@ void main_widget::process_urls( QStringList files ){
 	
 	std::vector<ImageEx> cache( files.count() );
 	ImageLoader loader( files.count() );
+	images.prepareAdds( files.count() );
 	for( unsigned i=0; i<cache.size(); i++ )
 		loader.add( files[i], cache[i] );
 	loader.loadAll(); //TODO: show progress
@@ -248,7 +249,7 @@ void main_widget::process_urls( QStringList files ){
 			QTime delay;
 			delay.start();
 			//Get and start loading next image
-			auto img = std::move( cache[i] );
+			auto& img = cache[i];
 			loading_delay += delay.elapsed();
 			
 			//De-telecine
