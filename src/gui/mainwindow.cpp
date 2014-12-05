@@ -307,17 +307,17 @@ ImageEx main_widget::renderImage( const AContainer& container ){
 	DialogWatcher watcher( progress );
 	
 	if( ui->rbtn_static_diff->isChecked() )
-		return DiffRender().render( container, INT_MAX, &watcher );
+		return DiffRender().render( container, &watcher );
 	else if( ui->rbtn_subpixel->isChecked() )
-		return FloatRender().render( container, INT_MAX, &watcher );
+		return FloatRender().render( container, &watcher );
 	else if( ui->rbtn_diff->isChecked() )
-		return StatisticsRender( Statistics::DIFFERENCE ).render( container, INT_MAX, &watcher );
+		return StatisticsRender( Statistics::DIFFERENCE ).render( container, &watcher );
 	else if( ui->rbtn_dehumidifier->isChecked() )
-		return StatisticsRender( Statistics::MIN ).render( container, INT_MAX, &watcher );
+		return StatisticsRender( Statistics::MIN ).render( container, &watcher );
 	else if( ui->rbtn_median->isChecked() )
-		return StatisticsRender( Statistics::MEDIAN ).render( container, INT_MAX, &watcher );
+		return StatisticsRender( Statistics::MEDIAN ).render( container, &watcher );
 	else
-		return AverageRender( chroma_upscale ).render( container, INT_MAX, &watcher );
+		return AverageRender( chroma_upscale ).render( container, &watcher );
 }
 
 QImage main_widget::qrenderImage( const ImageEx& img ){

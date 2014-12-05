@@ -90,9 +90,9 @@ void FakeMask::setMask( const Plane& fakemask ){
 			masks.push_back( fakemask.minPlane( ConstDelegatedContainer::mask(i)) );
 }
 
-Plane DiffRender::iteration( const AContainer& aligner, const AContainer& real, unsigned max_count, Size<unsigned> size ) const{
+Plane DiffRender::iteration( const AContainer& aligner, const AContainer& real, Size<unsigned> size ) const{
 	//Normal render
-	ImageEx avg = AverageRender( false, true ).render( aligner, max_count );
+	ImageEx avg = AverageRender( false, true ).render( aligner );
 	auto real_size = real.size().pos.round();
 	
 	//Create final output image based on the smallest size
@@ -102,10 +102,10 @@ Plane DiffRender::iteration( const AContainer& aligner, const AContainer& real, 
 	for( unsigned iy=0; iy<output.get_height(); iy++ ){
 		auto out = output.scan_line( iy );
 		for( unsigned ix=0; ix<output.get_width(); ix++ ){
-			//Set the pixel to the static difference of all the images until max_count
+			//Set the pixel to the static difference of all the images
 			StaticDiff diff( real, real_size, avg, ix, iy );
 			
-			for( unsigned j=0; j<max_count; j++ )
+			for( unsigned j=0; j<aligner.count(); j++ )
 				diff.add_image( j );
 			
 			out[ix] = diff.result();
@@ -115,13 +115,10 @@ Plane DiffRender::iteration( const AContainer& aligner, const AContainer& real, 
 	return output.normalize();
 }
 
-ImageEx DiffRender::render( const AContainer& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
-	if( max_count > aligner.count() )
-		max_count = aligner.count();
-	
+ImageEx DiffRender::render( const AContainer& aligner, AProcessWatcher* watcher ) const{
 	//Find the smallest shared size
 	auto size = aligner.size().size; //No image is larger than the final result
-	for( unsigned i=0; i<max_count; i++ )
+	for( unsigned i=0; i<aligner.count(); i++ )
 		size = size.min( aligner.image(i).getSize() );
 	
 	Plane init( size );
@@ -132,7 +129,7 @@ ImageEx DiffRender::render( const AContainer& aligner, unsigned max_count, AProc
 		init.binarize_threshold( color::WHITE / 2 );
 		init = init.dilate( 10 );
 		fake.setMask( init );
-		init = iteration( fake, aligner, max_count, size );
+		init = iteration( fake, aligner, size );
 		//ImageEx( init ).to_qimage( ImageEx::SYSTEM_KEEP, ImageEx::SETTING_NONE ).save( "staticdiff" + QString::number( i ) + ".png" );
 	}
 	

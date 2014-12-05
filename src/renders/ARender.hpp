@@ -43,7 +43,7 @@ class ProgressWrapper{
 
 class ARender{
 	public:
-		virtual ImageEx render( const AContainer& group, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const = 0;
+		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const = 0;
 };
 
 #endif

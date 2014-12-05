@@ -155,8 +155,8 @@ class PointRender3 : public PointRenderBase{
 		
 };
 
-bool isSubpixel( const AContainer& aligner, unsigned max_count ){
-	for( unsigned j=0; j<max_count; ++j ){
+bool isSubpixel( const AContainer& aligner ){
+	for( unsigned j=0; j<aligner.count(); ++j ){
 		auto pos = aligner.pos( j );
 		if( pos != pos.round() )
 			return true;
@@ -165,19 +165,9 @@ bool isSubpixel( const AContainer& aligner, unsigned max_count ){
 }
 
 
-ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
-	if( max_count > aligner.count() )
-		max_count = aligner.count();
-	
-	//Abort if no images
-	if( max_count == 0 ){
-		qWarning( "No images to render!" );
-		return ImageEx();
-	}
-	qDebug( "render_image: image count: %d", (int)max_count );
-	
+ImageEx FloatRender::render( const AContainer& aligner, AProcessWatcher* watcher ) const{
 	//Fall back to AverageRender if no sub-pixel alignment
-	if( !isSubpixel( aligner, max_count ) ){
+	if( !isSubpixel( aligner ) ){
 		qDebug( "No subpixel, using AverageRender instead" );
 		ImageEx render = AverageRender().render( aligner );
 		if( scale != PointF( 1.0, 1.0 ) )
@@ -206,7 +196,7 @@ ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, APro
 		
 		//Pre-calculate scales
 		vector<PointF> scales;
-		for( unsigned j=0; j<max_count; ++j )
+		for( unsigned j=0; j<aligner.count(); ++j )
 			scales.emplace_back( aligner.image( j )[0].getSize().to<double>() / aligner.image( j )[i].getSize().to<double>() * scale );
 		
 		for( unsigned iy=0; iy<out.get_height(); ++iy ){
@@ -217,7 +207,7 @@ ImageEx FloatRender::render( const AContainer& aligner, unsigned max_count, APro
 			for( unsigned ix=0; ix<out.get_width(); ++ix ){
 				PointRender2 p( PointF( ix, iy ) + full.pos*scale/*, points*/ );
 				
-				for( unsigned j=0; j<max_count; ++j )
+				for( unsigned j=0; j<aligner.count(); ++j )
 					p.add_points( aligner.image( j )[i], aligner.pos( j ) * scale, scales[j] );
 				
 				row[ix] = p.value();

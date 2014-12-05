@@ -17,8 +17,17 @@
 
 
 #include "AverageAligner.hpp"
+#include "../containers/DelegatedContainer.hpp"
 #include "../renders/AverageRender.hpp"
 
+class Limiter : public DelegatedContainer {
+	private:
+		unsigned limited_count;
+	public:
+		Limiter( AContainer& container, unsigned limited_count )
+			:	DelegatedContainer( container ), limited_count(limited_count) { }
+		virtual unsigned count() const override{ return limited_count; }
+};
 
 void AverageAligner::align( AProcessWatcher* watcher ){
 	if( count() == 0 )
@@ -34,7 +43,7 @@ void AverageAligner::align( AProcessWatcher* watcher ){
 		if( watcher )
 			watcher->setCurrent( i );
 		
-		ImageEx img = AverageRender( false, true ).render( *this, i );
+		ImageEx img = AverageRender( false, true ).render( Limiter( *this, i ) );
 		setPos( i, minPoint() + find_offset( img[0], image( i )[0], img.alpha_plane(), alpha( i ) ).distance );
 	}
 	

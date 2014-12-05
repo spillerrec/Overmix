@@ -29,10 +29,10 @@ class PlaneRender : public ARender{
 		typedef void pixel_func( MultiPlaneLineIterator &it );
 		virtual pixel_func* pixel() const = 0;
 		
-		Plane renderPlane( const AContainer& aligner, int plane, unsigned max_count, AProcessWatcher* watcher ) const;
+		Plane renderPlane( const AContainer& aligner, int plane, AProcessWatcher* watcher ) const;
 		
 	public:
-		virtual ImageEx render( const AContainer& aligner, unsigned max_count=-1, AProcessWatcher* watcher=nullptr ) const override;
+		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
 
 #endif

@@ -144,21 +144,17 @@ class AlphaScales{
 			{ return ( mask < 0 ) ? fallback : items[channel][mask](); }
 };
 
-ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
-	if( max_count > aligner.count() )
-		max_count = aligner.count();
-	
+ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watcher ) const{
 	//Abort if no images
-	if( max_count == 0 ){
+	if( aligner.count() == 0 ){
 		qWarning( "No images to render!" );
 		return ImageEx();
 	}
 	unsigned planes_amount = (for_merging || aligner.image(0).get_system() == ImageEx::GRAY) ? 1 : 3;
-	qDebug( "render_image: image count: %d", (int)max_count );
 	
 	//Determine if we need to care about alpha per plane
 	bool use_plane_alpha = false;
-	for( unsigned i=0; i<max_count; ++i )
+	for( unsigned i=0; i<aligner.count(); ++i )
 		if( aligner.alpha( i ) || aligner.imageMask( i ) >= 0 ){
 			use_plane_alpha = true;
 			break;
@@ -184,7 +180,7 @@ ImageEx AverageRender::render( const AContainer& aligner, unsigned max_count, AP
 		//TODO: something is wrong with the rounding, chroma-channels are slightly off
 		SumPlane sum( (scale * full).ceil() );
 		
-		for( unsigned j=0; j<max_count; j++ ){
+		for( unsigned j=0; j<aligner.count(); j++ ){
 			auto& image = aligner.image( j );
 			auto pos = (scale * (aligner.pos(j) - min_point)).round();
 			ScaledPlane plane( image[c], (scale * image[0].getSize()).round() );

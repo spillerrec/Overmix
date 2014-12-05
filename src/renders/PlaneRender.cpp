@@ -25,7 +25,7 @@
 #include <vector>
 using namespace std;
 
-Plane PlaneRender::renderPlane( const AContainer& aligner, int plane, unsigned max_count, AProcessWatcher* watcher ) const{
+Plane PlaneRender::renderPlane( const AContainer& aligner, int plane, AProcessWatcher* watcher ) const{
 	auto scale = aligner.image( 0 )[plane].getSize().to<double>() / aligner.image( 0 )[0].getSize().to<double>();
 	
 	//Create output plane
@@ -36,7 +36,7 @@ Plane PlaneRender::renderPlane( const AContainer& aligner, int plane, unsigned m
 	vector<PlaneItInfo> info;
 	info.emplace_back( out, (aligner.size().pos * scale).round() );
 	
-	for( unsigned i=0; i<max_count; i++ )
+	for( unsigned i=0; i<aligner.count(); i++ )
 		info.emplace_back( const_cast<Plane&>( aligner.image( i )[plane] ), (aligner.pos(i) * scale).round() );
 		//TODO: FIX!!!
 	
@@ -49,18 +49,7 @@ Plane PlaneRender::renderPlane( const AContainer& aligner, int plane, unsigned m
 	return out;
 }
 
-ImageEx PlaneRender::render( const AContainer& aligner, unsigned max_count, AProcessWatcher* watcher ) const{
-	if( max_count > aligner.count() )
-		max_count = aligner.count();
-	
-	//Abort if no images
-	if( max_count == 0 ){
-		qWarning( "No images to render!" );
-		return ImageEx();
-	}
-	qDebug( "render_image: image count: %d", (int)max_count );
-	
-	
+ImageEx PlaneRender::render( const AContainer& aligner, AProcessWatcher* watcher ) const{
 	unsigned planes_amount = aligner.image(0).size();
 	planes_amount = min( planes_amount, max_planes );
 	if( watcher )
@@ -69,7 +58,7 @@ ImageEx PlaneRender::render( const AContainer& aligner, unsigned max_count, APro
 	//Render all planes
 	ImageEx img( planes_amount!=1 ? aligner.image(0).get_system() : ImageEx::GRAY );
 	for( unsigned c=0; c<planes_amount; ++c )
-		img.addPlane( renderPlane( aligner, c, max_count, watcher ) );
+		img.addPlane( renderPlane( aligner, c, watcher ) );
 	return img;
 }
 
