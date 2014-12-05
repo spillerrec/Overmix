@@ -24,6 +24,7 @@
 
 class PlaneRender : public ARender{
 	protected:
+		unsigned max_planes = -1;
 		virtual void* data() const{ return nullptr; }
 		typedef void pixel_func( MultiPlaneLineIterator &it );
 		virtual pixel_func* pixel() const = 0;

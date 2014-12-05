@@ -62,11 +62,12 @@ ImageEx PlaneRender::render( const AContainer& aligner, unsigned max_count, APro
 	
 	
 	unsigned planes_amount = aligner.image(0).size();
+	planes_amount = min( planes_amount, max_planes );
 	if( watcher )
 		watcher->setTotal( 1000 * planes_amount );
 	
 	//Render all planes
-	ImageEx img( aligner.image(0).get_system() );
+	ImageEx img( planes_amount!=1 ? aligner.image(0).get_system() : ImageEx::GRAY );
 	for( unsigned c=0; c<planes_amount; ++c )
 		img.addPlane( renderPlane( aligner, c, max_count, watcher ) );
 	return img;
