@@ -175,7 +175,14 @@ struct Rectangle{
 	Point<T> pos;
 	Size<T> size;
 	
+	Point<T> endPos() const{ return pos + size; }
+	
 	Rectangle( Point<T> pos, Size<T> size ) : pos(pos), size(size) { }
+	
+	bool intersects( const Rectangle<T>& other ) const{
+		return other.pos.x <= endPos().x && other.endPos().x >= pos.x
+		   &&  other.pos.y <= endPos().y && other.endPos().y >= pos.y;
+	}
 };
 
 #endif

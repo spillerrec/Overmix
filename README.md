@@ -29,7 +29,6 @@ Development is now geared towards understanding the more theoretical parts about
 - Detection of zooming and rotation
 - Figuring out how features such as animation detection and separation of fore/back-ground can be combined
 - Support 16-bit PNG for input and output
-- Have an output format to save the output of alignment, etc.
 
 ### The Dump format
 
@@ -41,9 +40,7 @@ Several tools related to the format have been developed, most importantly an app
 
 ### Known issues
 
-- Chroma up-sampling currently required when using the "Average" renderer
 - Dehumidifier renderer does not "dehumidify" colors
-- Drop-down box to select scaling algorithm does not work
 - Downscaling is not implemented correctly
 
 ### Building
@@ -53,7 +50,9 @@ Several tools related to the format have been developed, most importantly an app
 - C++11
 - libpng
 - zlib
+- lzma
 - lcms2
+- fftw3
 
 *Building*
 

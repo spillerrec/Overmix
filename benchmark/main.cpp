@@ -52,24 +52,24 @@ int main( int argc, char *argv[] ){
 	qDebug() << "Loading took: " << t.restart();
 	
 	//*
-	RecursiveAligner aligner( images, AImageAligner::ALIGN_VER, 1 );
+	//RecursiveAligner aligner( images, AImageAligner::ALIGN_BOTH, 1 );
 	//AverageAligner aligner( images, AImageAligner::ALIGN_VER, 1 );
-	aligner.addImages();
-	qDebug() << "Preparing alignment took: " << t.restart();
+	//aligner.addImages();
+	//qDebug() << "Preparing alignment took: " << t.restart();
 	//return 0;
-	aligner.align();
-	qDebug() << "Aligning took: " << t.restart();
+	//aligner.align();
+	//qDebug() << "Aligning took: " << t.restart();
 	//return 0;
 	
 	auto img( AverageRender().render( images ) );
 	//auto img( FloatRender().render( images ) );
-	
 	qDebug() << "Rendering took: " << t.restart();
+	/*
 	
 	img.to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_GAMMA | ImageEx::SETTING_DITHER );
 	qDebug() << "to_qimage() took: " << t.restart();
 	
 	qDebug() << "Done";
-	
+	*/
 	return 0;
 }
