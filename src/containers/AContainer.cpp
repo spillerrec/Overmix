@@ -73,15 +73,19 @@ Point<double> AContainer::maxPoint() const{
 	return max;
 }
 
-void AContainer::resetPosition(){
-	for( unsigned i=0; i<count(); i++ )
-		setPos( i, { 0.0, 0.0 } );
-}
-
-void AContainer::offsetAll( double dx, double dy ){
-	Point<double> offset( dx, dy );
-	for( unsigned i=0; i<count(); i++ )
-		setPos( i, pos( i ) + offset );
+std::pair<bool,bool> AContainer::hasMovement() const{
+	std::pair<bool,bool> movement( false, false );
+	if( count() == 0 )
+		return movement;
+	
+	auto fixed = pos( 0 );
+	for( unsigned i=1; i<count() && (!movement.first || !movement.second); ++i ){
+		auto current = pos( i );
+		movement.first  = movement.first  || current.x != fixed.x;
+		movement.second = movement.second || current.y != fixed.y;
+	}
+	
+	return movement;
 }
 
 static void addToFrames( std::vector<int>& frames, int frame ){

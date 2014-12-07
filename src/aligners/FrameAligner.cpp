@@ -40,9 +40,7 @@ void FrameAligner::align( AProcessWatcher* watcher ){
 	for( unsigned i=0; i<frames.size(); ++i ){
 		FrameContainer current( *this, frames[i] );
 		auto aligned_offset = base_point - current.minPoint();
-		auto offset = aligned_offset + (images.pos(i) - images.minPoint());
-		current.offsetAll( offset.x, offset.y );
-		//TODO: change this to use Point<T>
+		current.offsetAll( aligned_offset + (images.pos(i) - images.minPoint()) );
 	}
 }
 

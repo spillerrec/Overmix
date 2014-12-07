@@ -19,6 +19,7 @@
 #define A_CONTAINER_HPP
 
 #include "../Geometry.hpp"
+#include <utility>
 
 class ImageEx;
 class Plane;
@@ -47,8 +48,11 @@ class AContainer{
 		Rectangle<double> size() const;
 		Point<double> minPoint() const;
 		Point<double> maxPoint() const;
-		void resetPosition();
-		void offsetAll( double dx, double dy );
+		std::pair<bool,bool> hasMovement() const;
+		void resetPosition()
+			{ for( unsigned i=0; i<count(); i++ ) setPos( i, { 0.0, 0.0 } ); }
+		void offsetAll( Point<double> offset )
+			{ for( unsigned i=0; i<count(); i++ ) setPos( i, pos( i ) + offset ); }
 		std::vector<int> getFrames() const;
 };
 

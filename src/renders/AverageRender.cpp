@@ -159,6 +159,10 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 			use_plane_alpha = true;
 			break;
 		}
+	//Check for movement in both direction
+	auto movement = aligner.hasMovement();
+	if( movement.first && movement.second )
+		use_plane_alpha = true;
 	
 	ImageEx img( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
 	
