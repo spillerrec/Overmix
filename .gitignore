@@ -1,10 +1,12 @@
-/debug
-/release
 Makefile
 *.Debug
 *.Release
 /out
 *.pro.user
 
-/benchmark/debug
-/benchmark/release
+debug
+release
+*/debug
+*/release
+*/*/debug
+*/*/release
