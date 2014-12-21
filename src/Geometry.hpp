@@ -38,7 +38,7 @@ struct Point{
 	Point( T x, T y ) : x(x), y(y) { }
 	
 	template<typename T2>
-	Point( Point<T2> p ) : x( p.x ), y( p.y ) { }
+	Point( const Point<T2>& p ) : x( p.x ), y( p.y ) { }
 	
 	Point<T>( QPoint  p ) : x( p.x()     ), y( p.y()      ) { }
 	Point<T>( QPointF p ) : x( p.x()     ), y( p.y()      ) { }
@@ -53,9 +53,6 @@ struct Point{
 	
 	template<typename T2>
 	bool operator!=( const Point<T2>& p ) const{ return x != p.x || y != p.y; }
-	
-	template<typename T2>
-	operator Point<T2>() const{ return Point<T2>( x, y ); }
 	
 	template<typename T2>
 	Point<T2> to() const{ return { static_cast<T2>(x), static_cast<T2>(y) }; }

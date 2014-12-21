@@ -40,7 +40,7 @@ void AContainer::scaleImage( unsigned index, Point<double> scale, ScalingFunctio
 	auto& img = imageRef( index );
 	if( img.getSize() == (img.getSize() * scale).round().to<unsigned>() )
 		return; //Don't attempt to scale, if it will not change the size
-	img.scale( scale, scaling );
+	img.scaleFactor( scale, scaling );
 }
 
 Rectangle<double> AContainer::size() const{

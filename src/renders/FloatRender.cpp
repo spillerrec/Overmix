@@ -82,9 +82,9 @@ class PointRenderBase{
 			
 			auto fstart = toRelative( {usable.topLeft()    }, offset, scale );
 			auto fend   = toRelative( {usable.bottomRight()}, offset, scale );
-			for(    int iy=ceil(fstart.y); iy<floor(fend.y); ++iy )
-				for( int ix=ceil(fstart.x); ix<floor(fend.x); ++ix ){
-					auto distance = (toAbsolute( { ix, iy }, offset, scale ) - pos) / scale;
+			for(    unsigned iy=ceil(fstart.y); iy<floor(fend.y); ++iy )
+				for( unsigned ix=ceil(fstart.x); ix<floor(fend.x); ++ix ){
+					auto distance = (toAbsolute( PointF( ix, iy ), offset, scale ) - pos) / scale;
 					ValuePos p{ sqrt(distance.x*distance.x + distance.y*distance.y), img.pixel( {ix,iy} ) };
 					add_point( p );
 				}

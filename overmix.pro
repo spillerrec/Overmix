@@ -43,6 +43,11 @@ win32{
 QMAKE_CXXFLAGS_RELEASE -= -O2
 QMAKE_CXXFLAGS_RELEASE += -O3
 
+unix{
+	QMAKE_CXXFLAGS_DEBUG += -fsanitize=address
+	QMAKE_LFLAGS_DEBUG   += -fsanitize=address
+}
+
 # Use link-time optimization in release builds
 # Release:QMAKE_CXXFLAGS += -flto
 # Release:QMAKE_LFLAGS += -flto -O3 #-mtune=native -ftree-vectorize -ftree-slp-vectorize #-ftree-vectorizer-verbose=3 

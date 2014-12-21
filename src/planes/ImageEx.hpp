@@ -134,8 +134,8 @@ class ImageEx{
 			if( alpha_plane() )
 				alpha_plane() = alpha_plane().scale_select( size, scaling );
 		}
-		void scaleFactor( Size<double> factor )
-			{ scale( ( getSize() * factor ).round() ); }
+		void scaleFactor( Size<double> factor, ScalingFunction scaling=ScalingFunction::SCALE_MITCHELL )
+			{ scale( ( getSize() * factor ).round(), scaling ); }
 		Point<unsigned> crop( unsigned left, unsigned top, unsigned right, unsigned bottom );
 		
 		MergeResult best_vertical( const ImageEx& img, int level, double range, DiffCache *cache=nullptr ) const{
