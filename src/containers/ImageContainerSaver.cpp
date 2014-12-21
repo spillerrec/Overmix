@@ -60,8 +60,8 @@ static QString getString( const xml_node& node, const char* name )
 static QString baseDir( QDir dir, QString file )
 	{ return QDir::isRelativePath( file ) ? dir.absolutePath() + "/" + file : file; }
 
-std::unique_ptr<wchar_t> getUnicodeFilepath( QString filename ){
-	std::unique_ptr<wchar_t> wpath( new wchar_t[filename.size()+1] );
+std::unique_ptr<wchar_t[]> getUnicodeFilepath( QString filename ){
+	std::unique_ptr<wchar_t[]> wpath( new wchar_t[filename.size()+1] );
 	auto end = filename.toWCharArray( wpath.get() );
 	wpath.get()[end] = 0;
 	return wpath;
