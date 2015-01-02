@@ -133,6 +133,7 @@ class AlphaScales{
 	public:
 		void addScale( const AContainer& aligner, Point<double> scale ){
 			vector<ScaledPlane> scales;
+			scales.reserve( aligner.maskCount() );
 			for( unsigned i=0; i<aligner.maskCount(); i++ ){
 				auto& mask = aligner.mask( i );
 				scales.emplace_back( mask, (mask.getSize() * scale).round() );
