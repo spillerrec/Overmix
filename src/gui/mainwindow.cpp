@@ -195,6 +195,7 @@ main_widget::~main_widget(){
 	//TODO: fix imageViewer, so it cleans itself up!
 	browser.change_image( nullptr );
 	viewer.change_image( nullptr );
+	delete ui;
 }
 
 

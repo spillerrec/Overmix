@@ -1,5 +1,7 @@
 TEMPLATE = app
 TARGET = Overmix
+target.path = /usr/local/bin
+INSTALLS += target
 
 # Libraries used
 QT += widgets KPlotting
@@ -44,7 +46,8 @@ QMAKE_CXXFLAGS_RELEASE -= -O2
 QMAKE_CXXFLAGS_RELEASE += -O3
 
 unix{
-	QMAKE_CXXFLAGS_DEBUG += -fsanitize=address
+	# Enable sanitizer in debug mode
+	QMAKE_CXXFLAGS_DEBUG += -fsanitize=address -fno-omit-frame-pointer
 	QMAKE_LFLAGS_DEBUG   += -fsanitize=address
 }
 
