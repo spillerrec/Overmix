@@ -28,10 +28,12 @@ using namespace std;
 
 static const double DOUBLE_MAX = numeric_limits<double>::max();
 
+using DiffAmount = pair<precision_color_type, double>;
 struct Sum{
-	uint64_t total;
-	Sum() : total( 0 ) { }
-	void reduce( const uint64_t add ){ total += add; }
+	DiffAmount total;
+	Sum() : total( 0, 0.0 ) { }
+	void reduce( const DiffAmount add ){ total.first += add.first; total.second += add.second; }
+	double average() const{ return total.first / total.second; }
 };
 struct Para{
 	const color_type *c1;
@@ -40,49 +42,53 @@ struct Para{
 	const color_type *a2;
 	unsigned width;
 	unsigned stride;
+	static constexpr color_type epsilon = 10 / 255.0 * color::WHITE; //TODO: Ad-hoc constant, and perhaps a little high...
+	
 	Para( const color_type* c1, const color_type *c2, unsigned width, unsigned stride
 		,	const color_type* a1=nullptr, const color_type *a2=nullptr )
 		:	c1( c1 ), c2( c2 ), a1( a1 ), a2( a2 ), width( width ), stride( stride ) { }
 	
 	template<typename T>
-	precision_color_type sum( T func ) const{
+	DiffAmount sum( T func ) const{
 		//Calculates the sum of func applied on each i, but optimized for stride==1
 		precision_color_type sum = 0;
-		if( stride == 1 ) for( unsigned i=0; i<width; ++i       ) sum += func( i );
-		else              for( unsigned i=0; i<width; i+=stride ) sum += func( i );
-		return sum;
+		if( stride == 1 ) for( unsigned i=0; i<width; ++i       ) sum += (this->*func)( i );
+		else              for( unsigned i=0; i<width; i+=stride ) sum += (this->*func)( i );
+		return { sum, width / stride };
+	}
+	template<typename T, typename T2>
+	DiffAmount sum( T func, T2 alpha_func ) const{
+		//Calculates the sum of func applied on each i, but optimized for stride==1
+		precision_color_type sum = 0;
+		double alpha = 0;
+		auto adder = [&]( unsigned i ){
+			auto alpha_value = (this->*alpha_func)( i );
+			sum += (this->*func)( i ) * alpha_value;
+			alpha += alpha_value;
+		};
+		if( stride == 1 ) for( unsigned i=0; i<width; ++i       ) adder( i );
+		else              for( unsigned i=0; i<width; i+=stride ) adder( i );
+		return { sum, alpha };
+	}
+	
+	color_type abs(     unsigned i ) const{ return std::abs( c1[i] - c2[i] ); }
+	color_type checked( unsigned i ) const{ auto val = abs( i ); return val > epsilon ? val : 0; }
+	color_type alpha1(  unsigned i ) const{ return color::asDouble( a1[i] ); }
+	color_type alpha2(  unsigned i ) const{ return color::asDouble( a2[i] ); }
+	color_type alpha(   unsigned i ) const{ return alpha1(i) * alpha2(i); }
+	
+	template<typename T>
+	DiffAmount diff_line( T func ) const{
+		if( !a1 && !a2 )
+			return sum( func );
+		else if( a1 && a2 )
+			return sum( func, &Para::alpha );
+		else //We have exactly one alpha plane
+			return sum( func, a1 ? &Para::alpha1 : &Para::alpha2 );
 	}
 };
-static uint64_t diff_alpha_line( Para p ){
-	auto abs = [&](unsigned i){ return std::abs( p.c1[i] - p.c2[i] ); };
-	
-	const auto epsilon = 10 / 255.0 * color::WHITE; //TODO: Ad-hoc constant, and perhaps a little high...
-	auto checked = [&](color_type val){ return val > epsilon ? val : 0; };
-	
-	if( !p.a1 && !p.a2 )
-		return p.sum( [&](unsigned i){ return checked( abs( i ) ); } );
-	else if( p.a1 && p.a2 )
-		return p.sum( [&](unsigned i){
-			return checked( abs( i ) * color::asDouble( p.a1[i] ) * color::asDouble( p.a2[i] ) ); } );
-	else{
-		//We have exactly one alpha plane
-		auto a = p.a1 ? p.a1 : p.a2;
-		return p.sum( [&](unsigned i){ return checked( abs( i ) * color::asDouble( a[i] ) ); } );
-	}
-}
-static uint64_t fast_diff_alpha_line( Para p ){
-	auto abs = [&](unsigned i){ return std::abs( p.c1[i] - p.c2[i] ); };
-	
-	if( !p.a1 && !p.a2 )
-		return p.sum( abs );
-	else if( p.a1 && p.a2 )
-		return p.sum( [&](unsigned i){ return abs(i) * color::asDouble( p.a1[i] ) * color::asDouble( p.a2[i] ); } );
-	else{
-		//We have exactly one alpha plane
-		auto a = p.a1 ? p.a1 : p.a2;
-		return p.sum( [&](unsigned i){ return abs(i) * color::asDouble( a[i] ); } );
-	}
-}
+static DiffAmount diff_alpha_line(      Para p ){ return p.diff_line( &Para::checked ); }
+static DiffAmount fast_diff_alpha_line( Para p ){ return p.diff_line( &Para::abs ); }
 
 double Plane::diff( const Plane& p, int x, int y, unsigned stride ) const{
 	Plane empty;
@@ -119,7 +125,8 @@ double Plane::diffAlpha( const Plane& p, const Plane& alpha, const Plane& alpha_
 	auto diff_func = fast ? &fast_diff_alpha_line : &diff_alpha_line;
 	Sum sum = QtConcurrent::blockingMappedReduced( lines, diff_func, &Sum::reduce );
 //	Sum sum; for( auto& p : lines ) sum.reduce( diff_alpha_line( p ) );
-	return sum.total / (double)( height * width / (stride*stride) );
+	auto full_area = height * width / (stride*stride);
+	return  ( full_area * 0.1 > sum.total.second ) ? std::numeric_limits<double>::max() : sum.average();
 }
 
 
