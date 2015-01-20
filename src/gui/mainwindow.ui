@@ -233,6 +233,11 @@
                    <string>Align Frames</string>
                   </property>
                  </item>
+                 <item>
+                  <property name="text">
+                   <string>Fit to Linear Curve</string>
+                  </property>
+                 </item>
                 </widget>
                </item>
                <item>

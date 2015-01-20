@@ -34,6 +34,7 @@
 #include "../aligners/FrameAligner.hpp"
 #include "../aligners/LayeredAligner.hpp"
 #include "../aligners/RecursiveAligner.hpp"
+#include "../aligners/LinearAligner.hpp"
 #include "../Deteleciner.hpp"
 #include "../containers/DelegatedContainer.hpp"
 #include "../containers/FrameContainer.hpp"
@@ -505,6 +506,8 @@ static void alignContainer( AContainer& container, int merge_index, AImageAligne
 			aligner = new AnimationSeparator( container, method, scale ); break;
 		case 5: //Align Frames
 			aligner = new FrameAligner( container, method, scale ); break;
+		case 6: //Linear Curve Fitting
+			aligner = new LinearAligner( container, method ); break;
 		default: return;
 	}
 	
