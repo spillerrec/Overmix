@@ -523,6 +523,7 @@ static void alignContainer( AContainer& container, int merge_index, AImageAligne
 }
 
 void main_widget::alignImage(){
+	clear_cache(); //Prevent any animation from running
 	QProgressDialog progress( this );
 	progress.setLabelText( "Aligning" );
 	progress.setWindowModality( Qt::WindowModal );
