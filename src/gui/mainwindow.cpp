@@ -311,7 +311,7 @@ ImageEx main_widget::renderImage( const AContainer& container ){
 	if( ui->rbtn_static_diff->isChecked() )
 		return DiffRender().render( container, &watcher );
 	else if( ui->rbtn_subpixel->isChecked() )
-		return FloatRender().render( container, &watcher );
+		return FloatRender( ui->merge_scale->value() ).render( container, &watcher );
 	else if( ui->rbtn_diff->isChecked() )
 		return StatisticsRender( Statistics::DIFFERENCE ).render( container, &watcher );
 	else if( ui->rbtn_dehumidifier->isChecked() )
