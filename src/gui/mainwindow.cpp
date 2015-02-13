@@ -69,9 +69,11 @@
 
 class DialogWatcher : public AProcessWatcher{
 	private:
-		QProgressDialog& dialog;
+		QProgressDialog dialog;
 	public:
-		DialogWatcher( QProgressDialog& dialog ) : dialog(dialog) {
+		DialogWatcher( QWidget* parent, QString label ) : dialog( parent ) {
+			dialog.setLabelText( label );
+			dialog.setWindowModality( Qt::WindowModal );
 			dialog.setMinimum( 0 );
 			dialog.setValue( 0 );
 		}
@@ -303,10 +305,7 @@ ImageEx main_widget::renderImage( const AContainer& container ){
 	//Select filter
 	bool chroma_upscale = ui->cbx_chroma->isChecked();
 	
-	QProgressDialog progress( this );
-	progress.setLabelText( "Rendering" );
-	progress.setWindowModality( Qt::WindowModal );
-	DialogWatcher watcher( progress );
+	DialogWatcher watcher( this, "Rendering" );
 	
 	if( ui->rbtn_static_diff->isChecked() )
 		return DiffRender().render( container, &watcher );
@@ -524,10 +523,7 @@ static void alignContainer( AContainer& container, int merge_index, AImageAligne
 
 void main_widget::alignImage(){
 	clear_cache(); //Prevent any animation from running
-	QProgressDialog progress( this );
-	progress.setLabelText( "Aligning" );
-	progress.setWindowModality( Qt::WindowModal );
-	DialogWatcher watcher( progress );
+	DialogWatcher watcher( this, "Aligning" );
 	
 	//Select movement type
 	AImageAligner::AlignMethod method{ AImageAligner::ALIGN_BOTH };
