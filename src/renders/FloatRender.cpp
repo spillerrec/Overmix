@@ -200,8 +200,11 @@ ImageEx FloatRender::render( const AContainer& aligner, AProcessWatcher* watcher
 			scales.emplace_back( aligner.image( j )[0].getSize().to<double>() / aligner.image( j )[i].getSize().to<double>() * scale );
 		
 		for( unsigned iy=0; iy<out.get_height(); ++iy ){
-			if( watcher )
+			if( watcher ){
+				if( watcher->shouldCancel() )
+					return ImageEx();
 				watcher->setCurrent( i*1000 + (iy * 1000 / out.get_height() ) );
+			}
 			
 			color_type* row = out.scan_line( iy );
 			for( unsigned ix=0; ix<out.get_width(); ++ix ){

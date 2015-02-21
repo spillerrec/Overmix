@@ -26,6 +26,7 @@ class AProcessWatcher{
 		virtual void setTotal( int total ) = 0;
 		virtual void setCurrent( int current ) = 0;
 		virtual int getCurrent() const = 0;
+		virtual bool shouldCancel() const = 0;
 };
 
 class ProgressWrapper{
@@ -37,6 +38,7 @@ class ProgressWrapper{
 		void setTotal  ( int total   ){ if( watcher ) watcher->setTotal( total ); }
 		void setCurrent( int current ){ if( watcher ) watcher->setCurrent( current ); }
 		int  getCurrent()       const { return watcher ? watcher->getCurrent() : 0; }
+		bool shouldCancel()     const { return watcher ? watcher->shouldCancel() : false; }
 		
 		void add( int amount=1 ){ setCurrent( getCurrent() + amount ); }
 };

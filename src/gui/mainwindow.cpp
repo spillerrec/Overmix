@@ -84,6 +84,8 @@ class DialogWatcher : public AProcessWatcher{
 			dialog.setValue( current );
 		}
 		virtual int getCurrent() const override{ return dialog.value(); }
+		
+		virtual bool shouldCancel() const override{ return dialog.wasCanceled(); }
 };
 
 void foldableGroupBox( QWidget* widget, bool enabled, QGroupBox* box ){
@@ -400,7 +402,9 @@ void main_widget::refresh_image(){
 		
 		for( auto& frame : frames ){
 			FrameContainer current( getAlignedImages(), frame );
-			renders.emplace_back( renderImage( current ), current.minPoint()-start );
+			auto img = renderImage( current );
+			if( img.is_valid() )
+				renders.emplace_back( std::move(img), current.minPoint()-start );
 		}
 	}
 	
