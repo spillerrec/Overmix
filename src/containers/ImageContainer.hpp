@@ -80,6 +80,7 @@ class ImageContainer : public AContainer{
 		const std::vector<Plane>& getMasks() const{ return masks; }	
 		
 		void addGroup( QString name ){ groups.emplace_back( name, masks ); }
+		void addGroup( QString name, unsigned group, unsigned from, unsigned to );
 		
 		void moveImage( unsigned from_group, unsigned from_img
 			,	unsigned to_group, unsigned to_img );

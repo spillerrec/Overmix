@@ -595,7 +595,11 @@ void main_widget::update_draw(){
 void main_widget::addGroup(){
 	auto name = QInputDialog::getText( this, tr("New group"), tr("Enter group name") );
 	if( !name.isEmpty() ){
-		images.addGroup( name );
+		const auto& indexes = ui->files_view->selectionModel()->selectedIndexes();
+		if( indexes.size() > 0 )
+			img_model.addGroup( name, indexes.front(), indexes.back() );
+		else
+			images.addGroup( name );
 		ui->files_view->reset();
 	}
 }

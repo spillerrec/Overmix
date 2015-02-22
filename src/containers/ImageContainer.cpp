@@ -40,6 +40,28 @@ ImageItem& ImageContainer::addImage( ImageEx&& img, int mask, int group, QString
 	return groups[index].items.back();
 }
 
+void ImageContainer::addGroup( QString name, unsigned group, unsigned from, unsigned to ){
+	//Create group and put it after this
+	addGroup( name );
+	addGroup( groups[group].name ); //TODO: if to != groups.size()
+	auto& from_group  = groups[group].items;
+	auto& to_group    = groups[groups.size()-2].items;
+	auto& after_group = groups[groups.size()-1].items;
+	//TODO: move them to be behind this group
+	//TODO: initialize vector sizes for item
+	
+	//Move items to new group
+	for( unsigned i=from; i<to; i++ )
+		to_group.emplace_back( std::move( from_group[i] ) );
+	
+	//Move rest to after group
+	for( unsigned i=to; i<from_group.size(); i++ )
+		after_group.emplace_back( std::move( from_group[i] ) );
+	
+	//Resize first group
+	from_group.resize( from );
+}
+
 bool ImageContainer::removeGroups( unsigned from, unsigned amount ){
 	if( !util::removeItems( groups, from, amount ) )
 		return false;

@@ -139,6 +139,19 @@ QVariant ImagesModel::headerData( int section, Qt::Orientation orien, int role )
 	}
 }
 
+void ImagesModel::addGroup( QString name, const QModelIndex& index_from, const QModelIndex& index_to ){
+	ImagesIndex from( index_from, images );
+	ImagesIndex to  ( index_to  , images );
+	
+	if( from.isValid() && to.isValid() && from.group == to.group )
+		if( to.item - from.item > 0 ){
+			images.addGroup( name, from.group, from.item, to.item+1 );
+			return;
+		}
+	
+	images.addGroup( name );
+}
+
 QImage ImagesModel::getImage( const QModelIndex& model_index ) const{
 	ImagesIndex index( model_index, images );
 	
