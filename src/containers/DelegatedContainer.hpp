@@ -29,6 +29,7 @@ class ConstDelegatedContainer : public AContainer{
 		virtual unsigned count() const override{ return container.count(); }
 		virtual const ImageEx& image( unsigned index ) const override{ return container.image( index ); }
 		virtual ImageEx& imageRef( unsigned ) override{ return *temp; } //TODO: throw exception
+		virtual void setMask( unsigned, int ) override { } //TODO: throw exception
 		virtual int imageMask( unsigned index ) const override{ return container.imageMask( index ); }
 		virtual const Plane& alpha( unsigned index ) const override{ return container.alpha( index ); }
 		virtual const Plane& mask( unsigned index ) const override{ return container.mask( index ); }
@@ -50,6 +51,7 @@ class DelegatedContainer : public ConstDelegatedContainer{
 		virtual ImageEx& imageRef( unsigned index ) override{ return container.imageRef( index ); }
 		virtual void setPos( unsigned index, Point<double> pos ) override{ container.setPos( index, pos ); }
 		virtual void setFrame( unsigned index, int frame ) override{ container.setFrame( index, frame ); }
+		virtual void setMask( unsigned index, int id ) override { container.setMask( index, id ); }
 		
 	public:
 		DelegatedContainer( AContainer& container ) : ConstDelegatedContainer(container), container(container) { }

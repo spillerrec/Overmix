@@ -77,6 +77,7 @@ class AImageAligner : public AContainer{
 		ImageEx& imageRef( unsigned index ) override;
 		const Plane& alpha( unsigned index ) const override{ return container.alpha( index ); }
 		int imageMask( unsigned index ) const override{ return container.imageMask( index ); }
+		void setMask( unsigned index, int id ) override { container.setMask( index, id ); }
 		const Plane& mask( unsigned index ) const override{ return container.mask( index ); }
 		unsigned maskCount() const override{ return container.maskCount(); }
 		Point<double> pos( unsigned index ) const;

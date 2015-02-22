@@ -582,7 +582,9 @@ void main_widget::use_current_as_mask(){
 	if( renders.size() == 1 ){
 		//TODO: postProcess cache no longer valid as we have several frames
 		alpha_mask = images.addMask( Plane( postProcess(renders[0].raw, false)[0] ) );
-		images.onAllItems( [=]( ImageItem& item ){ item.setSharedMask( alpha_mask ); } );
+		auto& aligner = getAlignedImages();
+		for( unsigned i=0; i<aligner.count(); i++ )
+			aligner.setMask( i, alpha_mask );
 	}
 }
 

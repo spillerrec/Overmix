@@ -95,6 +95,11 @@ int ImageContainer::imageMask( unsigned index ) const{
 	return groups[pos.group].imageMask( pos.index );
 }
 
+void ImageContainer::setMask( unsigned index, int id ){
+	auto pos = indexes[index];
+	groups[pos.group].setMask( pos.index, id );
+}
+
 const Plane& ImageContainer::alpha( unsigned index ) const{
 	auto pos = indexes[index];
 	return groups[pos.group].alpha( pos.index );

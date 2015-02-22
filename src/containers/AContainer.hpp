@@ -33,6 +33,7 @@ class AContainer{
 		virtual const Plane& alpha( unsigned index ) const = 0;
 		virtual int imageMask( unsigned ) const{ return -1; }
 		virtual const Plane& mask( unsigned index ) const;
+		virtual void setMask( unsigned index, int id ) = 0;
 		virtual unsigned maskCount() const{ return 0; }
 		virtual Point<double> pos( unsigned index ) const = 0;
 		virtual void setPos( unsigned index, Point<double> newVal ) = 0;

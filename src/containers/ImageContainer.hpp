@@ -58,6 +58,7 @@ class ImageContainer : public AContainer{
 		virtual       ImageEx&  imageRef( unsigned index ) override;
 		virtual const Plane&       alpha( unsigned index ) const override;
 		virtual       int      imageMask( unsigned index ) const override;
+		virtual       void       setMask( unsigned index, int id ) override;
 		virtual const Plane&        mask( unsigned index ) const override{ return masks[index]; }
 		virtual       unsigned maskCount()              const override{ return masks.size(); }
 		virtual       Point<double>  pos( unsigned index ) const override;

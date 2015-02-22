@@ -73,16 +73,18 @@ class ImageGroup : public AContainer{
 		
 	public: //AContainer implementation
 		virtual unsigned count() const{ return items.size(); }
-		virtual const ImageEx& image( unsigned index ) const{ return items[index].image(); }
-		virtual ImageEx& imageRef( unsigned index ) { return items[index].imageRef(); }
-		virtual int imageMask( unsigned index ) const{ return items[index].maskId(); }
-		virtual const Plane& alpha( unsigned index ) const override{ return items[index].alpha( *masks ); }
-		virtual const Plane& mask( unsigned index ) const override{ return (*masks)[index]; }
-		virtual unsigned maskCount() const override{ return masks->size(); }
-		virtual Point<double> pos( unsigned index ) const{ return items[index].offset; }
-		virtual void setPos( unsigned index, Point<double> newVal ){ items[index].offset = newVal; }
-		virtual int frame( unsigned index ) const{ return items[index].frame; }
-		virtual void setFrame( unsigned index, int newVal ){ items[index].frame = newVal; }
+		virtual const ImageEx& image(     unsigned index ) const override{ return items[index].image(); }
+		virtual       ImageEx& imageRef(  unsigned index )       override{ return items[index].imageRef(); }
+		virtual int            imageMask( unsigned index ) const override{ return items[index].maskId(); }
+		virtual const Plane&   alpha(     unsigned index ) const override{ return items[index].alpha( *masks ); }
+		virtual const Plane&   mask(      unsigned index ) const override{ return (*masks)[index]; }
+		virtual void           setMask(   unsigned index, int id ) override{      items[index].setSharedMask( id ); }
+		virtual int            frame(     unsigned index ) const override{ return items[index].frame; }
+		virtual unsigned       maskCount()                 const override{ return masks->size(); }
+		virtual Point<double>  pos(       unsigned index ) const override{ return items[index].offset; }
+		virtual void setPos( unsigned index, Point<double> newVal ) override{     items[index].offset = newVal; }
+		
+		virtual void setFrame( unsigned index, int newVal ) override{ items[index].frame = newVal; }
 };
 
 #endif
