@@ -31,12 +31,9 @@ void debug::make_slide( QImage image, QString dir, double scale ){
 }
 
 
-void debug::make_low_res( QImage image, QString dir, unsigned scale, unsigned amount ){
+void debug::make_low_res( QImage image, QString dir, unsigned scale ){
 	if( scale == 0 )
 		return;
-	
-	if( amount == 0 )
-		amount = scale*scale;
 	
 	unsigned new_width = image.width() - scale*2;
 	unsigned new_height = image.height() - scale*2;

@@ -249,7 +249,7 @@ bool ImageEx::from_qimage( QString path ){
 			*(r++) = color::from8bit( qRed( *in ) );
 			*(g++) = color::from8bit( qGreen( *in ) );
 			*(b++) = color::from8bit( qBlue( *in ) );
-			if( alpha )
+			if( a )
 				*(a++) = color::from8bit( qAlpha( *in ) );
 		}
 	}

@@ -30,7 +30,7 @@ namespace debug{
 	
 	void make_slide( QImage image, QString dir, double scale );
 	
-	void make_low_res( QImage image, QString dir, unsigned scale, unsigned amount=0 );
+	void make_low_res( QImage image, QString dir, unsigned scale );
 	
 	void output_transfers_functions( QString path );
 	
