@@ -54,15 +54,15 @@ color_type Plane::max_value() const{
 	return max;
 }
 color_type Plane::mean_value() const{
-	/*color_type min = color::MAX_VAL;
+	precision_color_type avg = color::BLACK;
 	for( unsigned iy=0; iy<get_height(); ++iy ){
-		color_type* row = scan_line( iy );
+		precision_color_type avg_y = color::BLACK;
+		auto row = const_scan_line( iy );
 		for( unsigned ix=0; ix<get_width(); ++ix )
-			if( row[ix] < min )
-				min = row[ix];
+			avg_y += row[ix];
+		avg += avg_y / get_width();
 	}
-	*/
-	return color::WHITE;
+	return avg / get_height();
 }
 
 bool Plane::is_interlaced() const{
