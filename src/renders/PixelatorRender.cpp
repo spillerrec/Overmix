@@ -21,7 +21,6 @@
 #include "../color.hpp"
 #include "../planes/PlaneBase.hpp"
 
-
 #include "../aligners/AImageAligner.hpp"
 #include "../planes/ImageEx.hpp"
 
@@ -29,16 +28,8 @@
 #include <vector>
 using namespace std;
 
-using Color = precision_color_type;
+using Color = int;
 using Histogram = vector<Color>;
-
-Color spacing_eval( const Histogram& h, int offset, int spacing ){
-	Color sum = color::BLACK;
-	int amount=0;
-	for( unsigned i=offset; i<h.size(); i+=spacing, amount++ )
-		sum += h[i];
-	return amount ? sum / amount : color::BLACK;
-}
 
 void normalize( Histogram& h ){
 	Color sum = 0;
@@ -49,7 +40,54 @@ void normalize( Histogram& h ){
 		val = val < avg ? color::BLACK : color::WHITE/2;
 }
 
+struct Result{
+	//Settings
+	int offset;
+	int spacing;
+	
+	//Results
+	Color w{ color::BLACK };
+	int amount{ 0 };
+	
+	Result( const Histogram& h, int offset, int spacing ) : offset(offset), spacing(spacing) {
+		for( unsigned i=offset; i<h.size(); i+=spacing, amount++ )
+			w += h[i];
+	}
+	
+	Color weight() const{ return amount != 0 ? w / amount : color::BLACK; }
+	Color calc( Color avg ) const{ return w - amount * avg; }
+};
+
+struct ResultsVector{
+	vector<Result> results;
+	
+	ResultsVector( const Histogram& h, unsigned io=8 ){
+		//TODO: throw exception on h<=2
+		for( unsigned is=2; is<h.size()/4; is++ ) //Pixels at least 2 wide, up-scaling it with 2x to 4px
+			for( unsigned io=0; io<is; io++ )
+				results.emplace_back( h, io, is );
+	}
+	
+	Color average() const{
+		Color sum = color::BLACK;
+		for( auto& val : results )
+			sum += val.weight();
+		return sum / results.size();
+	}
+	
+	Result maximum() const{
+		auto avg = average();
+		Result best = results[0];
+		for( auto result : results )
+			if( result.calc(avg) > best.calc(avg) )
+				best = result;
+		return best;
+	}
+};
+
+
 ImageEx PixelatorRender::render( const AContainer& aligner, AProcessWatcher* watcher ) const{
+	double upscale = 2.0;
 	auto avg = AverageRender().render( aligner );
 	if( !avg.is_valid() )
 		return ImageEx();
@@ -57,78 +95,24 @@ ImageEx PixelatorRender::render( const AContainer& aligner, AProcessWatcher* wat
 	//Get edge detected image
 	ImageEx gray( avg );
 	gray.to_grayscale();
-	auto edges = gray[0].scale_cubic( gray[0].getSize()*2 ).edge_laplacian();
+	auto edges = gray[0].edge_sobel().scale_cubic( gray[0].getSize()*upscale );
+	edges.binarize_threshold( edges.mean_value() );
 	
 	Histogram histo_h( edges.get_width() , color::BLACK );
 	Histogram histo_v( edges.get_height(), color::BLACK );
 	
 	//Get histogram for vertical/horizontal lines in the image
-	for( unsigned iy=0; iy<histo_v.size(); iy++ )
-		for( unsigned ix=0; ix<edges.get_width(); ix++ )
+	for( unsigned iy=0; iy<edges.get_height(); iy++ )
+		for( unsigned ix=0; ix<edges.get_width(); ix++ ){
 			histo_v[iy] += edges.pixel( {ix, iy} );
-	for( unsigned ix=0; ix<histo_h.size(); ix++ )
-		for( unsigned iy=0; iy<edges.get_height(); iy++ )
 			histo_h[ix] += edges.pixel( {ix, iy} );
-	
-//	normalize( histo_v );
-//	normalize( histo_h );
-	
-	for( unsigned iy=0; iy<histo_v.size(); iy++ )
-		for( unsigned ix=0; ix<histo_h.size(); ix++ )
-			edges.setPixel( {ix, iy}, histo_v[iy] + histo_h[ix] );
-//	auto mean = edges.mean_value();
-//	edges.binarize_threshold( mean );
-	
-//	for( auto& val : histo_v )
-//		val = val < mean ? color::BLACK : color::WHITE;
-//	for( auto& val : histo_h )
-//		val = val < mean ? color::BLACK : color::WHITE;
-	
-	int v_offset=0, v_spacing=1;
-	int h_offset=0, h_spacing=1;
-	//*
-	Color v_best=color::BLACK;
-	Color h_best=color::BLACK;
-	for( unsigned is=2; is<histo_v.size(); is++ )
-		for( unsigned io=0; io<is; io++ ){
-			auto v_current = spacing_eval( histo_v, io, is );
-			auto h_current = spacing_eval( histo_h, io, is );
-			
-			/*
-			if( v_current > v_best ){
-				v_best = h_current;
-				v_offset = io;
-				v_spacing = is;
-			}
-			if( h_current > h_best ){
-				h_best = h_current;
-				h_offset = io;
-				h_spacing = is;
-			}
-			/*/
-			auto current = v_current + h_current;
-			if( current > v_best ){
-				v_best = current;
-				v_offset = h_offset = io;
-				v_spacing = h_spacing = is;
-			}
-			//*/
 		}
-	//*/
 	
-	v_offset=8, v_spacing=20;
-	h_offset=5, h_spacing=17;
-	//*
-	edges.fill( color::BLACK );
-	for( unsigned iy=0; iy<histo_v.size(); iy++ )
-		for( unsigned ix=0; ix<histo_h.size(); ix++ ){
-			int hits = 0;
-			if( (v_spacing+iy-v_offset)%v_spacing == 0 ) hits++;
-			if( (h_spacing+ix-h_offset)%h_spacing == 0 ) hits++;
-			edges.setPixel( {ix, iy}, (hits / 2.0) * color::WHITE );
-		}
-	//*/
-	//return ImageEx( edges );
+	normalize( histo_v );
+	normalize( histo_h );
+	
+	auto v = ResultsVector( histo_v, 8 ).maximum();
+	auto h = ResultsVector( histo_h, 5 ).maximum();
 	
 	for( unsigned i=0; i<avg.size(); i++ ){
 		PlaneBase<precision_color_type> pixels( avg.getSize() );
@@ -137,25 +121,25 @@ ImageEx PixelatorRender::render( const AContainer& aligner, AProcessWatcher* wat
 		amounts.fill( 0 );
 		auto& p = avg[i];
 		
-		auto scale = p.getSize().to<double>() / avg.getSize() * 2;
+		auto scale = p.getSize().to<double>() / avg.getSize() * upscale;
 		
 		for( unsigned iy=0; iy<p.get_height(); iy++ )
 			for( unsigned ix=0; ix<p.get_width(); ix++ ){
-				auto jy = int(v_spacing+(iy*scale.y)-v_offset)/v_spacing;
-				auto jx = int(h_spacing+(ix*scale.x)-h_offset)/h_spacing;
+				auto jy = unsigned(v.spacing+(iy*scale.y)-v.offset)/v.spacing;
+				auto jx = unsigned(h.spacing+(ix*scale.x)-h.offset)/h.spacing;
 				pixels.setPixel( {jx, jy}, pixels.pixel( {jx, jy} ) + p.pixel( { ix, iy } ) );
 				amounts.setPixel( {jx, jy}, amounts.pixel( {jx, jy} ) + 1 );
 			}
 		
 		for( unsigned iy=0; iy<p.get_height(); iy++ )
 			for( unsigned ix=0; ix<p.get_width(); ix++ ){
-				auto jy = int(v_spacing+(iy*scale.y)-v_offset)/v_spacing;
-				auto jx = int(h_spacing+(ix*scale.x)-h_offset)/h_spacing;
+				auto jy = unsigned(v.spacing+(iy*scale.y)-v.offset)/v.spacing;
+				auto jx = unsigned(h.spacing+(ix*scale.x)-h.offset)/h.spacing;
 				p.setPixel( {ix, iy}, pixels.pixel( {jx, jy} ) / amounts.pixel( {jx, jy} ) );
 			}
 		
 		/*
-		Plane out( Size<int>{ p.get_width()*2/h_spacing + 1, p.get_height()*2/v_spacing + 1 } );
+		Plane out( Size<int>{ p.get_width()*2/h.spacing + 1, p.get_height()*2/v.spacing + 1 } );
 		for( unsigned iy=0; iy<out.get_height(); iy++ )
 			for( unsigned ix=0; ix<out.get_width(); ix++ )
 				out.setPixel( {ix,iy}, amounts.pixel( {ix, iy} ) != 0 ? pixels.pixel( {ix, iy} ) / amounts.pixel( {ix, iy} ) : color::BLACK );
