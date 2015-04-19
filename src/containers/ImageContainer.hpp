@@ -100,6 +100,12 @@ class ImageContainer : public AContainer{
 				for( auto& item : group.items )
 					update( item );
 		}
+		template<typename T>
+		void onAllItems( T update ) const{
+			for( auto& group : groups )
+				for( auto& item : group.items )
+					update( item );
+		}
 		
 		//TODO: Get group thing
 		

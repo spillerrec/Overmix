@@ -24,7 +24,9 @@
 #include <fstream>
 
 #include "color.hpp"
+#include "Geometry.hpp"
 
+class ImageContainer;
 
 namespace debug{
 	
@@ -33,6 +35,8 @@ namespace debug{
 	void make_low_res( QImage image, QString dir, unsigned scale );
 	
 	void output_transfers_functions( QString path );
+	
+	void output_rectable( const ImageContainer& imgs, Rectangle<> area );
 	
 	
 	class CsvFile{
