@@ -41,32 +41,21 @@ namespace debug{
 			
 		public:	
 			CsvFile( std::string filename ) : file( filename ) { }
-			
-			~CsvFile(){
-				file.close();
-			}
-			
-			CsvFile& add( color_type value ){
-				file << value << ",";
-				return *this;
-			}
-			
-			CsvFile& add( double value ){
-				file << value << ",";
-				return *this;
-			}
+			~CsvFile(){ file.close(); }
 			
 			CsvFile& add( const char* const value ){
 				file << "\"" << value << "\",";
 				return *this;
 			}
-			CsvFile& add( std::string value ){
-				return add( value.c_str() );
+			CsvFile& add( std::string value ){ return add( value.c_str() ); }
+			
+			template<typename T>
+			CsvFile& add( T value ){
+				file << value << ",";
+				return *this;
 			}
 			
-			void stop(){
-				file << std::endl;
-			}
+			void stop(){ file << std::endl; }
 	};
 }
 
