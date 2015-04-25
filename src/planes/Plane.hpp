@@ -104,7 +104,9 @@ class Plane : public PlaneBase<color_type>{
 		void for_each_pixel( void (*f)( const SimplePixel& ), void *data=nullptr );
 		void for_each_pixel( Plane &p, void (*f)( const SimplePixel& ), void *data=nullptr );
 	public:
+		void add( Plane &p );
 		void substract( Plane &p );
+		void difference( Plane &p );
 		void divide( Plane &p );
 		void multiply( Plane &p );
 		Plane level( color_type limit_min, color_type limit_max

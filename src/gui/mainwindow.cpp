@@ -24,6 +24,7 @@
 #include "FullscreenViewer.hpp"
 
 #include "../color.hpp"
+#include "../renders/AnimRender.hpp"
 #include "../renders/AverageRender.hpp"
 #include "../renders/DiffRender.hpp"
 #include "../renders/FloatRender.hpp"
@@ -305,26 +306,31 @@ const ImageEx& main_widget::postProcess( const ImageEx& input, bool new_image ){
 }
 
 
-ImageEx main_widget::renderImage( const AContainer& container ){
+std::unique_ptr<ARender> main_widget::getRender() const{
+	using namespace std;
 	//Select filter
 	bool chroma_upscale = ui->cbx_chroma->isChecked();
 	
+	if( ui->rbtn_static_diff->isChecked() )
+		return make_unique<DiffRender>();
+	else if( ui->rbtn_subpixel->isChecked() )
+		return make_unique<FloatRender>( ui->merge_scale->value() );
+	else if( ui->rbtn_diff->isChecked() )
+		return make_unique<StatisticsRender>( Statistics::DIFFERENCE );
+	else if( ui->rbtn_dehumidifier->isChecked() )
+		return make_unique<StatisticsRender>( Statistics::MIN );
+	else if( ui->rbtn_median->isChecked() )
+		return make_unique<StatisticsRender>( Statistics::MEDIAN );
+	else if( ui->rbtn_pixelator->isChecked() )
+		return make_unique<PixelatorRender>();
+	else
+		return make_unique<AverageRender>( chroma_upscale );
+}
+
+ImageEx main_widget::renderImage( const AContainer& container ){
 	DialogWatcher watcher( this, "Rendering" );
 	
-	if( ui->rbtn_static_diff->isChecked() )
-		return DiffRender().render( container, &watcher );
-	else if( ui->rbtn_subpixel->isChecked() )
-		return FloatRender( ui->merge_scale->value() ).render( container, &watcher );
-	else if( ui->rbtn_diff->isChecked() )
-		return StatisticsRender( Statistics::DIFFERENCE ).render( container, &watcher );
-	else if( ui->rbtn_dehumidifier->isChecked() )
-		return StatisticsRender( Statistics::MIN ).render( container, &watcher );
-	else if( ui->rbtn_median->isChecked() )
-		return StatisticsRender( Statistics::MEDIAN ).render( container, &watcher );
-	else if( ui->rbtn_pixelator->isChecked() )
-		return PixelatorRender().render( container, &watcher );
-	else
-		return AverageRender( chroma_upscale ).render( container, &watcher );
+	return getRender()->render( container, &watcher );
 }
 
 QImage main_widget::qrenderImage( const ImageEx& img ){
@@ -404,9 +410,12 @@ void main_widget::refresh_image(){
 		auto frames = getAlignedImages().getFrames();
 		renders.reserve( frames.size() );
 		
+		auto render = getRender();
+		//TODO: watcher
+		AnimRender anim( images, *render );
 		for( auto& frame : frames ){
-			FrameContainer current( getAlignedImages(), frame );
-			auto img = renderImage( current );
+			FrameContainer current( getAlignedImages(), frame ); //TODO: remove requirement of this!
+			auto img = anim.render( frame );
 			if( img.is_valid() )
 				renders.emplace_back( std::move(img), current.minPoint()-start );
 		}

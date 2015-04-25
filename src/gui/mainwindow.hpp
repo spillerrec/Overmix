@@ -35,6 +35,7 @@
 #include "../Deteleciner.hpp"
 #include "../RenderOperations.hpp"
 
+class ARender;
 class AContainer;
 class AImageAligner;
 class Deteleciner;
@@ -84,6 +85,7 @@ class main_widget: public QMainWindow{
 		RenderPipeLevel pipe_level;
 		RenderPipeThreshold pipe_threshold;
 		
+		std::unique_ptr<ARender> getRender() const;
 		ImageEx renderImage( const AContainer& container );
 		QImage qrenderImage( const ImageEx& img );
 		

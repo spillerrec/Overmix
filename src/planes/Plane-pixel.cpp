@@ -70,8 +70,11 @@ void Plane::for_each_pixel( Plane &p, void (*f)( const SimplePixel& ), void *dat
 }
 
 
+static void add_pixel( const SimplePixel& pix ){
+	*pix.row1 = std::min( (int)*pix.row2 + (int)*pix.row1, (int)color::WHITE );
+}
 static void substract_pixel( const SimplePixel& pix ){
-	*pix.row1 = std::max( (int)*pix.row2 - (int)*pix.row1, 0 );
+	*pix.row1 = std::max( (int)*pix.row2 - (int)*pix.row1, (int)color::BLACK );
 }
 static void divide_pixel( const SimplePixel& pix ){
 	double val1 = color::asDouble( *pix.row1 );
@@ -84,8 +87,16 @@ static void multiply_pixel( const SimplePixel& pix ){
 	*pix.row1 = color::fromDouble( val2 * val1 );
 }
 
+void Plane::add( Plane &p ){
+	for_each_pixel( p, &add_pixel );
+}
 void Plane::substract( Plane &p ){
 	for_each_pixel( p, &substract_pixel );
+}
+void Plane::difference( Plane &p ){
+	for_each_pixel( p, []( const SimplePixel& pix ){
+			*pix.row1 = std::abs( *pix.row2 - *pix.row1 );
+		} );
 }
 void Plane::divide( Plane &p ){
 	for_each_pixel( p, &divide_pixel );
