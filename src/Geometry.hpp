@@ -121,25 +121,25 @@ struct Point{
 	
 	//Math with scala
 	template<typename T2>
-	Point<T>& operator+=( T2 other ) const{
+	Point<T>& operator+=( T2 other ){
 		x += other;
 		y += other;
 		return *this;
 	}
 	template<typename T2>
-	Point<T>& operator-=( T2 other ) const{
+	Point<T>& operator-=( T2 other ){
 		x -= other;
 		y -= other;
 		return *this;
 	}
 	template<typename T2>
-	Point<T>& operator*=( T2 other ) const{
+	Point<T>& operator*=( T2 other ){
 		x *= other;
 		y *= other;
 		return *this;
 	}
 	template<typename T2>
-	Point<T>& operator/=( T2 other ) const{
+	Point<T>& operator/=( T2 other ){
 		x /= other;
 		y /= other;
 		return *this;

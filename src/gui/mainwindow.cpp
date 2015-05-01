@@ -30,6 +30,7 @@
 #include "../renders/FloatRender.hpp"
 #include "../renders/StatisticsRender.hpp"
 #include "../renders/PixelatorRender.hpp"
+#include "../renders/RobustSrRender.hpp"
 #include "../aligners/AnimationSeparator.hpp"
 #include "../aligners/AverageAligner.hpp"
 #include "../aligners/FakeAligner.hpp"
@@ -314,7 +315,7 @@ std::unique_ptr<ARender> main_widget::getRender() const{
 	if( ui->rbtn_static_diff->isChecked() )
 		return make_unique<DiffRender>();
 	else if( ui->rbtn_subpixel->isChecked() )
-		return make_unique<FloatRender>( ui->merge_scale->value() );
+		return make_unique<RobustSrRender>( ui->merge_scale->value() );
 	else if( ui->rbtn_diff->isChecked() )
 		return make_unique<StatisticsRender>( Statistics::DIFFERENCE );
 	else if( ui->rbtn_dehumidifier->isChecked() )
