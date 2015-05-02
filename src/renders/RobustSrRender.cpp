@@ -105,7 +105,7 @@ MatrixImg::MatrixImg( const Plane& p, Point<double> offset, Size<unsigned> size,
 	dhf.setFromTriplets( triplets.begin(), triplets.end() );
 }
 
-float signFloat( float a, float b ){ return (a>b) ? 1.0f : (a<b) ? -1.0f : 0.0f; }
+static float signFloat( float a, float b ){ return (a>b) ? 1.0f : (a<b) ? -1.0f : 0.0f; }
 
 MatrixXf sign( const MatrixXf& mat1, const MatrixXf& mat2 ){
 //	return mat1 - mat2; //L2 ??
@@ -120,23 +120,27 @@ MatrixXf sign( const MatrixXf& mat1, const MatrixXf& mat2 ){
 //}
 
 ImageEx RobustSrRender::render(const AContainer &group, AProcessWatcher *watcher) const {
-	auto beta = 1.0f / 255;
-	auto est = AverageRender().render(group)[0]; //Starting estimate
-	auto output = imageToMatrix( est.scale_cubic( group.image(0).getSize()*upscale_factor ) );
-	qDebug() << "Output size: " << output.size();
-
-
-	vector<MatrixImg> lowres;
+	auto planes_amount = group.image(0).size();
+	ImageEx img( planes_amount!=1 ? group.image(0).get_system() : ImageEx::GRAY );
 	auto min_point = group.minPoint();
-	for( unsigned i=0; i<group.count(); i++ )
-		lowres.emplace_back( group.image(i)[0], group.pos(i)-min_point, group.image(0).getSize()*upscale_factor, upscale_factor );
+	
+	for( unsigned c=0; c<planes_amount; ++c ){
+		auto est = AverageRender().render(group)[c]; //Starting estimate
+		auto output = imageToMatrix( est.scale_cubic( group.image(0).getSize()*upscale_factor ) );
+		qDebug() << "Output size: " << output.size();
+		vector<MatrixImg> lowres;
+		for( unsigned i=0; i<group.count(); i++ )
+			lowres.emplace_back( group.image(i)[c], group.pos(i)-min_point, group.image(0).getSize()*upscale_factor, upscale_factor );
 
-	for( int i=0; i<iterations; i++ ){
-		qDebug() << "Starting iteration " << i;
-		auto output_copy = output;
-		for( const auto& lr : lowres )
-			output -= (sign( output_copy * lr.dhf, lr.img ) * lr.dhf.transpose()) * beta;
+		for( int i=0; i<iterations; i++ ){
+			qDebug() << "Starting iteration " << i;
+			auto output_copy = output;
+			for( const auto& lr : lowres )
+				output -= (sign( output_copy * lr.dhf, lr.img ) * lr.dhf.transpose()) * beta;
+		}
+		
+		img.addPlane( matrixToImage( output, group.image(0).getSize().width() * upscale_factor ) );
 	}
 
-	return matrixToImage( output, group.image(0).getSize().width() * upscale_factor );
+	return img;
 }

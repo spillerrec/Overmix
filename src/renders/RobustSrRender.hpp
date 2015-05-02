@@ -25,6 +25,7 @@ class RobustSrRender : public ARender{
 	private:
 		int upscale_factor;
 		int iterations{ 75 };
+		float beta{ 1.3f / 255 };
 
 	public:
 		RobustSrRender( int upscale_factor ) : upscale_factor(upscale_factor) { }
