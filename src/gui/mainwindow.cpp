@@ -38,6 +38,7 @@
 #include "../aligners/LayeredAligner.hpp"
 #include "../aligners/RecursiveAligner.hpp"
 #include "../aligners/LinearAligner.hpp"
+#include "../aligners/SuperResAligner.hpp"
 #include "../Deteleciner.hpp"
 #include "../containers/DelegatedContainer.hpp"
 #include "../containers/FrameContainer.hpp"
@@ -525,6 +526,8 @@ static void alignContainer( AContainer& container, int merge_index, AImageAligne
 			aligner = new FrameAligner( container, method, scale ); break;
 		case 6: //Linear Curve Fitting
 			aligner = new LinearAligner( container, method ); break;
+		case 7: //SuperResolution alignment
+			aligner = new SuperResAligner( container, method, scale ); break;
 		default: return;
 	}
 	

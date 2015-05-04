@@ -201,7 +201,7 @@
                   <string>The algorithm used for aligning</string>
                  </property>
                  <property name="currentIndex">
-                  <number>1</number>
+                  <number>0</number>
                  </property>
                  <item>
                   <property name="text">
@@ -236,6 +236,11 @@
                  <item>
                   <property name="text">
                    <string>Fit to Linear Curve</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>SuperRes</string>
                   </property>
                  </item>
                 </widget>
