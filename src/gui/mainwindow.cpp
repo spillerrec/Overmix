@@ -166,6 +166,7 @@ main_widget::main_widget( ImageContainer& images )
 	connect( ui->action_show_menubar, SIGNAL( triggered() ), this, SLOT( toggleMenubar()  ) );
 	connect( ui->action_fullscreen,   SIGNAL( triggered() ), this, SLOT( showFullscreen() ) );
 	connect( ui->action_online_wiki,  SIGNAL( triggered() ), this, SLOT( openOnlineHelp() ) );
+	connect( ui->action_crop_all,     SIGNAL( triggered() ), this, SLOT( crop_all() ) );
 	ui->action_show_menubar->setChecked( settings.value( "show_menubar", true ).toBool() );
 	toggleMenubar();
 	
@@ -731,6 +732,19 @@ void main_widget::updateSelection(){
 		case 0:
 		default: selection = nullptr; break;
 	}
+	
+	clear_cache();
+}
+
+void main_widget::crop_all(){
+	debug::output_rectable( images,
+		{{  QInputDialog::getInt( this, tr("Pick area"), tr("x") )
+		 ,  QInputDialog::getInt( this, tr("Pick area"), tr("y") )
+		 }
+		,{  QInputDialog::getInt( this, tr("Pick area"), tr("width") )
+		 ,  QInputDialog::getInt( this, tr("Pick area"), tr("height") )
+		 }
+	});
 	
 	clear_cache();
 }

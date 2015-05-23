@@ -17,20 +17,21 @@
 
 
 #include "debug.hpp"
+#include "utils/utils.hpp"
 
 #include "containers/ImageContainer.hpp"
 
 using namespace std;
 
 
-void debug::output_rectable( const ImageContainer& imgs, Rectangle<> area ){
-	imgs.onAllItems( [area]( const ImageItem& img ){
-			auto pos = area.pos - img.offset;
-			ImageEx(img.image())
-				.to_qimage(ImageEx::SYSTEM_REC709)
-				.copy( pos.x, pos.y, area.size.width(), area.size.height() )
-				.save( "crop_" + QString::number( img.offset.x ) + "x" + QString::number( img.offset.y ) + ".png" );
-		} );
+void debug::output_rectable( ImageContainer& imgs, Rectangle<> area ){
+	for( unsigned i=0; i<imgs.count(); i++ )
+		imgs.cropImage( i, {area.pos.to<double>(), area.size.to<double>()} );
+	
+	//TODO: remove empty images
+	for( unsigned i=0; i<imgs.groupAmount(); i++ )
+		util::removeItemsIf( imgs.getGroup(i).items, [](auto& item){ return !item.image().is_valid(); } );
+	imgs.rebuildIndexes();
 }
 
 void debug::make_slide( QImage image, QString dir, double scale ){

@@ -35,6 +35,10 @@ namespace util{
 		
 		return true;
 	}
+	
+	template<typename T, typename Func>
+	void removeItemsIf( std::vector<T>& container, Func f )
+		{ container.erase( std::remove_if( container.begin(), container.end(), f ), container.end() ); }
 
 }
 

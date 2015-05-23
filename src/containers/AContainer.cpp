@@ -34,6 +34,23 @@ void AContainer::cropImage( unsigned index, unsigned left, unsigned top, unsigne
 	setPos( index, pos( index ) + offset );
 }
 
+void AContainer::cropImage( unsigned index, Rectangle<double> area ){
+	auto& img = imageRef( index );
+	if( area.intersects( { pos(index), img.getSize() }) ){
+		auto offset = area.pos - pos(index);
+		auto real = offset.max( {0,0} ).to<unsigned>();
+		auto size = (area.size - (real - offset)).min( img.getSize() );
+		img.crop( offset, size );
+		setPos( index, pos(index) + real );
+		
+		if( size != area.size.to<unsigned>() )
+			img = ImageEx();
+	}
+	else
+		img = ImageEx();
+	
+}
+
 void AContainer::scaleImage( unsigned index, Point<double> scale, ScalingFunction scaling ){
 	setPos( index, pos( index ) * scale );
 	

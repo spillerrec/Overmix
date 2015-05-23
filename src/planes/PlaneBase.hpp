@@ -98,7 +98,7 @@ class PlaneBase{
 		
 	//Status
 		operator bool() const{ return valid(); }
-		bool valid() const{ return data != nullptr || size.x != 0 || size.y != 0; }
+		bool valid() const{ return data != nullptr && size.x != 0 && size.y != 0; }
 		unsigned get_height() const{ return size.height(); }
 		unsigned get_width() const{ return size.width(); }
 		unsigned get_line_width() const{ return line_width; }

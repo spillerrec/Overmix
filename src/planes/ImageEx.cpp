@@ -393,6 +393,16 @@ Point<unsigned> ImageEx::crop( unsigned left, unsigned top, unsigned right, unsi
 	}
 };
 
+void ImageEx::crop( Point<unsigned> offset, Size<unsigned> size ){
+	auto real_size = getSize();
+	for( auto& plane : planes ){
+		auto scale = plane.getSize().to<double>() / real_size.to<double>();
+		plane.crop( offset*scale, size*scale );
+	}
+	if( alpha )
+		alpha.crop( offset, size );
+}
+
 Rectangle<unsigned> ImageEx::getCrop() const{
 	if( planes.size() == 0 )
 		return { {0,0}, {0,0} };

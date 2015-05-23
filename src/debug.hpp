@@ -36,7 +36,7 @@ namespace debug{
 	
 	void output_transfers_functions( QString path );
 	
-	void output_rectable( const ImageContainer& imgs, Rectangle<> area );
+	void output_rectable( ImageContainer& imgs, Rectangle<> area );
 	
 	
 	class CsvFile{

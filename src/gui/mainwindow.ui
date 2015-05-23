@@ -201,7 +201,7 @@
                   <string>The algorithm used for aligning</string>
                  </property>
                  <property name="currentIndex">
-                  <number>0</number>
+                  <number>2</number>
                  </property>
                  <item>
                   <property name="text">
@@ -1547,8 +1547,15 @@
     </property>
     <addaction name="action_online_wiki"/>
    </widget>
+   <widget class="QMenu" name="menu_Tools">
+    <property name="title">
+     <string>&amp;Tools</string>
+    </property>
+    <addaction name="action_crop_all"/>
+   </widget>
    <addaction name="menuFiles"/>
    <addaction name="menuView"/>
+   <addaction name="menu_Tools"/>
    <addaction name="menuHelp"/>
   </widget>
   <action name="action_online_wiki">
@@ -1611,6 +1618,11 @@
   <action name="action_movement_graph">
    <property name="text">
     <string>Display movement graph</string>
+   </property>
+  </action>
+  <action name="action_crop_all">
+   <property name="text">
+    <string>Crop to area</string>
    </property>
   </action>
  </widget>

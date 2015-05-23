@@ -137,6 +137,7 @@ class ImageEx{
 		void scaleFactor( Size<double> factor, ScalingFunction scaling=ScalingFunction::SCALE_MITCHELL )
 			{ scale( ( getSize() * factor ).round(), scaling ); }
 		Point<unsigned> crop( unsigned left, unsigned top, unsigned right, unsigned bottom );
+		void crop( Point<unsigned> offset, Size<unsigned> size );
 		
 		MergeResult best_vertical( const ImageEx& img, int level, double range, DiffCache *cache=nullptr ) const{
 			return best_round( img, level, 0, range, cache );

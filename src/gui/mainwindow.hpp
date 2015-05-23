@@ -145,6 +145,9 @@ class main_widget: public QMainWindow{
 		void addGroup();
 		void removeFiles();
 		void browserChangeImage( const QItemSelection& selected, const QItemSelection& deselected );
+		
+	//Related to the Tools tab
+		void crop_all();
 };
 
 #endif
