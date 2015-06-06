@@ -21,7 +21,7 @@
 #include "../src/aligners/RecursiveAligner.hpp"
 #include "../src/aligners/AverageAligner.hpp"
 #include "../src/renders/AverageRender.hpp"
-#include "../src/renders/FloatRender.hpp"
+#include "../src/renders/RobustSrRender.hpp"
 
 #include <QCoreApplication>
 #include <QFileInfo>
@@ -61,8 +61,8 @@ int main( int argc, char *argv[] ){
 	//qDebug() << "Aligning took: " << t.restart();
 	//return 0;
 	
-	auto img( AverageRender().render( images ) );
-	//auto img( FloatRender().render( images ) );
+	//auto img( AverageRender().render( images ) );
+	auto img( RobustSrRender( 4 ).render( images ) );
 	qDebug() << "Rendering took: " << t.restart();
 	/*
 	

@@ -21,13 +21,14 @@
 
 #include "ARender.hpp"
 class Plane;
+struct Parameters;
 
 class EstimatorRender : public ARender{
 	private:
 		int upscale_factor;
 		int iterations{ 150 };
 		
-		Plane degrade( const Plane& original, const AContainer &group, int channel ) const;
+		Plane degrade( const Plane& original, const Parameters& para ) const;
 
 	public:
 		EstimatorRender( int upscale_factor ) : upscale_factor(upscale_factor) { }
