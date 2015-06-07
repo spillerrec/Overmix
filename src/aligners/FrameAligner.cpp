@@ -33,14 +33,15 @@ void FrameAligner::align( AProcessWatcher* watcher ){
 		//TODO: this should be a sub-pixel precision render!
 	}
 	
+	//TODO: also show progress for this!
 	RecursiveAligner aligner( images, get_method(), get_scale() ); //TODO: try with AverageAligner
 	aligner.addImages();
 	aligner.align();
 	
-	for( unsigned i=0; i<frames.size(); ++i ){
-		FrameContainer current( *this, frames[i] );
-		auto aligned_offset = base_point - current.minPoint();
-		current.offsetAll( aligned_offset + (images.pos(i) - images.minPoint()) );
-	}
+	ProgressWrapper( watcher ).loopAll( frames.size(), [&](int i){
+			FrameContainer current( *this, frames[i] );
+			auto aligned_offset = base_point - current.minPoint();
+			current.offsetAll( aligned_offset + (images.pos(i) - images.minPoint()) );
+		} );
 }
 

@@ -109,6 +109,7 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 	
 	auto planes_amount = group.image(0).size();
 	ImageEx img( planes_amount!=1 ? group.image(0).get_system() : ImageEx::GRAY );
+	ProgressWrapper( watcher ).setTotal( planes_amount * iterations );
 	
 	auto est = group.image(0); //Starting estimate
 	auto beta = color::WHITE * (1.3/255);
@@ -116,7 +117,7 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 		auto output = save( est[c], "est" + QString::number(c) );
 		save( group.image(1)[c], "back" + QString::number(c) );
 
-		for( int i=0; i<iterations; i++ ){
+		for( int i=0; i<iterations; i++, ProgressWrapper( watcher ).add() ){
 			qDebug() << "Starting iteration " << i;
 			auto output_copy = output;
 			//for( const auto& lr : lowres )

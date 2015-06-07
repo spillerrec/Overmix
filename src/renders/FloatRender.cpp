@@ -166,6 +166,8 @@ bool isSubpixel( const AContainer& aligner ){
 
 
 ImageEx FloatRender::render( const AContainer& aligner, AProcessWatcher* watcher ) const{
+	ProgressWrapper progress( watcher );
+	
 	//Fall back to AverageRender if no sub-pixel alignment
 	if( !isSubpixel( aligner ) ){
 		qDebug( "No subpixel, using AverageRender instead" );
@@ -187,8 +189,7 @@ ImageEx FloatRender::render( const AContainer& aligner, AProcessWatcher* watcher
 	alpha.fill( color::WHITE );
 	img.alpha_plane() = alpha;
 	
-	if( watcher )
-		watcher->setTotal( planes_amount*1000 );
+	progress.setTotal( planes_amount*1000 );
 	
 	vector<PointRenderBase::ValuePos> points;
 	for( unsigned i=0; i<planes_amount; i++ ){
@@ -200,11 +201,9 @@ ImageEx FloatRender::render( const AContainer& aligner, AProcessWatcher* watcher
 			scales.emplace_back( aligner.image( j )[0].getSize().to<double>() / aligner.image( j )[i].getSize().to<double>() * scale );
 		
 		for( unsigned iy=0; iy<out.get_height(); ++iy ){
-			if( watcher ){
-				if( watcher->shouldCancel() )
-					return ImageEx();
-				watcher->setCurrent( i*1000 + (iy * 1000 / out.get_height() ) );
-			}
+			if( progress.shouldCancel() )
+				return ImageEx();
+			progress.setCurrent( i*1000 + (iy * 1000 / out.get_height() ) );
 			
 			color_type* row = out.scan_line( iy );
 			for( unsigned ix=0; ix<out.get_width(); ++ix ){

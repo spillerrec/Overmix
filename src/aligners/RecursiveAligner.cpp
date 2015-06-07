@@ -106,21 +106,16 @@ pair<ImageGetter,Point<double>> RecursiveAligner::combine( const ImageGetter& fi
 	}
 }
 
-static void addToWatcher( AProcessWatcher* watcher, int add ){
-	if( watcher )
-		watcher->setCurrent( watcher->getCurrent() + add );
-}
-
 ImageGetter RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsigned end ){
 	auto amount = end - begin;
 	switch( amount ){
 		case 0: qFatal( "No images to align!" );
-		case 1: addToWatcher( watcher, 1 );
+		case 1: ProgressWrapper( watcher ).add( 1 );
 				return getGetter( begin ); //Just return this one
 		case 2: { //Optimization for two images
 				auto offset = combine( getGetter( begin ), getGetter( begin+1 ) );
 				setPos( begin+1, pos(begin) + offset.second );
-				addToWatcher( watcher, 2 );
+				ProgressWrapper( watcher ).add( 2 );
 				return std::move( offset.first );
 			}
 		default: { //More than two images

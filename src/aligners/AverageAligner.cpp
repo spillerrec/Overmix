@@ -35,13 +35,11 @@ void AverageAligner::align( AProcessWatcher* watcher ){
 	
 	raw = true;
 	
-	if( watcher )
-		watcher->setTotal( count() );
+	ProgressWrapper( watcher ).setTotal( count() );
 	
 	resetPosition();
 	for( unsigned i=1; i<count(); i++ ){
-		if( watcher )
-			watcher->setCurrent( i );
+		ProgressWrapper( watcher ).setCurrent( i );
 		
 		ImageEx img = AverageRender( false, true ).render( Limiter( *this, i ) );
 		setPos( i, minPoint() + find_offset( img[0], image( i )[0], img.alpha_plane(), alpha( i ) ).distance );

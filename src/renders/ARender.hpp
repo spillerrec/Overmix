@@ -27,20 +27,29 @@ class AProcessWatcher{
 		virtual void setCurrent( int current ) = 0;
 		virtual int getCurrent() const = 0;
 		virtual bool shouldCancel() const = 0;
+		
+		void add( int amount=1 ){ setCurrent( getCurrent() + amount ); }
+		
+		template<typename Func>
+		void loopAll( int total, Func f ){
+			setTotal( total );
+			for( int i=0; i<total; i++ ){
+				f( i );
+				setCurrent( i );
+			}
+		}
 };
 
-class ProgressWrapper{
+class ProgressWrapper : public AProcessWatcher{
 	private:
 		AProcessWatcher* watcher;
 		
 	public:
 		ProgressWrapper( AProcessWatcher* watcher ) : watcher(watcher) { }
-		void setTotal  ( int total   ){ if( watcher ) watcher->setTotal( total ); }
-		void setCurrent( int current ){ if( watcher ) watcher->setCurrent( current ); }
-		int  getCurrent()       const { return watcher ? watcher->getCurrent() : 0; }
-		bool shouldCancel()     const { return watcher ? watcher->shouldCancel() : false; }
-		
-		void add( int amount=1 ){ setCurrent( getCurrent() + amount ); }
+		void setTotal  ( int total   ) override { if( watcher ) watcher->setTotal( total ); }
+		void setCurrent( int current ) override { if( watcher ) watcher->setCurrent( current ); }
+		int  getCurrent()       const  override { return watcher ? watcher->getCurrent() : 0; }
+		bool shouldCancel()     const  override { return watcher ? watcher->shouldCancel() : false; }
 };
 
 class ARender{
