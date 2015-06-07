@@ -27,7 +27,7 @@
 using namespace std;
 
 static Plane save( Plane p, QString name ){
-	ImageEx( p ).to_qimage( ImageEx::SYSTEM_KEEP ).save( name + ".png" );
+	//ImageEx( p ).to_qimage( ImageEx::SYSTEM_KEEP ).save( name + ".png" );
 	return p;
 }
 
@@ -36,36 +36,52 @@ double truncate( double in ){
 }
 
 struct Parameters{
-	const Plane& background;
-	double overlay{ 0.85 };
+	//const Plane& background;
+	//double overlay{ 0.85 };
 	
-	Parameters( const Plane& background ) : background(background) { }
+	const AContainer& container;
+	unsigned index;
+	unsigned channel;
+	Point<double> min_point;
+	
+	Parameters( const AContainer& container, unsigned index, unsigned channel /*const Plane& background*/ )
+		: container(container), index(index), channel(channel) /*background(background)*/ {
+			min_point = container.minPoint();
+		}
 };
 
 Plane EstimatorRender::degrade( const Plane& original, const Parameters& para ) const{
 	Plane out( original );
 	
+	/* Overlay
 	for( unsigned iy=0; iy<out.get_height(); iy++ ){
 		auto row_out = out.scan_line( iy );
 		auto row_back  = para.background.const_scan_line( iy );
 		for( unsigned ix=0; ix<out.get_width(); ix++ )
 			row_out[ix] = row_out[ix] * (1-para.overlay) + row_back[ix] * (para.overlay);
 	}
+	*/
+	
+	out.crop( (para.container.pos(para.index)-para.min_point)*upscale_factor
+		, para.container.image(para.index)[para.channel].getSize()*upscale_factor );
+	out = out.scale_cubic( out.getSize() / upscale_factor ); //TODO: offset
 	
 	return out;
 }
 
 static float signFloat( float a, float b, float c ){ return (a>b) ? c : (a<b) ? -c : 0.0f; }
 
-void sign( Plane& out, const Plane& p1, const Plane& p2, double beta ){
+void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, double beta, int scale ){
+	Point<int> pos = offset * scale;
+	qDebug() << "pos: " << pos.x << "x" << pos.y;
 	unsigned total_change = 0;
-	for( unsigned iy=0; iy<out.get_height(); iy++ ){
-		auto row_out = out.scan_line( iy );
-		auto row_p1  = p1.const_scan_line( iy );
-		auto row_p2  = p2.const_scan_line( iy );
-		for( unsigned ix=0; ix<out.get_width(); ix++ ){
-			auto sign = signFloat( row_p1[ix], row_p2[ix], beta );
-			row_out[ix] = truncate( row_out[ix] - sign );
+	for( unsigned iy=0; iy<p1.get_height()*scale; iy++ ){
+		auto row_out = out.scan_line( iy+pos.y );
+		auto row_p1  = p1.const_scan_line( iy/scale );
+		auto row_p2  = p2.const_scan_line( iy/scale );
+		for( unsigned ix=0; ix<p1.get_width()*scale; ix++ ){
+			auto sign = signFloat( row_p1[ix/scale], row_p2[ix/scale], beta );
+			row_out[ix+pos.x] = truncate( row_out[ix+pos.x] - sign );
 			total_change += abs( sign );
 		}
 	}
@@ -104,14 +120,19 @@ void regularize( Plane& input, const Plane& copy, int p, double alpha, double be
 
 
 ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watcher) const {
-	if( group.count() != 2 )
-		return {};
+//	if( group.count() != 2 )
+//		return {};
 	
 	auto planes_amount = group.image(0).size();
+	auto min_point = group.minPoint();
 	ImageEx img( planes_amount!=1 ? group.image(0).get_system() : ImageEx::GRAY );
 	ProgressWrapper( watcher ).setTotal( planes_amount * iterations );
 	
-	auto est = group.image(0); //Starting estimate
+	auto est = AverageRender().render( group ); //Starting estimate
+	est.scaleFactor( {upscale_factor,upscale_factor} );
+//	est[0].fill( color::WHITE / 2 );
+//	est[1].fill( color::WHITE / 2 );
+//	est[2].fill( color::WHITE / 2 );
 	auto beta = color::WHITE * (1.3/255);
 	for( unsigned c=0; c<planes_amount; ++c ){
 		auto output = save( est[c], "est" + QString::number(c) );
@@ -122,9 +143,12 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 			auto output_copy = output;
 			//for( const auto& lr : lowres )
 			//	sign( output, degrade( output_copy ), lr, beta );
-				sign( output, degrade( output_copy, {group.image(1)[c]} ), group.image(0)[c], beta );
+			//	sign( output, degrade( output_copy, {group.image(1)[c]} ), group.image(0)[c], beta );
 				//output -= (sign( output_copy * lr.dhf, lr.img ) * lr.dhf.transpose()) * beta;
 			
+			for( unsigned j=0; j<group.count(); j++ )
+				sign( output, degrade( output_copy, {group, j, c} ), group.image(j)[c], group.pos(j)-min_point
+					, beta, upscale_factor );
 		//	regularize( output, output_copy, 7, 0.7, beta, 0.03 );
 		}
 		//save( degrade(output, group, c), "deg" + QString::number(c) );
