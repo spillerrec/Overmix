@@ -695,12 +695,16 @@ void main_widget::applyModifications(){
 	Point<double> scale( ui->pre_scale_width->value(), ui->pre_scale_height->value() );
 	
 	auto& container = getAlignedImages();
+	DialogWatcher watcher( this, "Applying modifications" );
+	watcher.setTotal( container.count() );
 	for( unsigned i=0; i<container.count(); ++i ){
 		if( deviation > 0.0009 && dev_iterations > 0 )
 			container.imageRef( i ).apply( &Plane::deconvolve_rl, deviation, dev_iterations );
 		
 		container.cropImage( i, left, top, right, bottom );
 		container.scaleImage( i, scale, scale_method );
+		
+		watcher.setCurrent( i );
 	}
 	
 	clear_cache();
