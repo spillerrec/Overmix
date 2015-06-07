@@ -446,7 +446,7 @@ QString main_widget::getSavePath( QString title, QString file_types ){
 
 void main_widget::save_image(){
 	for( auto& render : renders ){
-		QString filename = getSavePath( tr("Save image"), tr("PNG files (*.png)") );
+		QString filename = getSavePath( tr("Save image"), tr("PNG files (*.png);; dump files (*.dump)") );
 		if( !filename.isEmpty() ){
 			if( QFileInfo( filename ).suffix() == "dump" )
 				DumpSaver( postProcess( render.raw, true ), filename ).exec(); //TODO: fix postProcess
