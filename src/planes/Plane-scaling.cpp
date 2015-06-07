@@ -123,6 +123,9 @@ void ScaleLine::do_line() const{
 
 
 Plane Plane::scale_generic( Point<unsigned> wanted, double window, Plane::Filter f ) const{
+	if( wanted == getSize() )
+		return *this;
+	
 	Plane scaled( wanted );
 	
 	QTime t;
