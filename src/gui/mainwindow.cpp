@@ -31,6 +31,7 @@
 #include "../renders/StatisticsRender.hpp"
 #include "../renders/PixelatorRender.hpp"
 #include "../renders/RobustSrRender.hpp"
+#include "../renders/EstimatorRender.hpp"
 #include "../aligners/AnimationSeparator.hpp"
 #include "../aligners/AverageAligner.hpp"
 #include "../aligners/FakeAligner.hpp"
@@ -317,7 +318,7 @@ std::unique_ptr<ARender> main_widget::getRender() const{
 	if( ui->rbtn_static_diff->isChecked() )
 		return make_unique<DiffRender>();
 	else if( ui->rbtn_subpixel->isChecked() )
-		return make_unique<RobustSrRender>( ui->merge_scale->value() );
+		return make_unique<EstimatorRender>( ui->merge_scale->value() );
 	else if( ui->rbtn_diff->isChecked() )
 		return make_unique<StatisticsRender>( Statistics::DIFFERENCE );
 	else if( ui->rbtn_dehumidifier->isChecked() )
@@ -414,13 +415,18 @@ void main_widget::refresh_image(){
 		renders.reserve( frames.size() );
 		
 		auto render = getRender();
-		//TODO: watcher
-		AnimRender anim( images, *render );
-		for( auto& frame : frames ){
-			FrameContainer current( getAlignedImages(), frame ); //TODO: remove requirement of this!
-			auto img = anim.render( frame );
-			if( img.is_valid() )
-				renders.emplace_back( std::move(img), current.minPoint()-start );
+		
+		if( frames.size() == 1 )
+			renders.emplace_back( renderImage( images ), Point<double>(0.0,0.0) );
+		else{
+			//TODO: watcher
+			AnimRender anim( images, *render );
+			for( auto& frame : frames ){
+				FrameContainer current( getAlignedImages(), frame ); //TODO: remove requirement of this!
+				auto img = anim.render( frame );
+				if( img.is_valid() )
+					renders.emplace_back( std::move(img), current.minPoint()-start );
+			}
 		}
 	}
 	
