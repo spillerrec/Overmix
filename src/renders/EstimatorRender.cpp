@@ -120,9 +120,6 @@ void regularize( Plane& input, const Plane& copy, int p, double alpha, double be
 
 
 ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watcher) const {
-//	if( group.count() != 2 )
-//		return {};
-	
 	auto planes_amount = group.image(0).size();
 	auto min_point = group.minPoint();
 	ImageEx img( planes_amount!=1 ? group.image(0).get_system() : ImageEx::GRAY );
@@ -140,14 +137,9 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 
 		for( int i=0; i<iterations; i++, ProgressWrapper( watcher ).add() ){
 			qDebug() << "Starting iteration " << i;
-			auto output_copy = output;
-			//for( const auto& lr : lowres )
-			//	sign( output, degrade( output_copy ), lr, beta );
-			//	sign( output, degrade( output_copy, {group.image(1)[c]} ), group.image(0)[c], beta );
-				//output -= (sign( output_copy * lr.dhf, lr.img ) * lr.dhf.transpose()) * beta;
 			
 			for( unsigned j=0; j<group.count(); j++ )
-				sign( output, degrade( output_copy, {group, j, c} ), group.image(j)[c], group.pos(j)-min_point
+				sign( output, degrade( output, {group, j, c} ), group.image(j)[c], group.pos(j)-min_point
 					, beta, upscale_factor );
 		//	regularize( output, output_copy, 7, 0.7, beta, 0.03 );
 		}
