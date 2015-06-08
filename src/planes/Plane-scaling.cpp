@@ -68,14 +68,14 @@ struct ScalePoint{
 	unsigned start;
 	vector<float> weights; //Size of this is end
 	
-	ScalePoint( unsigned index, unsigned width, unsigned wanted_width, double window, Plane::Filter f ){
+	ScalePoint( unsigned index, unsigned width, unsigned wanted_width, double offset, double window, Plane::Filter f ){
       double pos = ((double)index / (wanted_width-1)) * (width-1);
 		start = (unsigned)max( (int)ceil( pos-window ), 0 );
 		unsigned end = min( (unsigned)floor( pos+window ), width-1 );
 		
 		weights.reserve( end - start + 1 );
 		for( unsigned j=start; j<=end; ++j )
-			weights.push_back( f( pos - j ) );
+			weights.push_back( f( pos + offset - j ) );
 	}
 };
 
@@ -85,13 +85,14 @@ struct ScaleLine{
 	const Plane& input;
 	
 	Plane::Filter f;
+	float offset;
 	float window;
 	
 	unsigned index;
 	
 	ScaleLine( const std::vector<ScalePoint>& points, Plane &wanted, unsigned index
-		,	const Plane& input, float window, Plane::Filter f )
-		:	points(points), wanted(wanted), input(input), f(f), window(window), index(index)
+		,	const Plane& input, float offset, float window, Plane::Filter f )
+		:	points(points), wanted(wanted), input(input), f(f), offset(offset), window(window), index(index)
 		{ }
 		
 	void do_line() const;
@@ -99,7 +100,7 @@ struct ScaleLine{
 
 void ScaleLine::do_line() const{
 	color_type *out = wanted.scan_line( index );
-	ScalePoint ver( index, input.get_height(), wanted.get_height(), window, f );
+	ScalePoint ver( index, input.get_height(), wanted.get_height(), offset, window, f );
 	
 	for( auto& x : points ){
 		float avg = 0;
@@ -122,7 +123,7 @@ void ScaleLine::do_line() const{
 }
 
 
-Plane Plane::scale_generic( Point<unsigned> wanted, double window, Plane::Filter f ) const{
+Plane Plane::scale_generic( Point<unsigned> wanted, double window, Plane::Filter f, Point<double> offset ) const{
 	if( wanted == getSize() )
 		return *this;
 	
@@ -135,13 +136,13 @@ Plane Plane::scale_generic( Point<unsigned> wanted, double window, Plane::Filter
 	std::vector<ScalePoint> points;
 	points.reserve( wanted.width() );
 	for( unsigned ix=0; ix<wanted.width(); ++ix )
-		points.emplace_back( ix, size.width(), wanted.width(), window, f );
+		points.emplace_back( ix, size.width(), wanted.width(), offset.x, window, f );
 	
 	//Calculate all y-lines
 	std::vector<ScaleLine> lines;
 	lines.reserve( wanted.height() );
 	for( unsigned iy=0; iy<wanted.height(); ++iy )
-		lines.emplace_back( points, scaled, iy, *this, window, f );
+		lines.emplace_back( points, scaled, iy, *this, offset.y, window, f );
 	
    QtConcurrent::blockingMap( lines, []( ScaleLine& t ){ t.do_line(); } );
    //for( auto l : lines ) do_line( l );

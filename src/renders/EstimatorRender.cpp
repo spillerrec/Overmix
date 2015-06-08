@@ -27,7 +27,7 @@
 using namespace std;
 
 static Plane save( Plane p, QString name ){
-	//ImageEx( p ).to_qimage( ImageEx::SYSTEM_KEEP ).save( name + ".png" );
+//	ImageEx( p ).to_qimage( ImageEx::SYSTEM_KEEP ).save( name + ".png" );
 	return p;
 }
 
@@ -62,9 +62,9 @@ Plane EstimatorRender::degrade( const Plane& original, const Parameters& para ) 
 	}
 	*/
 	
-	out.crop( (para.container.pos(para.index)-para.min_point)*upscale_factor
-		, para.container.image(para.index)[para.channel].getSize()*upscale_factor );
-	out = out.scale_cubic( out.getSize() / upscale_factor ); //TODO: offset
+	auto pos = (para.container.pos(para.index)-para.min_point)*upscale_factor;
+	out.crop( pos, para.container.image(para.index)[para.channel].getSize()*upscale_factor );
+	out = out.scale_cubic( out.getSize() / upscale_factor, pos - pos.to<int>().to<double>() ); //TODO: offset
 	
 	return out;
 }
@@ -130,18 +130,23 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 //	est[0].fill( color::WHITE / 2 );
 //	est[1].fill( color::WHITE / 2 );
 //	est[2].fill( color::WHITE / 2 );
-	auto beta = color::WHITE * (1.3/255);
+	auto beta = color::WHITE * (1.3/255) / group.count();
 	for( unsigned c=0; c<planes_amount; ++c ){
 		auto output = save( est[c], "est" + QString::number(c) );
-		save( group.image(1)[c], "back" + QString::number(c) );
 
 		for( int i=0; i<iterations; i++, ProgressWrapper( watcher ).add() ){
 			qDebug() << "Starting iteration " << i;
 			
+			auto output_copy = output;
 			for( unsigned j=0; j<group.count(); j++ )
-				sign( output, degrade( output, {group, j, c} ), group.image(j)[c], group.pos(j)-min_point
+				sign( output_copy, degrade( output, {group, j, c} ), group.image(j)[c], group.pos(j)-min_point
 					, beta, upscale_factor );
+			output = output_copy;
 		//	regularize( output, output_copy, 7, 0.7, beta, 0.03 );
+		}
+		for( unsigned j=0; j<group.count(); j++ ){
+			save( degrade( output, {group, j, c} ), "deg" + QString::number(c) + "-" + QString::number(j) );
+			save( group.image(j)[c],                "low" + QString::number(c) + "-" + QString::number(j) );
 		}
 		//save( degrade(output, group, c), "deg" + QString::number(c) );
 		//save( output, "end" + QString::number(c) );

@@ -138,24 +138,24 @@ class Plane : public PlaneBase<color_type>{
 		static double linear( double x );
 		static double mitchell( double x ){ return cubic( 1.0/3, 1.0/3, x ); }
 		static double spline( double x ){ return cubic( 1.0, 1.0, x ); }
-		Plane scale_generic( Point<unsigned> size, double window, Filter f ) const;
+		Plane scale_generic( Point<unsigned> size, double window, Filter f, Point<double> offset={0.0,0.0} ) const;
 	public:
 		Plane scale_nearest( Point<unsigned> size ) const;
-		Plane scale_linear( Point<unsigned> size ) const{
-			return scale_generic( size, 1, linear );
+		Plane scale_linear( Point<unsigned> size, Point<double> offset={0.0,0.0} ) const{
+			return scale_generic( size, 1, linear, offset );
 		}
-		Plane scale_cubic( Point<unsigned> size ) const{
-			return scale_generic( size, 2, mitchell );
+		Plane scale_cubic( Point<unsigned> size, Point<double> offset={0.0,0.0} ) const{
+			return scale_generic( size, 2, mitchell, offset );
 		}
-		Plane scale_lanczos( Point<unsigned> size ) const;
+		Plane scale_lanczos( Point<unsigned> size, Point<double> offset={0.0,0.0} ) const;
 		
-		Plane scale_select( Point<unsigned> size, ScalingFunction scaling ) const{
+		Plane scale_select( Point<unsigned> size, ScalingFunction scaling, Point<double> offset={0.0,0.0} ) const{
 			switch( scaling ){
 				case ScalingFunction::SCALE_NEAREST : return scale_nearest( size );
-				case ScalingFunction::SCALE_LINEAR  : return scale_linear(  size );
-				case ScalingFunction::SCALE_MITCHELL: return scale_cubic(   size );
-				case ScalingFunction::SCALE_SPLINE  : return scale_generic( size, 2, spline );
-			//	case ScalingFunction::SCALE_LANCZOS : return scale_lanczos( size );
+				case ScalingFunction::SCALE_LINEAR  : return scale_linear(  size, offset );
+				case ScalingFunction::SCALE_MITCHELL: return scale_cubic(   size, offset );
+				case ScalingFunction::SCALE_SPLINE  : return scale_generic( size, 2, spline, offset );
+			//	case ScalingFunction::SCALE_LANCZOS : return scale_lanczos( size, offset );
 				default: return Plane();
 			}
 		}
