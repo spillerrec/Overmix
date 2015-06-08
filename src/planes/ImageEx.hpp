@@ -134,8 +134,12 @@ class ImageEx{
 			if( alpha_plane() )
 				alpha_plane() = alpha_plane().scale_select( size, scaling );
 		}
-		void scaleFactor( Size<double> factor, ScalingFunction scaling=ScalingFunction::SCALE_MITCHELL )
-			{ scale( ( getSize() * factor ).round(), scaling ); }
+		void scaleFactor( Size<double> factor, ScalingFunction scaling=ScalingFunction::SCALE_MITCHELL ){
+			for( auto& plane : planes )
+				plane = plane.scale_select( ( plane.getSize() * factor ).round(), scaling );
+			if( alpha_plane() )
+				alpha_plane() = alpha_plane().scale_select( ( alpha_plane().getSize() * factor ).round(), scaling );
+		}
 		Point<unsigned> crop( unsigned left, unsigned top, unsigned right, unsigned bottom );
 		void crop( Point<unsigned> offset, Size<unsigned> size );
 		
