@@ -71,7 +71,7 @@ class RenderPipeBlurring : public ARenderPipe{
 		virtual ImageEx render( const ImageEx& img ) const override{
 			switch( method ){
 				case 1: return img.copyApplyAll( true, &Plane::blur_box, width, height ); break;
-				case 2: return img.copyApplyAll( true, &Plane::blur_gaussian, width, height ); break;
+				case 2: return img.copyApplyAll( true, &Plane::blur_gaussian, (double)width, (double)height ); break;
 				default: return img;
 			}
 		}

@@ -197,7 +197,7 @@ class Plane : public PlaneBase<color_type>{
 		Kernel gaussian_kernel( double deviation_x, double deviation_y ) const;
 	public:
 		Plane blur_box( unsigned amount_x, unsigned amount_y ) const;
-		Plane blur_gaussian( unsigned amount_x, unsigned amount_y ) const;
+		Plane blur_gaussian( double amount_x, double amount_y ) const;
 		
 	//De-blurring
 		Plane deconvolve_rl( double amount, unsigned iterations ) const;

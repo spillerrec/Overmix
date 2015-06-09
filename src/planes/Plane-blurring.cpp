@@ -103,7 +103,7 @@ Plane Plane::weighted_sum( Kernel &kernel ) const{
 	//Set default settings
 	WeightedSumLine default_line;
 	default_line.width = size.width();
-	default_line.line_width = out.get_line_width();
+	default_line.line_width = get_line_width();
 	default_line.weights = kernel.values.data();
 	default_line.w_width = kernel.width;
 	default_line.w_height = kernel.height;
@@ -170,8 +170,8 @@ Kernel Plane::gaussian_kernel( double deviation_x, double deviation_y ) const{
 	return kernel;
 }
 
-Plane Plane::blur_gaussian( unsigned amount_x, unsigned amount_y ) const{
-	const double scaling = 0.33; //TODO: pixel to deviation
+Plane Plane::blur_gaussian( double amount_x, double amount_y ) const{
+	const double scaling = 0.33/2; //TODO: pixel to deviation
 	auto kernel = gaussian_kernel( amount_x*scaling, amount_y*scaling );
 	return weighted_sum( kernel );
 }
