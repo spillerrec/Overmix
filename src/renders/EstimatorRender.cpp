@@ -133,38 +133,33 @@ void regularize( Plane& input, const Plane& copy, int p, double alpha, double be
 ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watcher) const {
 	auto planes_amount = group.image(0).size();
 	auto min_point = group.minPoint();
-	ImageEx img( planes_amount!=1 ? group.image(0).get_system() : ImageEx::GRAY );
-	ProgressWrapper( watcher ).setTotal( planes_amount * iterations );
+	ProgressWrapper( watcher ).setTotal( planes_amount * iterations * group.count() );
 	
 	auto est = AverageRender().render( group ); //Starting estimate
 	est.scaleFactor( {upscale_factor,upscale_factor} );
 	auto beta = color::WHITE * this->beta / group.count();
 	for( unsigned c=0; c<planes_amount; ++c ){
-		auto output = save( est[c], "est" + QString::number(c) );
-
-		for( int i=0; i<iterations; i++, ProgressWrapper( watcher ).add() ){
-			auto output_copy = output;
+		for( int i=0; i<iterations; i++ ){
+			auto output_copy = est[c];
 			
-			//Creeping
-			for( unsigned j=0; j<group.count(); j++ )
-				sign( output_copy, degrade( output, {group, j, c} ), group.image(j)[c], group.pos(j)-min_point
+			//Improve estimate
+			for( unsigned j=0; j<group.count(); j++, ProgressWrapper( watcher ).add() )
+				sign( output_copy, degrade( est[c], {group, j, c} ), group.image(j)[c], group.pos(j)-min_point
 					, beta, channelScale(group, j, c)*upscale_factor );
 			
 			//Regularization
 			if( lambda > 0.0 )
-				regularize( output, output_copy, reg_size, lambda, beta, alpha );
+				regularize( est[c], output_copy, reg_size, lambda, beta, alpha );
 			else
-				output = output_copy;
+				est[c] = output_copy;
 		}
 		
 		//DEBUG: See how close our model gets to the input data
 		for( unsigned j=0; j<group.count(); j++ ){
-			save( degrade( output, {group, j, c} ), "deg" + QString::number(c) + "-" + QString::number(j) );
+			save( degrade( est[c], {group, j, c} ), "deg" + QString::number(c) + "-" + QString::number(j) );
 			save( group.image(j)[c],                "low" + QString::number(c) + "-" + QString::number(j) );
 		}
-		
-		img.addPlane( std::move(output) );
 	}
 
-	return img;
+	return est;
 }
