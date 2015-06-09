@@ -66,10 +66,16 @@ Plane EstimatorRender::degrade( const Plane& original, const Parameters& para ) 
 	}
 	*/
 	
+	//Crop to the area overlapping with our current image
 	auto pos = (para.container.pos(para.index)-para.min_point)*upscale_factor*channelScale(para.container, para.index, para.channel);
 	out.crop( pos, para.container.image(para.index)[para.channel].getSize()*upscale_factor );
-	out = out.blur_gaussian( 3*upscale_factor, 3*upscale_factor );
-	out = out.scale_select( out.getSize() / upscale_factor, ScalingFunction::SCALE_MITCHELL/*, pos - pos.to<int>().to<double>()*/ ); //TODO: offset
+	
+	//Degrade - blur
+	if( bluring > 0 )
+		out = out.blur_gaussian( bluring*upscale_factor, bluring*upscale_factor );
+	
+	//Degrade - resolution
+	out = out.scale_select( out.getSize() / upscale_factor, scale_method/*, pos - pos.to<int>().to<double>()*/ ); //TODO: offset
 	
 	
 	return out;
@@ -79,7 +85,7 @@ static float signFloat( float a, float b, float c ){ return (a>b) ? c : (a<b) ? 
 
 void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, double beta, Point<double> scale ){
 	Point<int> pos = offset * scale;
-	qDebug() << "pos: " << pos.x << "x" << pos.y;
+	
 	unsigned total_change = 0;
 	for( unsigned iy=0; iy<p1.get_height()*scale.y; iy++ ){
 		auto row_out = out.scan_line( iy+pos.y );
@@ -96,7 +102,6 @@ void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, d
 
 void regularize( Plane& input, const Plane& copy, int p, double alpha, double beta, double lambda ){
 	vector<double> alphas;
-//	for( int i=0; i<=(p+p); i++ )
 	for( int m=0; m<=p; m++ )
 		for( int l=p; l+m>=0; l-- )
 		alphas.push_back( pow( alpha, abs(m)+abs(l) ) );
@@ -119,7 +124,7 @@ void regularize( Plane& input, const Plane& copy, int p, double alpha, double be
 				}
 			}
 			
-			output_row[ix] = truncate( output_row[ix] - lambda * sum );
+			output_row[ix] = truncate( row_0[ix] - lambda * sum );
 		}
 	}
 }
@@ -133,29 +138,31 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 	
 	auto est = AverageRender().render( group ); //Starting estimate
 	est.scaleFactor( {upscale_factor,upscale_factor} );
-//	est[0].fill( color::WHITE / 2 );
-//	est[1].fill( color::WHITE / 2 );
-//	est[2].fill( color::WHITE / 2 );
-	auto beta = color::WHITE * (1.3/255) / group.count();
+	auto beta = color::WHITE * this->beta / group.count();
 	for( unsigned c=0; c<planes_amount; ++c ){
 		auto output = save( est[c], "est" + QString::number(c) );
 
 		for( int i=0; i<iterations; i++, ProgressWrapper( watcher ).add() ){
-			qDebug() << "Starting iteration " << i;
-			
 			auto output_copy = output;
+			
+			//Creeping
 			for( unsigned j=0; j<group.count(); j++ )
 				sign( output_copy, degrade( output, {group, j, c} ), group.image(j)[c], group.pos(j)-min_point
 					, beta, channelScale(group, j, c)*upscale_factor );
-			output = output_copy;
-		//	regularize( output, output_copy, 5, 0.7, beta, 0.1 );
+			
+			//Regularization
+			if( lambda > 0.0 )
+				regularize( output, output_copy, reg_size, lambda, beta, alpha );
+			else
+				output = output_copy;
 		}
+		
+		//DEBUG: See how close our model gets to the input data
 		for( unsigned j=0; j<group.count(); j++ ){
 			save( degrade( output, {group, j, c} ), "deg" + QString::number(c) + "-" + QString::number(j) );
 			save( group.image(j)[c],                "low" + QString::number(c) + "-" + QString::number(j) );
 		}
-		//save( degrade(output, group, c), "deg" + QString::number(c) );
-		//save( output, "end" + QString::number(c) );
+		
 		img.addPlane( std::move(output) );
 	}
 

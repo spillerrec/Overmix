@@ -20,13 +20,22 @@
 
 
 #include "ARender.hpp"
-class Plane;
+#include "../planes/Plane.hpp"
 struct Parameters;
 
 class EstimatorRender : public ARender{
 	private:
+		//Estimation parameters
+		int iterations{ 150 };
+		double beta{ 1.3/255 };
+		double lambda{ 0.1 };
+		double alpha{ 0.7 };
+		int reg_size{ 7 };
+		
+		//Model parameters
+		ScalingFunction scale_method{ ScalingFunction::SCALE_MITCHELL };
 		double upscale_factor;
-		int iterations{ 75 };
+		double bluring{ 0.0 };
 		
 		Plane degrade( const Plane& original, const Parameters& para ) const;
 
