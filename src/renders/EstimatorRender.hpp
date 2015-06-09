@@ -26,7 +26,7 @@ struct Parameters;
 class EstimatorRender : public ARender{
 	private:
 		int upscale_factor;
-		int iterations{ 150 };
+		int iterations{ 75 };
 		
 		Plane degrade( const Plane& original, const Parameters& para ) const;
 

@@ -63,6 +63,7 @@ enum class ScalingFunction{
 		SCALE_NEAREST
 	,	SCALE_LINEAR
 	,	SCALE_MITCHELL
+	,	SCALE_CATROM
 	,	SCALE_SPLINE
 	,	SCALE_LANCZOS
 };
@@ -137,6 +138,7 @@ class Plane : public PlaneBase<color_type>{
 		static double cubic( double b, double c, double x );
 		static double linear( double x );
 		static double mitchell( double x ){ return cubic( 1.0/3, 1.0/3, x ); }
+		static double catrom( double x ){ return cubic( 0.0, 0.5, x ); }
 		static double spline( double x ){ return cubic( 1.0, 1.0, x ); }
 		Plane scale_generic( Point<unsigned> size, double window, Filter f, Point<double> offset={0.0,0.0} ) const;
 	public:
@@ -154,6 +156,7 @@ class Plane : public PlaneBase<color_type>{
 				case ScalingFunction::SCALE_NEAREST : return scale_nearest( size );
 				case ScalingFunction::SCALE_LINEAR  : return scale_linear(  size, offset );
 				case ScalingFunction::SCALE_MITCHELL: return scale_cubic(   size, offset );
+				case ScalingFunction::SCALE_CATROM  : return scale_generic( size, 2, catrom, offset );
 				case ScalingFunction::SCALE_SPLINE  : return scale_generic( size, 2, spline, offset );
 			//	case ScalingFunction::SCALE_LANCZOS : return scale_lanczos( size, offset );
 				default: return Plane();

@@ -41,7 +41,7 @@ MatrixXf imageToMatrix( const Plane& p ){
 	return out;
 }
 
-float limit( float in ){ return in; }//(in>1.0f) ? 1.0f : ((in<0.0f) ? 0.0f : in); }
+float limit( float in ){ return (in>1.0f) ? 1.0f : ((in<0.0f) ? 0.0f : in); }
 Plane matrixToImage( const MatrixXf& mat, unsigned width ){
 	Plane out( width, mat.size()/width );
 
@@ -111,7 +111,7 @@ MatrixXf sign( const MatrixXf& mat1, const MatrixXf& mat2 ){
 //	return mat1 - mat2; //L2 ??
 	MatrixXf out( mat1.rows(), mat1.cols() );
 	for( unsigned i=0; i<mat1.size(); i++ )
-		out(i) = signFloat( mat1(i), mat2(i) );
+		out(i) = signFloat( limit(mat1(i)), limit(mat2(i)) );
 	return out;
 }
 

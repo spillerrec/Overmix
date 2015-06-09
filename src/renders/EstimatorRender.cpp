@@ -27,7 +27,7 @@
 using namespace std;
 
 static Plane save( Plane p, QString name ){
-//	ImageEx( p ).to_qimage( ImageEx::SYSTEM_KEEP ).save( name + ".png" );
+	ImageEx( p ).to_qimage( ImageEx::SYSTEM_KEEP ).save( name + ".png" );
 	return p;
 }
 
@@ -64,7 +64,7 @@ Plane EstimatorRender::degrade( const Plane& original, const Parameters& para ) 
 	
 	auto pos = (para.container.pos(para.index)-para.min_point)*upscale_factor;
 	out.crop( pos, para.container.image(para.index)[para.channel].getSize()*upscale_factor );
-	out = out.scale_cubic( out.getSize() / upscale_factor, pos - pos.to<int>().to<double>() ); //TODO: offset
+	out = out.scale_select( out.getSize() / upscale_factor, ScalingFunction::SCALE_CATROM, pos - pos.to<int>().to<double>() ); //TODO: offset
 	
 	return out;
 }
@@ -130,7 +130,7 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 //	est[0].fill( color::WHITE / 2 );
 //	est[1].fill( color::WHITE / 2 );
 //	est[2].fill( color::WHITE / 2 );
-	auto beta = color::WHITE * (1.3/255) / group.count();
+	auto beta = color::WHITE * (1.3/255);
 	for( unsigned c=0; c<planes_amount; ++c ){
 		auto output = save( est[c], "est" + QString::number(c) );
 
