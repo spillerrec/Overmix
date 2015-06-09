@@ -25,13 +25,13 @@ struct Parameters;
 
 class EstimatorRender : public ARender{
 	private:
-		int upscale_factor;
+		double upscale_factor;
 		int iterations{ 75 };
 		
 		Plane degrade( const Plane& original, const Parameters& para ) const;
 
 	public:
-		EstimatorRender( int upscale_factor ) : upscale_factor(upscale_factor) { }
+		EstimatorRender( double upscale_factor ) : upscale_factor(upscale_factor) { }
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
 

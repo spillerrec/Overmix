@@ -27,12 +27,16 @@
 using namespace std;
 
 static Plane save( Plane p, QString name ){
-	ImageEx( p ).to_qimage( ImageEx::SYSTEM_KEEP ).save( name + ".png" );
+//	ImageEx( p ).to_qimage( ImageEx::SYSTEM_KEEP ).save( name + ".png" );
 	return p;
 }
 
 double truncate( double in ){
 	return (in < color::BLACK ? color::BLACK : in);
+}
+
+Point<double> channelScale( const AContainer& container, unsigned index, unsigned channel ){
+	return container.image(index)[channel].getSize() / container.image(index).getSize().to<double>();
 }
 
 struct Parameters{
@@ -62,25 +66,27 @@ Plane EstimatorRender::degrade( const Plane& original, const Parameters& para ) 
 	}
 	*/
 	
-	auto pos = (para.container.pos(para.index)-para.min_point)*upscale_factor;
+	auto pos = (para.container.pos(para.index)-para.min_point)*upscale_factor*channelScale(para.container, para.index, para.channel);
 	out.crop( pos, para.container.image(para.index)[para.channel].getSize()*upscale_factor );
-	out = out.scale_select( out.getSize() / upscale_factor, ScalingFunction::SCALE_CATROM, pos - pos.to<int>().to<double>() ); //TODO: offset
+	out = out.blur_gaussian( 3*upscale_factor, 3*upscale_factor );
+	out = out.scale_select( out.getSize() / upscale_factor, ScalingFunction::SCALE_MITCHELL/*, pos - pos.to<int>().to<double>()*/ ); //TODO: offset
+	
 	
 	return out;
 }
 
 static float signFloat( float a, float b, float c ){ return (a>b) ? c : (a<b) ? -c : 0.0f; }
 
-void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, double beta, int scale ){
+void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, double beta, Point<double> scale ){
 	Point<int> pos = offset * scale;
 	qDebug() << "pos: " << pos.x << "x" << pos.y;
 	unsigned total_change = 0;
-	for( unsigned iy=0; iy<p1.get_height()*scale; iy++ ){
+	for( unsigned iy=0; iy<p1.get_height()*scale.y; iy++ ){
 		auto row_out = out.scan_line( iy+pos.y );
-		auto row_p1  = p1.const_scan_line( iy/scale );
-		auto row_p2  = p2.const_scan_line( iy/scale );
-		for( unsigned ix=0; ix<p1.get_width()*scale; ix++ ){
-			auto sign = signFloat( row_p1[ix/scale], row_p2[ix/scale], beta );
+		auto row_p1  = p1.const_scan_line( iy/scale.y );
+		auto row_p2  = p2.const_scan_line( iy/scale.y );
+		for( unsigned ix=0; ix<p1.get_width()*scale.x; ix++ ){
+			auto sign = signFloat( row_p1[int(ix/scale.x)], row_p2[int(ix/scale.x)], beta );
 			row_out[ix+pos.x] = truncate( row_out[ix+pos.x] - sign );
 			total_change += abs( sign );
 		}
@@ -130,7 +136,7 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 //	est[0].fill( color::WHITE / 2 );
 //	est[1].fill( color::WHITE / 2 );
 //	est[2].fill( color::WHITE / 2 );
-	auto beta = color::WHITE * (1.3/255);
+	auto beta = color::WHITE * (1.3/255) / group.count();
 	for( unsigned c=0; c<planes_amount; ++c ){
 		auto output = save( est[c], "est" + QString::number(c) );
 
@@ -140,9 +146,9 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 			auto output_copy = output;
 			for( unsigned j=0; j<group.count(); j++ )
 				sign( output_copy, degrade( output, {group, j, c} ), group.image(j)[c], group.pos(j)-min_point
-					, beta, upscale_factor );
+					, beta, channelScale(group, j, c)*upscale_factor );
 			output = output_copy;
-		//	regularize( output, output_copy, 7, 0.7, beta, 0.03 );
+		//	regularize( output, output_copy, 5, 0.7, beta, 0.1 );
 		}
 		for( unsigned j=0; j<group.count(); j++ ){
 			save( degrade( output, {group, j, c} ), "deg" + QString::number(c) + "-" + QString::number(j) );
