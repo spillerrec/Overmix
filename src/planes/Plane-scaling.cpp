@@ -39,7 +39,7 @@ Plane Plane::scale_nearest( Point<unsigned> wanted ) const{
 double Plane::linear( double x ){
 	x = abs( x );
 	if( x <= 1.0 )
-		return x;
+		return 1.0 - x;
 	return 0;
 }
 
@@ -69,13 +69,15 @@ struct ScalePoint{
 	vector<float> weights; //Size of this is end
 	
 	ScalePoint( unsigned index, unsigned width, unsigned wanted_width, double offset, double window, Plane::Filter f ){
-      double pos = ((double)index / (wanted_width-1)) * (width-1);
-		start = (unsigned)max( (int)ceil( pos-window ), 0 );
-		unsigned end = min( (unsigned)floor( pos+window ), width-1 );
+		auto new_window = (wanted_width > width) ? window : window * width / wanted_width;
+		auto scale = window / new_window;
+		double pos = (index+0.5+offset) / wanted_width * width;
+		start = (unsigned)max( (int)ceil( pos-new_window ), 0 );
+		unsigned end = min( (unsigned)floor( pos+new_window ), width );
 		
-		weights.reserve( end - start + 1 );
-		for( unsigned j=start; j<=end; ++j )
-			weights.push_back( f( pos + offset - j ) );
+		weights.reserve( end - start );
+		for( unsigned j=start; j<end; ++j )
+			weights.push_back( f( (pos - (j + 0.5))*scale ) );
 	}
 };
 
@@ -145,7 +147,7 @@ Plane Plane::scale_generic( Point<unsigned> wanted, double window, Plane::Filter
 		lines.emplace_back( points, scaled, iy, *this, offset.y, window, f );
 	
    QtConcurrent::blockingMap( lines, []( ScaleLine& t ){ t.do_line(); } );
-   //for( auto l : lines ) do_line( l );
+   //for( auto l : lines ) l.do_line();
 	
 	qDebug( "Resize took: %d msec", t.restart() );
 	return scaled;
