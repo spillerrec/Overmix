@@ -24,7 +24,7 @@
 #include <limits>
 #include <cstdlib>
 
-typedef unsigned short color_type;
+typedef short color_type;
 typedef int precision_color_type;
 
 struct color{

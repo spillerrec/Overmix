@@ -71,7 +71,7 @@ bool ImageEx::read_dump_plane( QIODevice &dev ){
 	
 	planes.emplace_back( Size<unsigned>{ dump_plane.getWidth(), dump_plane.getHeight() } );
 	//TODO: add assertion that width == line_width !!
-	dump_plane.readData( dev, planes.back().scan_line(0), 15 ); //TODO: constant with bit depth
+	dump_plane.readData( dev, (uint16_t*)planes.back().scan_line(0), 14 ); //TODO: constant with bit depth
 	
 	
 	//Convert data

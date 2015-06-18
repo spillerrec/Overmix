@@ -72,7 +72,7 @@ Plane EstimatorRender::degrade( const Plane& original, const Parameters& para ) 
 	
 	//Degrade - blur
 	if( bluring > 0 )
-		out = out.blur_gaussian( bluring*upscale_factor, bluring*upscale_factor );
+		out = out.blur_gaussian( bluring*upscale_factor.x, bluring*upscale_factor.y );
 	
 	//Degrade - resolution
 	out = out.scale_select( out.getSize() / upscale_factor, scale_method/*, pos - pos.to<int>().to<double>()*/ ); //TODO: offset
@@ -86,18 +86,23 @@ static float signFloat( float a, float b, float c ){ return (a>b) ? c : (a<b) ? 
 void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, double beta, Point<double> scale ){
 	Point<int> pos = offset * scale;
 	
-	unsigned total_change = 0;
-	for( unsigned iy=0; iy<p1.get_height()*scale.y; iy++ ){
-		auto row_out = out.scan_line( iy+pos.y );
-		auto row_p1  = p1.const_scan_line( iy/scale.y );
-		auto row_p2  = p2.const_scan_line( iy/scale.y );
-		for( unsigned ix=0; ix<p1.get_width()*scale.x; ix++ ){
-			auto sign = signFloat( row_p1[int(ix/scale.x)], row_p2[int(ix/scale.x)], beta );
-			row_out[ix+pos.x] = truncate( row_out[ix+pos.x] - sign );
-			total_change += abs( sign );
-		}
+	//Find diff
+	Plane delta( p1 );
+	for( unsigned iy=0; iy<p2.get_height(); iy++ ){
+		auto row_out = delta.scan_line( iy );
+		auto row_in  = p2.const_scan_line( iy );
+		for( unsigned ix=0; ix<p2.get_width(); ix++ )
+			row_out[ix] = signFloat( row_out[ix], row_in[ix], beta );
 	}
-	qDebug() << "Change: " << total_change;
+	//Upscale delta to fit
+	delta = delta.scale_select( delta.getSize()*scale, ScalingFunction::SCALE_MITCHELL );
+	
+	for( unsigned iy=0; iy<delta.get_height(); iy++ ){
+		auto row_out = out.scan_line( iy+pos.y );
+		auto row_in  = delta.const_scan_line( iy );
+		for( unsigned ix=0; ix<delta.get_width(); ix++ )
+			row_out[ix+pos.x] = truncate( row_out[ix+pos.x] - row_in[ix] );
+	}
 }
 
 void regularize( Plane& input, const Plane& copy, int p, double alpha, double beta, double lambda ){
@@ -136,7 +141,7 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 	ProgressWrapper( watcher ).setTotal( planes_amount * iterations * group.count() );
 	
 	auto est = AverageRender().render( group ); //Starting estimate
-	est.scaleFactor( {upscale_factor,upscale_factor} );
+	est.scaleFactor( upscale_factor );
 	auto beta = color::WHITE * this->beta / group.count();
 	for( unsigned c=0; c<planes_amount; ++c ){
 		for( int i=0; i<iterations; i++ ){

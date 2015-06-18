@@ -33,14 +33,14 @@ class EstimatorRender : public ARender{
 		int reg_size{ 7 };
 		
 		//Model parameters
-		ScalingFunction scale_method{ ScalingFunction::SCALE_MITCHELL };
-		double upscale_factor;
+		ScalingFunction scale_method{ ScalingFunction::SCALE_CATROM };
+		Point<double> upscale_factor;
 		double bluring{ 0.0 };
 		
 		Plane degrade( const Plane& original, const Parameters& para ) const;
 
 	public:
-		EstimatorRender( double upscale_factor ) : upscale_factor(upscale_factor) { }
+		EstimatorRender( double upscale_factor ) : upscale_factor(upscale_factor,upscale_factor) { }
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
 

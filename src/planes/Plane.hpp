@@ -25,7 +25,7 @@
 
 #include "PlaneBase.hpp"
 
-typedef unsigned short color_type;
+typedef short color_type;
 typedef std::pair<Point<>, double> MergeResult;
 
 class DiffCache{
