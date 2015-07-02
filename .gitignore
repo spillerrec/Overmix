@@ -10,3 +10,7 @@ release
 */release
 */*/debug
 */*/release
+
+.kdev4/*
+*.kate-swp
+**/.directory
