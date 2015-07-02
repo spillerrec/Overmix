@@ -18,6 +18,10 @@ FORMS   += src/gui/mainwindow.ui
 HEADERS += src/gui/mainwindow.hpp src/gui/ImagesModel.hpp src/gui/FullscreenViewer.hpp
 SOURCES += src/gui/mainwindow.cpp src/gui/ImagesModel.cpp src/gui/FullscreenViewer.cpp src/main.cpp
 
+# Configurators
+HEADERS += src/gui/configs/AlignerConfigs.hpp src/gui/configs/AConfig.hpp src/gui/configs/ConfigChooser.hpp
+SOURCES += src/gui/configs/AlignerConfigs.cpp
+
 # File savers
 FORMS   += src/gui/savers/DumpSaver.ui
 HEADERS += src/gui/savers/DumpSaver.hpp src/gui/savers/ASaver.hpp
