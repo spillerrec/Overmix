@@ -32,9 +32,18 @@ class AAlignerConfig : public AConfig, private Ui::ImageAligner{
 	
 	protected:
 		virtual void configure( AImageAligner& container ) const;
+		
+		enum Enabled{
+			ENABLE_ALL    = 0x0,
+			DISABLE_DIR   = 0x1,
+			DISABLE_MOVE  = 0x2,
+			DISABLE_RES   = 0x4,
+			DISABLE_EXTRA = 0x8,
+			DISABLE_ALL   = 0xF
+		};
 	
 	public:
-		AAlignerConfig( QWidget* parent );
+		AAlignerConfig( QWidget* parent, int edits );
 		
 		virtual std::unique_ptr<AImageAligner> getAligner(AContainer&) const = 0;
 		
@@ -61,7 +70,7 @@ class AlignerConfigChooser : public ConfigChooser<AAlignerConfig>{
 
 class AverageAlignerConfig : public AAlignerConfig{
 	public:
-		AverageAlignerConfig( QWidget* parent ) : AAlignerConfig( parent ) { }
+		AverageAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, ENABLE_ALL ) { }
 		std::unique_ptr<AImageAligner> getAligner(AContainer&) const override;
 		
 		QString name() const override { return "Ordered"; }
@@ -70,11 +79,29 @@ class AverageAlignerConfig : public AAlignerConfig{
 
 class RecursiveAlignerConfig : public AAlignerConfig{
 	public:
-		RecursiveAlignerConfig( QWidget* parent ) : AAlignerConfig( parent ) { }
+		RecursiveAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, ENABLE_ALL ) { }
 		std::unique_ptr<AImageAligner> getAligner(AContainer&) const override;
 		
 		QString name() const override { return "Recursive"; }
 		QString discription() const override{ return "Splits the set of images into two halves, and applies the algorithm recursively"; }
+};
+
+class FakeAlignerConfig : public AAlignerConfig{
+	public:
+		FakeAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
+		std::unique_ptr<AImageAligner> getAligner(AContainer&) const override;
+		
+		QString name() const override { return "None (Stills)"; }
+		QString discription() const override{ return "Sets all images to 0x0"; }
+};
+
+class LinearAlignerConfig : public AAlignerConfig{
+	public:
+		LinearAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_RES | DISABLE_EXTRA | DISABLE_MOVE ) { }
+		std::unique_ptr<AImageAligner> getAligner(AContainer&) const override;
+		
+		QString name() const override { return "Fit to Linear Curve"; }
+		QString discription() const override{ return "Tries to fit all images onto a linear curve which fits the current data the best."; }
 };
 
 

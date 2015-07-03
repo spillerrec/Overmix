@@ -19,7 +19,9 @@
 #include "AlignerConfigs.hpp"
 
 #include "../../aligners/AverageAligner.hpp"
+#include "../../aligners/FakeAligner.hpp"
 #include "../../aligners/RecursiveAligner.hpp"
+#include "../../aligners/LinearAligner.hpp"
 
 #include <QGridLayout>
 
@@ -27,14 +29,37 @@ AlignerConfigChooser::AlignerConfigChooser( QWidget* parent, bool expand )
 	: ConfigChooser<AAlignerConfig>( parent, expand ){
 	addConfig<AverageAlignerConfig>();
 	addConfig<RecursiveAlignerConfig>();
+	addConfig<FakeAlignerConfig>();
+	addConfig<LinearAlignerConfig>();
 }
 
 
-AAlignerConfig::AAlignerConfig( QWidget* parent ) : AConfig( parent ) {
+AAlignerConfig::AAlignerConfig( QWidget* parent, int edits ) : AConfig( parent ) {
 	setupUi(this);
 	
-	connect( cbx_merge_v,   &QCheckBox::toggled, this, &AAlignerConfig::toggled_ver );
-	connect( cbx_merge_h, &QCheckBox::toggled, this, &AAlignerConfig::toggled_hor );
+	if( edits & DISABLE_DIR ){
+		cbx_merge_h->hide();
+		cbx_merge_v->hide();
+	}
+	else{
+		connect( cbx_merge_v,   &QCheckBox::toggled, this, &AAlignerConfig::toggled_ver );
+		connect( cbx_merge_h, &QCheckBox::toggled, this, &AAlignerConfig::toggled_hor );
+	}
+	
+	if( edits & DISABLE_MOVE ){
+		label->hide();
+		label_2->hide();
+		label_3->hide();
+		merge_movement->hide();
+	}
+	
+	if( edits & DISABLE_RES ){
+		label_18->hide();
+		merge_scale->hide();
+	}
+	
+	if( edits & DISABLE_EXTRA )
+		cbx_edges->hide();
 }
 
 
@@ -57,7 +82,14 @@ void AAlignerConfig::configure( AImageAligner& aligner ) const{
 
 
 AImageAligner::AlignMethod AAlignerConfig::getMethod() const{
-	return AImageAligner::ALIGN_VER; //TODO:
+	bool h = cbx_merge_h->isChecked(), v = cbx_merge_v->isChecked();
+	if( h && v )
+		return AImageAligner::ALIGN_BOTH;
+	if( h )
+		return AImageAligner::ALIGN_HOR;
+	if( v )
+		return AImageAligner::ALIGN_VER;
+	return AImageAligner::ALIGN_VER;
 }
 
 double AAlignerConfig::getScale() const{
@@ -74,6 +106,20 @@ std::unique_ptr<AImageAligner> AverageAlignerConfig::getAligner( AContainer& con
 
 std::unique_ptr<AImageAligner> RecursiveAlignerConfig::getAligner( AContainer& container ) const{
 	auto aligner = std::make_unique<RecursiveAligner>( container, getMethod(), getScale() );
+	configure( *aligner );
+	return aligner;
+}
+
+
+std::unique_ptr<AImageAligner> FakeAlignerConfig::getAligner( AContainer& container ) const{
+	auto aligner = std::make_unique<FakeAligner>( container );
+	configure( *aligner );
+	return aligner;
+}
+
+
+std::unique_ptr<AImageAligner> LinearAlignerConfig::getAligner( AContainer& container ) const{
+	auto aligner = std::make_unique<LinearAligner>( container, getMethod() );
 	configure( *aligner );
 	return aligner;
 }
