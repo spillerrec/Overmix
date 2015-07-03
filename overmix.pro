@@ -19,6 +19,7 @@ HEADERS += src/gui/mainwindow.hpp src/gui/ImagesModel.hpp src/gui/FullscreenView
 SOURCES += src/gui/mainwindow.cpp src/gui/ImagesModel.cpp src/gui/FullscreenViewer.cpp src/main.cpp
 
 # Configurators
+FORMS   += src/gui/configs/ImageAligner.ui
 HEADERS += src/gui/configs/AlignerConfigs.hpp src/gui/configs/AConfig.hpp src/gui/configs/ConfigChooser.hpp
 SOURCES += src/gui/configs/AlignerConfigs.cpp
 

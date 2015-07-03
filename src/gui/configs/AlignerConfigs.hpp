@@ -21,42 +21,60 @@
 #include "ConfigChooser.hpp"
 #include "../../aligners/AImageAligner.hpp"
 
+#include <QCheckBox>
 
-class AAlignerConfig : public AConfig{
+
+#include "ui_imagealigner.h"
+
+
+class AAlignerConfig : public AConfig, private Ui::ImageAligner{
 	Q_OBJECT
 	
 	protected:
-		virtual QObject* subEditor( QObject* parent ) = 0;
+		virtual void configure( AImageAligner& container ) const;
 	
 	public:
-		AAlignerConfig( QObject* parent ) : AConfig( parent ) { }
+		AAlignerConfig( QWidget* parent );
 		
 		virtual std::unique_ptr<AImageAligner> getAligner(AContainer&) const = 0;
 		
 		AImageAligner::AlignMethod getMethod() const;
 		double getScale() const;
+	
+	private slots:
+		void toggled_hor();
+		void toggled_ver();
 };
 
 class AlignerConfigChooser : public ConfigChooser<AAlignerConfig>{
 	Q_OBJECT
 	
 	public:
-		AlignerConfigChooser( QObject* parent ); //Add all the configs
+		AlignerConfigChooser( QWidget* parent, bool expand=false ); //Add all the configs
 		
 		std::unique_ptr<AImageAligner> getAligner( AContainer& container ) const
 			{ return getSelected().getAligner( container ); }
+		
+		QString name() const override{ return "Aligner selector"; }
+		QString discription() const override{ return "Selects a method for aligning images"; }
 };
 
 class AverageAlignerConfig : public AAlignerConfig{
-	protected:
-		QObject* subEditor( QObject* parent ) override;
-		
 	public:
-		AverageAlignerConfig( QObject* parent ) : AAlignerConfig( parent ) { }
+		AverageAlignerConfig( QWidget* parent ) : AAlignerConfig( parent ) { }
 		std::unique_ptr<AImageAligner> getAligner(AContainer&) const override;
 		
-		QString name() const override { return "Average"; }
+		QString name() const override { return "Ordered"; }
 		QString discription() const override{ return "Aligns images by aligning one image against the previously aligned images"; }
+};
+
+class RecursiveAlignerConfig : public AAlignerConfig{
+	public:
+		RecursiveAlignerConfig( QWidget* parent ) : AAlignerConfig( parent ) { }
+		std::unique_ptr<AImageAligner> getAligner(AContainer&) const override;
+		
+		QString name() const override { return "Recursive"; }
+		QString discription() const override{ return "Splits the set of images into two halves, and applies the algorithm recursively"; }
 };
 
 

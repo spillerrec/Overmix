@@ -23,6 +23,9 @@
 #include <memory>
 #include <vector>
 
+#include <QComboBox>
+#include <QHBoxLayout>
+
 
 template<class Config>
 class ConfigChooser : public AConfig{
@@ -31,25 +34,43 @@ class ConfigChooser : public AConfig{
 	private:
 		std::vector<std::unique_ptr<Config>> configs;
 		bool expand; //Should show the sub-config below (true), or in pop-up (false)?
-		//TODO: dropbox
+		QComboBox dropbox;
+		
+		void setSub( QWidget* edit ){
+			if( expand ){
+				QLayoutItem* child;
+				while( (child = layout()->takeAt(1)) != nullptr ) child->widget()->hide();
+				layout()->addWidget( edit );
+				edit->show();
+			}
+		}
 		
 	protected:
-		Config& getSelected() const{
-			//TODO: assert range
-			int selected = 0; //TODO: get value from dropbox
-			return *(configs[selected]);
-		}
+		Config& getSelected() const
+			{ return *(configs[dropbox.currentIndex()]); }
 		
 	public:
-		ConfigChooser( QObject* parent ) : AConfig( parent ){
-			//Add vertical layout
-			//Top: dropbox
-			//Bottom: sub-editor if expand==true
+		ConfigChooser( QWidget* parent, bool expand=false )
+			:	AConfig( parent ), expand(expand), dropbox( parent ){
+			
+			setLayout( new QVBoxLayout( this ) );
+			layout()->addWidget( &dropbox );
+			
+			//Ugly lambda, as we can't make slots because of moc not supporting templates
+			connect( &dropbox, static_cast<void (QComboBox::*)(int)>
+(&QComboBox::currentIndexChanged), [&](int){
+					setSub( &getSelected() );
+				} );
 		}
 		
-		void addConfig( std::unique_ptr<Config> config ){
-			configs.emplace_back( std::move( config ) );
-			//TODO: add to drop-box
+		template<class Config2, typename ... Args>
+		void addConfig( Args... args ){
+			configs.emplace_back( std::make_unique<Config2>( this, args... ) );
+			dropbox.addItem( configs.back()->name() );
+			configs.back()->hide();
+				
+			if( configs.size() == 1 )
+				setSub( configs.back().get() );
 		}
 };
 

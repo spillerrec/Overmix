@@ -18,14 +18,14 @@
 #ifndef A_CONFIG_HPP
 #define A_CONFIG_HPP
 
-#include <QObject>
+#include <QWidget>
 #include <QString>
 
-class AConfig : public QObject{
+class AConfig : public QWidget{
 	Q_OBJECT
 	
 	public:
-		AConfig( QObject* parent ) : QObject(parent) { }
+		AConfig( QWidget* parent ) : QWidget(parent) { }
 		
 		virtual QString name() const = 0;
 		virtual QString discription() const = 0;
