@@ -36,6 +36,15 @@ std::vector<color_type> generate_gamma(){
 
 auto gamma_lookup = generate_gamma();
 
+static double stretch( double val, int min_8, int max_8 ){
+	double min = min_8 / 255.0, max = max_8 / 255.0;
+	return (val-min) / (max-min);
+}
+
+static double limit( double val, int min_8, int max_8 ){
+	double min = min_8 / 255.0, max = max_8 / 255.0;
+	return val * (max-min) + min;
+}
 
 color color::yuvToRgb( double kr, double kg, double kb, bool gamma ){
 	double y  = asDouble( r );
@@ -43,9 +52,9 @@ color color::yuvToRgb( double kr, double kg, double kb, bool gamma ){
 	double cr = asDouble( b );
 	
 	//Remove foot- and head-room
-	y = (y - (16 / 255.0)) / ( (255 - 16 - (255-235)) / 255.0 );
-	cb = (cb - (16 / 255.0)) / ( (255 - 16 - (255-240)) / 255.0 );
-	cr = (cr - (16 / 255.0)) / ( (255 - 16 - (255-240)) / 255.0 );
+	y  = stretch(  y, 16, 235 );
+	cb = stretch( cb, 16, 240 );
+	cr = stretch( cr, 16, 240 );
 	
 	//Don't let it outside the allowed range
 	y = (y < 0 ) ? 0 : (y > 1 ) ? 1 : y;
@@ -79,3 +88,21 @@ color color::yuvToRgb( double kr, double kg, double kb, bool gamma ){
 	return color( fromDouble(rr), fromDouble(rg), fromDouble(rb), a );
 }
 
+
+color color::rgbToYuv( double kr, double kg, double kb, double umax, double vmax, bool gamma ){
+	double rr = asDouble( r );
+	double rg = asDouble( g );
+	double rb = asDouble( b );
+	
+	double y = kr*rr + kg*rg + kb*rb;
+	double cb = (rb-y) / 1.772 * (224/219.0) + 0.5;
+	double cr = (rr-y) / 1.402 * (224/219.0) + 0.5;
+	
+	//add studio-swing
+	y  = limit(  y, 16, 235 );
+	cb = limit( cb, 16, 240 );
+	cr = limit( cr, 16, 240 );
+	
+	//TODO: gamma
+	return color( fromDouble(y), fromDouble(cb), fromDouble(cr), a );
+}

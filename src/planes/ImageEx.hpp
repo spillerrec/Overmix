@@ -156,5 +156,6 @@ class ImageEx{
 };
 
 QImage setQImageAlpha( QImage img, const Plane& alpha );
+ImageEx deVlcImage( const ImageEx& img );
 
 #endif

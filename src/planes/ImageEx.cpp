@@ -455,3 +455,52 @@ QImage setQImageAlpha( QImage img, const Plane& alpha ){
 	return img;
 }
 
+ImageEx deVlcImage( const ImageEx& img ){
+	if( img.get_system() != ImageEx::RGB )
+		return {};
+	
+	ImageEx out( ImageEx::YUV );
+	for( int i=0; i<3; i++ )
+		out.addPlane( Plane( img.getSize() ) );
+	
+	for( unsigned iy=0; iy<img.get_height(); iy++ ){
+		auto row_r = img[0].const_scan_line( iy );
+		auto row_g = img[1].const_scan_line( iy );
+		auto row_b = img[2].const_scan_line( iy );
+		auto row_y = out[0].      scan_line( iy );
+		auto row_u = out[1].      scan_line( iy );
+		auto row_v = out[2].      scan_line( iy );
+		for( unsigned ix=0; ix<img.get_width(); ix++ ){
+			auto yuv = color( row_r[ix], row_g[ix], row_b[ix] )
+				.rgbToYuv( 0.299, 0.587, 0.114, 0.436, 0.615, false );
+			row_y[ix] = yuv.r;
+			row_u[ix] = yuv.g;
+			row_v[ix] = yuv.b;
+		}
+	}
+	
+	//Downscale chroma
+	for( int c=1; c<3; c++ ){
+		Plane downscaled( out[c].getSize() / 2 );
+		
+		for( unsigned iy=0; iy<downscaled.get_height(); iy++ ){
+			auto row_in1 = out[c].const_scan_line( iy*2   );
+			auto row_in2 = out[c].const_scan_line( iy*2+1 );
+			auto row_out = downscaled.  scan_line( iy     );
+			for( unsigned ix=0; ix<downscaled.get_width(); ix++ )
+				row_out[ix] =
+					(	row_in1[ix*2+0]
+					+	row_in1[ix*2+1]
+					+	row_in2[ix*2+0]
+					+	row_in2[ix*2+1]
+					) / 4;
+		}
+		
+		out[c] = downscaled;
+	}
+	
+	//TODO: check consistentcy?
+	
+	return out;
+}
+
