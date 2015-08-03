@@ -111,7 +111,7 @@ struct color{
 		}
 		
 		color yuvToRgb( double kr, double kg, double kb, bool gamma );
-		color rgbToYuv( double kr, double kg, double kb, double umax, double vmax, bool gamma );
+		color rgbToYuv( double kr, double kg, double kb, bool gamma );
 		
 		color rec601ToRgb( bool gamma=true ){
 			return yuvToRgb( 0.299, 0.587, 0.114, gamma );

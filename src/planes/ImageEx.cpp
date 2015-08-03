@@ -472,7 +472,7 @@ ImageEx deVlcImage( const ImageEx& img ){
 		auto row_v = out[2].      scan_line( iy );
 		for( unsigned ix=0; ix<img.get_width(); ix++ ){
 			auto yuv = color( row_r[ix], row_g[ix], row_b[ix] )
-				.rgbToYuv( 0.299, 0.587, 0.114, 0.436, 0.615, false );
+				.rgbToYuv( 0.299, 0.587, 0.114, false );
 			row_y[ix] = yuv.r;
 			row_u[ix] = yuv.g;
 			row_v[ix] = yuv.b;
