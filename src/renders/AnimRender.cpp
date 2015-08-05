@@ -66,8 +66,8 @@ Plane difference( const ImageEx& base, /*const*/ ImageEx& other ){
 		else
 			mask = mask.minPlane( img.scale_cubic( mask.getSize() ) );
 	}
-	
-	//ImageEx( mask ).to_qimage( ImageEx::SYSTEM_REC709 ).save( "mask" + QString::number( ID++ ) + ".png" );
+	mask = mask.minPlane( other.alpha_plane() );
+	mask = mask.minPlane( base.alpha_plane() );
 	
 	return mask;
 }
