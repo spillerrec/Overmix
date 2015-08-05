@@ -63,6 +63,7 @@ class ImageEx{
 		
 		unsigned size() const{ return planes.size(); }
 		void to_grayscale();
+		ImageEx toRgb() const;
 		
 		
 		template<typename... Args>

@@ -50,6 +50,79 @@ void ImageEx::to_grayscale(){
 	type = GRAY;
 }
 
+//TODO: copy from AverageRender, put this in utils
+class ScaledPlane{
+	private:
+		Plane scaled;
+		const Plane& original;
+		
+	public:
+		ScaledPlane( const Plane& p, Size<unsigned> size ) : original( p ){
+			if( p.getSize() != size )
+				scaled = p.scale_cubic( size );
+		}
+		
+		ScaledPlane( const Plane& p, const Plane& wanted_size )
+			: ScaledPlane( p, wanted_size.getSize() ) { }
+		
+		const Plane& operator()() const{ return scaled.valid() ? scaled : original; }
+};
+
+class ColorRow{
+	private:
+		color_type* r, * g, * b;
+		
+	public:
+		ColorRow( color_type* r, color_type* g, color_type* b )
+			: r(r), g(g), b(b) { }
+		ColorRow( ImageEx& img, int ix )
+			:	r(img[0].scan_line(ix))
+			,	g(img[1].scan_line(ix))
+			,	b(img[2].scan_line(ix))
+			{ }
+		
+		color operator[]( int i ) const
+			{ return { r[i], g[i], b[i] }; }
+		
+		void set( int ix, color rgb ){
+			r[ix] = rgb.r;
+			g[ix] = rgb.g;
+			b[ix] = rgb.b;
+		}
+};
+
+static ImageEx yuvToRgb( const ImageEx& img ){
+	//TODO: assert YUV
+	ImageEx out( ImageEx::RGB );
+	out.addPlane( Plane( ScaledPlane( img[0], img.getSize() )() ) );
+	out.addPlane( Plane( ScaledPlane( img[1], img.getSize() )() ) );
+	out.addPlane( Plane( ScaledPlane( img[2], img.getSize() )() ) );
+	
+	for( unsigned iy=0; iy<img.get_height(); iy++ ){
+		ColorRow row( out, iy );
+		for( unsigned ix=0; ix<img.get_width(); ix++ )
+			row.set( ix, row[ix].rec709ToRgb() );
+	}
+	
+	return out;
+}
+
+ImageEx ImageEx::toRgb() const{
+	switch( type ){
+		case GRAY:{
+				ImageEx out( RGB );
+				out.addPlane( Plane{ planes[0] } );
+				out.addPlane( Plane{ planes[0] } );
+				out.addPlane( Plane{ planes[0] } );
+				return out;
+			}
+		
+		case RGB: return *this;
+		case YUV: return yuvToRgb( *this );
+		default: return { }; //TODO: throw
+	}
+}
+
 template<typename T> void copyLine( color_type* out, const T* in, unsigned width, double scale ){
 	for( unsigned ix=0; ix<width; ++ix )
 		out[ix] = color::fromDouble( in[ix] / scale );
@@ -463,6 +536,7 @@ ImageEx deVlcImage( const ImageEx& img ){
 	for( int i=0; i<3; i++ )
 		out.addPlane( Plane( img.getSize() ) );
 	
+	unsigned errors = 0;
 	for( unsigned iy=0; iy<img.get_height(); iy++ ){
 		auto row_r = img[0].const_scan_line( iy );
 		auto row_g = img[1].const_scan_line( iy );
@@ -471,13 +545,19 @@ ImageEx deVlcImage( const ImageEx& img ){
 		auto row_u = out[1].      scan_line( iy );
 		auto row_v = out[2].      scan_line( iy );
 		for( unsigned ix=0; ix<img.get_width(); ix++ ){
-			auto yuv = color( row_r[ix], row_g[ix], row_b[ix] )
+			auto in = color( row_r[ix], row_g[ix], row_b[ix] );
+			auto yuv = in
 				.rgbToYuv( 0.299, 0.587, 0.114, false );
 			row_y[ix] = yuv.r;
 			row_u[ix] = yuv.g;
 			row_v[ix] = yuv.b;
+			
+			auto old = yuv.rec601ToRgb( false );
+			if( std::abs(in.r-old.r) > 1 )
+				qDebug( "%d vs %d", in.r, old.r );
 		}
 	}
+	qDebug( "Amount of errors %d of a total of %d", errors, img.get_height() * img.get_width() );
 	
 	//Downscale chroma
 	for( int c=1; c<3; c++ ){
