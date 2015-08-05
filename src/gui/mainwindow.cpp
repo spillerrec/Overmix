@@ -707,6 +707,11 @@ void main_widget::applyModifications(){
 			
 			container.cropImage( i, left, top, right, bottom );
 			container.scaleImage( i, scale, scale_method );
+			
+			if( ui->convert_rgb->isChecked() )
+				container.imageRef(i) = container.imageRef(i).toRgb();
+			else if( ui->convert_devlc->isChecked() )
+				container.imageRef(i) = deVlcImage( container.imageRef(i) );
 		} );
 	
 	clear_cache();

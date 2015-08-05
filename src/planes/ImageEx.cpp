@@ -534,30 +534,13 @@ ImageEx deVlcImage( const ImageEx& img ){
 	
 	ImageEx out( ImageEx::YUV );
 	for( int i=0; i<3; i++ )
-		out.addPlane( Plane( img.getSize() ) );
+		out.addPlane( Plane( img[i] ) );
 	
-	unsigned errors = 0;
 	for( unsigned iy=0; iy<img.get_height(); iy++ ){
-		auto row_r = img[0].const_scan_line( iy );
-		auto row_g = img[1].const_scan_line( iy );
-		auto row_b = img[2].const_scan_line( iy );
-		auto row_y = out[0].      scan_line( iy );
-		auto row_u = out[1].      scan_line( iy );
-		auto row_v = out[2].      scan_line( iy );
-		for( unsigned ix=0; ix<img.get_width(); ix++ ){
-			auto in = color( row_r[ix], row_g[ix], row_b[ix] );
-			auto yuv = in
-				.rgbToYuv( 0.299, 0.587, 0.114, false );
-			row_y[ix] = yuv.r;
-			row_u[ix] = yuv.g;
-			row_v[ix] = yuv.b;
-			
-			auto old = yuv.rec601ToRgb( false );
-			if( std::abs(in.r-old.r) > 1 )
-				qDebug( "%d vs %d", in.r, old.r );
-		}
+		ColorRow row( out, iy );
+		for( unsigned ix=0; ix<img.get_width(); ix++ )
+			row.set( ix, row[ix].rgbToYuv( 0.299, 0.587, 0.114, false ) );
 	}
-	qDebug( "Amount of errors %d of a total of %d", errors, img.get_height() * img.get_width() );
 	
 	//Downscale chroma
 	for( int c=1; c<3; c++ ){
@@ -579,7 +562,7 @@ ImageEx deVlcImage( const ImageEx& img ){
 		out[c] = downscaled;
 	}
 	
-	//TODO: check consistentcy?
+	//TODO: check consistency?
 	
 	return out;
 }
