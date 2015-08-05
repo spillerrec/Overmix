@@ -247,12 +247,12 @@ void main_widget::process_urls( QStringList files ){
 
 
 void main_widget::refresh_text(){
-	auto s = images.size().size;
+	auto s = getAlignedImages().size().size;
 	ui->lbl_info->setText(
 			tr( "Size: " )
 		+	QString::number(s.width()) + "x"
 		+	QString::number(s.height()) + " ("
-		+	QString::number( images.count() ) + ")"
+		+	QString::number( getAlignedImages().count() ) + ")"
 	);
 }
 
@@ -409,7 +409,7 @@ void main_widget::refresh_image(){
 	if( !images.isAligned() )
 		alignImage();
 	
-	auto start = images.minPoint();
+	auto start = getAlignedImages().minPoint();
 	if( renders.size() == 0 ){
 		auto frames = getAlignedImages().getFrames();
 		renders.reserve( frames.size() );
@@ -417,10 +417,10 @@ void main_widget::refresh_image(){
 		auto render = getRender();
 		
 		if( frames.size() == 1 )
-			renders.emplace_back( renderImage( images ), Point<double>(0.0,0.0) );
+			renders.emplace_back( renderImage( getAlignedImages() ), Point<double>(0.0,0.0) );
 		else{
 			//TODO: watcher
-			AnimRender anim( images, *render );
+			AnimRender anim( getAlignedImages(), *render );
 			for( auto& frame : frames ){
 				FrameContainer current( getAlignedImages(), frame ); //TODO: remove requirement of this!
 				auto img = anim.render( frame );
