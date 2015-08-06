@@ -157,7 +157,7 @@ QImage ImagesModel::getImage( const QModelIndex& model_index ) const{
 	
 	if( index.isValid() && !index.isGroup() ){
 		auto& item = index.getItem();
-		auto img = ImageEx( item.image() ).to_qimage( ImageEx::SYSTEM_REC709 );
+		auto img = item.image().to_qimage( ImageEx::SYSTEM_REC709 );
 		return setQImageAlpha( img, item.alpha( images.getMasks() ) );
 		
 	}

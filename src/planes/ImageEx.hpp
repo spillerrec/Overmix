@@ -110,7 +110,7 @@ class ImageEx{
 		Plane& alpha_plane(){ return alpha; }
 		const Plane& alpha_plane() const{ return alpha; }
 		
-		QImage to_qimage( YuvSystem system, unsigned setting=SETTING_NONE );
+		QImage to_qimage( YuvSystem system, unsigned setting=SETTING_NONE ) const;
 		
 		Point<unsigned> getSize() const{
 			return std::accumulate( planes.begin(), planes.end(), Point<unsigned>( 0, 0 )

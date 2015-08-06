@@ -356,9 +356,8 @@ QImage main_widget::qrenderImage( const ImageEx& img ){
 		setting = setting | ImageEx::SETTING_GAMMA;
 	
 	//Render image
-	//TODO: fix const on to_qimage
 	//TODO: fix postProcess
-	return ImageEx( postProcess( img, true ) ).to_qimage( system, setting );
+	return postProcess( img, true ).to_qimage( system, setting );
 }
 
 void main_widget::refreshQImageCache(){

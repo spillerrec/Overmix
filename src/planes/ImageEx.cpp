@@ -17,7 +17,6 @@
 
 #include "ImageEx.hpp"
 
-#include "../MultiPlaneIterator.hpp"
 #include "../color.hpp"
 #include "dump/DumpPlane.hpp"
 #include "../utils/PlaneUtils.hpp"
@@ -302,7 +301,29 @@ bool ImageEx::read_file( QString path ){
 	return from_qimage( path );
 }
 
-QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ){
+struct PlanesIt{
+	std::vector<ScaledPlane> planes;
+	std::vector<const color_type*> rows;
+	
+	public:
+		void add( const Plane& p, Size<int> size )
+			{ planes.emplace_back( p, size ); }
+		void next_x(){ for( auto& row : rows ) row++; }
+		void prepare_row( int iy ){
+			rows.clear();
+			for( auto& plane : planes )
+				rows.push_back( plane().const_scan_line( iy ) );
+		}
+		
+		auto at( int c ) const{ return *(rows[c]); }
+		
+		color gray(){   return { at(0), at(0), at(0) }; }
+		color gray_a(){ return { at(0), at(0), at(0), at(1) }; }
+		color rgb(){    return { at(0), at(1), at(2) }; }
+		color rgb_a(){  return { at(0), at(1), at(2), at(3) }; }
+};
+
+QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ) const{
 	if( planes.size() == 0 || !planes[0] )
 		return QImage();
 	
@@ -312,45 +333,31 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ){
 	bool is_yuv = (type == YUV) && (system != SYSTEM_KEEP);
 	
 	//Create iterator
-	std::vector<PlaneItInfo> info;
-	std::vector<Plane> temp( 2 );
-	info.emplace_back( planes[0] );
-	if( type != GRAY ){
-		if( planes[0].equalSize( planes[1] ) )
-			info.emplace_back( planes[1] );
-		else{
-			temp[0] = planes[1].scale_cubic( planes[0].getSize() );
-			info.emplace_back( temp[0] );
-		}
-		if( planes[0].equalSize( planes[2] ) )
-			info.emplace_back( planes[2] );
-		else{
-			temp[1] = planes[2].scale_cubic( planes[0].getSize() );
-			info.emplace_back( temp[1] );
-		}
-	}
+	auto img_size = getSize();
+	PlanesIt it;
+	for( auto& p : planes )
+		it.add( p, img_size );
 	if( alpha_plane() )
-		info.emplace_back( alpha_plane() );
-	MultiPlaneIterator it( info );
-	it.iterate_all();
+		it.add( alpha_plane(), img_size );
 	
 	//Fetch with alpha
 	auto pixel = ( type == GRAY )
-		?	( alpha_plane() ? &MultiPlaneIterator::gray_alpha : &MultiPlaneIterator::gray )
-		:	( alpha_plane() ? &MultiPlaneIterator::pixel_alpha : &MultiPlaneIterator::pixel );
+		?	( alpha_plane() ? &PlanesIt::gray_a : &PlanesIt::gray )
+		:	( alpha_plane() ? &PlanesIt::rgb_a  : &PlanesIt::rgb  );
 	
 	
 	//Create image
-	QImage img(	it.width(), it.height()
+	QImage img(	img_size.width(), img_size.height()
 		,	( alpha_plane() ) ? QImage::Format_ARGB32 : QImage::Format_RGB32
 		);
 	img.fill(0);
 	
 	
-	vector<color> line( get_width()+1, color( 0,0,0,0 ) );
-	for( unsigned iy=0; iy<it.height(); iy++, it.next_line() ){
+	vector<color> line( img_size.width()+1, color( 0,0,0,0 ) );
+	for( unsigned iy=0; iy<img_size.height(); iy++ ){
 		QRgb* row = (QRgb*)img.scanLine( iy );
-		for( unsigned ix=0; ix<it.width(); ix++, it.next_x() ){
+		it.prepare_row( iy );
+		for( unsigned ix=0; ix<img_size.width(); ix++, it.next_x() ){
 			color p = (it.*pixel)();
 			if( is_yuv ){
 				if( system == SYSTEM_REC709 )

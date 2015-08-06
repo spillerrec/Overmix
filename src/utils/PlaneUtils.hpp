@@ -23,10 +23,10 @@
 class ScaledPlane{
 	private:
 		Plane scaled;
-		const Plane& original;
+		const Plane* original;
 		
 	public:
-		ScaledPlane( const Plane& p, Size<unsigned> size ) : original( p ){
+		ScaledPlane( const Plane& p, Size<unsigned> size ) : original( &p ){
 			if( p.getSize() != size )
 				scaled = p.scale_cubic( size );
 		}
@@ -34,7 +34,7 @@ class ScaledPlane{
 		ScaledPlane( const Plane& p, const Plane& wanted_size )
 			: ScaledPlane( p, wanted_size.getSize() ) { }
 		
-		const Plane& operator()() const{ return scaled.valid() ? scaled : original; }
+		const Plane& operator()() const{ return scaled.valid() ? scaled : *original; }
 };
 
 

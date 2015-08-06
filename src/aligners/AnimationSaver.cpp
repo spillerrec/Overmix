@@ -93,8 +93,7 @@ QSize AnimationSaver::normalize(){
 int AnimationSaver::addImage( const ImageEx& img ){
 	//Create thumbnail for first frame
 	if( current_id == 1 ){
-		ImageEx temp( img ); //TODO: fix const on to_qimage!
-		QImage raw = temp.to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_DITHER | ImageEx::SETTING_GAMMA );
+		QImage raw = img.to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_DITHER | ImageEx::SETTING_GAMMA );
 		raw.scaled( 256, 256, Qt::KeepAspectRatio )
 			.save( folder + "/Thumbnails/thumbnail.jpg", nullptr, 95 );
 	}
