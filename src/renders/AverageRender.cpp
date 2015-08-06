@@ -20,31 +20,14 @@
 #include "../color.hpp"
 #include "../planes/PlaneBase.hpp"
 
-
 #include "../aligners/AImageAligner.hpp"
 #include "../planes/ImageEx.hpp"
+#include "../utils/PlaneUtils.hpp"
 
 #include <QTime>
 #include <vector>
 using namespace std;
 
-
-class ScaledPlane{
-	private:
-		Plane scaled;
-		const Plane& original;
-		
-	public:
-		ScaledPlane( const Plane& p, Size<unsigned> size ) : original( p ){
-			if( p.getSize() != size )
-				scaled = p.scale_cubic( size );
-		}
-		
-		ScaledPlane( const Plane& p, const Plane& wanted_size )
-			: ScaledPlane( p, wanted_size.getSize() ) { }
-		
-		const Plane& operator()() const{ return scaled.valid() ? scaled : original; }
-};
 
 class SumPlane {
 	//NOTE: we could split this into two classes, specialized in handling precision alpha or not

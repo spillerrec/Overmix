@@ -34,5 +34,5 @@ HEADERS += $$PWD/src/renders/AnimRender.hpp $$PWD/src/renders/AverageRender.hpp 
 SOURCES += $$PWD/src/renders/AnimRender.cpp $$PWD/src/renders/AverageRender.cpp $$PWD/src/renders/FloatRender.cpp $$PWD/src/renders/DiffRender.cpp $$PWD/src/renders/PlaneRender.cpp $$PWD/src/renders/StatisticsRender.cpp $$PWD/src/renders/PixelatorRender.cpp $$PWD/src/renders/RobustSrRender.cpp $$PWD/src/renders/EstimatorRender.cpp
 
 # mics
-HEADERS += $$PWD/src/debug.hpp $$PWD/src/aligners/AnimationSaver.hpp $$PWD/src/planes/dump/DumpPlane.hpp $$PWD/src/ARenderPipe.hpp $$PWD/src/RenderOperations.hpp $$PWD/src/Geometry.hpp $$PWD/src/utils/utils.hpp $$PWD/src/utils/ImageLoader.hpp $$PWD/src/utils/Animator.hpp
+HEADERS += $$PWD/src/debug.hpp $$PWD/src/aligners/AnimationSaver.hpp $$PWD/src/planes/dump/DumpPlane.hpp $$PWD/src/ARenderPipe.hpp $$PWD/src/RenderOperations.hpp $$PWD/src/Geometry.hpp $$PWD/src/utils/utils.hpp $$PWD/src/utils/ImageLoader.hpp $$PWD/src/utils/PlaneUtils.hpp $$PWD/src/utils/Animator.hpp
 SOURCES += $$PWD/src/debug.cpp $$PWD/src/aligners/AnimationSaver.cpp $$PWD/src/planes/dump/DumpPlane.cpp $$PWD/src/utils/ImageLoader.cpp $$PWD/src/utils/Animator.cpp

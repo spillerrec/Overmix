@@ -20,6 +20,7 @@
 #include "../MultiPlaneIterator.hpp"
 #include "../color.hpp"
 #include "dump/DumpPlane.hpp"
+#include "../utils/PlaneUtils.hpp"
 
 #include <QtConcurrentMap>
 #include <QFileInfo>
@@ -50,46 +51,6 @@ void ImageEx::to_grayscale(){
 	type = GRAY;
 }
 
-//TODO: copy from AverageRender, put this in utils
-class ScaledPlane{
-	private:
-		Plane scaled;
-		const Plane& original;
-		
-	public:
-		ScaledPlane( const Plane& p, Size<unsigned> size ) : original( p ){
-			if( p.getSize() != size )
-				scaled = p.scale_cubic( size );
-		}
-		
-		ScaledPlane( const Plane& p, const Plane& wanted_size )
-			: ScaledPlane( p, wanted_size.getSize() ) { }
-		
-		const Plane& operator()() const{ return scaled.valid() ? scaled : original; }
-};
-
-class ColorRow{
-	private:
-		color_type* r, * g, * b;
-		
-	public:
-		ColorRow( color_type* r, color_type* g, color_type* b )
-			: r(r), g(g), b(b) { }
-		ColorRow( ImageEx& img, int ix )
-			:	r(img[0].scan_line(ix))
-			,	g(img[1].scan_line(ix))
-			,	b(img[2].scan_line(ix))
-			{ }
-		
-		color operator[]( int i ) const
-			{ return { r[i], g[i], b[i] }; }
-		
-		void set( int ix, color rgb ){
-			r[ix] = rgb.r;
-			g[ix] = rgb.g;
-			b[ix] = rgb.b;
-		}
-};
 
 static ImageEx yuvToRgb( const ImageEx& img ){
 	//TODO: assert YUV
