@@ -65,7 +65,9 @@ enum class ScalingFunction{
 	,	SCALE_MITCHELL
 	,	SCALE_CATROM
 	,	SCALE_SPLINE
-	,	SCALE_LANCZOS
+	,	SCALE_LANCZOS_3
+	,	SCALE_LANCZOS_5
+	,	SCALE_LANCZOS_7
 };
 
 class Plane : public PlaneBase<color_type>{
@@ -140,6 +142,10 @@ class Plane : public PlaneBase<color_type>{
 		static double mitchell( double x ){ return cubic( 1.0/3, 1.0/3, x ); }
 		static double catrom( double x ){ return cubic( 0.0, 0.5, x ); }
 		static double spline( double x ){ return cubic( 1.0, 1.0, x ); }
+		static double lancozs( double x, int a );
+		static double lancozs3( double x ){ return lancozs( x, 3 ); }
+		static double lancozs5( double x ){ return lancozs( x, 5 ); }
+		static double lancozs7( double x ){ return lancozs( x, 7 ); }
 		Plane scale_generic( Point<unsigned> size, double window, Filter f, Point<double> offset={0.0,0.0} ) const;
 	public:
 		Plane scale_nearest( Point<unsigned> size ) const;
@@ -149,7 +155,12 @@ class Plane : public PlaneBase<color_type>{
 		Plane scale_cubic( Point<unsigned> size, Point<double> offset={0.0,0.0} ) const{
 			return scale_generic( size, 2.5, mitchell, offset );
 		}
-		Plane scale_lanczos( Point<unsigned> size, Point<double> offset={0.0,0.0} ) const;
+		Plane scale_lanczos3( Point<unsigned> size, Point<double> offset={0.0,0.0} ) const
+			{ return scale_generic( size, 3.5, lancozs3, offset ); }
+		Plane scale_lanczos5( Point<unsigned> size, Point<double> offset={0.0,0.0} ) const
+			{ return scale_generic( size, 5.5, lancozs5, offset ); }
+		Plane scale_lanczos7( Point<unsigned> size, Point<double> offset={0.0,0.0} ) const
+			{ return scale_generic( size, 7.5, lancozs7, offset ); }
 		
 		Plane scale_select( Point<unsigned> size, ScalingFunction scaling, Point<double> offset={0.0,0.0} ) const{
 			switch( scaling ){
@@ -158,7 +169,9 @@ class Plane : public PlaneBase<color_type>{
 				case ScalingFunction::SCALE_MITCHELL: return scale_cubic(   size, offset );
 				case ScalingFunction::SCALE_CATROM  : return scale_generic( size, 2.5, catrom, offset );
 				case ScalingFunction::SCALE_SPLINE  : return scale_generic( size, 2.5, spline, offset );
-			//	case ScalingFunction::SCALE_LANCZOS : return scale_lanczos( size, offset );
+				case ScalingFunction::SCALE_LANCZOS_3 : return scale_lanczos3( size, offset );
+				case ScalingFunction::SCALE_LANCZOS_5 : return scale_lanczos5( size, offset );
+				case ScalingFunction::SCALE_LANCZOS_7 : return scale_lanczos7( size, offset );
 				default: return Plane();
 			}
 		}

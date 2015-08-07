@@ -22,6 +22,8 @@
 #include <QDebug>
 #include <QTime>
 
+#include <boost/math/constants/constants.hpp>
+
 using namespace std;
 
 Plane Plane::scale_nearest( Point<unsigned> wanted ) const{
@@ -61,6 +63,16 @@ double Plane::cubic( double b, double c, double x ){
 			;
 	else
 		return 0;
+}
+
+double Plane::lancozs( double x, int a ){
+	auto pi = boost::math::constants::pi<double>();
+	if( x >= a )
+		return 0;
+	else if( a < std::numeric_limits<double>::epsilon() )
+		return 1;
+	else
+		return (a*std::sin(pi*x)*std::sin(pi*x/2)) / (pi*pi*x*x);
 }
 
 template<typename T>
@@ -113,13 +125,13 @@ void ScaleLine::do_line() const{
 	ScalePoint ver( index, input.get_height(), wanted.get_height(), offset, window, f );
 	
 	for( auto& x : points ){
-		float avg = 0;
+		double avg = 0;
 		auto row = input.const_scan_line( ver.start ) + x.start;
 		
 		for( auto wy : ver.weights ){
 			auto row2 = row;
 			
-			float local_avg = 0;
+			double local_avg = 0;
 			for( auto wx : x.weights )
 				local_avg += *(row2++) * wx;
 			avg += local_avg * wy;
@@ -127,7 +139,8 @@ void ScaleLine::do_line() const{
 			row += input.get_line_width();
 		}
 		
-		*(out++) = color::truncate( avg + 0.5 );
+		//*(out++) = color::truncate( avg + 0.5 );
+		*(out++) = std::min( std::max( avg, (double)color::BLACK ), (double)color::WHITE );
 	}
 }
 

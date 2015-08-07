@@ -264,8 +264,12 @@ static ScalingFunction translateScaling( int id ){
 	switch( id ){
 		case 0:  return ScalingFunction::SCALE_NEAREST;
 		case 1:  return ScalingFunction::SCALE_LINEAR;
-		case 2:  return ScalingFunction::SCALE_MITCHELL;
-		case 3:  return ScalingFunction::SCALE_LANCZOS;
+		case 2:  return ScalingFunction::SCALE_CATROM;
+		case 3:  return ScalingFunction::SCALE_MITCHELL;
+		case 4:  return ScalingFunction::SCALE_SPLINE;
+		case 5:  return ScalingFunction::SCALE_LANCZOS_3;
+		case 6:  return ScalingFunction::SCALE_LANCZOS_5;
+		case 7:  return ScalingFunction::SCALE_LANCZOS_7;
 		default: return ScalingFunction::SCALE_NEAREST;
 	}
 }

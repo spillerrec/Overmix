@@ -383,11 +383,11 @@
                  <item>
                   <widget class="QComboBox" name="post_scaling">
                    <property name="currentIndex">
-                    <number>2</number>
+                    <number>3</number>
                    </property>
                    <item>
                     <property name="text">
-                     <string>Nearst</string>
+                     <string>Nearest</string>
                     </property>
                    </item>
                    <item>
@@ -397,7 +397,32 @@
                    </item>
                    <item>
                     <property name="text">
-                     <string>Cubic</string>
+                     <string>Catmull-Rom (cubic)</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Mitchell-Netravali (cubic)</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Spline (cubic)</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Lanczos 3-lopes (sinc)</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Lanczos 5-lopes (sinc)</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Lanczos 7-lopes (sinc)</string>
                     </property>
                    </item>
                   </widget>
@@ -1292,7 +1317,7 @@
                  <item>
                   <widget class="QComboBox" name="pre_scale_method">
                    <property name="currentIndex">
-                    <number>2</number>
+                    <number>3</number>
                    </property>
                    <item>
                     <property name="text">
@@ -1306,7 +1331,32 @@
                    </item>
                    <item>
                     <property name="text">
-                     <string>Cubic</string>
+                     <string>Catmull-Rom (cubic)</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Mitchell-Netravali (cubic)</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Spline (cubic)</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Lanczos 3-lopes (sinc)</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Lanczos 5-lopes (sinc)</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Lanczos 7-lopes (sinc)</string>
                     </property>
                    </item>
                   </widget>
