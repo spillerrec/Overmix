@@ -31,7 +31,7 @@ Plane Plane::scale_nearest( Point<unsigned> wanted ) const{
 	
 	for( unsigned iy=0; iy<wanted.height(); iy++ ){
 		color_type* row = scaled.scan_line( iy );
-		for( unsigned ix=0; ix<wanted.height(); ix++ )
+		for( unsigned ix=0; ix<wanted.width(); ix++ )
 			row[ix] = pixel( (Size<double>( ix, iy ) / (wanted-1) * (getSize()-1)).round() );
 	}
 	
