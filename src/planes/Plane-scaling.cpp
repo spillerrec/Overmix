@@ -63,6 +63,9 @@ double Plane::cubic( double b, double c, double x ){
 		return 0;
 }
 
+template<typename T>
+T sum( const std::vector<T>& arr )
+	{ return std::accumulate( arr.begin(), arr.end(), T() ); }
 
 struct ScalePoint{
 	unsigned start;
@@ -78,6 +81,11 @@ struct ScalePoint{
 		weights.reserve( end - start );
 		for( unsigned j=start; j<end; ++j )
 			weights.push_back( f( (pos - (j + 0.5))*scale ) );
+		
+		//Normalize so we don't have to divide later
+		auto total = sum( weights );
+		for( auto& w : weights )
+			w /= total;
 	}
 };
 
@@ -106,22 +114,73 @@ void ScaleLine::do_line() const{
 	
 	for( auto& x : points ){
 		float avg = 0;
-		float amount = 0;
 		auto row = input.const_scan_line( ver.start ) + x.start;
 		
 		for( auto wy : ver.weights ){
 			auto row2 = row;
-			for( auto wx : x.weights ){
-				float weight = wy * wx;
-				avg += *(row2++) * weight;
-				amount += weight;
-			}
+			
+			float local_avg = 0;
+			for( auto wx : x.weights )
+				local_avg += *(row2++) * wx;
+			avg += local_avg * wy;
 			
 			row += input.get_line_width();
 		}
 		
-		*(out++) = amount != 0.0 ? color::truncate( avg / amount + 0.5 ) : color::BLACK;
+		*(out++) = color::truncate( avg + 0.5 );
 	}
+}
+
+
+static Plane scale2x( const Plane& p, int window, Plane::Filter f ){
+	
+	QTime t;
+	t.start();
+	Plane scaled( p.getSize() * 2 );
+	
+	auto w1 = ScalePoint( 100, p.get_width(), scaled.get_width(), 0, 2.5, f ).weights;
+	auto w2 = ScalePoint( 101, p.get_width(), scaled.get_width(), 0, 2.5, f ).weights;
+	
+	auto line_width = scaled.get_line_width();
+	auto column = [&]( const color_type* row ){
+			auto sum = std::make_pair( 0.0f, 0.0f );
+			for( int i=0; i<4; i++ ){
+				auto val = *(row + i*line_width);
+				sum.first  += val * w1[i];
+				sum.second += val * w2[i];
+			}
+			return sum;
+		};
+	
+	for( unsigned iy=4; iy<scaled.get_height()-4; iy+=2 ){
+		auto out1 = scaled.scan_line( iy   );
+		auto out2 = scaled.scan_line( iy+1 );
+		auto in  = p.const_scan_line( iy/2-2 );
+		
+		std::pair<float,float> c[4];
+		c[0] = column( in++ );
+		c[1] = column( in++ );
+		c[2] = column( in++ );
+		c[3] = column( in++ );
+		auto move = [&](){
+			c[0] = c[1];
+			c[1] = c[2];
+			c[2] = c[3];
+			c[3] = column( in++ );
+		};
+		
+		for( unsigned ix=2; ix<scaled.get_width()-4; ix+=2 ){
+			out1[ix+0]=c[0].first*w1[0] + c[1].first*w1[1] + c[2].first*w1[2];
+			out1[ix+1]=c[0].first*w2[0] + c[1].first*w2[1] + c[2].first*w2[2];
+			
+			out2[ix+0]=c[0].second*w1[0]+ c[1].second*w1[1]+c[2].second*w1[2];
+			out2[ix+1]=c[0].second*w2[0]+ c[1].second*w2[1]+c[2].second*w2[2];
+			move();
+		}
+	}
+	
+	qDebug( "Resize took: %d msec", t.restart() );
+	return scaled;
 }
 
 

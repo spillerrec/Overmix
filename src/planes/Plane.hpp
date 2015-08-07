@@ -144,10 +144,10 @@ class Plane : public PlaneBase<color_type>{
 	public:
 		Plane scale_nearest( Point<unsigned> size ) const;
 		Plane scale_linear( Point<unsigned> size, Point<double> offset={0.0,0.0} ) const{
-			return scale_generic( size, 1, linear, offset );
+			return scale_generic( size, 1.5, linear, offset );
 		}
 		Plane scale_cubic( Point<unsigned> size, Point<double> offset={0.0,0.0} ) const{
-			return scale_generic( size, 2, mitchell, offset );
+			return scale_generic( size, 2.5, mitchell, offset );
 		}
 		Plane scale_lanczos( Point<unsigned> size, Point<double> offset={0.0,0.0} ) const;
 		
@@ -156,8 +156,8 @@ class Plane : public PlaneBase<color_type>{
 				case ScalingFunction::SCALE_NEAREST : return scale_nearest( size );
 				case ScalingFunction::SCALE_LINEAR  : return scale_linear(  size, offset );
 				case ScalingFunction::SCALE_MITCHELL: return scale_cubic(   size, offset );
-				case ScalingFunction::SCALE_CATROM  : return scale_generic( size, 2, catrom, offset );
-				case ScalingFunction::SCALE_SPLINE  : return scale_generic( size, 2, spline, offset );
+				case ScalingFunction::SCALE_CATROM  : return scale_generic( size, 2.5, catrom, offset );
+				case ScalingFunction::SCALE_SPLINE  : return scale_generic( size, 2.5, spline, offset );
 			//	case ScalingFunction::SCALE_LANCZOS : return scale_lanczos( size, offset );
 				default: return Plane();
 			}
