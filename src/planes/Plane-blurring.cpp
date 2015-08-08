@@ -31,7 +31,7 @@ struct WeightedSumLine{
 	unsigned line_width; //For input row
 	
 	//Only bounds-checked in the horizontal direction!
-	double *weights;
+	const double *weights;
 	unsigned w_width;
 	unsigned w_height; //How many input lines should be weighted, must not overflow!
 	double full_sum;
@@ -94,8 +94,8 @@ void sum_line( const WeightedSumLine& line ){
 		*(out++) = line.weighted_sum( in, ix-end );
 }
 
-Plane Plane::weighted_sum( Kernel &kernel ) const{
-	if( kernel.width == 0 || kernel.height == 0 )
+Plane Plane::weighted_sum( const Kernel &kernel ) const{
+	if( !kernel.valid() )
 		return Plane();
 	
 	Plane out( size );
@@ -104,12 +104,12 @@ Plane Plane::weighted_sum( Kernel &kernel ) const{
 	WeightedSumLine default_line;
 	default_line.width = size.width();
 	default_line.line_width = get_line_width();
-	default_line.weights = kernel.values.data();
-	default_line.w_width = kernel.width;
-	default_line.w_height = kernel.height;
+	default_line.weights = kernel.const_scan_line(0); //TODO: line_width ignored!
+	default_line.w_width = kernel.get_width();
+	default_line.w_height = kernel.get_height();
 	default_line.full_sum = default_line.calculate_sum();
 	
-	int half_size = kernel.height / 2;
+	int half_size = kernel.get_height() / 2;
 	std::vector<WeightedSumLine> lines;
 	for( unsigned iy=0; iy<size.height(); ++iy ){
 		WeightedSumLine line = default_line;
@@ -123,7 +123,7 @@ Plane Plane::weighted_sum( Kernel &kernel ) const{
 			line.in = const_scan_line( 0 );
 			line.full_sum = line.calculate_sum();
 		}
-		else if( top+kernel.height >= size.height() ){
+		else if( top+kernel.get_height() >= size.height() ){
 			//Cut stuff from bottom
 			line.in = const_scan_line( top );
 			line.w_height = size.height() - top;
@@ -142,7 +142,7 @@ Plane Plane::weighted_sum( Kernel &kernel ) const{
 
 Plane Plane::blur_box( unsigned amount_x, unsigned amount_y ) const{
 	Kernel kernel( amount_x, amount_y );
-	kernel.values = std::vector<double>( amount_x*amount_y, 1.0 );
+	kernel.fill( 1.0 );
 	return weighted_sum( kernel );
 }
 
@@ -161,11 +161,12 @@ Kernel Plane::gaussian_kernel( double deviation_x, double deviation_y ) const{
 	Kernel kernel( std::ceil( 12*deviation_x ), std::ceil( 12*deviation_y ) );
 	
 	//Fill kernel
-	double half_x = kernel.width/2.0;
-	double half_y = kernel.height/2.0;
-	for( unsigned iy=0; iy<kernel.height; ++iy )
-		for( unsigned ix=0; ix<kernel.width; ++ix )
-			kernel.values[ ix + iy*kernel.width ] = gaussian2d( ix-half_x, iy-half_y, deviation_x, deviation_y );
+	auto half = kernel.getSize().to<double>() / 2.0;
+	for( unsigned iy=0; iy<kernel.get_height(); ++iy ){
+		auto row = kernel.scan_line( iy );
+		for( unsigned ix=0; ix<kernel.get_width(); ++ix )
+			row[ix] = gaussian2d( ix-half.x, iy-half.y, deviation_x, deviation_y );
+	}
 	
 	return kernel;
 }
@@ -178,6 +179,10 @@ Plane Plane::blur_gaussian( double amount_x, double amount_y ) const{
 
 
 Plane Plane::deconvolve_rl( double amount, unsigned iterations ) const{
+	//The iteration step in Richardson–Lucy deconvolution:
+	//New_Est = Est * ( observed / (Est * psf) * flipped_psf );
+	//Where Est=estimation, New_Est replaces Est in next iteration
+	
 	//Create point spread function
 	//NOTE: It is symmetric, so we don't need a flipped one
 	Kernel psf = gaussian_kernel( amount, amount );

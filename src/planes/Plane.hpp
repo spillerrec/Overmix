@@ -49,15 +49,8 @@ struct SimplePixel{
 	void (*f)( const SimplePixel& );
 	void *data;
 };
-struct Kernel{
-	//TODO: This should be a plane
-	unsigned width;
-	unsigned height;
-	std::vector<double> values;
-	Kernel( unsigned width, unsigned height ) : width(width), height(height){
-		values.reserve( width*height );
-	}
-};
+
+using Kernel = PlaneBase<double>;
 
 enum class ScalingFunction{
 		SCALE_NEAREST
@@ -206,7 +199,7 @@ class Plane : public PlaneBase<color_type>{
 		
 	//Blurring
 	private:
-		Plane weighted_sum( Kernel &kernel ) const;
+		Plane weighted_sum( const Kernel &kernel ) const;
 		Kernel gaussian_kernel( double deviation_x, double deviation_y ) const;
 	public:
 		Plane blur_box( unsigned amount_x, unsigned amount_y ) const;
