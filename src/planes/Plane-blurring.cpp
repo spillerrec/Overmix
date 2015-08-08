@@ -56,7 +56,8 @@ struct WeightedSumLine{
 		}
 		
 		sum /= full_sum;
-		return std::round( std::max( sum, 0.0 ) );
+	//	return std::round( std::max( sum, 0.0 ) );
+		return sum;
 		
 	}
 	color_type weighted_sum( const color_type* in, int cutting ) const{
@@ -277,7 +278,7 @@ Plane Plane::deconvolve_rl( double amount, unsigned iterations ) const{
 	auto estimate = observed;
 	for( unsigned i=0; i<iterations; ++i ){
 		auto est_psf = convolve( estimate, psf );
-		auto error_est = /*convolve(*/ divide2( observed, est_psf )/*, psf )*/;
+		auto error_est = convolve( divide2( observed, est_psf ), flipped );
 		
 		auto new_estimate = multiply2( estimate, error_est );
 		//Don't allow imaginary colors!
