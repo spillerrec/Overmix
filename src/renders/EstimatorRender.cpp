@@ -31,10 +31,6 @@ static Plane save( Plane p, QString name ){
 	return p;
 }
 
-double truncate( double in ){
-	return (in < color::BLACK ? color::BLACK : in);
-}
-
 Point<double> channelScale( const AContainer& container, unsigned index, unsigned channel ){
 	return container.image(index)[channel].getSize() / container.image(index).getSize().to<double>();
 }
@@ -101,7 +97,7 @@ void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, d
 		auto row_out = out.scan_line( iy+pos.y );
 		auto row_in  = delta.const_scan_line( iy );
 		for( unsigned ix=0; ix<delta.get_width(); ix++ )
-			row_out[ix+pos.x] = truncate( row_out[ix+pos.x] - row_in[ix] );
+			row_out[ix+pos.x] = color::truncate( row_out[ix+pos.x] - row_in[ix] );
 	}
 }
 
@@ -129,7 +125,7 @@ void regularize( Plane& input, const Plane& copy, int p, double alpha, double be
 				}
 			}
 			
-			output_row[ix] = truncate( row_0[ix] - lambda * sum );
+			output_row[ix] = color::truncate( row_0[ix] - lambda * sum );
 		}
 	}
 }

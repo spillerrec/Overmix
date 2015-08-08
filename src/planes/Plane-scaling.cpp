@@ -139,8 +139,7 @@ void ScaleLine::do_line() const{
 			row += input.get_line_width();
 		}
 		
-		//*(out++) = color::truncate( avg + 0.5 );
-		*(out++) = std::min( std::max( avg, (double)color::BLACK ), (double)color::WHITE );
+		*(out++) = color::truncate( avg + 0.5 );
 	}
 }
 
