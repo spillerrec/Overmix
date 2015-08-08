@@ -17,6 +17,7 @@
 
 #include "Plane.hpp"
 #include "../color.hpp"
+#include "../debug.hpp"
 
 #include <QtConcurrent>
 
@@ -138,6 +139,7 @@ Plane Plane::level(
 	,	color_type output_max
 	,	double gamma
 	) const{
+	Timer t( "levels" );
 	Plane out( *this );
 	
 	//Don't do anything if nothing will change

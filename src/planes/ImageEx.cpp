@@ -18,8 +18,9 @@
 #include "ImageEx.hpp"
 
 #include "../color.hpp"
-#include "dump/DumpPlane.hpp"
+#include "../debug.hpp"
 #include "../utils/PlaneUtils.hpp"
+#include "dump/DumpPlane.hpp"
 
 #include <QtConcurrentMap>
 #include <QFileInfo>
@@ -35,6 +36,7 @@ using namespace std;
 static const double DOUBLE_MAX = std::numeric_limits<double>::max();
 
 void ImageEx::to_grayscale(){
+	Timer t( "to_grayscale" );
 	switch( type ){
 		case GRAY: break;
 		case RGB:
@@ -68,6 +70,7 @@ static ImageEx yuvToRgb( const ImageEx& img ){
 }
 
 ImageEx ImageEx::toRgb() const{
+	Timer t( "toRgb" );
 	switch( type ){
 		case GRAY:{
 				ImageEx out( RGB );
@@ -115,6 +118,7 @@ bool ImageEx::read_dump_plane( QIODevice &dev ){
 }
 
 bool ImageEx::from_dump( QIODevice& dev ){
+	Timer t( "from_dump" );
 	planes.reserve( 3 );
 	while( read_dump_plane( dev ) ); //Load all planes
 //	planes.reserve( 1 ); //For benchmarking other stuff
@@ -162,6 +166,7 @@ static DumpPlane toDumpPlane( const Plane& plane, unsigned depth ){
 }
 
 bool ImageEx::saveDump( QIODevice& dev, unsigned depth, bool compression ) const{
+	Timer t( "saveDump" );
 	auto method = compression ? DumpPlane::LZMA : DumpPlane::NONE;
 	for( auto& plane : planes )
 		if( !toDumpPlane( plane, depth ).write( dev, method ) )
@@ -256,6 +261,7 @@ bool ImageEx::from_png( const char* path ){
 
 
 bool ImageEx::from_qimage( QString path ){
+	Timer t( "from_qimage" );
 	QImage img( path );
 	if( img.isNull() )
 		return false;
@@ -324,6 +330,7 @@ struct PlanesIt{
 };
 
 QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ) const{
+	Timer t( "to_qimage" );
 	if( planes.size() == 0 || !planes[0] )
 		return QImage();
 	
@@ -497,6 +504,7 @@ QImage setQImageAlpha( QImage img, const Plane& alpha ){
 }
 
 ImageEx deVlcImage( const ImageEx& img ){
+	Timer t( "deVlcImage" );
 	if( img.get_system() != ImageEx::RGB )
 		return {};
 	

@@ -24,6 +24,7 @@
 #include "FullscreenViewer.hpp"
 
 #include "../color.hpp"
+#include "../debug.hpp"
 #include "../renders/AnimRender.hpp"
 #include "../renders/AverageRender.hpp"
 #include "../renders/DiffRender.hpp"
@@ -412,6 +413,7 @@ void main_widget::refresh_image(){
 	if( !images.isAligned() )
 		alignImage();
 	
+	Timer t( "refresh_image" );
 	auto start = getAlignedImages().minPoint();
 	if( renders.size() == 0 ){
 		auto frames = getAlignedImages().getFrames();
@@ -553,6 +555,7 @@ static void alignContainer( AContainer& container, int merge_index, AImageAligne
 }
 
 void main_widget::alignImage(){
+	Timer t( "alignImage" );
 	clear_cache(); //Prevent any animation from running
 	DialogWatcher watcher( this, "Aligning" );
 	
