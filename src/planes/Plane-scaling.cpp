@@ -69,7 +69,7 @@ double Plane::lancozs( double x, int a ){
 	auto pi = boost::math::constants::pi<double>();
 	if( x >= a )
 		return 0;
-	else if( a < std::numeric_limits<double>::epsilon() )
+	else if( std::abs(x) < std::numeric_limits<double>::epsilon() )
 		return 1;
 	else
 		return (a*std::sin(pi*x)*std::sin(pi*x/2)) / (pi*pi*x*x);

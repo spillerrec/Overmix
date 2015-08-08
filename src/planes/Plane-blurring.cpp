@@ -76,7 +76,8 @@ struct WeightedSumLine{
 		}
 		
 		sum /= w_sum;
-		return std::round( std::max( sum, 0.0 ) );
+	//	return std::round( std::max( sum, 0.0 ) );
+		return sum;
 	}
 };
 
