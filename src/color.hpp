@@ -42,7 +42,7 @@ struct color{
 		return value / (double)WHITE;
 	}
 	constexpr static color_type fromDouble( double value ){
-		return value * WHITE;
+		return value * WHITE + 0.5;
 	}
 	constexpr static unsigned char as8bit( color_type value ){
 		return asDouble( value ) * 255;
@@ -51,9 +51,13 @@ struct color{
 		return fromDouble( value / 255.0 );
 	}
 	
-	static color_type truncate( precision_color_type value ){
-		return std::min( std::max( value, (precision_color_type)color::MIN_VAL ), (precision_color_type)color::MAX_VAL );
-	}
+	template<typename T>
+	static color_type truncate( T value )
+		{ return std::min( std::max( value, (T)BLACK ), (T)WHITE ); }
+	
+	template<typename T>
+	static color_type truncateFullRange( T value )
+		{ return std::min( std::max( value, (T)MIN_VAL ), (T)MAX_VAL ); }
 	
 	public:
 		color() { } //Initialized by new/delete

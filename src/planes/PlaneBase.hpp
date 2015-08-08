@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <vector>
 #include <utility>
+#include <algorithm>
 
 #include "../Geometry.hpp"
 
@@ -141,6 +142,39 @@ class PlaneBase{
 			}
 		}
 		
+	//Transformations
+		void flipHor(){
+			for( unsigned iy=0; iy<get_height(); iy++ ){
+				auto row = scan_line( iy );
+				for( unsigned ix=0; ix<get_width()/2; ix++ )
+					std::swap( row[ix], row[get_width()-ix-1] );
+			}
+		}
+		void flipVer(){
+			for( unsigned iy=0; iy<get_height()/2; iy++ ){
+				auto row1 = scan_line( iy );
+				auto row2 = scan_line( get_height()-iy-1 );
+				for( unsigned ix=0; ix<get_width(); ix++ )
+					std::swap( row1[ix], row2[ix] );
+			}
+		}
+		
+		void truncate( T min, T max ){
+			for( unsigned i=0; i<dataSize(); ++i )
+				data[i] = std::min( std::max( data[i], min ), max );
+		}
+		
+		template<typename T2>
+		PlaneBase<T2> to() const{
+			PlaneBase<T2> out( getSize() );
+			for( unsigned iy=0; iy<get_height(); iy++ ){
+				auto row_in = const_scan_line( iy );
+				auto row_out =  out.scan_line( iy );
+				for( unsigned ix=0; ix<get_width(); ix++ )
+					row_out[ix] = T2( row_in[ix] );
+			}
+			return out;
+		}
 		
 	//Iterators
 	public:

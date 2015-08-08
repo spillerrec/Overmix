@@ -17,6 +17,8 @@
 
 #include "Plane.hpp"
 
+#include "../color.hpp"
+
 #include <QtConcurrent>
 #include <QDebug>
 #include <cmath>
@@ -24,6 +26,7 @@
 using namespace std;
 
 
+template<typename color_type>
 struct WeightedSumLine{
 	color_type *out;	//Output row
 	const color_type *in; //Input row, must be the top row weights affects
@@ -76,7 +79,8 @@ struct WeightedSumLine{
 	}
 };
 
-void sum_line( const WeightedSumLine& line ){
+template<typename color_type>
+void sum_line_template( const WeightedSumLine<color_type>& line ){
 	auto in = line.in;
 	auto out = line.out;
 	unsigned size_half = line.w_width/2;
@@ -94,25 +98,30 @@ void sum_line( const WeightedSumLine& line ){
 		*(out++) = line.weighted_sum( in, ix-end );
 }
 
-Plane Plane::weighted_sum( const Kernel &kernel ) const{
-	if( !kernel.valid() )
-		return Plane();
+void sum_line( const WeightedSumLine<color_type>& line )
+	{ sum_line_template( line ); }
 	
-	Plane out( size );
+void sum_line_double( const WeightedSumLine<double>& line )
+	{ sum_line_template( line ); }
+
+template<typename T>
+std::vector<WeightedSumLine<T>> prepare_weighted_sum(
+		const PlaneBase<T>& in, PlaneBase<T>& out, const Kernel& kernel ){
+	auto size = out.getSize();
 	
 	//Set default settings
-	WeightedSumLine default_line;
+	WeightedSumLine<T> default_line;
 	default_line.width = size.width();
-	default_line.line_width = get_line_width();
+	default_line.line_width = in.get_line_width();
 	default_line.weights = kernel.const_scan_line(0); //TODO: line_width ignored!
 	default_line.w_width = kernel.get_width();
 	default_line.w_height = kernel.get_height();
 	default_line.full_sum = default_line.calculate_sum();
 	
 	int half_size = kernel.get_height() / 2;
-	std::vector<WeightedSumLine> lines;
+	std::vector<WeightedSumLine<T>> lines;
 	for( unsigned iy=0; iy<size.height(); ++iy ){
-		WeightedSumLine line = default_line;
+		auto line = default_line;
 		line.out = out.scan_line( iy );
 		
 		int top = iy - half_size;
@@ -120,21 +129,43 @@ Plane Plane::weighted_sum( const Kernel &kernel ) const{
 			//Cut stuff from top
 			line.w_height += top; //Subtracts!
 			line.weights += -top * line.w_width;
-			line.in = const_scan_line( 0 );
+			line.in = in.const_scan_line( 0 );
 			line.full_sum = line.calculate_sum();
 		}
 		else if( top+kernel.get_height() >= size.height() ){
 			//Cut stuff from bottom
-			line.in = const_scan_line( top );
+			line.in = in.const_scan_line( top );
 			line.w_height = size.height() - top;
 			line.full_sum = line.calculate_sum();
 		}
 		else //Use defaults
-			line.in = const_scan_line( top );
+			line.in = in.const_scan_line( top );
 		
 		lines.push_back( line );
 	}
 	
+	return lines;
+}
+
+PlaneBase<double> convolve( const PlaneBase<double>& in, const Kernel& kernel ){
+	if( !kernel.valid() )
+		return {};
+	
+	PlaneBase<double> out( in.getSize() );
+	
+	auto lines = prepare_weighted_sum( in, out, kernel );
+	QtConcurrent::blockingMap( lines, &sum_line_double );
+	
+	return out;
+}
+
+Plane Plane::weighted_sum( const Kernel &kernel ) const{
+	if( !kernel.valid() )
+		return Plane();
+	
+	Plane out( size );
+	
+	auto lines = prepare_weighted_sum( *this, out, kernel );
 	QtConcurrent::blockingMap( lines, &sum_line );
 	
 	return out;
@@ -158,16 +189,18 @@ static double gaussian2d( double dx, double dy, double devi_x, double devi_y ){
 
 Kernel Plane::gaussian_kernel( double deviation_x, double deviation_y ) const{
 	//TODO: make sure deviation is positive
-	Kernel kernel( std::ceil( 12*deviation_x ), std::ceil( 12*deviation_y ) );
+	auto uneven = []( double val ){ return int(std::ceil(val))/2*2+1; };
+	Kernel kernel( uneven( 12.5*deviation_x ), uneven( 12.5*deviation_y ) );
 	
 	//Fill kernel
-	auto half = kernel.getSize().to<double>() / 2.0;
+	auto half = (kernel.getSize() - 1).to<double>() / 2.0;
 	for( unsigned iy=0; iy<kernel.get_height(); ++iy ){
 		auto row = kernel.scan_line( iy );
 		for( unsigned ix=0; ix<kernel.get_width(); ++ix )
 			row[ix] = gaussian2d( ix-half.x, iy-half.y, deviation_x, deviation_y );
 	}
 	
+	qDebug() << "Kernel size: " << kernel.get_width() << "x" << kernel.get_height();
 	return kernel;
 }
 
@@ -177,6 +210,44 @@ Plane Plane::blur_gaussian( double amount_x, double amount_y ) const{
 	return weighted_sum( kernel );
 }
 
+using DPlane = PlaneBase<double>;
+static DPlane divide2( const DPlane& left, const DPlane& right ){
+	auto copy = left;
+	auto rl=begin(copy);
+	auto rr=begin(right);
+	for( ; rl!=end(copy); ++rl, ++rr ){
+		auto pl=begin(*rl);
+		auto pr=begin(*rr);
+		for( ; pl!=end(*rl); ++pl, ++pr )
+			*pl = *pl / *pr;
+	}
+	return copy;
+}
+static DPlane multiply2( const DPlane& left, const DPlane& right ){
+	auto copy = left;
+	auto rl=begin(copy);
+	auto rr=begin(right);
+	for( ; rl!=end(copy); ++rl, ++rr ){
+		auto pl=begin(*rl);
+		auto pr=begin(*rr);
+		for( ; pl!=end(*rl); ++pl, ++pr )
+			*pl = *pl * *pr;
+	}
+	return copy;
+}
+static double change( const DPlane& left, const DPlane& right ){
+	double amount = 0;
+	auto rl=begin(left);
+	auto rr=begin(right);
+	for( ; rl!=end(left); ++rl, ++rr ){
+		auto pl=begin(*rl);
+		auto pr=begin(*rr);
+		for( ; pl!=end(*rl); ++pl, ++pr )
+			amount += std::abs(*pl - *pr);
+	}
+	return amount;
+}
+
 
 Plane Plane::deconvolve_rl( double amount, unsigned iterations ) const{
 	//The iteration step in Richardson–Lucy deconvolution:
@@ -184,8 +255,11 @@ Plane Plane::deconvolve_rl( double amount, unsigned iterations ) const{
 	//Where Est=estimation, New_Est replaces Est in next iteration
 	
 	//Create point spread function
-	//NOTE: It is symmetric, so we don't need a flipped one
 	Kernel psf = gaussian_kernel( amount, amount );
+	Kernel flipped( psf );
+	flipped.flipHor();
+	flipped.flipVer();
+	qDebug() << "kernel diff: " << change(psf, flipped);
 	
 	//TODO: Make non-symmetric kernels work!
 	/*
@@ -198,17 +272,21 @@ Plane Plane::deconvolve_rl( double amount, unsigned iterations ) const{
 //		psf.values[i] = 1.0 / (psf.width*psf.height);
 	//return estimate->weighted_sum( psf );
 	
-	Plane blurred( this->weighted_sum( psf ) );
-	Plane estimate( blurred ); //NOTE: some use just plain 0.5 as initial estimate
-	//TODO: Why did we initialy use *this, and then overwrite it with blurred?
-	Plane copy( *this );// blurred ); //*///TODO: make subtract/divide/etc take const input
+	
+	auto observed = to<double>();
+	auto estimate = observed;
 	for( unsigned i=0; i<iterations; ++i ){
-		Plane est_psf = estimate.weighted_sum( psf );
-		est_psf.divide( copy ); //This is observed / est_psf
-		Plane error_est = est_psf.weighted_sum( psf );
-		//TODO: oh shit, what happened to error_est?
-		estimate.multiply( est_psf );
+		auto est_psf = convolve( estimate, psf );
+		auto error_est = /*convolve(*/ divide2( observed, est_psf )/*, psf )*/;
+		
+		auto new_estimate = multiply2( estimate, error_est );
+		//Don't allow imaginary colors!
+		new_estimate.truncate( color::BLACK, color::WHITE );
+		
+		qDebug() << "Deconvolve change: " << i+1 << " - " << change(new_estimate, estimate) / color::WHITE;
+		estimate = new_estimate;
+		
 	}
 	
-	return estimate;
+	return estimate.to<color_type>();
 }
