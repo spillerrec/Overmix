@@ -18,9 +18,9 @@
 #include "Plane.hpp"
 
 #include "../color.hpp"
+#include "../debug.hpp"
 
 #include <QtConcurrent>
-#include <QDebug>
 #include <cmath>
 
 using namespace std;
@@ -161,6 +161,7 @@ PlaneBase<double> convolve( const PlaneBase<double>& in, const Kernel& kernel ){
 }
 
 Plane Plane::weighted_sum( const Kernel &kernel ) const{
+	Timer t( "weighted_sum" );
 	if( !kernel.valid() )
 		return Plane();
 	
@@ -201,7 +202,6 @@ Kernel Plane::gaussian_kernel( double deviation_x, double deviation_y ) const{
 			row[ix] = gaussian2d( ix-half.x, iy-half.y, deviation_x, deviation_y );
 	}
 	
-	qDebug() << "Kernel size: " << kernel.get_width() << "x" << kernel.get_height();
 	return kernel;
 }
 
@@ -251,6 +251,9 @@ static double change( const DPlane& left, const DPlane& right ){
 
 
 Plane Plane::deconvolve_rl( double amount, unsigned iterations ) const{
+	//TODO: fail on uneven kernels
+	//TODO: take input in both directions, perhaps even custom PSFs
+	Timer t( "deconvolve_rl" );
 	//The iteration step in Richardson–Lucy deconvolution:
 	//New_Est = Est * ( observed / (Est * psf) * flipped_psf );
 	//Where Est=estimation, New_Est replaces Est in next iteration
@@ -260,19 +263,6 @@ Plane Plane::deconvolve_rl( double amount, unsigned iterations ) const{
 	Kernel flipped( psf );
 	flipped.flipHor();
 	flipped.flipVer();
-	qDebug() << "kernel diff: " << change(psf, flipped);
-	
-	//TODO: Make non-symmetric kernels work!
-	/*
-	double half_x = psf.height/2.0;
-	for( unsigned iy=0; iy<psf.height; iy++ )
-		for( unsigned ix=0; ix<psf.width; ix++ ){
-			psf.values[iy*psf.width + ix] = 1.0;// gaussian1d( iy-half_x, 8.0/12 );
-		}*/
-//	for( unsigned i=0; i<psf.width*psf.height; i++ )
-//		psf.values[i] = 1.0 / (psf.width*psf.height);
-	//return estimate->weighted_sum( psf );
-	
 	
 	auto observed = to<double>();
 	auto estimate = observed;
@@ -284,7 +274,7 @@ Plane Plane::deconvolve_rl( double amount, unsigned iterations ) const{
 		//Don't allow imaginary colors!
 		new_estimate.truncate( color::BLACK, color::WHITE );
 		
-		qDebug() << "Deconvolve change: " << i+1 << " - " << change(new_estimate, estimate) / color::WHITE;
+		qCDebug(LogDelta) << "Deconvolve change: " << i+1 << " - " << change(new_estimate, estimate) / color::WHITE;
 		estimate = new_estimate;
 		
 	}

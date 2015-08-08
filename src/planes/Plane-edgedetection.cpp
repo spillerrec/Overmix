@@ -17,9 +17,9 @@
 
 #include "Plane.hpp"
 #include "../color.hpp"
+#include "../debug.hpp"
 
 #include <QtConcurrent>
-#include <QDebug>
 
 using namespace std;
 
@@ -100,6 +100,7 @@ static void edge_line( const EdgeLine<T>& line ){
 
 template<typename T, typename T2>
 Plane parallel_edge_line( const Plane& p, vector<T> weights_x, vector<T> weights_y, unsigned div, T2 func ){
+	Timer t( "parallel_edge_line" );
 	Plane out( p.getSize() );
 	unsigned size = sqrt( weights_x.size() );
 	

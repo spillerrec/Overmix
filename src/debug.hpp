@@ -18,15 +18,28 @@
 #ifndef DEBUG_HPP
 #define DEBUG_HPP
 
-#include <QImage>
-
 #include <string>
 #include <fstream>
 
-#include "color.hpp"
 #include "Geometry.hpp"
 
+#include <QLoggingCategory>
+#include <QElapsedTimer>
+
+Q_DECLARE_LOGGING_CATEGORY(LogTiming)
+Q_DECLARE_LOGGING_CATEGORY(LogDelta)
+
 class ImageContainer;
+class QImage;
+
+struct Timer{
+	QElapsedTimer t;
+	QString name;
+	Timer( QString name ) : name(name) { t.start(); }
+	~Timer(){ print(name); }
+	void print( QString name )
+		{ qCDebug(LogTiming) << name << " completed in: " << t.restart(); }
+};
 
 namespace debug{
 	

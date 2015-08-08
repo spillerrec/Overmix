@@ -19,7 +19,13 @@
 #include "debug.hpp"
 #include "utils/utils.hpp"
 
+#include "color.hpp"
 #include "containers/ImageContainer.hpp"
+
+#include <QImage>
+
+Q_LOGGING_CATEGORY(LogTiming, "overmix.time")
+Q_LOGGING_CATEGORY(LogDelta,  "overmix.delta")
 
 using namespace std;
 

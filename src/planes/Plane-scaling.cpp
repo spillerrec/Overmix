@@ -17,16 +17,16 @@
 
 #include "Plane.hpp"
 #include "../color.hpp"
+#include "../debug.hpp"
 
 #include <QtConcurrent>
-#include <QDebug>
-#include <QTime>
 
 #include <boost/math/constants/constants.hpp>
 
 using namespace std;
 
 Plane Plane::scale_nearest( Point<unsigned> wanted ) const{
+	Timer t( "scale_nearest" );
 	Plane scaled( wanted );
 	
 	for( unsigned iy=0; iy<wanted.height(); iy++ ){
@@ -146,9 +146,7 @@ void ScaleLine::do_line() const{
 
 
 static Plane scale2x( const Plane& p, int window, Plane::Filter f ){
-	
-	QTime t;
-	t.start();
+	Timer t( "scale2x" );
 	Plane scaled( p.getSize() * 2 );
 	
 	auto w1 = ScalePoint( 100, p.get_width(), scaled.get_width(), 0, 2.5, f ).weights;
@@ -192,19 +190,17 @@ static Plane scale2x( const Plane& p, int window, Plane::Filter f ){
 		}
 	}
 	
-	qDebug( "Resize took: %d msec", t.restart() );
 	return scaled;
 }
 
 
 Plane Plane::scale_generic( Point<unsigned> wanted, double window, Plane::Filter f, Point<double> offset ) const{
+	Timer t( "scale_generic" );
 	if( wanted == getSize() )
 		return *this;
 	
 	Plane scaled( wanted );
 	
-	QTime t;
-	t.start();
 	
 	//Calculate all x-weights
 	std::vector<ScalePoint> points;
@@ -221,7 +217,6 @@ Plane Plane::scale_generic( Point<unsigned> wanted, double window, Plane::Filter
    QtConcurrent::blockingMap( lines, []( ScaleLine& t ){ t.do_line(); } );
    //for( auto l : lines ) l.do_line();
 	
-	qDebug( "Resize took: %d msec", t.restart() );
 	return scaled;
 }
 
