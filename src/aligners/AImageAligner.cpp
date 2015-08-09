@@ -19,6 +19,8 @@
 #include "../color.hpp"
 #include "../containers/ImageContainer.hpp"
 
+#include <QRect>
+
 #include <fstream>
 
 

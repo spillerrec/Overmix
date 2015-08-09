@@ -23,6 +23,7 @@
 #include "../color.hpp"
 
 #include <QDebug>
+#include <QRectF>
 #include <float.h>
 #include <algorithm>
 #include <vector>

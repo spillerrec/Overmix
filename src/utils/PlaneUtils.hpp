@@ -19,6 +19,7 @@
 #define PLANE_UTILS_HPP
 
 #include "../planes/Plane.hpp"
+#include "../color.hpp"
 
 class ScaledPlane{
 	private:

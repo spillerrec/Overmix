@@ -21,9 +21,10 @@
 #include "Plane.hpp"
 #include <QString>
 #include <QFile>
-#include <QImage>
 #include <algorithm>
 #include <vector>
+
+class QImage;
 
 class ImageEx{
 	public:

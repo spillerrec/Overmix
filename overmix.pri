@@ -24,6 +24,7 @@ SOURCES += $$PWD/src/containers/pugixml/pugixml.cpp
 HEADERS += $$PWD/src/planes/ImageEx.hpp $$PWD/src/planes/Plane.hpp $$PWD/src/planes/FourierPlane.hpp $$PWD/src/planes/PlaneBase.hpp
 SOURCES += $$PWD/src/planes/ImageEx.cpp $$PWD/src/planes/Plane.cpp $$PWD/src/planes/FourierPlane.cpp
 SOURCES += $$PWD/src/planes/Plane-scaling.cpp $$PWD/src/planes/Plane-edgedetection.cpp $$PWD/src/planes/Plane-blurring.cpp $$PWD/src/planes/Plane-diff.cpp $$PWD/src/planes/Plane-pixel.cpp $$PWD/src/planes/Plane-binarize.cpp
+SOURCES += $$PWD/src/planes/ImageEx-dump.cpp $$PWD/src/planes/ImageEx-jpeg.cpp $$PWD/src/planes/ImageEx-png.cpp $$PWD/src/planes/ImageEx-qimage.cpp
 
 # Aligners
 HEADERS += $$PWD/src/aligners/AImageAligner.hpp $$PWD/src/aligners/AverageAligner.hpp $$PWD/src/aligners/ImageAligner.hpp $$PWD/src/aligners/LayeredAligner.hpp $$PWD/src/aligners/RecursiveAligner.hpp $$PWD/src/aligners/AnimationSeparator.hpp $$PWD/src/aligners/FrameAligner.hpp $$PWD/src/aligners/LinearAligner.hpp $$PWD/src/aligners/SuperResAligner.hpp
