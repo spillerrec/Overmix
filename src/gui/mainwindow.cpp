@@ -46,6 +46,7 @@
 #include "../containers/FrameContainer.hpp"
 #include "../containers/ImageContainer.hpp"
 #include "../containers/ImageContainerSaver.hpp"
+#include "../utils/Animator.hpp"
 #include "../utils/ImageLoader.hpp"
 
 #include "savers/DumpSaver.hpp"
@@ -169,6 +170,7 @@ main_widget::main_widget( ImageContainer& images )
 	connect( ui->action_fullscreen,   SIGNAL( triggered() ), this, SLOT( showFullscreen() ) );
 	connect( ui->action_online_wiki,  SIGNAL( triggered() ), this, SLOT( openOnlineHelp() ) );
 	connect( ui->action_crop_all,     SIGNAL( triggered() ), this, SLOT( crop_all() ) );
+	connect( ui->action_create_slide,     SIGNAL( triggered() ), this, SLOT( create_slide() ) );
 	ui->action_show_menubar->setChecked( settings.value( "show_menubar", true ).toBool() );
 	toggleMenubar();
 	
@@ -764,4 +766,9 @@ void main_widget::crop_all(){
 	});
 	
 	clear_cache();
+}
+
+void main_widget::create_slide(){
+	Animator anim;
+	anim.render( renders[0].raw );
 }

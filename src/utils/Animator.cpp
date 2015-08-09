@@ -92,7 +92,7 @@ void Animator::render( const ImageEx& img ) const{
 	for( auto pos=offset; is_valid( pos ); pos += movement, id++ ){
 		ImageEx copy( img );
 		copy.crop( pos, view );
-		pixelate( copy, pixor_offset, pixor_pos - pos, pixor_size, pixor_pixel );
-		copy.to_qimage( ImageEx::SYSTEM_REC709 ).save( "out/" + QString::number( id ) + ".bmp" );
+	//	pixelate( copy, pixor_offset, pixor_pos - pos, pixor_size, pixor_pixel );
+		copy.to_qimage( ImageEx::SYSTEM_REC709 ).save( "out2/" + QString::number( id ) + ".jpg", "JPG", 25 );
 	}
 }
