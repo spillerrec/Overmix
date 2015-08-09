@@ -29,10 +29,10 @@
 using namespace std;
 
 
-bool ImageEx::from_qimage( QString path ){
+bool ImageEx::from_qimage( QIODevice& dev, QString ext ){
 	Timer t( "from_qimage" );
-	QImage img( path );
-	if( img.isNull() )
+	QImage img;
+	if( !img.load( &dev, ext.toLocal8Bit().constData() ) )
 		return false;
 	
 	type = RGB;

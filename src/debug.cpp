@@ -24,8 +24,9 @@
 
 #include <QImage>
 
-Q_LOGGING_CATEGORY(LogTiming, "overmix.time")
-Q_LOGGING_CATEGORY(LogDelta,  "overmix.delta")
+Q_LOGGING_CATEGORY(LogTiming,  "overmix.time")
+Q_LOGGING_CATEGORY(LogDelta,   "overmix.delta")
+Q_LOGGING_CATEGORY(LogImageIO, "overmix.imageio")
 
 using namespace std;
 

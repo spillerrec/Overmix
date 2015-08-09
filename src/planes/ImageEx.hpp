@@ -50,10 +50,9 @@ class ImageEx{
 		Plane alpha;
 		system type;
 		bool read_dump_plane( QIODevice& dev );
-		bool from_dump( QIODevice& dev );
-		bool from_dump( QString path );
-		bool from_png( const char* path );
-		bool from_qimage( QString path );
+		bool from_dump(   QIODevice& dev );
+		bool from_png(    QIODevice& dev );
+		bool from_qimage( QIODevice& dev, QString ext );
 		
 	public:
 		void addPlane( Plane&& p ){ if( p.valid() ) planes.emplace_back( p ); }

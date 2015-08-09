@@ -80,14 +80,17 @@ ImageEx ImageEx::toRgb() const{
 
 
 bool ImageEx::read_file( QString path ){
-	QString ext = QFileInfo( path ).suffix();
-	if( ext == "dump" )
-		return from_dump( path );
-	//TODO: actually make png loading useful, by providing 16-bit loading, and fix const char* interface
-//	if( ext == "png" )
-//		return from_png( path );
+	QFile f( path );
+	if( !f.open( QIODevice::ReadOnly ) )
+		return false;
 	
-	return from_qimage( path );
+	auto ext = QFileInfo( path ).suffix();//TODO: toLower
+	if( ext == "dump" )
+		return from_dump( f );
+	if( ext == "png" )
+		return from_png( f );
+	
+	return from_qimage( f, ext );
 }
 
 ImageEx ImageEx::fromFile( QString path ){

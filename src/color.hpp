@@ -50,6 +50,9 @@ struct color{
 	constexpr static color_type from8bit( unsigned char value ){
 		return fromDouble( value / 255.0 );
 	}
+	constexpr static color_type from16bit( uint16_t value ){
+		return fromDouble( value / double(std::numeric_limits<uint16_t>::max()) );
+	}
 	
 	template<typename T>
 	static color_type truncate( T value )

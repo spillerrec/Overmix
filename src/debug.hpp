@@ -28,6 +28,7 @@
 
 Q_DECLARE_LOGGING_CATEGORY(LogTiming)
 Q_DECLARE_LOGGING_CATEGORY(LogDelta)
+Q_DECLARE_LOGGING_CATEGORY(LogImageIO)
 
 class ImageContainer;
 class QImage;

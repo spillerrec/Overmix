@@ -77,14 +77,6 @@ bool ImageEx::from_dump( QIODevice& dev ){
 	return amount < 4;
 }
 
-bool ImageEx::from_dump( QString path ){
-	QFile f( path );
-	if( !f.open( QIODevice::ReadOnly ) )
-		return false;
-	
-	return from_dump( f );
-}
-
 static DumpPlane toDumpPlane( const Plane& plane, unsigned depth ){
 	bool multi_byte = depth > 8;
 	auto power = std::pow( 2, depth ) - 1;
