@@ -31,7 +31,7 @@ Development is now geared towards understanding the more theoretical parts about
 
 - Detection of zooming and rotation
 - Figuring out how features such as animation detection and separation of fore/back-ground can be combined
-- Support 16-bit PNG for input and output
+- Support saving as 16-bit PNG (loading is supported)
 
 ### The Dump format
 
