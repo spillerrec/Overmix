@@ -18,11 +18,6 @@
 #ifndef PLANE_BASE_HPP
 #define PLANE_BASE_HPP
 
-#include <cstdio>
-#include <vector>
-#include <utility>
-#include <algorithm>
-
 #include "../Geometry.hpp"
 
 template<typename T>

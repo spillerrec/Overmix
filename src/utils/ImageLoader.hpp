@@ -19,7 +19,7 @@
 #define IMAGE_LOADER_HPP
 
 #include <QString>
-#include <QStringList>
+class QStringList;
 
 #include <vector>
 #include <utility>

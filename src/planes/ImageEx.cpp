@@ -90,6 +90,13 @@ bool ImageEx::read_file( QString path ){
 	return from_qimage( path );
 }
 
+ImageEx ImageEx::fromFile( QString path ){
+	ImageEx temp;
+	if( !temp.read_file( path ) )
+		temp.planes.clear();
+	return temp;
+}
+
 
 double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 	//Check if valid

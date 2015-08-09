@@ -18,8 +18,6 @@
 #ifndef PLANE_HPP
 #define PLANE_HPP
 
-#include <QList>
-#include <cstdio>
 #include <vector>
 #include <utility>
 
@@ -36,7 +34,7 @@ class DiffCache{
 			double diff;
 			unsigned precision;
 		};
-		QList<Cached> cache;
+		std::vector<Cached> cache;
 		
 	public:
 		double get_diff( int x, int y, unsigned precision ) const;

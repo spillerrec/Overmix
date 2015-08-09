@@ -19,12 +19,12 @@
 #define IMAGE_EX_HPP
 
 #include "Plane.hpp"
-#include <QString>
-#include <QFile>
 #include <algorithm>
 #include <vector>
 
 class QImage;
+class QIODevice;
+class QString;
 
 class ImageEx{
 	public:
@@ -99,12 +99,7 @@ class ImageEx{
 		bool is_valid() const{ return planes.size() > 0; }
 		
 		bool read_file( QString path );
-		static ImageEx fromFile( QString path ){
-			ImageEx temp;
-			if( !temp.read_file( path ) )
-				temp.planes.clear();
-			return temp;
-		}
+		static ImageEx fromFile( QString path );
 		
 		bool saveDump( QIODevice& dev, unsigned depth, bool compression ) const;
 		bool saveDump( QString path, unsigned depth=10 ) const;

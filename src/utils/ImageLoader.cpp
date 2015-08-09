@@ -22,6 +22,7 @@
 #include "../containers/ImageContainer.hpp"
 #include "../containers/ImageContainerSaver.hpp"
 
+#include <QStringList>
 #include <QtConcurrent>
 
 using namespace std;

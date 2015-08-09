@@ -141,7 +141,7 @@ double DiffCache::get_diff( int x, int y, unsigned precision ) const{
 }
 void DiffCache::add_diff( int x, int y, double diff, unsigned precision ){
 	Cached c = { x, y, diff, precision };
-	cache << c;
+	cache.emplace_back( c );
 }
 
 
