@@ -51,6 +51,7 @@ class ImageEx{
 		system type;
 		bool read_dump_plane( QIODevice& dev );
 		bool from_dump(   QIODevice& dev );
+		bool from_jpeg(   QIODevice& dev );
 		bool from_png(    QIODevice& dev );
 		bool from_qimage( QIODevice& dev, QString ext );
 		

@@ -84,11 +84,13 @@ bool ImageEx::read_file( QString path ){
 	if( !f.open( QIODevice::ReadOnly ) )
 		return false;
 	
-	auto ext = QFileInfo( path ).suffix();//TODO: toLower
+	auto ext = QFileInfo( path ).suffix().toLower();
 	if( ext == "dump" )
 		return from_dump( f );
 	if( ext == "png" )
 		return from_png( f );
+	if( ext == "jpg" || ext == "jpeg" )
+		return from_jpeg( f );
 	
 	return from_qimage( f, ext );
 }
