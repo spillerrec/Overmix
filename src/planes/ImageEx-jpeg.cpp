@@ -17,13 +17,15 @@
 
 #include "ImageEx.hpp"
 
-#include "FourierPlane.hpp"
-
 #include "../color.hpp"
 #include "../debug.hpp"
 
+#include "../degraders/JpegDegrader.hpp"
+
 #include "gwenview/iodevicejpegsourcemanager.h"
 #include "jpeglib.h"
+
+#include <QFile>
 
 #include <vector>
 //#include <QImage>
@@ -48,68 +50,18 @@ class ImgRow{
 		}
 };
 
-class QuantTable{
-	private:
-		Plane table; //TODO: type?
-		
-		double scale( int ix, int iy ) const
-			{ return 2 * 4 * (ix==0?sqrt(2):1) * (iy==0?sqrt(2):1); }
-			//NOTE: 4 is defined by JPEG, 2
-		
-		double degradeCoeff( int ix, int iy, double coeff, double quant ) const{
-			auto factor = quant * scale(ix,iy);
-			return int( coeff / factor ) * factor; //TODO: proper round!
-		}
-		
-	public:
-		QuantTable() : table( DCTSIZE, DCTSIZE ) { table.fill( 1 ); }
-		QuantTable( UINT16* input ) : table( DCTSIZE, DCTSIZE ) {
-			for( unsigned iy=0; iy<DCTSIZE; iy++ ){
-				auto row = table.scan_line( iy );
-				for( unsigned ix=0; ix<DCTSIZE; ix++ )
-					row[ix] = input[iy*DCTSIZE + ix];
-			}
-		}
-		
-		Plane degrade8x8( const Plane& p ) const;
-		
-		Plane degrade( const Plane& p ) const;
-};
-
-Plane QuantTable::degrade8x8( const Plane& p ) const{
-	DctPlane f( p, 255 );
-	//NOTE: it is zero-centered with 127.5, not 128 as JPEG specifies!
+JpegDegrader ImageEx::getJpegDegrader( QString path ){
+	JpegDegrader deg;
 	
-	for( unsigned iy=0; iy<f.get_height(); iy++ ){
-		auto row = f.scan_line( iy );
-		auto quant = table.const_scan_line( iy );
-		for( unsigned ix=0; ix<f.get_width(); ix++ )
-			row[ix] = degradeCoeff( ix, iy, row[ix], quant[ix] );
-	}
+	QFile f( path );
+	if( !f.open( QIODevice::ReadOnly ) )
+		return deg;
 	
-	return f.toPlane( 255 );
-}
-Plane QuantTable::degrade( const Plane& p ) const{
-	Plane out( p.getSize() );
-	for( unsigned iy=0; iy<p.get_height(); iy+=8 )
-		for( unsigned ix=0; ix<p.get_width(); ix+=8 ){
-			Plane test( 8, 8 );
-			test.copy( p, {ix,iy}, {8,8}, {0,0} );
-			test = degrade8x8( test );
-			out.copy( test, {0,0}, {8,8}, {ix,iy} );
-		}
-	return out;
+	ImageEx().from_jpeg( f, &deg );
+	return deg;
 }
 
-template<typename T>
-QString outputDCT( T* dct ){
-	QString out;
-	for( unsigned i=0; i<64; i++ )
-		out += QString::number( dct[i] ) + " ";
-	return out;
-}
-
-bool ImageEx::from_jpeg( QIODevice& dev ){
+bool ImageEx::from_jpeg( QIODevice& dev, JpegDegrader* deg ){
 	Timer t( "from_jpeg" );
 	jpeg_decompress_struct cinfo;
 	jpeg_error_mgr jerr;
@@ -152,8 +104,23 @@ bool ImageEx::from_jpeg( QIODevice& dev ){
 		ImgRow( *this, iy, cinfo.output_components ).read8( arr );
 	}
 	
-//	QuantTable quant( cinfo.comp_info[0].quant_table->quantval );
-//	ImageEx( quant.degrade( ImageEx::fromFile("out-clean/00.png" )[0] ) ).to_qimage( SYSTEM_REC709 ).save( "Test.png" );
+	if( deg ){
+		*deg = JpegDegrader();
+		//TODO: set color type
+		
+		//Find the maximum sampling factor
+		int max_h = 1, max_v = 1;
+		for( int i=0; i<cinfo.output_components; i++ ){
+			max_h = std::max( max_h, cinfo.comp_info[i].h_samp_factor );
+			max_v = std::max( max_v, cinfo.comp_info[i].v_samp_factor );
+		}
+		
+		for( int i=0; i<cinfo.output_components; i++ )
+			deg->addPlane( { {cinfo.comp_info[i].quant_table->quantval}
+					,	max_h / double(cinfo.comp_info[i].h_samp_factor)
+					,	max_v / double(cinfo.comp_info[i].v_samp_factor)
+				} );
+	}
 	
 	jpeg_finish_decompress( &cinfo );//*/
 	jpeg_destroy_decompress( &cinfo );

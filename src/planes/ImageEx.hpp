@@ -25,6 +25,7 @@
 class QImage;
 class QIODevice;
 class QString;
+class JpegDegrader;
 
 class ImageEx{
 	public:
@@ -51,7 +52,7 @@ class ImageEx{
 		system type;
 		bool read_dump_plane( QIODevice& dev );
 		bool from_dump(   QIODevice& dev );
-		bool from_jpeg(   QIODevice& dev );
+		bool from_jpeg(   QIODevice& dev, JpegDegrader* deg=nullptr );
 		bool from_png(    QIODevice& dev );
 		bool from_qimage( QIODevice& dev, QString ext );
 		
@@ -100,6 +101,7 @@ class ImageEx{
 		
 		bool read_file( QString path );
 		static ImageEx fromFile( QString path );
+		static JpegDegrader getJpegDegrader( QString path );
 		
 		bool saveDump( QIODevice& dev, unsigned depth, bool compression ) const;
 		bool saveDump( QString path, unsigned depth=10 ) const;
