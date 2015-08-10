@@ -28,7 +28,6 @@
 #include <QFile>
 
 #include <vector>
-//#include <QImage>
 
 class ImgRow{
 	private:
@@ -61,16 +60,117 @@ JpegDegrader ImageEx::getJpegDegrader( QString path ){
 	return deg;
 }
 
+struct JpegComponent{
+	jpeg_component_info *info;
+	
+	JpegComponent( jpeg_component_info& info ) : info(&info) { }
+	
+	Size<JDIMENSION> size() const
+		{ return { info->downsampled_width, info->downsampled_height }; }
+	Size<JDIMENSION> sizePadded() const
+		{ return (size() + DCTSIZE-1) / DCTSIZE * DCTSIZE; }
+	
+	Size<int> sampling() const
+		{ return { info->h_samp_factor, info->v_samp_factor }; }
+};
+
+class JpegDecompress{
+	public: //TODO:
+		jpeg_decompress_struct cinfo;
+		jpeg_error_mgr jerr;
+		
+	public:
+		JpegDecompress(){
+			jpeg_create_decompress( &cinfo );
+			cinfo.err = jpeg_std_error( &jerr );
+		}
+		~JpegDecompress(){ jpeg_destroy_decompress( &cinfo ); }
+		
+		void setDevice( QIODevice& dev )
+			{ Gwenview::IODeviceJpegSourceManager::setup( &cinfo, &dev ); }
+		
+		void readHeader( bool what=true )
+			{ jpeg_read_header( &cinfo, what ); }
+		
+		int components() const{ return cinfo.output_components; }
+		JpegComponent operator[](int i){ return { cinfo.comp_info[i] }; }
+};
+
+
+using namespace std;
+class RawReader{
+	private:
+		JpegDecompress& jpeg;
+		ImageEx& img;
+		
+		vector<PlaneBase<uint8_t>> plane_buf;
+		vector<vector<uint8_t*>> row_bufs;
+		vector<uint8_t**> buf_access;
+		
+		
+	public:
+		RawReader( JpegDecompress& jpeg, ImageEx& img )
+			: jpeg(jpeg), img(img){
+				//Create buffers
+				for( int i=0; i<jpeg.components(); i++ )
+					plane_buf.emplace_back( jpeg[i].sizePadded() );
+				
+				//Create row accesses
+				for( int i=0; i<jpeg.components(); i++ ){
+					row_bufs.emplace_back( plane_buf[i].get_height(), nullptr );
+					for( unsigned iy=0; iy<row_bufs[i].size(); iy++ )
+						row_bufs[i][iy] = plane_buf[i].scan_line( iy );
+				}
+				
+				//Apply "fake" crop
+				for( int i=0; i<jpeg.components(); i++ )
+					plane_buf[i].crop( {0,0}, jpeg[i].size() );
+			}
+		
+		///Prepare buffer for copy to lines starting from iy
+		void prepare_buffer( int iy ){
+			buf_access.clear();
+			for( unsigned c=0; c<plane_buf.size(); c++ ){
+				auto local_y = iy * jpeg[c].sampling().y / jpeg.cinfo.max_v_samp_factor;
+				buf_access.push_back( row_bufs[c].data() + local_y );
+			}
+		}
+		
+		//Read a set of lines
+		void readLine(){
+			prepare_buffer( jpeg.cinfo.output_scanline );
+			auto remaining = jpeg.cinfo.output_height - jpeg.cinfo.output_scanline;
+			jpeg_read_raw_data( &jpeg.cinfo, buf_access.data(), remaining );
+			//TODO: chroma is offset of some reason...
+		}
+		
+		void readAll(){
+			while( jpeg.cinfo.output_scanline < jpeg.cinfo.output_height )
+				readLine();
+			
+			for( auto& p : plane_buf )
+				img.addPlane( convert( p ) );
+		}
+		
+		Plane convert( const PlaneBase<uint8_t>& p ) const{
+			//TODO: make more efficient?
+			auto out = p.to<color_type>();
+			for( unsigned iy=0; iy<out.get_height(); iy++ )
+				for( unsigned ix=0; ix<out.get_width(); ix++ )
+					out.setPixel( {ix,iy}, color::from8bit(out.pixel( {ix,iy} )) );
+			return out;
+		}
+		
+};
+
 bool ImageEx::from_jpeg( QIODevice& dev, JpegDegrader* deg ){
 	Timer t( "from_jpeg" );
-	jpeg_decompress_struct cinfo;
-	jpeg_error_mgr jerr;
+	JpegDecompress jpeg;
+	jpeg.setDevice( dev );
+	jpeg.readHeader();
 	
-	cinfo.err = jpeg_std_error( &jerr );
-	jpeg_create_decompress( &cinfo );
+	jpeg.cinfo.raw_data_out = true;
 	
-	Gwenview::IODeviceJpegSourceManager::setup( &cinfo, &dev );
-	jpeg_read_header( &cinfo, true );
 	
 	/*
 	auto v_ptr = jpeg_read_coefficients( &cinfo );
@@ -83,47 +183,38 @@ bool ImageEx::from_jpeg( QIODevice& dev, JpegDegrader* deg ){
 		qDebug() << out;
 	}
 	/*/
-	jpeg_start_decompress( &cinfo );
+	jpeg_start_decompress( &jpeg.cinfo );
 	
-	Size<unsigned> size( cinfo.output_width, cinfo.output_height );
-	switch( cinfo.out_color_components ){ //jpeg_color_space, JCS_YCbCr GRAYSCALE, RGB
+	//TODO: use the correct color space info
+	switch( jpeg.cinfo.out_color_components ){ //jpeg_color_space, JCS_YCbCr GRAYSCALE, RGB
 		case 1: type = GRAY; qCDebug(LogImageIO) << "Gray-scale JPEG"; break;
-		case 3: type = RGB; break;
-		default: qCWarning(LogImageIO) << "Unknown components count:" << cinfo.out_color_components;
+		case 3: type = YUV; break; //TODO: make JPEG_YCbCr type!!
+		default: qCWarning(LogImageIO) << "Unknown components count:" << jpeg.cinfo.out_color_components;
 	}
 	
-	
-	for( int i=0; i<cinfo.output_components; i++ )
-		planes.emplace_back( size );
-	
-	std::vector<unsigned char> buffer( cinfo.output_components*size.width() );
-	for( unsigned iy=0; iy<size.height(); iy++ ){
-		auto arr = buffer.data(); //TODO: Why does it need the address of the pointer?
-		jpeg_read_scanlines( &cinfo, &arr, 1 );
-		
-		ImgRow( *this, iy, cinfo.output_components ).read8( arr );
-	}
+	RawReader reader( jpeg, *this );
+	reader.readAll();
 	
 	if( deg ){
 		*deg = JpegDegrader();
 		//TODO: set color type
 		
 		//Find the maximum sampling factor
+		//TODO: we can access it directly from cinfo
 		int max_h = 1, max_v = 1;
-		for( int i=0; i<cinfo.output_components; i++ ){
-			max_h = std::max( max_h, cinfo.comp_info[i].h_samp_factor );
-			max_v = std::max( max_v, cinfo.comp_info[i].v_samp_factor );
+		for( int i=0; i<jpeg.cinfo.output_components; i++ ){
+			max_h = std::max( max_h, jpeg.cinfo.comp_info[i].h_samp_factor );
+			max_v = std::max( max_v, jpeg.cinfo.comp_info[i].v_samp_factor );
 		}
 		
-		for( int i=0; i<cinfo.output_components; i++ )
-			deg->addPlane( { {cinfo.comp_info[i].quant_table->quantval}
-					,	max_h / double(cinfo.comp_info[i].h_samp_factor)
-					,	max_v / double(cinfo.comp_info[i].v_samp_factor)
+		for( int i=0; i<jpeg.cinfo.output_components; i++ )
+			deg->addPlane( { {jpeg.cinfo.comp_info[i].quant_table->quantval}
+					,	max_h / double(jpeg.cinfo.comp_info[i].h_samp_factor)
+					,	max_v / double(jpeg.cinfo.comp_info[i].v_samp_factor)
 				} );
 	}
 	
-	jpeg_finish_decompress( &cinfo );//*/
-	jpeg_destroy_decompress( &cinfo );
+	jpeg_finish_decompress( &jpeg.cinfo );//*/
 	
 	return true;
 }
