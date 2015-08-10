@@ -54,7 +54,7 @@ class FourierPlane : public PlaneBase<std::complex<double>>{
 			return *this;
 		}
 		
-		FourierPlane( const Plane& p );
+		FourierPlane( const Plane& p, double range=1.0 );
 		
 		Plane asPlane() const;
 		Plane toPlane() const{
@@ -67,6 +67,17 @@ class FourierPlane : public PlaneBase<std::complex<double>>{
 		void remove( unsigned w, unsigned h );
 		
 		void blur( double dev_x, double dev_y );
+};
+
+class DctPlane : public PlaneBase<double>{
+	private:
+		Plane toPlaneInvalidate( double range );
+		
+	public:
+		DctPlane( const Plane& p, double range=1.0 );
+		DctPlane( const DctPlane& p ) : PlaneBase( p ) { }
+		Plane toPlane( double range=1.0 )
+			{ return DctPlane( *this ).toPlaneInvalidate( range ); }
 };
 
 #endif

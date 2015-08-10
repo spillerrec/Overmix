@@ -29,9 +29,10 @@ using namespace std;
 
 
 
-FourierPlane::FourierPlane( const Plane& p ) : PlaneBase( p.get_width() / 2 + 1, p.get_height() ){
+FourierPlane::FourierPlane( const Plane& p, double range )
+	:	PlaneBase( p.get_width() / 2 + 1, p.get_height() ){
 	real_width = p.get_width();
-	scaling = 1.0 / (real_width * get_height());
+	scaling = 1.0 / (real_width * get_height() * range);
 	vector<double> raw( p.get_width() * p.get_height() );
 	
 	fftw_plan plan = fftw_plan_dft_r2c_2d( p.get_height(), p.get_width(), raw.data(), (fftw_complex*)data, FFTW_ESTIMATE );
@@ -40,12 +41,51 @@ FourierPlane::FourierPlane( const Plane& p ) : PlaneBase( p.get_width() / 2 + 1,
 	for( unsigned iy=0; iy<p.get_height(); iy++ ){
 		auto row = p.const_scan_line( iy );
 		for( unsigned ix=0; ix<p.get_width(); ix++ )
-			raw[iy*p.get_width()+ix] = color::asDouble( row[ix] );
+			raw[iy*p.get_width()+ix] = color::asDouble( row[ix] ) * range;
 	}
 	
 	fftw_execute( plan );
 	
 	fftw_destroy_plan( plan );
+}
+
+DctPlane::DctPlane( const Plane& p, double range )
+	:	PlaneBase( p.getSize() ){
+	auto in = p.to<double>();
+	
+	
+	fftw_plan plan = fftw_plan_r2r_2d( p.get_height(), p.get_width(), in.scan_line(0), scan_line(0), FFTW_REDFT10, FFTW_REDFT10, FFTW_ESTIMATE );
+	
+	//Fill data
+	for( unsigned iy=0; iy<p.get_height(); iy++ ){
+		auto row = in.scan_line( iy );
+		for( unsigned ix=0; ix<p.get_width(); ix++ )
+			row[ix] = color::asDouble( row[ix] ) * range - 0.5*range;
+	}
+	
+	fftw_execute( plan );
+	fftw_destroy_plan( plan );
+}
+
+Plane DctPlane::toPlaneInvalidate( double range ){
+	PlaneBase<double> out( getSize() );
+	
+	fftw_plan plan = fftw_plan_r2r_2d( get_height(), get_width(), scan_line(0), out.scan_line(0), FFTW_REDFT01, FFTW_REDFT01, FFTW_ESTIMATE );
+	
+	fftw_execute( plan );
+	
+	fftw_destroy_plan( plan );
+	
+	//Convert range
+	for( unsigned iy=0; iy<out.get_height(); iy++ ){
+		auto row = out.scan_line( iy );
+		for( unsigned ix=0; ix<out.get_width(); ix++ ){
+			auto norm = row[ix] / (2*get_height() * 2*get_width());
+			row[ix] = color::truncate( color::fromDouble( (norm + 0.5*range) / range ) );
+		}
+	}
+	
+	return out.to<color_type>();
 }
 
 Plane FourierPlane::asPlane() const{

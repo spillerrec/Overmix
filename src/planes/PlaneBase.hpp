@@ -125,15 +125,14 @@ class PlaneBase{
 			for( unsigned i=0; i<dataSize(); ++i )
 				data[i] = value;
 		}
-		void copy( int x, int y, const PlaneBase& from ){
-			//TODO: check ranges
-			unsigned range_x = min( size.width(), from.size.width()+x );
-			unsigned range_y = min( size.height(), from.size.height()+y );
-			for( unsigned iy=y; iy < range_y; iy++ ){
-				T* dest = scan_line( iy );
-				const T* source = from.scan_line( iy - y );
-				for( unsigned ix=x; ix < range_x; ix++ )
-					dest[ix] = source[ix-x];
+		void copy( const PlaneBase& from, Point<unsigned> pos, Size<unsigned> size, Point<unsigned> to ){
+			//TODO: check offsets
+			auto range = size;//(size-to).min( from.getSize()-pos );
+			for( unsigned iy=0; iy < range.height(); iy++ ){
+				T* dest = scan_line( iy+to.y );
+				const T* source = from.scan_line( iy + pos.y );
+				for( unsigned ix=0; ix < range.width(); ix++ )
+					dest[ix+to.x] = source[ix+pos.x];
 			}
 		}
 		
