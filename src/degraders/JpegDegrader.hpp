@@ -30,12 +30,15 @@ class QuantTable{
 		Plane table; //TODO: type?
 		
 		double scale( int ix, int iy ) const
-			{ return 2 * 4 * (ix==0?sqrt(2):1) * (iy==0?sqrt(2):1); }
-			//NOTE: 4 is defined by JPEG, 2
+			{ return 2 * 2 * 4 * (ix==0?sqrt(2):1) * (iy==0?sqrt(2):1); }
+			//NOTE: 4 is defined by JPEG, 2 is from FFTW, last 2???
+		
+		int quantize( int ix, int iy, double coeff, double quant ) const
+			{ return std::round( coeff / (quant * scale(ix,iy)) ); }
 		
 		double degradeCoeff( int ix, int iy, double coeff, double quant ) const{
 			auto factor = quant * scale(ix,iy);
-			return int( coeff / factor ) * factor; //TODO: proper round!
+			return std::round( coeff / factor ) * factor;
 		}
 		
 	public:
@@ -43,8 +46,10 @@ class QuantTable{
 		QuantTable( uint16_t* input );
 		
 		Plane degrade8x8( DctPlane& f, const Plane& p, Point<unsigned> pos ) const;
+		Plane degrade8x8Comp( DctPlane& f1, DctPlane& f2, const Plane& p1, const Plane& p2, Point<unsigned> pos ) const;
 		
 		Plane degrade( const Plane& p ) const;
+		Plane degradeComp( const Plane& p1, const Plane& p2 ) const;
 };
 
 class JpegPlane{
@@ -57,6 +62,7 @@ class JpegPlane{
 			:	quant(quant), sampling(sub_h, sub_v) { }
 		
 		Plane degrade( const Plane& p ) const;
+		Plane degradeComp( const Plane& p1, const Plane& p2 ) const;
 };
 
 class JpegDegrader{

@@ -45,6 +45,29 @@ Plane QuantTable::degrade8x8( DctPlane& f, const Plane& p, Point<unsigned> pos )
 	
 	return f.toPlane( 255 );
 }
+
+Plane QuantTable::degrade8x8Comp( DctPlane& f1, DctPlane& f2, const Plane& p1, const Plane& p2, Point<unsigned> pos ) const{
+	f1.initialize( p1, pos, 255 );
+	f2.initialize( p2, pos, 255 );
+	
+	for( unsigned iy=0; iy<f1.get_height(); iy++ ){
+		auto row1 = f1.scan_line( iy );
+		auto row2 = f2.scan_line( iy );
+		auto quant = table.const_scan_line( iy );
+		for( unsigned ix=0; ix<f1.get_width(); ix++ ){
+		//	qDebug() << "coeff: " << row1[ix] << " - " << row2[ix];
+			auto deg1 = quantize( ix, iy, row1[ix], quant[ix] );
+			auto deg2 = quantize( ix, iy, row2[ix], quant[ix] );
+		//	qDebug() << "deg: " << deg1 << " - " << deg2;
+		//	qDebug() << "deg-scaled: " << deg1 * quant[ix] * scale(ix,iy) << " - " << deg2* quant[ix] * scale(ix,iy);
+			if( deg1 == deg2 )
+				row2[ix] = row1[ix]; //deg1 * quant[ix] * scale(ix,iy);
+		}
+	}
+	
+	return f2.toPlane( 255 );
+}
+
 Plane QuantTable::degrade( const Plane& p ) const{
 	Timer t( "QuantTable::degrade" );
 	DctPlane f( {8,8} );
@@ -57,9 +80,28 @@ Plane QuantTable::degrade( const Plane& p ) const{
 	return out;
 }
 
+Plane QuantTable::degradeComp( const Plane& p1, const Plane& p2 ) const{
+	Timer t( "QuantTable::degradeComp" );
+	DctPlane f1( {8,8} );
+	DctPlane f2( {8,8} );
+	
+	Plane out( p1.getSize() );
+	for( unsigned iy=0; iy<p1.get_height(); iy+=8 )
+		for( unsigned ix=0; ix<p1.get_width(); ix+=8 ){
+			auto test = degrade8x8Comp( f1, f2, p1, p2, {ix,iy} );
+			out.copy( test, {0,0}, {8,8}, {ix,iy} );
+		}
+	return out;
+}
+
 Plane JpegPlane::degrade( const Plane& p ) const{
-	auto out = p.scale_cubic( p.getSize() * sampling );
+	//auto out = p.scale_cubic( p.getSize() * sampling );
 	return quant.degrade( p );
+}
+
+Plane JpegPlane::degradeComp( const Plane& p1, const Plane& p2 ) const{
+	//auto out = p.scale_cubic( p.getSize() * sampling );
+	return quant.degradeComp( p1, p2 );
 }
 
 ImageEx JpegDegrader::degrade( const ImageEx& img ) const{

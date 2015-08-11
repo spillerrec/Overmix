@@ -64,7 +64,7 @@ void DctPlane::initialize( const Plane& p, Point<unsigned> pos, double range ){
 		auto row_in = p.const_scan_line( iy+pos.y );
 		auto row_out = scan_line( iy );
 		for( unsigned ix=0; ix<size.width(); ix++ )
-			row_out[ix] = color::asDouble( row_in[ix+pos.x] ) * range - 0.5*range;
+			row_out[ix] = color::asDouble( row_in[ix+pos.x] ) * range - 128;
 	}
 	
 	//Transform
@@ -79,7 +79,7 @@ Plane DctPlane::toPlane( double range ){
 		auto row = scan_line( iy );
 		for( unsigned ix=0; ix<get_width(); ix++ ){
 			auto norm = row[ix] / (2*get_height() * 2*get_width());
-			row[ix] = color::truncate( color::fromDouble( (norm + 0.5*range) / range ) );
+			row[ix] = color::truncate( color::fromDouble( (norm + 128) / range ) );
 		}
 	}
 	

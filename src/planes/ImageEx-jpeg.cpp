@@ -173,15 +173,16 @@ bool ImageEx::from_jpeg( QIODevice& dev, JpegDegrader* deg ){
 	
 	
 	/*
-	auto v_ptr = jpeg_read_coefficients( &cinfo );
-	auto blockarr = cinfo.mem->access_virt_barray( (j_common_ptr)&cinfo, v_ptr[0], 0, 1, false );
-	for( unsigned j=0; j<5; j++ ){
+	auto v_ptr = jpeg_read_coefficients( &jpeg.cinfo );
+	auto blockarr = jpeg.cinfo.mem->access_virt_barray( (j_common_ptr)&jpeg.cinfo, v_ptr[0], 0, 1, false );
+	for( unsigned j=0; j<1; j++ ){
 		auto block = blockarr[0][j];
 		QString out;
 		for( unsigned i=0; i<64; i++ )
 			out += QString::number( block[i] ) + " ";
 		qDebug() << out;
 	}
+	return false;
 	/*/
 	jpeg_start_decompress( &jpeg.cinfo );
 	
