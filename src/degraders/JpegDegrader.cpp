@@ -32,9 +32,9 @@ QuantTable::QuantTable( uint16_t* input ) : table( DCTSIZE, DCTSIZE ) {
 	}
 }
 
-Plane QuantTable::degrade8x8( const Plane& p ) const{
-	DctPlane f( p, 255 );
+Plane QuantTable::degrade8x8( DctPlane& f, const Plane& p, Point<unsigned> pos ) const{
 	//NOTE: it is zero-centered with 127.5, not 128 as JPEG specifies!
+	f.initialize( p, pos, 255 );
 	
 	for( unsigned iy=0; iy<f.get_height(); iy++ ){
 		auto row = f.scan_line( iy );
@@ -47,12 +47,11 @@ Plane QuantTable::degrade8x8( const Plane& p ) const{
 }
 Plane QuantTable::degrade( const Plane& p ) const{
 	Timer t( "QuantTable::degrade" );
+	DctPlane f( {8,8} );
 	Plane out( p.getSize() );
 	for( unsigned iy=0; iy<p.get_height(); iy+=8 )
 		for( unsigned ix=0; ix<p.get_width(); ix+=8 ){
-			Plane test( 8, 8 );
-			test.copy( p, {ix,iy}, {8,8}, {0,0} );
-			test = degrade8x8( test );
+			auto test = degrade8x8( f, p, {ix,iy} );
 			out.copy( test, {0,0}, {8,8}, {ix,iy} );
 		}
 	return out;

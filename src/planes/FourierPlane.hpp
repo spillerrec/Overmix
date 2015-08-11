@@ -20,11 +20,8 @@
 
 #include "Plane.hpp"
 
-#include <QList>
-#include <cstdio>
-#include <string>
-#include <vector>
-#include <utility>
+#include <fftw3.h>
+
 #include <complex>
 
 class FourierPlane : public PlaneBase<std::complex<double>>{
@@ -71,13 +68,15 @@ class FourierPlane : public PlaneBase<std::complex<double>>{
 
 class DctPlane : public PlaneBase<double>{
 	private:
-		Plane toPlaneInvalidate( double range );
+		fftw_plan plan_dct, plan_idct;
 		
 	public:
-		DctPlane( const Plane& p, double range=1.0 );
-		DctPlane( const DctPlane& p ) : PlaneBase( p ) { }
-		Plane toPlane( double range=1.0 )
-			{ return DctPlane( *this ).toPlaneInvalidate( range ); }
+		DctPlane( Size<unsigned> size );
+		~DctPlane();
+		DctPlane( const DctPlane& ) = delete;
+		
+		void initialize( const Plane& p, Point<unsigned> pos, double range=1.0 );
+		Plane toPlane( double range=1.0 );
 };
 
 #endif

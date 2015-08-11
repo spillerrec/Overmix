@@ -23,7 +23,6 @@
 #include <algorithm>
 #include <cmath>
 #include <QDebug>
-#include <fftw3.h>
 
 using namespace std;
 
@@ -49,43 +48,41 @@ FourierPlane::FourierPlane( const Plane& p, double range )
 	fftw_destroy_plan( plan );
 }
 
-DctPlane::DctPlane( const Plane& p, double range )
-	:	PlaneBase( p.getSize() ){
-	auto in = p.to<double>();
-	
-	
-	fftw_plan plan = fftw_plan_r2r_2d( p.get_height(), p.get_width(), in.scan_line(0), scan_line(0), FFTW_REDFT10, FFTW_REDFT10, FFTW_ESTIMATE );
-	
+DctPlane::DctPlane( Size<unsigned> size ) :	PlaneBase( size ){
+	plan_dct  = fftw_plan_r2r_2d( size.height(), size.width(), scan_line(0), scan_line(0), FFTW_REDFT10, FFTW_REDFT10, FFTW_MEASURE );
+	plan_idct = fftw_plan_r2r_2d( get_height(), get_width(), scan_line(0), scan_line(0), FFTW_REDFT01, FFTW_REDFT01, FFTW_MEASURE );
+}
+DctPlane::~DctPlane(){
+	fftw_destroy_plan( plan_dct );
+	fftw_destroy_plan( plan_idct );
+}
+void DctPlane::initialize( const Plane& p, Point<unsigned> pos, double range ){
 	//Fill data
-	for( unsigned iy=0; iy<p.get_height(); iy++ ){
-		auto row = in.scan_line( iy );
-		for( unsigned ix=0; ix<p.get_width(); ix++ )
-			row[ix] = color::asDouble( row[ix] ) * range - 0.5*range;
+	auto size = p.getSize().min( getSize()+pos ) - pos; //Keep inside
+	for( unsigned iy=0; iy<size.height(); iy++ ){
+		auto row_in = p.const_scan_line( iy+pos.y );
+		auto row_out = scan_line( iy );
+		for( unsigned ix=0; ix<size.width(); ix++ )
+			row_out[ix] = color::asDouble( row_in[ix+pos.x] ) * range - 0.5*range;
 	}
 	
-	fftw_execute( plan );
-	fftw_destroy_plan( plan );
+	//Transform
+	fftw_execute( plan_dct );
 }
 
-Plane DctPlane::toPlaneInvalidate( double range ){
-	PlaneBase<double> out( getSize() );
-	
-	fftw_plan plan = fftw_plan_r2r_2d( get_height(), get_width(), scan_line(0), out.scan_line(0), FFTW_REDFT01, FFTW_REDFT01, FFTW_ESTIMATE );
-	
-	fftw_execute( plan );
-	
-	fftw_destroy_plan( plan );
+Plane DctPlane::toPlane( double range ){
+	fftw_execute( plan_idct );
 	
 	//Convert range
-	for( unsigned iy=0; iy<out.get_height(); iy++ ){
-		auto row = out.scan_line( iy );
-		for( unsigned ix=0; ix<out.get_width(); ix++ ){
+	for( unsigned iy=0; iy<get_height(); iy++ ){
+		auto row = scan_line( iy );
+		for( unsigned ix=0; ix<get_width(); ix++ ){
 			auto norm = row[ix] / (2*get_height() * 2*get_width());
 			row[ix] = color::truncate( color::fromDouble( (norm + 0.5*range) / range ) );
 		}
 	}
 	
-	return out.to<color_type>();
+	return to<color_type>();
 }
 
 Plane FourierPlane::asPlane() const{

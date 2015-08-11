@@ -23,6 +23,8 @@
 #include "../planes/Plane.hpp"
 
 class ImageEx;
+class DctPlane;
+
 class QuantTable{
 	private:
 		Plane table; //TODO: type?
@@ -40,7 +42,7 @@ class QuantTable{
 		QuantTable();
 		QuantTable( uint16_t* input );
 		
-		Plane degrade8x8( const Plane& p ) const;
+		Plane degrade8x8( DctPlane& f, const Plane& p, Point<unsigned> pos ) const;
 		
 		Plane degrade( const Plane& p ) const;
 };
@@ -58,7 +60,7 @@ class JpegPlane{
 };
 
 class JpegDegrader{
-	private:
+	public:
 		std::vector<JpegPlane> planes;
 		
 	public:
