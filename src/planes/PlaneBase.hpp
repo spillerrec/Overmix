@@ -127,7 +127,9 @@ class PlaneBase{
 		}
 		void copy( const PlaneBase& from, Point<unsigned> pos, Size<unsigned> size, Point<unsigned> to ){
 			//TODO: check offsets
-			auto range = size;//(size-to).min( from.getSize()-pos );
+			auto range_this =      getSize().min(to + size) - to;
+			auto range_from = from.getSize().min(pos+ size) - pos;
+			auto range = range_this.min( range_from );
 			for( unsigned iy=0; iy < range.height(); iy++ ){
 				T* dest = scan_line( iy+to.y );
 				const T* source = from.scan_line( iy + pos.y );

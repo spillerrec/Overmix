@@ -59,6 +59,7 @@ DctPlane::~DctPlane(){
 void DctPlane::initialize( const Plane& p, Point<unsigned> pos, double range ){
 	//Fill data
 	auto size = p.getSize().min( getSize()+pos ) - pos; //Keep inside
+	fill( 0.0 );
 	for( unsigned iy=0; iy<size.height(); iy++ ){
 		auto row_in = p.const_scan_line( iy+pos.y );
 		auto row_out = scan_line( iy );
