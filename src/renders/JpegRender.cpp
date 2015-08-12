@@ -18,11 +18,11 @@
 #include "JpegRender.hpp"
 #include "../planes/Plane.hpp"
 #include "../color.hpp"
+#include "../debug.hpp"
 #include "AverageRender.hpp"
 #include "../planes/ImageEx.hpp"
 #include "../containers/AContainer.hpp"
 #include "../containers/ImageContainer.hpp"
-#include <QDebug>
 #include <QImage>
 
 
@@ -61,7 +61,7 @@ Plane JpegRender::degrade( const Plane& original, const Parameters& para ) const
 
 
 ImageEx JpegRender::render(const AContainer &group, AProcessWatcher *watcher) const {
-	auto planes_amount = 1;//group.image(0).size();
+	auto planes_amount = 1u;//group.image(0).size();
 	ProgressWrapper( watcher ).setTotal( planes_amount * iterations * group.count() );
 	
 	//Work on a copy of the images
@@ -78,11 +78,13 @@ ImageEx JpegRender::render(const AContainer &group, AProcessWatcher *watcher) co
 		auto est = AverageRender().render( imgs ); //Starting estimate
 		for( unsigned c=0; c<planes_amount; ++c ){
 			//Improve Jpeg image quality
+				unsigned change = 0;
 			for( unsigned j=0; j<imgs.count(); j++, ProgressWrapper( watcher ).add() ){
 				auto deg = degrade( est[c], {imgs, j, c} );
 				auto lr = imgs.image(j)[c];
-				imgs.imageRef(j)[c] = jpeg.planes[c].degradeComp( deg, lr );
+				imgs.imageRef(j)[c] = jpeg.planes[c].degradeComp( deg, lr, change );
 			}
+				qCDebug(LogDelta) << "Change: " << change / imgs.count();
 		}
 	}
 

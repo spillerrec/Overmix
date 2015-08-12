@@ -71,19 +71,19 @@ void DctPlane::initialize( const Plane& p, Point<unsigned> pos, double range ){
 	fftw_execute( plan_dct );
 }
 
-Plane DctPlane::toPlane( double range ){
+void DctPlane::toPlane( Plane& p, Point<unsigned> pos, double range ){
 	fftw_execute( plan_idct );
+	auto size = p.getSize().min( getSize()+pos ) - pos; //Keep inside
 	
 	//Convert range
-	for( unsigned iy=0; iy<get_height(); iy++ ){
+	for( unsigned iy=0; iy<size.height(); iy++ ){
 		auto row = scan_line( iy );
-		for( unsigned ix=0; ix<get_width(); ix++ ){
+		auto row_out = p.scan_line( iy+pos.y );
+		for( unsigned ix=0; ix<size.width(); ix++ ){
 			auto norm = row[ix] / (2*get_height() * 2*get_width());
-			row[ix] = color::truncate( color::fromDouble( (norm + 128) / range ) );
+			row_out[ix+pos.x] = color::truncate( color::fromDouble( (norm + 128) / range ) );
 		}
 	}
-	
-	return to<color_type>();
 }
 
 Plane FourierPlane::asPlane() const{
