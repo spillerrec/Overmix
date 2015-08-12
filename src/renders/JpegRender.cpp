@@ -34,7 +34,7 @@ static Plane save( Plane p, QString name ){
 }
 
 static Point<double> channelScale( const AContainer& container, unsigned index, unsigned channel ){
-	return container.image(index)[channel].getSize() / container.image(index).getSize().to<double>();
+	return container.image(index)[channel].getSize().to<double>() / container.image(index).getSize().to<double>();
 }
 
 struct Parameters{
@@ -53,7 +53,7 @@ Plane JpegRender::degrade( const Plane& original, const Parameters& para ) const
 	
 	//Crop to the area overlapping with our current image
 	auto pos = (para.container.pos(para.index)-para.min_point)*channelScale(para.container, para.index, para.channel);
-	out.crop( pos, para.container.image(para.index)[para.channel].getSize() );
+	out.crop( pos.round(), para.container.image(para.index)[para.channel].getSize() );
 	
 	return out;
 }
