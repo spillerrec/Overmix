@@ -46,7 +46,7 @@ class QuantTable{
 		
 		unsigned degrade8x8Comp( DctPlane& f1, DctPlane& f2, const Plane& p1, const Plane& p2, Point<unsigned> pos ) const;
 		
-		Plane degradeComp( const Plane& p1, const Plane& p2, unsigned& change ) const;
+		Plane degradeComp( const Plane& mask, const Plane& p1, const Plane& p2, unsigned& change ) const;
 };
 
 class JpegPlane{
@@ -58,7 +58,7 @@ class JpegPlane{
 		JpegPlane( QuantTable quant, double sub_h, double sub_v )
 			:	quant(quant), sampling(sub_h, sub_v) { }
 		
-		Plane degradeComp( const Plane& p1, const Plane& p2, unsigned& change ) const;
+		Plane degradeComp( const Plane& mask, const Plane& p1, const Plane& p2, unsigned& change ) const;
 };
 
 class JpegDegrader{

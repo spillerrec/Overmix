@@ -18,6 +18,7 @@
 #include "JpegDegrader.hpp"
 
 #include "../debug.hpp"
+#include "../color.hpp"
 #include "../planes/FourierPlane.hpp"
 #include "../planes/ImageEx.hpp"
 
@@ -54,23 +55,40 @@ unsigned QuantTable::degrade8x8Comp( DctPlane& f1, DctPlane& f2, const Plane& p1
 	return change;
 }
 
-Plane QuantTable::degradeComp( const Plane& p1, const Plane& p2, unsigned& change ) const{
-	Timer t( "QuantTable::degradeComp" );
+static bool hasChange( const Plane& mask, Point<unsigned> pos ){
+	auto size = mask.getSize().min( pos + Size<unsigned>(8,8) ) - pos;
+	for( unsigned iy=0; iy<size.height(); iy++ ){
+		auto row = mask.scan_line( iy + pos.y );
+		for( unsigned ix=0; ix<size.width(); ix++ )
+			if( row[ix+pos.x] > 0 )
+				return true;
+	}
+	
+	return false;
+}
+
+Plane QuantTable::degradeComp( const Plane& mask, const Plane& p1, const Plane& p2, unsigned& change ) const{
+//	Timer t( "QuantTable::degradeComp" );
 	DctPlane f1( {8,8} );
 	DctPlane f2( {8,8} );
 	
 	Plane out( p1 );
+	Plane mask2( mask );
+	mask2.fill( color::BLACK );
 	for( unsigned iy=0; iy<p1.get_height(); iy+=8 )
 		for( unsigned ix=0; ix<p1.get_width(); ix+=8 ){
-			auto local = degrade8x8Comp( f1, f2, p1, p2, {ix,iy} );
-			if( local != 0 )
-				f2.toPlane( out, {ix,iy}, 255 );
-			change += local;
+			if( hasChange( mask, {ix, iy} ) ){
+				auto local = degrade8x8Comp( f1, f2, p1, p2, {ix,iy} );
+				if( local != 0 )
+					f2.toPlane( out, {ix,iy}, 255 );
+				change += local;
+			}
 		}
+	
 	return out;
 }
 
-Plane JpegPlane::degradeComp( const Plane& p1, const Plane& p2, unsigned& change ) const{
+Plane JpegPlane::degradeComp( const Plane& mask, const Plane& p1, const Plane& p2, unsigned& change ) const{
 	//auto out = p.scale_cubic( p.getSize() * sampling );
-	return quant.degradeComp( p1, p2, change );
+	return quant.degradeComp( mask, p1, p2, change );
 }

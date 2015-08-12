@@ -74,19 +74,38 @@ ImageEx JpegRender::render(const AContainer &group, AProcessWatcher *watcher) co
 		imgs.setPos( j, group.pos( j ) );
 	
 	
+	auto est = AverageRender().render( imgs ); //Starting estimate
+	auto diff = est;
+	for( unsigned i=0; i<diff.size(); i++ )
+		diff[i].fill( 1 );
+	
 	for( int i=0; i<iterations; i++ ){
-		auto est = AverageRender().render( imgs ); //Starting estimate
 		for( unsigned c=0; c<planes_amount; ++c ){
 			//Improve Jpeg image quality
 				unsigned change = 0;
 			for( unsigned j=0; j<imgs.count(); j++, ProgressWrapper( watcher ).add() ){
-				auto deg = degrade( est[c], {imgs, j, c} );
+				auto deg  = degrade(  est[c], {imgs, j, c} );
+				auto mask = degrade( diff[c], {imgs, j, c} );
 				auto lr = imgs.image(j)[c];
-				imgs.imageRef(j)[c] = jpeg.planes[c].degradeComp( deg, lr, change );
+				imgs.imageRef(j)[c] = jpeg.planes[c].degradeComp( mask, deg, lr, change );
 			}
-				qCDebug(LogDelta) << "Change: " << change / imgs.count();
+			qCDebug(LogDelta) << "Change: " << change / imgs.count();
 		}
+		
+		auto new_est = AverageRender().render( imgs );
+		for( unsigned c=0; c<diff.size(); c++ ){
+			diff[c] = new_est[c];
+			diff[c].difference( est[c] );
+			diff[c].binarize_threshold( 0 );
+			
+			if( iterations % 50 == 0 )
+				diff[c].fill( 1 );
+		}
+	//	auto copy = diff[0];
+	//	copy.binarize_threshold( 0 );
+	//	save( copy, "diff-it" + QString::number(i) );
+		est = new_est;
 	}
 
-	return AverageRender().render( imgs );
+	return est;
 }
