@@ -29,25 +29,6 @@
 
 #include <vector>
 
-class ImgRow{
-	private:
-		std::vector<color_type*> rows;
-		unsigned width;
-		
-	public:
-		ImgRow( ImageEx& img, unsigned iy, int colors )
-			:	width( img.get_width() ){
-			rows.reserve( colors );
-			for( int i=0; i<colors; i++ )
-				rows.push_back( img[i].scan_line( iy ) );
-		}
-		
-		void read8( unsigned char* row_pointer ){
-			for( unsigned ix=0; ix<width; ix++ )
-				for( unsigned i=0; i<rows.size(); i++ )
-					rows[i][ix] = color::from8bit( row_pointer[ix*rows.size() + i] );
-		}
-};
 
 JpegDegrader ImageEx::getJpegDegrader( QString path ){
 	JpegDegrader deg;
@@ -138,8 +119,12 @@ class RawReader{
 		
 		//Read a set of lines
 		void readLine(){
+			auto maxSize = jpeg[0].sizePadded();
+			for( int i=1; i<jpeg.components(); i++ )
+				maxSize = maxSize.max( jpeg[i].sizePadded() );
+			
 			prepare_buffer( jpeg.cinfo.output_scanline );
-			auto remaining = jpeg.cinfo.output_height - jpeg.cinfo.output_scanline;
+			auto remaining = maxSize.height() - jpeg.cinfo.output_scanline;
 			jpeg_read_raw_data( &jpeg.cinfo, buf_access.data(), remaining );
 			//TODO: chroma is offset of some reason...
 		}
