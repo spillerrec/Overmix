@@ -128,10 +128,13 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ) const{
 		for( unsigned ix=0; ix<img_size.width(); ix++, it.next_x() ){
 			color p = (it.*pixel)();
 			if( is_yuv ){
-				if( system == SYSTEM_REC709 )
+				if( transform == Transform::YCbCr_709 )
 					p = p.rec709ToRgb( gamma );
-				else
+				else if( transform == Transform::YCbCr_601 )
 					p = p.rec601ToRgb( gamma );
+				else if( transform == Transform::JPEG )
+					p = p.jpegToRgb( false );
+					
 			}
 			
 			if( dither )

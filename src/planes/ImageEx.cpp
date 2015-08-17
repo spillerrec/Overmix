@@ -213,7 +213,7 @@ ImageEx deVlcImage( const ImageEx& img ){
 	for( unsigned iy=0; iy<img.get_height(); iy++ ){
 		ColorRow row( out, iy );
 		for( unsigned ix=0; ix<img.get_width(); ix++ )
-			row.set( ix, row[ix].rgbToYuv( 0.299, 0.587, 0.114, false ) );
+			row.set( ix, row[ix].rgbToYuv( 0.299, 0.587, 0.114, false, true ) );
 	}
 	
 	//Downscale chroma

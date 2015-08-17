@@ -46,13 +46,15 @@ static double limit( double val, int min_8, int max_8 ){
 	return val * (max-min) + min;
 }
 
-color color::yuvToRgb( double kr, double kg, double kb, bool gamma ){
+color color::yuvToRgb( double kr, double kg, double kb, bool gamma, bool swing ){
 	double y = asDouble( r ), cb = asDouble( g ), cr = asDouble( b );
 	
 	//Remove foot- and head-room
-	y  = stretch(  y, 16, 235 );
-	cb = stretch( cb, 16, 240 );
-	cr = stretch( cr, 16, 240 );
+	if( swing ){
+		y  = stretch(  y, 16, 235 );
+		cb = stretch( cb, 16, 240 );
+		cr = stretch( cr, 16, 240 );
+	}
 	
 	//Don't let it outside the allowed range
 	y  = (y  < 0 ) ? 0 : (y  > 1 ) ? 1 : y;
@@ -87,7 +89,7 @@ color color::yuvToRgb( double kr, double kg, double kb, bool gamma ){
 }
 
 
-color color::rgbToYuv( double kr, double kg, double kb, bool gamma ){
+color color::rgbToYuv( double kr, double kg, double kb, bool gamma, bool swing ){
 	double rr = asDouble( r ), rg = asDouble( g ), rb = asDouble( b );
 	
 	double y  = kr*rr + kg*rg + kb*rb;
@@ -95,9 +97,11 @@ color color::rgbToYuv( double kr, double kg, double kb, bool gamma ){
 	double cr = (rr-y) / (1-kr) * 0.5 + 0.5;
 	
 	//add studio-swing
-	y  = limit(  y, 16, 235 );
-	cb = limit( cb, 16, 240 );
-	cr = limit( cr, 16, 240 );
+	if( swing ){
+		y  = limit(  y, 16, 235 );
+		cb = limit( cb, 16, 240 );
+		cr = limit( cr, 16, 240 );
+	}
 	
 	//TODO: gamma
 	return color( fromDouble(y), fromDouble(cb), fromDouble(cr), a );

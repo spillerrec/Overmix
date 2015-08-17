@@ -117,15 +117,15 @@ struct color{
 			a = linear2sRgb( a );
 		}
 		
-		color yuvToRgb( double kr, double kg, double kb, bool gamma );
-		color rgbToYuv( double kr, double kg, double kb, bool gamma );
+		color yuvToRgb( double kr, double kg, double kb, bool gamma, bool swing );
+		color rgbToYuv( double kr, double kg, double kb, bool gamma, bool swing );
 		
-		color rec601ToRgb( bool gamma=true ){
-			return yuvToRgb( 0.299, 0.587, 0.114, gamma );
-		}
-		color rec709ToRgb( bool gamma=true ){
-			return yuvToRgb( 0.2126, 0.7152, 0.0722, gamma );
-		}
+		color jpegToRgb( bool gamma=true )
+			{ return yuvToRgb( 0.299,  0.587,  0.114,  gamma, false ); }
+		color rec601ToRgb( bool gamma=true )
+			{ return yuvToRgb( 0.299,  0.587,  0.114,  gamma, true  ); }
+		color rec709ToRgb( bool gamma=true )
+			{ return yuvToRgb( 0.2126, 0.7152, 0.0722, gamma, true  ); }
 		
 	void clear(){
 		r = b = g = a = 0;
