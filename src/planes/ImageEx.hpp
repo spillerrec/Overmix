@@ -27,8 +27,30 @@ class QIODevice;
 class QString;
 class JpegDegrader;
 
+enum class Transform{
+		GRAY
+	,	RGB
+	,	YCbCr_601 //As specified in Rec. 601
+	,	YCbCr_709 //As specified in Rec. 709
+	,	JPEG      //As YCbCr_601, but without studio-swing
+	,	UNKNOWN
+};
+enum class Transfer{ //i.e. gamma function
+		LINEAR
+	,	SRGB    //As specified in the sRGB standard
+	,	REC709  //As specified in Rec. 601 and 709
+	,	UNKNOWN
+};
+
 class ImageEx{
 	public:
+		struct PlaneInfo{
+			Plane p;
+			Size<int> subsampling;
+			PlaneInfo( Plane p, Size<int> sub={0,0} )
+				:	p(p), subsampling(sub) {}
+		};
+		
 		const static unsigned MAX_PLANES = 4;
 		enum system{
 			GRAY,
@@ -47,7 +69,7 @@ class ImageEx{
 		};
 	
 	private:
-		std::vector<Plane> planes;
+		std::vector<PlaneInfo> planes;
 		Plane alpha;
 		system type;
 		bool read_dump_plane( QIODevice& dev );
@@ -60,7 +82,7 @@ class ImageEx{
 		void addPlane( Plane&& p ){ if( p.valid() ) planes.emplace_back( p ); }
 		
 		ImageEx( system type = RGB ) : type( type ) { }
-		ImageEx( Plane p           ) : type( GRAY ) { addPlane( std::move( p ) ); }
+		ImageEx( Plane p           ) : type( GRAY ) { addPlane( std::move(p) ); }
 		ImageEx( Plane p, Plane a  ) : ImageEx( p ) { alpha = a; }
 		
 		unsigned size() const{ return planes.size(); }
@@ -71,14 +93,14 @@ class ImageEx{
 		template<typename... Args>
 		void apply( Plane (Plane::*func)( Args... ) const, Args... args ){
 			if( type == YUV )
-				planes[0] = (planes[0].*func)( args... );
+				planes[0].p = (planes[0].p.*func)( args... );
 			else
 				applyAll( false, func, args... );
 		}
 		template<typename... Args>
 		void applyAll( bool do_alpha, Plane (Plane::*func)( Args... ) const, Args... args ){
-			for( auto& plane : planes )
-				plane = (plane.*func)( args... );
+			for( auto& info : planes )
+				info.p = (info.p.*func)( args... );
 			if( do_alpha && alpha )
 				alpha = (alpha.*func)( args... );
 		}
@@ -112,7 +134,7 @@ class ImageEx{
 		
 		Point<unsigned> getSize() const{
 			return std::accumulate( planes.begin(), planes.end(), Point<unsigned>( 0, 0 )
-				,	[]( const Plane& p1, const Plane& p2 ){ return p1.getSize().max( p2.getSize() ); } );
+				,	[]( auto& acc, auto& info ){ return acc.max( info.p.getSize() ); } );
 		}
 		unsigned get_width()  const{ return getSize().width(); }
 		unsigned get_height() const{ return getSize().height(); }
@@ -128,14 +150,14 @@ class ImageEx{
 		void combine_line( ImageEx& img, bool top );
 		
 		void scale( Point<unsigned> size, ScalingFunction scaling=ScalingFunction::SCALE_MITCHELL ){
-			for( auto& plane : planes )
-				plane = plane.scale_select( size, scaling );
+			for( auto& info : planes )
+				info.p = info.p.scale_select( size, scaling );
 			if( alpha_plane() )
 				alpha_plane() = alpha_plane().scale_select( size, scaling );
 		}
 		void scaleFactor( Size<double> factor, ScalingFunction scaling=ScalingFunction::SCALE_MITCHELL ){
-			for( auto& plane : planes )
-				plane = plane.scale_select( ( plane.getSize() * factor ).round(), scaling );
+			for( auto& info : planes )
+				info.p = info.p.scale_select( ( info.p.getSize() * factor ).round(), scaling );
 			if( alpha_plane() )
 				alpha_plane() = alpha_plane().scale_select( ( alpha_plane().getSize() * factor ).round(), scaling );
 		}
@@ -150,8 +172,8 @@ class ImageEx{
 		}
 		MergeResult best_round( const ImageEx& img, int level, double range_x, double range_y, DiffCache *cache=nullptr ) const;
 		
-		Plane& operator[]( unsigned index ){ return planes[index]; }
-		const Plane& operator[]( unsigned index ) const{ return planes[index]; }
+		Plane& operator[]( unsigned index ){ return planes[index].p; }
+		const Plane& operator[]( unsigned index ) const{ return planes[index].p; }
 };
 
 QImage setQImageAlpha( QImage img, const Plane& alpha );

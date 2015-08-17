@@ -66,9 +66,9 @@ ImageEx ImageEx::toRgb() const{
 	switch( type ){
 		case GRAY:{
 				ImageEx out( RGB );
-				out.addPlane( Plane{ planes[0] } );
-				out.addPlane( Plane{ planes[0] } );
-				out.addPlane( Plane{ planes[0] } );
+				out.addPlane( Plane{ planes[0].p } );
+				out.addPlane( Plane{ planes[0].p } );
+				out.addPlane( Plane{ planes[0].p } );
 				return out;
 			}
 		
@@ -108,21 +108,21 @@ double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 	if( !is_valid() || !img.is_valid() )
 		return DOUBLE_MAX;
 	
-	return planes[0].diff( img[0], x, y );
+	return planes[0].p.diff( img[0], x, y );
 }
 
 bool ImageEx::is_interlaced() const{
-	return planes[0].is_interlaced();
+	return planes[0].p.is_interlaced();
 }
 void ImageEx::replace_line( ImageEx& img, bool top ){
 	for( unsigned i=0; i<max(size(), img.size()); ++i )
-		planes[i].replace_line( img[i], top );
+		planes[i].p.replace_line( img[i], top );
 	if( alpha && img.alpha_plane() )
 		alpha.replace_line( img.alpha_plane(), top );
 }
 void ImageEx::combine_line( ImageEx& img, bool top ){
 	for( unsigned i=0; i<max(size(), img.size()); ++i )
-		planes[i].combine_line( img[i], top );
+		planes[i].p.combine_line( img[i], top );
 	if( alpha && img.alpha_plane() )
 		alpha.combine_line( img.alpha_plane(), top );
 }
@@ -132,16 +132,16 @@ Point<unsigned> ImageEx::crop( unsigned left, unsigned top, unsigned right, unsi
 	Size<unsigned> decrease( right + left, top + bottom );
 	
 	if( type == YUV ){
-		planes[0].crop( pos*2, planes[0].getSize() - decrease*2 );
-		planes[1].crop( pos,   planes[1].getSize() - decrease   );
-		planes[2].crop( pos,   planes[2].getSize() - decrease   );
+		planes[0].p.crop( pos*2, planes[0].p.getSize() - decrease*2 );
+		planes[1].p.crop( pos,   planes[1].p.getSize() - decrease   );
+		planes[2].p.crop( pos,   planes[2].p.getSize() - decrease   );
 		if( alpha )
 			alpha.crop( pos*2, alpha.getSize() - decrease*2 );
 		return pos*2;
 	}
 	else{
-		for( auto& plane : planes )
-			plane.crop( pos, plane.getSize() - decrease );
+		for( auto& info : planes )
+			info.p.crop( pos, info.p.getSize() - decrease );
 		if( alpha )
 			alpha.crop( pos, alpha.getSize() - decrease );
 		return pos;
@@ -150,9 +150,9 @@ Point<unsigned> ImageEx::crop( unsigned left, unsigned top, unsigned right, unsi
 
 void ImageEx::crop( Point<unsigned> offset, Size<unsigned> size ){
 	auto real_size = getSize();
-	for( auto& plane : planes ){
-		auto scale = plane.getSize().to<double>() / real_size.to<double>();
-		plane.crop( offset*scale, size*scale );
+	for( auto& info : planes ){
+		auto scale = info.p.getSize().to<double>() / real_size.to<double>();
+		info.p.crop( offset*scale, size*scale );
 	}
 	if( alpha )
 		alpha.crop( offset, size );
@@ -162,7 +162,7 @@ Rectangle<unsigned> ImageEx::getCrop() const{
 	if( planes.size() == 0 )
 		return { {0,0}, {0,0} };
 	
-	auto& cropped = planes[ (type == YUV) ? 1 : 0 ];
+	auto& cropped = planes[ (type == YUV) ? 1 : 0 ].p;
 	return { cropped.getOffset(), cropped.getRealSize() - cropped.getSize() - cropped.getOffset() };
 }
 
@@ -181,7 +181,7 @@ MergeResult ImageEx::best_round( const ImageEx& img, int level, double range_x, 
 	if( !cache )
 		cache = &temp;
 	
-	return planes[0].best_round_sub(
+	return planes[0].p.best_round_sub(
 			img[0], alpha_plane(), img.alpha_plane(), level
 		,	((int)1 - (int)img.get_width()) * range_x, ((int)get_width() - 1) * range_x
 		,	((int)1 - (int)img.get_height()) * range_y, ((int)get_height() - 1) * range_y

@@ -126,7 +126,7 @@ bool ImageEx::from_png( QIODevice& dev ){
 	unsigned width = png_get_image_width( png_ptr, info_ptr );
 	
 	for( int i=0; i<colors; i++ )
-		planes.emplace_back( width, height );
+		planes.emplace_back( Plane{width, height} );
 	if( alpha )
 		alpha_plane() = Plane( width, height );
 	type = gray ? GRAY : RGB;

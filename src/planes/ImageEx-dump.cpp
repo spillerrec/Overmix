@@ -47,7 +47,7 @@ bool ImageEx::read_dump_plane( QIODevice &dev ){
 	
 	planes.emplace_back( Size<unsigned>{ dump_plane.getWidth(), dump_plane.getHeight() } );
 	//TODO: add assertion that width == line_width !!
-	dump_plane.readData( dev, (uint16_t*)planes.back().scan_line(0), 14 ); //TODO: constant with bit depth
+	dump_plane.readData( dev, (uint16_t*)planes.back().p.scan_line(0), 14 ); //TODO: constant with bit depth
 	
 	
 	//Convert data
@@ -67,7 +67,7 @@ bool ImageEx::from_dump( QIODevice& dev ){
 	//Use last plane as Alpha
 	auto amount = planes.size();
 	if( amount == 2 || amount == 4 ){
-		alpha = std::move( planes.back() );
+		alpha = std::move( planes.back().p );
 		planes.pop_back();
 		amount--;
 	}
@@ -100,8 +100,8 @@ static DumpPlane toDumpPlane( const Plane& plane, unsigned depth ){
 bool ImageEx::saveDump( QIODevice& dev, unsigned depth, bool compression ) const{
 	Timer t( "saveDump" );
 	auto method = compression ? DumpPlane::LZMA : DumpPlane::NONE;
-	for( auto& plane : planes )
-		if( !toDumpPlane( plane, depth ).write( dev, method ) )
+	for( auto& info : planes )
+		if( !toDumpPlane( info.p, depth ).write( dev, method ) )
 			return false;
 	
 	if( alpha )

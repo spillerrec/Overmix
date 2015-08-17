@@ -46,9 +46,9 @@ bool ImageEx::from_qimage( QIODevice& dev, QString ext ){
 		planes.emplace_back( size );
 	
 	for( unsigned iy=0; iy<size.height(); ++iy ){
-		auto r = planes[0].scan_line( iy );
-		auto g = planes[1].scan_line( iy );
-		auto b = planes[2].scan_line( iy );
+		auto r = planes[0].p.scan_line( iy );
+		auto g = planes[1].p.scan_line( iy );
+		auto b = planes[2].p.scan_line( iy );
 		auto a = alpha ? alpha.scan_line( iy ) : nullptr;
 		
 		auto in = (const QRgb*)img.constScanLine( iy );
@@ -90,7 +90,7 @@ struct PlanesIt{
 
 QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ) const{
 	Timer t( "to_qimage" );
-	if( planes.size() == 0 || !planes[0] )
+	if( planes.size() == 0 || !planes[0].p )
 		return QImage();
 	
 	//Settings
@@ -101,8 +101,8 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ) const{
 	//Create iterator
 	auto img_size = getSize();
 	PlanesIt it;
-	for( auto& p : planes )
-		it.add( p, img_size );
+	for( auto& info : planes )
+		it.add( info.p, img_size );
 	if( alpha_plane() )
 		it.add( alpha_plane(), img_size );
 	
