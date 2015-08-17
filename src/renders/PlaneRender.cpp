@@ -55,7 +55,7 @@ ImageEx PlaneRender::render( const AContainer& aligner, AProcessWatcher* watcher
 	ProgressWrapper( watcher ).setTotal( 1000 * planes_amount );
 	
 	//Render all planes
-	ImageEx img( planes_amount!=1 ? aligner.image(0).get_system() : ImageEx::GRAY );
+	ImageEx img( planes_amount!=1 ? aligner.image(0).getTransform() : Transform::GRAY );
 	for( unsigned c=0; c<planes_amount; ++c )
 		img.addPlane( renderPlane( aligner, c, watcher ) );
 	return img;

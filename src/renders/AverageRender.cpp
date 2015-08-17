@@ -134,7 +134,7 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 		qWarning( "No images to render!" );
 		return ImageEx();
 	}
-	unsigned planes_amount = (for_merging || aligner.image(0).get_system() == ImageEx::GRAY) ? 1 : 3;
+	unsigned planes_amount = for_merging ? 1 : aligner.image(0).size();
 	
 	//Determine if we need to care about alpha per plane
 	bool use_plane_alpha = false;
@@ -148,7 +148,7 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 	if( movement.first && movement.second )
 		use_plane_alpha = true;
 	
-	ImageEx img( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
+	ImageEx img( for_merging ? Transform::GRAY : aligner.image(0).getTransform() );
 	
 	AlphaScales masks;
 	for( unsigned c=0; c<planes_amount; c++ ){

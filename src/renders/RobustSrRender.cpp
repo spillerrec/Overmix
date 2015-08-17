@@ -24,8 +24,8 @@
 #include "AverageRender.hpp"
 #include "../planes/ImageEx.hpp"
 #include "../containers/AContainer.hpp"
-#include <Eigen/Dense>
-#include <Eigen/Sparse>
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Sparse>
 #include <QDebug>
 
 using namespace Eigen;
@@ -121,7 +121,7 @@ MatrixXf sign( const MatrixXf& mat1, const MatrixXf& mat2 ){
 
 ImageEx RobustSrRender::render(const AContainer &group, AProcessWatcher *watcher) const {
 	auto planes_amount = group.image(0).size();
-	ImageEx img( planes_amount!=1 ? group.image(0).get_system() : ImageEx::GRAY );
+	ImageEx img( group.image(0).getTransform() );
 	auto min_point = group.minPoint();
 	
 	auto est = AverageRender().render(group); //Starting estimate

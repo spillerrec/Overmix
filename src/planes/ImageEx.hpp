@@ -52,11 +52,6 @@ class ImageEx{
 		};
 		
 		const static unsigned MAX_PLANES = 4;
-		enum system{
-			GRAY,
-			RGB,
-			YUV
-		};
 		enum YuvSystem{
 			SYSTEM_KEEP,
 			SYSTEM_REC601,
@@ -71,7 +66,8 @@ class ImageEx{
 	private:
 		std::vector<PlaneInfo> planes;
 		Plane alpha;
-		system type;
+		Transform transform{ Transform::RGB };
+		Transfer  transfer;
 		bool read_dump_plane( QIODevice& dev );
 		bool from_dump(   QIODevice& dev );
 		bool from_jpeg(   QIODevice& dev, JpegDegrader* deg=nullptr );
@@ -81,18 +77,30 @@ class ImageEx{
 	public:
 		void addPlane( Plane&& p ){ if( p.valid() ) planes.emplace_back( p ); }
 		
-		ImageEx( system type = RGB ) : type( type ) { }
-		ImageEx( Plane p           ) : type( GRAY ) { addPlane( std::move(p) ); }
+		ImageEx() { }
+		ImageEx( Transform t ) : transform(t) { }
+		ImageEx( Plane p ) : transform( Transform::GRAY )
+			{ addPlane( std::move(p) ); }
 		ImageEx( Plane p, Plane a  ) : ImageEx( p ) { alpha = a; }
 		
 		unsigned size() const{ return planes.size(); }
 		void to_grayscale();
 		ImageEx toRgb() const;
 		
+		///Returns true if transform is YCbCr
+		bool isYCbCr() const{
+			switch( transform ){
+				case Transform::YCbCr_601:
+				case Transform::YCbCr_709:
+				case Transform::JPEG:
+					return true;
+				default: return false;
+			}
+		}
 		
 		template<typename... Args>
 		void apply( Plane (Plane::*func)( Args... ) const, Args... args ){
-			if( type == YUV )
+			if( isYCbCr() )
 				planes[0].p = (planes[0].p.*func)( args... );
 			else
 				applyAll( false, func, args... );
@@ -141,7 +149,7 @@ class ImageEx{
 		
 		Rectangle<unsigned> getCrop() const;
 		
-		system get_system() const{ return type; }
+		Transform getTransform() const{ return transform; }
 		
 		
 		double diff( const ImageEx& img, int x, int y ) const;

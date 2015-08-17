@@ -35,7 +35,8 @@ bool ImageEx::from_qimage( QIODevice& dev, QString ext ){
 	if( !img.load( &dev, ext.toLocal8Bit().constData() ) )
 		return false;
 	
-	type = RGB;
+	transform = Transform::RGB;
+	transfer  = Transfer::SRGB;
 	Point<unsigned> size( img.size() );
 	
 	if( img.hasAlphaChannel() )
@@ -96,7 +97,8 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ) const{
 	//Settings
 	bool dither = setting & SETTING_DITHER;
 	bool gamma = setting & SETTING_GAMMA;
-	bool is_yuv = (type == YUV) && (system != SYSTEM_KEEP);
+	bool is_yuv = isYCbCr() && (system != SYSTEM_KEEP);
+	//TODO: be smarter now we have access to the color info!
 	
 	//Create iterator
 	auto img_size = getSize();
@@ -107,7 +109,7 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ) const{
 		it.add( alpha_plane(), img_size );
 	
 	//Fetch with alpha
-	auto pixel = ( type == GRAY )
+	auto pixel = ( transform == Transform::GRAY )
 		?	( alpha_plane() ? &PlanesIt::gray_a : &PlanesIt::gray )
 		:	( alpha_plane() ? &PlanesIt::rgb_a  : &PlanesIt::rgb  );
 	

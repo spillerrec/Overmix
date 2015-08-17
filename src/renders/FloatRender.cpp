@@ -183,7 +183,7 @@ ImageEx FloatRender::render( const AContainer& aligner, AProcessWatcher* watcher
 	
 	//Do iterator
 	auto full = aligner.size();
-	ImageEx img( (planes_amount==1) ? ImageEx::GRAY : aligner.image(0).get_system() );
+	ImageEx img( (planes_amount==1) ? Transform::GRAY : aligner.image(0).getTransform() );
 	
 	//Fill alpha
 	Plane alpha( full.size*scale );

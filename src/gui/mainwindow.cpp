@@ -439,7 +439,7 @@ void main_widget::refresh_image(){
 	
 	refreshQImageCache();
 	
-	ui->btn_as_mask->setEnabled( renders.size() == 1 && renders[0].raw.get_system() == ImageEx::GRAY );
+	ui->btn_as_mask->setEnabled( renders.size() == 1 && renders[0].raw.getTransform() == Transform::GRAY );
 	viewer.change_image( createViewerCache(), true );
 	refresh_text();
 	ui->btn_save->setEnabled( true );
