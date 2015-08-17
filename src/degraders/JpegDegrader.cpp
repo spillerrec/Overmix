@@ -47,8 +47,12 @@ unsigned QuantTable::degrade8x8Comp( DctPlane& f1, DctPlane& f2, const Plane& p1
 			auto deg2 = quantize( row2[ix], quant[ix] );
 			if( deg1 == deg2 )
 				row2[ix] = row1[ix];
-			else
+			else{
+				auto shift = ( row1[ix] > row2[ix] ) ? +0.45 : -0.45;
+				row2[ix] = (deg2 + shift)/quant[ix];
+					
 				change++;
+			}
 		}
 	}
 	
