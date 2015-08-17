@@ -89,9 +89,9 @@ AImageAligner::AlignMethod AAlignerConfig::getMethod() const{
 	if( h && v )
 		return AImageAligner::ALIGN_BOTH;
 	if( h )
-		return AImageAligner::ALIGN_HOR;
-	if( v )
 		return AImageAligner::ALIGN_VER;
+	if( v )
+		return AImageAligner::ALIGN_HOR;
 	return AImageAligner::ALIGN_VER;
 }
 
