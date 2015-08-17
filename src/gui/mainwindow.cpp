@@ -117,9 +117,12 @@ main_widget::main_widget( ImageContainer& images )
 	,	viewer( settings, (QWidget*)this )
 	,	browser( settings, (QWidget*)this )
 	,	images( images )
+	,	aligner_config( this, true )
 	,	img_model( images )
 {
 	ui->setupUi(this);
+	aligner_config.initialize();
+	ui->align_layout->insertWidget( 0, &aligner_config );
 	
 	//Buttons
 	connect( ui->btn_clear,      SIGNAL( clicked() ), this, SLOT( clear_image()          ) );
@@ -146,10 +149,6 @@ main_widget::main_widget( ImageContainer& images )
 	//foldableGroupBox( this, true,  ui->images_group      );
 	foldableGroupBox( this, false, ui->masks_group       );
 	foldableGroupBox( this, false, ui->selection_group   );
-	
-	//Merge method
-	connect( ui->cbx_merge_h, SIGNAL( toggled(bool) ), this, SLOT( toggled_hor() ) );
-	connect( ui->cbx_merge_v, SIGNAL( toggled(bool) ), this, SLOT( toggled_ver() ) );
 	
 	//Reset aligner cache
 	connect( ui->rbtn_avg,          SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
@@ -325,7 +324,7 @@ std::unique_ptr<ARender> main_widget::getRender() const{
 	if( ui->rbtn_static_diff->isChecked() )
 		return make_unique<DiffRender>();
 	else if( ui->rbtn_subpixel->isChecked() )
-		return make_unique<EstimatorRender>( ui->merge_scale->value() );
+		return make_unique<EstimatorRender>( 1.0 ); //TODO:
 	else if( ui->rbtn_diff->isChecked() )
 		return make_unique<StatisticsRender>( Statistics::DIFFERENCE );
 	else if( ui->rbtn_dehumidifier->isChecked() )
@@ -475,18 +474,6 @@ void main_widget::save_files(){
 	}
 }
 
-
-void main_widget::toggled_hor(){
-	//Always have one checked
-	if( !(ui->cbx_merge_h->isChecked()) )
-		ui->cbx_merge_v->setChecked( true );
-}
-void main_widget::toggled_ver(){
-	//Always have one checked
-	if( !(ui->cbx_merge_v->isChecked()) )
-		ui->cbx_merge_h->setChecked( true );
-}
-
 void main_widget::clear_cache(){
 	//TODO: a lot of this should probably be in resetImage!
 	ui->btn_save->setEnabled( false );
@@ -519,9 +506,9 @@ void main_widget::clear_image(){
 	update_draw();
 }
 
-static void alignContainer( AContainer& container, int merge_index, AImageAligner::AlignMethod method, int scale, double movement, bool edges, DialogWatcher& watcher ){
-	AImageAligner* aligner = nullptr;
+static void alignContainer( AContainer& container, DialogWatcher& watcher ){
 	
+	/*
 	switch( merge_index ){
 		case 0: //Fake
 			aligner = new FakeAligner( container ); break;
@@ -541,16 +528,8 @@ static void alignContainer( AContainer& container, int merge_index, AImageAligne
 			aligner = new SuperResAligner( container, method, scale ); break;
 		default: return;
 	}
+	*/
 	
-	aligner->set_movement( movement );
-	
-	aligner->set_edges( edges );
-	
-	aligner->addImages();
-	aligner->align( &watcher );
-	
-	delete aligner; //TODO: fix this
-
 }
 
 void main_widget::alignImage(){
@@ -558,31 +537,22 @@ void main_widget::alignImage(){
 	clear_cache(); //Prevent any animation from running
 	DialogWatcher watcher( this, "Aligning" );
 	
-	//Select movement type
-	AImageAligner::AlignMethod method{ AImageAligner::ALIGN_BOTH };
-	if( ui->cbx_merge_v->isChecked() )
-		method = AImageAligner::ALIGN_HOR;
-	if( ui->cbx_merge_h->isChecked() ){
-		if( ui->cbx_merge_v->isChecked() )
-			method = AImageAligner::ALIGN_BOTH;
-		else
-			method = AImageAligner::ALIGN_VER;
-	}
+	auto alignContainer = [&]( auto& container, auto& watcher ){
+			auto aligner = aligner_config.getAligner( container );
+			aligner->addImages();
+			aligner->align( &watcher );
+		};
 	
-	auto merge_index = ui->merge_method->currentIndex();
-	auto scale = ui->merge_scale->value();
-	auto movement = ui->merge_movement->value() / 100.0;
-	auto edges = ui->cbx_edges->isChecked();
 	
 	if( ui->cbx_each_frame->isChecked() ){
 		//TODO: support displaying several frames in watcher
 		for( auto frame : getAlignedImages().getFrames() ){
 			FrameContainer container( getAlignedImages(), frame );
-			alignContainer( container, merge_index, method, scale, movement, edges, watcher );
+			alignContainer( container, watcher );
 		}
 	}
 	else
-		alignContainer( getAlignedImages(), merge_index, method, scale, movement, edges, watcher );
+		alignContainer( getAlignedImages(), watcher );
 	
 	clear_cache();
 	refresh_text();

@@ -21,8 +21,6 @@
 #include "ConfigChooser.hpp"
 #include "../../aligners/AImageAligner.hpp"
 
-#include <QCheckBox>
-
 
 #include "ui_imagealigner.h"
 
@@ -60,6 +58,7 @@ class AlignerConfigChooser : public ConfigChooser<AAlignerConfig>{
 	
 	public:
 		AlignerConfigChooser( QWidget* parent, bool expand=false ); //Add all the configs
+		virtual void p_initialize();
 		
 		std::unique_ptr<AImageAligner> getAligner( AContainer& container ) const
 			{ return getSelected().getAligner( container ); }
@@ -103,6 +102,12 @@ class LinearAlignerConfig : public AAlignerConfig{
 		QString name() const override { return "Fit to Linear Curve"; }
 		QString discription() const override{ return "Tries to fit all images onto a linear curve which fits the current data the best."; }
 };
+
+
+//AnimationSeparator, FrameAligner
+
+//None, Ordered, Recursive, Layered, Seperate Frames, Align Frames,
+//Fit to Linear Curve, SuperRes
 
 
 #endif

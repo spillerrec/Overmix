@@ -26,7 +26,9 @@
 #include <QGridLayout>
 
 AlignerConfigChooser::AlignerConfigChooser( QWidget* parent, bool expand )
-	: ConfigChooser<AAlignerConfig>( parent, expand ){
+	: ConfigChooser<AAlignerConfig>( parent, expand ){ }
+
+void AlignerConfigChooser::p_initialize(){
 	addConfig<AverageAlignerConfig>();
 	addConfig<RecursiveAlignerConfig>();
 	addConfig<FakeAlignerConfig>();
@@ -36,6 +38,7 @@ AlignerConfigChooser::AlignerConfigChooser( QWidget* parent, bool expand )
 
 AAlignerConfig::AAlignerConfig( QWidget* parent, int edits ) : AConfig( parent ) {
 	setupUi(this);
+	layout()->setContentsMargins( 0,0,0,0 );
 	
 	if( edits & DISABLE_DIR ){
 		cbx_merge_h->hide();

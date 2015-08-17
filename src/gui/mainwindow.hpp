@@ -35,6 +35,8 @@
 #include "../Deteleciner.hpp"
 #include "../RenderOperations.hpp"
 
+#include "configs/AlignerConfigs.hpp"
+
 class ARender;
 class AContainer;
 class AImageAligner;
@@ -57,6 +59,8 @@ class main_widget: public QMainWindow{
 		imageViewer browser;
 		ImageContainer& images;
 		std::unique_ptr<AContainer> selection;
+		
+		AlignerConfigChooser aligner_config;
 		
 		struct RenderCache{
 			ImageEx raw;
@@ -132,8 +136,6 @@ class main_widget: public QMainWindow{
 		void save_files();
 		void clear_image();
 		void alignImage();
-		void toggled_hor();
-		void toggled_ver();
 		void change_interlace();
 		
 		void set_alpha_mask();

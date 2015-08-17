@@ -24,7 +24,7 @@
 #include <vector>
 
 #include <QComboBox>
-#include <QHBoxLayout>
+#include <QVBoxLayout>
 
 
 template<class Config>
@@ -55,11 +55,14 @@ class ConfigChooser : public AConfig{
 			
 			setLayout( new QVBoxLayout( this ) );
 			layout()->addWidget( &dropbox );
+			layout()->setContentsMargins( 0,0,0,0 );
 			
 			//Ugly lambda, as we can't make slots because of moc not supporting templates
 			connect( &dropbox, static_cast<void (QComboBox::*)(int)>
 (&QComboBox::currentIndexChanged), [&](int){
-					setSub( &getSelected() );
+					auto& config = getSelected();
+					config.initialize();
+					setSub( &config );
 				} );
 		}
 		

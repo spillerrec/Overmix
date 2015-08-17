@@ -30,6 +30,18 @@ class AConfig : public QWidget{
 		virtual QString name() const = 0;
 		virtual QString discription() const = 0;
 		//TODO: load and save settings?
+	
+		
+	//For lazy initialization
+	private:
+		bool is_initialized{ false };
+	protected:
+		virtual void p_initialize(){ };
+	public:
+		void initialize(){
+			if( !is_initialized )
+				p_initialize();
+		}
 };
 
 
