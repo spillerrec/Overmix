@@ -89,7 +89,7 @@ struct PlanesIt{
 		color rgb_a(){  return { at(0), at(1), at(2), at(3) }; }
 };
 
-QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ) const{
+QImage ImageEx::to_qimage( unsigned setting ) const{
 	Timer t( "to_qimage" );
 	if( planes.size() == 0 || !planes[0].p )
 		return QImage();
@@ -97,7 +97,7 @@ QImage ImageEx::to_qimage( YuvSystem system, unsigned setting ) const{
 	//Settings
 	bool dither = setting & SETTING_DITHER;
 	bool gamma = setting & SETTING_GAMMA;
-	bool is_yuv = isYCbCr() && (system != SYSTEM_KEEP);
+	bool is_yuv = isYCbCr();
 	//TODO: be smarter now we have access to the color info!
 	
 	//Create iterator

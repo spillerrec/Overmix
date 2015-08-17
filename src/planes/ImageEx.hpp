@@ -51,12 +51,6 @@ class ImageEx{
 				:	p(p), subsampling(sub) {}
 		};
 		
-		const static unsigned MAX_PLANES = 4;
-		enum YuvSystem{
-			SYSTEM_KEEP,
-			SYSTEM_REC601,
-			SYSTEM_REC709
-		};
 		enum Settings{
 			SETTING_NONE = 0x0,
 			SETTING_DITHER = 0x1,
@@ -138,7 +132,8 @@ class ImageEx{
 		Plane& alpha_plane(){ return alpha; }
 		const Plane& alpha_plane() const{ return alpha; }
 		
-		QImage to_qimage( YuvSystem system, unsigned setting=SETTING_NONE ) const;
+		ImageEx flatten() const; 
+		QImage to_qimage( unsigned setting=SETTING_NONE ) const;
 		
 		Point<unsigned> getSize() const{
 			return std::accumulate( planes.begin(), planes.end(), Point<unsigned>( 0, 0 )

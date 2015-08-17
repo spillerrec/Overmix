@@ -348,12 +348,9 @@ QImage main_widget::qrenderImage( const ImageEx& img ){
 	if( !img.is_valid() )
 		return QImage();
 	
-	//Set color system
-	ImageEx::YuvSystem system = ImageEx::SYSTEM_KEEP;
-	if( ui->rbtn_rec709->isChecked() )
-		system = ImageEx::SYSTEM_REC709;
-	if( ui->rbtn_rec601->isChecked() )
-		system = ImageEx::SYSTEM_REC601;
+	auto image = postProcess( img, true );
+	if( ui->cbx_nocolor->isChecked() )
+		image = image.flatten();
 	
 	//Set settings
 	unsigned setting = ImageEx::SETTING_NONE;
@@ -364,7 +361,7 @@ QImage main_widget::qrenderImage( const ImageEx& img ){
 	
 	//Render image
 	//TODO: fix postProcess
-	return postProcess( img, true ).to_qimage( system, setting );
+	return image.to_qimage( setting );
 }
 
 void main_widget::refreshQImageCache(){

@@ -111,6 +111,30 @@ ImageEx ImageEx::fromFile( QString path ){
 	return temp;
 }
 
+ImageEx ImageEx::flatten() const{
+	Timer t( "ImageEx::flatten()" );
+	//Find dimensions and create plane
+	unsigned height = get_height(), width = 0;
+	for( auto& info : planes )
+		width += info.p.get_width();
+	if( alpha_plane() )
+		width += alpha_plane().get_width();
+	
+	Plane out( width, height );
+	out.fill( color::BLACK );
+	
+	//Fill output-plane, one plane at a time
+	unsigned x_offset = 0;
+	for( auto& info : planes ){
+		out.copy( info.p, {0,0}, info.p.getSize(), {x_offset,0} );
+		x_offset += info.p.get_width();
+	}
+	if( alpha_plane() )
+		out.copy( alpha_plane(), {0,0}, alpha_plane().getSize(), {x_offset,0} );
+	
+	return out;
+}
+
 
 double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 	//Check if valid

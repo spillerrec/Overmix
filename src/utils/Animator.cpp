@@ -95,6 +95,6 @@ void Animator::render( const ImageEx& img ) const{
 		ImageEx copy( img );
 		copy.crop( pos, view );
 	//	pixelate( copy, pixor_offset, pixor_pos - pos, pixor_size, pixor_pixel );
-		copy.to_qimage( ImageEx::SYSTEM_REC709 ).save( "out2/" + QString::number( id ) + ".jpg", "JPG", 25 );
+		copy.to_qimage().save( "out2/" + QString::number( id ) + ".jpg", "JPG", 25 );
 	}
 }

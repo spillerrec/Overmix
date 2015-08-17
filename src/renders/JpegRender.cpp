@@ -29,7 +29,7 @@
 using namespace std;
 
 static Plane save( Plane p, QString name ){
-	ImageEx( p ).to_qimage( ImageEx::SYSTEM_KEEP ).save( name + ".png" );
+	ImageEx( p ).to_qimage().save( name + ".png" );
 	return p;
 }
 
@@ -73,13 +73,33 @@ ImageEx JpegRender::render(const AContainer &group, AProcessWatcher *watcher) co
 	for( unsigned j=0; j<group.count(); j++ )
 		imgs.setPos( j, group.pos( j ) );
 	
+	//* Waifu test code
+	Plane mask( 853, 480 );
+	mask.fill( 1 );
+	for( unsigned j=0; j<group.count(); j++ ){
+		auto waifu = ImageEx::fromFile( "out-25/waifu/0" + QString::number(j) + ".png" );
+		auto deg = deVlcImage( waifu )[0];
+		auto lr = imgs.image(j)[0];
+		save( lr, "input" + QString::number(j) + "lr" );
+		unsigned change = 0;
+		imgs.imageRef(j)[0] = jpeg.planes[0].degradeComp( mask, deg, lr, change );
+		save( imgs.imageRef(j)[0], "input" + QString::number(j) + "waifu" );
+	}//*/
 	
+	//auto truth = ImageEx::fromFile( "truth.dump" );
+	//auto waifu = ImageEx::fromFile( "out-25/_waifu.png" );
+	//waifu = deVlcImage( waifu );
+	//save( waifu[0], "waifu" );
 	auto est = AverageRender().render( imgs ); //Starting estimate
+	//save( est[0], "waifu-overmix" );
+	//est[0] = est[0].deconvolve_rl( 0.6, 5 );
 	auto diff = est;
 	for( unsigned i=0; i<diff.size(); i++ )
 		diff[i].fill( 1 );
+	//est = waifu;
 	
 	for( int i=0; i<iterations; i++ ){
+		//save( est[0], "Est" + QString::number(i) );
 		for( unsigned c=0; c<planes_amount; ++c ){
 			//Improve Jpeg image quality
 				unsigned change = 0;
@@ -90,6 +110,8 @@ ImageEx JpegRender::render(const AContainer &group, AProcessWatcher *watcher) co
 				imgs.imageRef(j)[c] = jpeg.planes[c].degradeComp( mask, deg, lr, change );
 			}
 			qCDebug(LogDelta) << "Change: " << change / imgs.count();
+			if( change == 0 )
+				break;
 		}
 		
 		auto new_est = AverageRender().render( imgs );

@@ -944,40 +944,10 @@
              <property name="spacing">
               <number>3</number>
              </property>
-             <item row="1" column="1">
-              <widget class="QRadioButton" name="rbtn_rec601">
-               <property name="text">
-                <string>Rec. &amp;601</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="1">
-              <widget class="QRadioButton" name="rbtn_rec709">
-               <property name="text">
-                <string>Rec. &amp;709</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
              <item row="0" column="1">
-              <widget class="QRadioButton" name="cbx_nocolor">
+              <widget class="QCheckBox" name="cbx_nocolor">
                <property name="text">
-                <string>&amp;None (debug)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QCheckBox" name="cbx_16bit">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="text">
-                <string>16-bit</string>
-               </property>
-               <property name="tristate">
-                <bool>true</bool>
+                <string>Show planes</string>
                </property>
               </widget>
              </item>
@@ -991,7 +961,7 @@
                </property>
               </widget>
              </item>
-             <item row="3" column="0">
+             <item row="1" column="0">
               <widget class="QCheckBox" name="cbx_dither">
                <property name="text">
                 <string>Dither</string>
