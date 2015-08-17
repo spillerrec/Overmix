@@ -48,8 +48,6 @@ namespace debug{
 	
 	void make_low_res( QImage image, QString dir, unsigned scale );
 	
-	void output_transfers_functions( QString path );
-	
 	void output_rectable( ImageContainer& imgs, Rectangle<> area );
 	
 	

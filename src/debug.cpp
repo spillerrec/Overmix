@@ -67,21 +67,3 @@ void debug::make_low_res( QImage image, QString dir, unsigned scale ){
 		}
 }
 
-void debug::output_transfers_functions( QString path ){
-	CsvFile out( string{ path.toUtf8().constData() } );
-	
-	out.add( "From" ).add( "sRgb2linear" ).add( "linear2sRgb" ).add( "sRgb2sRgb" ).add( "ycbcr2srgb" ).stop();
-	
-	for( int i=0; i<256; i++ ){
-		color_type val = color::from8bit( i );
-		
-		out.add( val )
-			.add( color::sRgb2linear( val ) )
-			.add( color::linear2sRgb( val ) )
-			.add( color::sRgb2linear( color::linear2sRgb( val ) ) )
-			.add( color::fromDouble( color::ycbcr2srgb( color::asDouble( val ) ) ) )
-			.stop()
-			;
-	}
-}
-

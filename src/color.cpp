@@ -19,16 +19,13 @@
 
 #include <vector>
 
-std::vector<color_type> generate_gamma(){
+static std::vector<color_type> generate_gamma(){
 	std::vector<color_type> temp( UINT16_MAX );
 	
 	for( int_fast32_t i=0; i<UINT16_MAX; i++ ){
-		long double v = i;
-		v /= color::WHITE;
-		
-		v = color::ycbcr2srgb( v );
-		
-		temp[i] = v*color::WHITE + 0.5;
+		auto v = color::asDouble( i );
+		v = color::linear2sRgb( color::ycbcr2linear( v ) );
+		temp[i] = color::fromDouble( v );
 	}
 	
 	return temp;
@@ -46,7 +43,7 @@ static double limit( double val, int min_8, int max_8 ){
 	return val * (max-min) + min;
 }
 
-color color::yuvToRgb( double kr, double kg, double kb, bool gamma, bool swing ){
+color color::ycbcrToRgb( double kr, double kg, double kb, bool gamma, bool swing ){
 	double y = asDouble( r ), cb = asDouble( g ), cr = asDouble( b );
 	
 	//Remove foot- and head-room
@@ -89,7 +86,7 @@ color color::yuvToRgb( double kr, double kg, double kb, bool gamma, bool swing )
 }
 
 
-color color::rgbToYuv( double kr, double kg, double kb, bool gamma, bool swing ){
+color color::rgbToYcbcr( double kr, double kg, double kb, bool gamma, bool swing ){
 	double rr = asDouble( r ), rg = asDouble( g ), rb = asDouble( b );
 	
 	double y  = kr*rr + kg*rg + kb*rb;
