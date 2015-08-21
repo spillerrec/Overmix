@@ -78,8 +78,10 @@ class FloatRenderConfig : public ARenderConfig{
 };
 
 class StatisticsRenderConfig : public ARenderConfig{
+	private:
+		class QComboBox* function;
 	public:
-		StatisticsRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
+		StatisticsRenderConfig( QWidget* parent );
 		std::unique_ptr<ARender> getRender() const override;
 		
 		QString name() const override { return "Statistics"; }

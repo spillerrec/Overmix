@@ -27,6 +27,9 @@
 #include "../../renders/RobustSrRender.hpp"
 #include "../../renders/EstimatorRender.hpp"
 
+#include <QComboBox>
+#include <QVBoxLayout>
+
 
 RenderConfigChooser::RenderConfigChooser( QWidget* parent, bool expand )
 	: ConfigChooser<ARenderConfig>( parent, expand )
@@ -61,9 +64,34 @@ std::unique_ptr<ARender> FloatRenderConfig::getRender() const
 //TODO: doublespinbox for scale
 	{ return std::make_unique<FloatRender>( 1.0 ); }
 
-std::unique_ptr<ARender> StatisticsRenderConfig::getRender() const
-//TODO: combobox for the method
-	{ return std::make_unique<StatisticsRender>( Statistics::DIFFERENCE ); }
+StatisticsRenderConfig::StatisticsRenderConfig( QWidget* parent )
+	: ARenderConfig( parent ) {
+		function = new QComboBox( this );
+		function->addItem( "Difference" );
+		function->addItem( "Minimum" );
+		function->addItem( "Maximum" );
+		function->addItem( "Median" );
+		function->addItem( "Average" );
+		connect( function, SIGNAL(currentIndexChanged(int)), this, SIGNAL(changed()) );
+		
+		setLayout( new QVBoxLayout( this ) );
+		layout()->addWidget( function );
+	}
+
+static Statistics getStats( int id ){
+	switch( id ){
+		case 0: return Statistics::DIFFERENCE;
+		case 1: return Statistics::MIN;
+		case 2: return Statistics::MAX;
+		case 3: return Statistics::MEDIAN;
+		case 4: return Statistics::AVG;
+		default: return Statistics::AVG;
+	}
+}
+
+std::unique_ptr<ARender> StatisticsRenderConfig::getRender() const{
+	return std::make_unique<StatisticsRender>( getStats( function->currentIndex() ) );
+}
 
 std::unique_ptr<ARender> EstimatorRenderConfig::getRender() const
 //TODO: Variouss controls for pretty much everything
