@@ -103,11 +103,32 @@ class LinearAlignerConfig : public AAlignerConfig{
 		QString discription() const override{ return "Tries to fit all images onto a linear curve which fits the current data the best."; }
 };
 
+class SeperateAlignerConfig : public AAlignerConfig{
+	public:
+		SeperateAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, ENABLE_ALL ) { }
+		std::unique_ptr<AImageAligner> getAligner(AContainer&) const override;
+		
+		QString name() const override { return "Seperate Frames"; }
+		QString discription() const override{ return "Detects cyclic animation by assuming each animation-frame is repeated at least twice"; }
+};
 
-//AnimationSeparator, FrameAligner
+class AlignFrameAlignerConfig : public AAlignerConfig{
+	public:
+		AlignFrameAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, ENABLE_ALL ) { }
+		std::unique_ptr<AImageAligner> getAligner(AContainer&) const override;
+		
+		QString name() const override { return "Align Frames"; }
+		QString discription() const override{ return "Aligns animation frames"; }
+};
 
-//None, Ordered, Recursive, Layered, Seperate Frames, Align Frames,
-//Fit to Linear Curve, SuperRes
+class SuperResAlignerConfig : public AAlignerConfig{
+	public:
+		SuperResAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, ENABLE_ALL ) { }
+		std::unique_ptr<AImageAligner> getAligner(AContainer&) const override;
+		
+		QString name() const override { return "SuperRes"; }
+		QString discription() const override{ return "Aligns against the super-resolution image"; }
+};
 
 
 #endif

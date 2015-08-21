@@ -18,10 +18,13 @@
 
 #include "AlignerConfigs.hpp"
 
+#include "../../aligners/AnimationSeparator.hpp"
 #include "../../aligners/AverageAligner.hpp"
 #include "../../aligners/FakeAligner.hpp"
+#include "../../aligners/FrameAligner.hpp"
 #include "../../aligners/RecursiveAligner.hpp"
 #include "../../aligners/LinearAligner.hpp"
+#include "../../aligners/SuperResAligner.hpp"
 
 #include <QGridLayout>
 
@@ -33,6 +36,9 @@ void AlignerConfigChooser::p_initialize(){
 	addConfig<RecursiveAlignerConfig>();
 	addConfig<FakeAlignerConfig>();
 	addConfig<LinearAlignerConfig>();
+	addConfig<SeperateAlignerConfig>();
+	addConfig<AlignFrameAlignerConfig>();
+	addConfig<SuperResAlignerConfig>();
 }
 
 
@@ -123,6 +129,24 @@ std::unique_ptr<AImageAligner> FakeAlignerConfig::getAligner( AContainer& contai
 
 std::unique_ptr<AImageAligner> LinearAlignerConfig::getAligner( AContainer& container ) const{
 	auto aligner = std::make_unique<LinearAligner>( container, getMethod() );
+	configure( *aligner );
+	return aligner;
+}
+
+std::unique_ptr<AImageAligner> SeperateAlignerConfig::getAligner( AContainer& container ) const{
+	auto aligner = std::make_unique<AnimationSeparator>( container, getMethod(), getScale() );
+	configure( *aligner );
+	return aligner;
+}
+
+std::unique_ptr<AImageAligner> AlignFrameAlignerConfig::getAligner( AContainer& container ) const{
+	auto aligner = std::make_unique<FrameAligner>( container, getMethod(), getScale() );
+	configure( *aligner );
+	return aligner;
+}
+
+std::unique_ptr<AImageAligner> SuperResAlignerConfig::getAligner( AContainer& container ) const{
+	auto aligner = std::make_unique<SuperResAligner>( container, getMethod(), getScale() );
 	configure( *aligner );
 	return aligner;
 }
