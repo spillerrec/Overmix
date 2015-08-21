@@ -36,6 +36,7 @@
 #include "../RenderOperations.hpp"
 
 #include "configs/AlignerConfigs.hpp"
+#include "configs/RenderConfigs.hpp"
 
 class ARender;
 class AContainer;
@@ -61,6 +62,7 @@ class main_widget: public QMainWindow{
 		std::unique_ptr<AContainer> selection;
 		
 		AlignerConfigChooser aligner_config;
+		RenderConfigChooser   render_config;
 		
 		struct RenderCache{
 			ImageEx raw;

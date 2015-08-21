@@ -68,7 +68,7 @@
               <number>3</number>
              </property>
              <property name="bottomMargin">
-              <number>6</number>
+              <number>3</number>
              </property>
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -102,7 +102,10 @@
             <property name="checked">
              <bool>false</bool>
             </property>
-            <layout class="QGridLayout" name="gridLayout_3">
+            <layout class="QVBoxLayout" name="render_layout">
+             <property name="spacing">
+              <number>3</number>
+             </property>
              <property name="leftMargin">
               <number>3</number>
              </property>
@@ -113,70 +116,8 @@
               <number>3</number>
              </property>
              <property name="bottomMargin">
-              <number>6</number>
-             </property>
-             <property name="spacing">
               <number>3</number>
              </property>
-             <item row="0" column="0">
-              <widget class="QRadioButton" name="rbtn_avg">
-               <property name="text">
-                <string>Average</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="1">
-              <widget class="QRadioButton" name="rbtn_static_diff">
-               <property name="text">
-                <string>Static Difference</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QRadioButton" name="rbtn_diff">
-               <property name="text">
-                <string>&amp;Difference</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="0">
-              <widget class="QRadioButton" name="rbtn_subpixel">
-               <property name="text">
-                <string>S&amp;ubpixel</string>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="1">
-              <widget class="QRadioButton" name="rbtn_median">
-               <property name="text">
-                <string>Median</string>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="0">
-              <widget class="QRadioButton" name="rbtn_dehumidifier">
-               <property name="text">
-                <string>Dehumidifier</string>
-               </property>
-              </widget>
-             </item>
-             <item row="7" column="0">
-              <widget class="QRadioButton" name="rbtn_pixelator">
-               <property name="text">
-                <string>Pi&amp;xelator</string>
-               </property>
-              </widget>
-             </item>
-             <item row="7" column="1">
-              <widget class="QCheckBox" name="cbx_chroma">
-               <property name="text">
-                <string>Chroma-upscale</string>
-               </property>
-              </widget>
-             </item>
             </layout>
            </widget>
           </item>

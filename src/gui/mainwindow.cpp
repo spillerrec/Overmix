@@ -110,11 +110,14 @@ main_widget::main_widget( ImageContainer& images )
 	,	browser( settings, (QWidget*)this )
 	,	images( images )
 	,	aligner_config( this, true )
+	,	 render_config( this, true )
 	,	img_model( images )
 {
 	ui->setupUi(this);
 	aligner_config.initialize();
-	ui->align_layout->insertWidget( 0, &aligner_config );
+	 render_config.initialize();
+	ui->align_layout ->insertWidget( 0, &aligner_config );
+	ui->render_layout->insertWidget( 0, & render_config );
 	
 	//Buttons
 	connect( ui->btn_clear,      SIGNAL( clicked() ), this, SLOT( clear_image()          ) );
@@ -143,14 +146,7 @@ main_widget::main_widget( ImageContainer& images )
 	foldableGroupBox( this, false, ui->selection_group   );
 	
 	//Reset aligner cache
-	connect( ui->rbtn_avg,          SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
-	connect( ui->rbtn_dehumidifier, SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
-	connect( ui->rbtn_diff,         SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
-	connect( ui->rbtn_static_diff,  SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
-	connect( ui->rbtn_subpixel,     SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
-	connect( ui->rbtn_median,       SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
-	connect( ui->rbtn_pixelator,    SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
-	connect( ui->cbx_chroma,        SIGNAL( toggled(bool) ), this, SLOT( resetImage() ) );
+	connect( &render_config, SIGNAL( changed() ), this, SLOT( resetImage() ) );
 	connect( &img_model, SIGNAL( dataChanged(const QModelIndex&, const QModelIndex&) ), this, SLOT( resetImage() ) );
 	
 	//Menubar
@@ -308,26 +304,8 @@ const ImageEx& main_widget::postProcess( const ImageEx& input, bool new_image ){
 }
 
 
-std::unique_ptr<ARender> main_widget::getRender() const{
-	using namespace std;
-	//Select filter
-	bool chroma_upscale = ui->cbx_chroma->isChecked();
-	
-	if( ui->rbtn_static_diff->isChecked() )
-		return make_unique<DiffRender>();
-	else if( ui->rbtn_subpixel->isChecked() )
-		return make_unique<EstimatorRender>( 1.0 ); //TODO:
-	else if( ui->rbtn_diff->isChecked() )
-		return make_unique<StatisticsRender>( Statistics::DIFFERENCE );
-	else if( ui->rbtn_dehumidifier->isChecked() )
-		return make_unique<StatisticsRender>( Statistics::MIN );
-	else if( ui->rbtn_median->isChecked() )
-		return make_unique<StatisticsRender>( Statistics::MEDIAN );
-	else if( ui->rbtn_pixelator->isChecked() )
-		return make_unique<PixelatorRender>();
-	else
-		return make_unique<AverageRender>( chroma_upscale );
-}
+std::unique_ptr<ARender> main_widget::getRender() const
+	{ return render_config.getRender(); }
 
 ImageEx main_widget::renderImage( const AContainer& container ){
 	DialogWatcher watcher( this, "Rendering" );
@@ -496,32 +474,6 @@ void main_widget::clear_image(){
 	
 	refresh_text();
 	update_draw();
-}
-
-static void alignContainer( AContainer& container, DialogWatcher& watcher ){
-	
-	/*
-	switch( merge_index ){
-		case 0: //Fake
-			aligner = new FakeAligner( container ); break;
-		case 1: //Ordered
-			aligner = new AverageAligner( container, method, scale ); break;
-		case 2: //Recursive
-			aligner = new RecursiveAligner( container, method, scale ); break;
-		case 3: //Layered
-			aligner = new LayeredAligner( container, method, scale ); break;
-		case 4: //Separate Frames
-			aligner = new AnimationSeparator( container, method, scale ); break;
-		case 5: //Align Frames
-			aligner = new FrameAligner( container, method, scale ); break;
-		case 6: //Linear Curve Fitting
-			aligner = new LinearAligner( container, method ); break;
-		case 7: //SuperResolution alignment
-			aligner = new SuperResAligner( container, method, scale ); break;
-		default: return;
-	}
-	*/
-	
 }
 
 void main_widget::alignImage(){

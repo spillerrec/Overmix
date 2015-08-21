@@ -49,6 +49,12 @@ class ConfigChooser : public AConfig{
 		Config& getSelected() const
 			{ return *(configs[dropbox.currentIndex()]); }
 		
+		template <typename Func>
+		void connectChange( Func f ){
+			connect( &dropbox, static_cast<void (QComboBox::*)(int)>
+(&QComboBox::currentIndexChanged), f );
+		}
+		
 	public:
 		ConfigChooser( QWidget* parent, bool expand=false )
 			:	AConfig( parent ), expand(expand), dropbox( parent ){
@@ -58,8 +64,7 @@ class ConfigChooser : public AConfig{
 			layout()->setContentsMargins( 0,0,0,0 );
 			
 			//Ugly lambda, as we can't make slots because of moc not supporting templates
-			connect( &dropbox, static_cast<void (QComboBox::*)(int)>
-(&QComboBox::currentIndexChanged), [&](int){
+			connectChange( [&](int){
 					auto& config = getSelected();
 					config.initialize();
 					setSub( &config );
@@ -67,13 +72,15 @@ class ConfigChooser : public AConfig{
 		}
 		
 		template<class Config2, typename ... Args>
-		void addConfig( Args... args ){
+		Config& addConfig( Args... args ){
 			configs.emplace_back( std::make_unique<Config2>( this, args... ) );
 			dropbox.addItem( configs.back()->name() );
 			configs.back()->hide();
 				
 			if( configs.size() == 1 )
 				setSub( configs.back().get() );
+			
+			return *configs.back();
 		}
 };
 

@@ -20,8 +20,8 @@ SOURCES += src/gui/mainwindow.cpp src/gui/ImagesModel.cpp src/gui/FullscreenView
 
 # Configurators
 FORMS   += src/gui/configs/ImageAligner.ui
-HEADERS += src/gui/configs/AlignerConfigs.hpp src/gui/configs/AConfig.hpp src/gui/configs/ConfigChooser.hpp
-SOURCES += src/gui/configs/AlignerConfigs.cpp
+HEADERS += src/gui/configs/AlignerConfigs.hpp src/gui/configs/RenderConfigs.hpp src/gui/configs/AConfig.hpp src/gui/configs/ConfigChooser.hpp
+SOURCES += src/gui/configs/AlignerConfigs.cpp src/gui/configs/RenderConfigs.cpp
 
 # File savers
 FORMS   += src/gui/savers/DumpSaver.ui
