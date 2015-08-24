@@ -109,45 +109,45 @@ double AAlignerConfig::getScale() const{
 std::unique_ptr<AImageAligner> AverageAlignerConfig::getAligner( AContainer& container ) const{
 	auto aligner = std::make_unique<AverageAligner>( container, getMethod(), getScale() );
 	configure( *aligner );
-	return aligner;
+	return std::move( aligner );
 }
 
 
 std::unique_ptr<AImageAligner> RecursiveAlignerConfig::getAligner( AContainer& container ) const{
 	auto aligner = std::make_unique<RecursiveAligner>( container, getMethod(), getScale() );
 	configure( *aligner );
-	return aligner;
+	return std::move( aligner );
 }
 
 
 std::unique_ptr<AImageAligner> FakeAlignerConfig::getAligner( AContainer& container ) const{
 	auto aligner = std::make_unique<FakeAligner>( container );
 	configure( *aligner );
-	return aligner;
+	return std::move( aligner );
 }
 
 
 std::unique_ptr<AImageAligner> LinearAlignerConfig::getAligner( AContainer& container ) const{
 	auto aligner = std::make_unique<LinearAligner>( container, getMethod() );
 	configure( *aligner );
-	return aligner;
+	return std::move( aligner );
 }
 
 std::unique_ptr<AImageAligner> SeperateAlignerConfig::getAligner( AContainer& container ) const{
 	auto aligner = std::make_unique<AnimationSeparator>( container, getMethod(), getScale() );
 	configure( *aligner );
-	return aligner;
+	return std::move( aligner );
 }
 
 std::unique_ptr<AImageAligner> AlignFrameAlignerConfig::getAligner( AContainer& container ) const{
 	auto aligner = std::make_unique<FrameAligner>( container, getMethod(), getScale() );
 	configure( *aligner );
-	return aligner;
+	return std::move( aligner );
 }
 
 std::unique_ptr<AImageAligner> SuperResAlignerConfig::getAligner( AContainer& container ) const{
 	auto aligner = std::make_unique<SuperResAligner>( container, getMethod(), getScale() );
 	configure( *aligner );
-	return aligner;
+	return std::move( aligner );
 }
 
