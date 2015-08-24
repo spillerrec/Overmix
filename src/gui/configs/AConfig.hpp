@@ -19,7 +19,9 @@
 #define A_CONFIG_HPP
 
 #include <QWidget>
+#include <QHBoxLayout>
 #include <QString>
+#include <QLabel>
 
 class AConfig : public QWidget{
 	Q_OBJECT
@@ -37,6 +39,16 @@ class AConfig : public QWidget{
 		bool is_initialized{ false };
 	protected:
 		virtual void p_initialize(){ };
+
+		template<class Widget>
+		Widget* addWidget( QString description ){
+			auto text_layout = new QHBoxLayout( this );
+			auto w = new Widget( this );
+			text_layout->addWidget( new QLabel( description, this ) );
+			text_layout->addWidget( w );
+			layout()->addItem( text_layout );
+			return w;
+		}
 	public:
 		void initialize(){
 			if( !is_initialized )

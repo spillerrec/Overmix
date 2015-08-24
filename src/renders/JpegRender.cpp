@@ -74,7 +74,7 @@ ImageEx JpegRender::render(const AContainer &group, AProcessWatcher *watcher) co
 	for( unsigned j=0; j<group.count(); j++ )
 		imgs.setPos( j, group.pos( j ) );
 	
-	//* Waifu test code
+	/* Waifu test code
 	Plane mask( 853, 480 );
 	mask.fill( 1 );
 	for( unsigned j=0; j<group.count(); j++ ){

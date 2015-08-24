@@ -30,6 +30,8 @@
 
 #include <QComboBox>
 #include <QVBoxLayout>
+#include <QSpinBox>
+#include <QLineEdit>
 
 
 RenderConfigChooser::RenderConfigChooser( QWidget* parent, bool expand )
@@ -68,16 +70,15 @@ std::unique_ptr<ARender> FloatRenderConfig::getRender() const
 
 StatisticsRenderConfig::StatisticsRenderConfig( QWidget* parent )
 	: ARenderConfig( parent ) {
-		function = new QComboBox( this );
+		setLayout( new QVBoxLayout( this ) );
+		function = addWidget<QComboBox>( "Function" );
+		
 		function->addItem( "Difference" );
 		function->addItem( "Minimum" );
 		function->addItem( "Maximum" );
 		function->addItem( "Median" );
 		function->addItem( "Average" );
 		connect( function, SIGNAL(currentIndexChanged(int)), this, SIGNAL(changed()) );
-		
-		setLayout( new QVBoxLayout( this ) );
-		layout()->addWidget( function );
 	}
 
 static Statistics getStats( int id ){
@@ -102,6 +103,18 @@ std::unique_ptr<ARender> EstimatorRenderConfig::getRender() const
 std::unique_ptr<ARender> PixelatorRenderConfig::getRender() const
 	{ return std::make_unique<PixelatorRender>(); }
 
+JpegRenderConfig::JpegRenderConfig( QWidget* parent ) : ARenderConfig( parent ) {
+	setLayout( new QVBoxLayout( this ) );
+	path = addWidget<QLineEdit>( "Jpeg sample" );
+	path->setSizePolicy( QSizePolicy::Fixed, QSizePolicy::Minimum );
+	iterations = addWidget<QSpinBox>( "Iterations" );
+	iterations->setRange( 1, 1000 );
+	iterations->setValue( 300 );
+	
+	connect( iterations, SIGNAL(valueChanged(int)), this, SIGNAL(changed()) );
+	connect( path, SIGNAL(textChanged(QString)), this, SIGNAL(changed()) );
+}
+
 std::unique_ptr<ARender> JpegRenderConfig::getRender() const
-	{ return std::make_unique<JpegRender>( "test", 300 ); }
+	{ return std::make_unique<JpegRender>( path->text(), iterations->value() ); }
 

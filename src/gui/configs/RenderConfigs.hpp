@@ -107,8 +107,11 @@ class PixelatorRenderConfig : public ARenderConfig{
 };
 
 class JpegRenderConfig : public ARenderConfig{
+	private:
+		class QSpinBox* iterations;
+		class QLineEdit* path;
 	public:
-		JpegRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
+		JpegRenderConfig( QWidget* parent );
 		std::unique_ptr<ARender> getRender() const override;
 		
 		QString name() const override { return "Jpeg estimator"; }
