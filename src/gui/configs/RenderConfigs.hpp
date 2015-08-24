@@ -106,5 +106,14 @@ class PixelatorRenderConfig : public ARenderConfig{
 		QString discription() const override{ return "Pixelates the image"; }
 };
 
+class JpegRenderConfig : public ARenderConfig{
+	public:
+		JpegRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
+		std::unique_ptr<ARender> getRender() const override;
+		
+		QString name() const override { return "Jpeg estimator"; }
+		QString discription() const override{ return "Estimates a JPEG degraded image"; }
+};
+
 
 #endif

@@ -26,6 +26,7 @@
 #include "../../renders/PixelatorRender.hpp"
 #include "../../renders/RobustSrRender.hpp"
 #include "../../renders/EstimatorRender.hpp"
+#include "../../renders/JpegRender.hpp"
 
 #include <QComboBox>
 #include <QVBoxLayout>
@@ -46,6 +47,7 @@ void RenderConfigChooser::p_initialize(){
 	set( &addConfig<StatisticsRenderConfig>() );
 	set( &addConfig<EstimatorRenderConfig>() );
 	set( &addConfig<PixelatorRenderConfig>() );
+	set( &addConfig<JpegRenderConfig>() );
 }
 
 std::unique_ptr<ARender> RenderConfigChooser::getRender() const
@@ -99,4 +101,7 @@ std::unique_ptr<ARender> EstimatorRenderConfig::getRender() const
 
 std::unique_ptr<ARender> PixelatorRenderConfig::getRender() const
 	{ return std::make_unique<PixelatorRender>(); }
+
+std::unique_ptr<ARender> JpegRenderConfig::getRender() const
+	{ return std::make_unique<JpegRender>( "test", 300 ); }
 

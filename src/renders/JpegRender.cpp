@@ -58,7 +58,8 @@ Plane JpegRender::degrade( const Plane& original, const Parameters& para ) const
 	return out;
 }
 
-
+JpegRender::JpegRender( QString path, int iterations ) : iterations(iterations)
+	{ jpeg = ImageEx::getJpegDegrader( path ); }
 
 ImageEx JpegRender::render(const AContainer &group, AProcessWatcher *watcher) const {
 	auto planes_amount = 1u;//group.image(0).size();

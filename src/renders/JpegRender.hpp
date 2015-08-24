@@ -28,15 +28,15 @@ struct Parameters;
 class JpegRender : public ARender{
 	private:
 		//Estimation parameters
-		int iterations{ 75 };
+		int iterations;
 		
 		//Model parameters
-		JpegDegrader jpeg{ ImageEx::getJpegDegrader( "out-25/00.jpg" ) };
+		JpegDegrader jpeg;
 		
 		Plane degrade( const Plane& original, const Parameters& para ) const;
 
 	public:
-		JpegRender(){ }
+		JpegRender( QString path, int iterations=300 );
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
 
