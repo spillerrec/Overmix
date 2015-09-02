@@ -155,6 +155,7 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 		return ImageEx();
 	}
 	unsigned planes_amount = for_merging ? 1 : aligner.image(0).size();
+	ProgressWrapper( watcher ).setTotal( aligner.count() * planes_amount );
 	
 	//Determine if we need to care about alpha per plane
 	bool use_plane_alpha = false;
@@ -198,6 +199,8 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 				sum.addAlphaPlane( plane(), alpha_plane, pos );
 			else
 				sum.addPlane( plane(), pos );
+			
+			ProgressWrapper( watcher ).add();
 		}
 		
 		img.addPlane( sum.average() );
