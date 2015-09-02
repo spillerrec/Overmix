@@ -20,6 +20,31 @@
 
 #include "ARender.hpp"
 
+#include "../color.hpp"
+#include "../planes/PlaneBase.hpp"
+class Plane;
+
+class SumPlane {
+	//NOTE: we could split this into two classes, specialized in handling precision alpha or not
+	private:
+		PlaneBase<precision_color_type> sum;
+		PlaneBase<precision_color_type> amount;
+		void resizeToFit( Point<>& pos, Size<> size );
+	
+	public:
+		SumPlane() { }
+		SumPlane( Size<> size ) : sum( size ), amount( size ){
+			sum.fill( 0 );
+			amount.fill( 0 );
+		}
+		
+		void addPlane( const Plane& p, Point<> pos );
+		void addAlphaPlane( const Plane& p, const Plane& alpha, Point<> pos );
+		
+		Plane average() const;
+		Plane alpha() const;
+};
+
 class AverageRender : public ARender{
 	protected:
 		bool upscale_chroma;

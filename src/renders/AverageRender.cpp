@@ -17,8 +17,7 @@
 
 
 #include "AverageRender.hpp"
-#include "../color.hpp"
-#include "../planes/PlaneBase.hpp"
+#include "../debug.hpp"
 
 #include "../aligners/AImageAligner.hpp"
 #include "../planes/ImageEx.hpp"
@@ -28,86 +27,105 @@
 #include <vector>
 using namespace std;
 
+template<typename T>
+PlaneBase<T> resizePlaneToFit( const PlaneBase<T>& input, Size<> size, Point<> pos ){
+	PlaneBase<T> output( size );
+	output.fill( 0 );
+	output.copy( input, {0u,0u}, input.getSize(), pos );
+	return output;
+}
 
-class SumPlane {
-	//NOTE: we could split this into two classes, specialized in handling precision alpha or not
-	private:
-		PlaneBase<precision_color_type> sum;
-		PlaneBase<precision_color_type> amount;
+void SumPlane::resizeToFit( Point<>& pos, Size<> size ){
+	auto current_size = sum.getSize();
+	auto offset = pos.min( Point<>( 0,0 ) ); //This will never be positive
+	auto new_size = current_size.max( current_size - offset );
+	new_size = new_size.max( pos + size );
 	
-	public:
-		SumPlane( Size<> size ) : sum( size ), amount( size ){
-			sum.fill( 0 );
-			amount.fill( 0 );
+	//Adjust to new position
+	pos -= offset;
+	
+	//Don't do anything if size hasn't changed
+	if( new_size == sum.getSize() )
+		return;
+	
+	sum    = resizePlaneToFit( sum,    new_size, Point<>(0,0)-offset );
+	amount = resizePlaneToFit( amount, new_size, Point<>(0,0)-offset );
+}
+
+void SumPlane::addPlane( const Plane& p, Point<> pos ){
+	resizeToFit( pos, p.getSize() );
+	//TODO: make multi-threaded //NOTE: haven't been working out too well...
+	for( unsigned iy=0; iy<p.get_height(); iy++ ){
+		//Add to sum
+		auto in = p.scan_line( iy );
+		auto out =  sum.scan_line( iy + pos.y ) + pos.x;
+		auto a = amount.scan_line( iy + pos.y ) + pos.x;
+		for( unsigned ix=0; ix<p.get_width(); ix++ ){
+			out[ix] += in[ix];
+			a[ix] += color::WHITE;
 		}
+	}
+}
+
+void SumPlane::addAlphaPlane( const Plane& p, const Plane& alpha, Point<> pos ){
+	//Fallback
+	if( !alpha.valid() ){
+		addPlane( p, pos );
+		return;
+	}
+	
+	//Scale alpha if needed
+	ScaledPlane alpha_scaled( alpha, p );
+	
+	resizeToFit( pos, p.getSize() );
+	for( unsigned iy=0; iy<p.get_height(); iy++ ){
+		//Add to sum
+		auto in = p.const_scan_line( iy );
+		auto out = sum.scan_line( iy + pos.y ) + pos.x;
+		auto a_in = alpha_scaled().const_scan_line( iy );
+		auto a_out = amount.scan_line( iy + pos.y ) + pos.x;
 		
-		void addPlane( const Plane& p, Point<> pos ){
-			//TODO: make multi-threaded //NOTE: haven't been working out too well...
-			for( unsigned iy=0; iy<p.get_height(); iy++ ){
-				//Add to sum
-				auto in = p.scan_line( iy );
-				auto out =  sum.scan_line( iy + pos.y ) + pos.x;
-				auto a = amount.scan_line( iy + pos.y ) + pos.x;
-				for( unsigned ix=0; ix<p.get_width(); ix++ ){
-					out[ix] += in[ix];
-					a[ix] += color::WHITE;
-				}
-			}
+		for( unsigned ix=0; ix<p.get_width(); ix++ ){
+			auto a_val = a_in[ix];
+			out[ix] += in[ix] * color::asDouble( a_val );
+			a_out[ix] += a_val;
 		}
+	}
+}
+
+Plane SumPlane::average() const{
+	Plane avg( sum.getSize() );
+	
+	for( unsigned iy=0; iy<avg.get_height(); iy++ ){
+		auto sums = sum.const_scan_line( iy );
+		auto amounts = amount.const_scan_line( iy );
+		auto out = avg.scan_line( iy );
 		
-		void addAlphaPlane( const Plane& p, const Plane& alpha, Point<> pos ){
-			//Scale alpha if needed
-			ScaledPlane alpha_scaled( alpha, p );
-			
-			for( unsigned iy=0; iy<p.get_height(); iy++ ){
-				//Add to sum
-				auto in = p.const_scan_line( iy );
-				auto out = sum.scan_line( iy + pos.y ) + pos.x;
-				auto a_in = alpha_scaled().const_scan_line( iy );
-				auto a_out = amount.scan_line( iy + pos.y ) + pos.x;
-				
-				for( unsigned ix=0; ix<p.get_width(); ix++ ){
-					auto a_val = a_in[ix];
-					out[ix] += in[ix] * color::asDouble( a_val );
-					a_out[ix] += a_val;
-				}
-			}
-		}
+		//Calculate the average for each point using sum and amount
+		for( unsigned ix=0; ix<avg.get_width(); ix++ )
+			if( amounts[ix] != 0 )
+				out[ix] = sums[ix] / ((double)amounts[ix] / color::WHITE);
+			else
+				out[ix] = color::BLACK;
+	}
+	
+	return avg;
+}
+
+Plane SumPlane::alpha() const{
+	Plane alpha( amount.getSize() );
+	
+	for( unsigned iy=0; iy<alpha.get_height(); iy++ ){
+		auto amounts = amount.const_scan_line( iy );
+		auto out = alpha.scan_line( iy );
 		
-		Plane average() const{
-			Plane avg( sum.getSize() );
-			
-			for( unsigned iy=0; iy<avg.get_height(); iy++ ){
-				auto sums = sum.const_scan_line( iy );
-				auto amounts = amount.const_scan_line( iy );
-				auto out = avg.scan_line( iy );
-				
-				//Calculate the average for each point using sum and amount
-				for( unsigned ix=0; ix<avg.get_width(); ix++ )
-					if( amounts[ix] != 0 )
-						out[ix] = sums[ix] / ((double)amounts[ix] / color::WHITE);
-					else
-						out[ix] = color::BLACK;
-			}
-			
-			return avg;
-		}
-		
-		Plane alpha() const{
-			Plane alpha( amount.getSize() );
-			
-			for( unsigned iy=0; iy<alpha.get_height(); iy++ ){
-				auto amounts = amount.const_scan_line( iy );
-				auto out = alpha.scan_line( iy );
-				
-				//Set to transparent if nothing have been added here
-				for( unsigned ix=0; ix<alpha.get_width(); ix++ )
-					out[ix] = amounts[ix] != 0 ? color::WHITE : color::BLACK;
-			}
-			
-			return alpha;
-		}
-};
+		//Set to transparent if nothing have been added here
+		for( unsigned ix=0; ix<alpha.get_width(); ix++ )
+			out[ix] = amounts[ix] != 0 ? color::WHITE : color::BLACK;
+	}
+	
+	return alpha;
+}
 
 class AlphaScales{
 	private:
@@ -129,6 +147,8 @@ class AlphaScales{
 };
 
 ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watcher ) const{
+	Timer t( "AverageRender::render()" );
+	
 	//Abort if no images
 	if( aligner.count() == 0 ){
 		qWarning( "No images to render!" );
