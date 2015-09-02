@@ -29,18 +29,46 @@
 #include <vector>
 using namespace std;
 
+static Plane expand( const Plane& p, Size<unsigned> size, Point<unsigned> pos ){
+	Plane out( size );
+	out.fill( 0 );
+	out.copy( p, {0,0}, p.getSize(), pos );
+	return out;
+}
+
+static Plane reduce( const Plane& p, Size<unsigned> size, Point<unsigned> pos ){
+	Plane out( size );
+	out.copy( p, pos, size, {0,0} );
+	return out;
+}
+
+template<typename Func>
+ImageEx modify( const ImageEx& img, Size<unsigned> size, Point<unsigned> pos, Func f ){
+	ImageEx out( img.getTransform() );
+	
+	auto max_size = img.getSize();
+	for( auto i=0u; i<img.size(); i++ ){
+		auto scale = img[i].getSize().to<double>() / max_size.to<double>();
+		out.addPlane( f( img[i], (size.to<double>()*scale).round(), (pos.to<double>()*scale).round() ) );
+	}
+	out.alpha_plane() = f( img.alpha_plane(), size, pos );
+	
+	return out;
+}
+
 AnimRender::AnimRender( const AContainer& aligner, ARender& render, AProcessWatcher* watcher ){
-	for( auto frame : aligner.getFrames() )
-		frames.addImage( render.render( FrameContainer( const_cast<AContainer&>(aligner), frame ) ) );
-	//TODO: const_cast
+	auto min_point = aligner.minPoint();
+	auto size = aligner.size().size;
+	
+	for( auto frame : aligner.getFrames() ){
+		FrameContainer frame_con( const_cast<AContainer&>(aligner), frame ); //TODO: const_cast
+		auto pos = frame_con.minPoint() - min_point;
+		auto img = render.render( frame_con );
+		frames.addImage( modify( img, size, pos, expand ) );
+		old.emplace_back( pos, img.getSize() );
+	}
 }
 
-Plane getGray( ImageEx img ){
-	img.to_grayscale();
-	return std::move( img[0] );
-}
-
-int ID = 0;
 Plane difference( Plane base, Plane& other ){
 	//Create mask
 	base.difference( other );
@@ -50,7 +78,8 @@ Plane difference( Plane base, Plane& other ){
 	base = base.level( color::BLACK, color::WHITE, color::WHITE, color::BLACK, 1.0 );
 	base = base.dilate( 3 ); //TODO: constant as setting
 	
-	//ImageEx( base ).to_qimage( ImageEx::SYSTEM_REC709 ).save( "base" + QString::number( ID++ ) + ".png" );
+	//static int ID = 0;
+	//ImageEx( base ).to_qimage().save( "base" + QString::number( ID++ ) + ".png" );
 	
 	return base;
 }
@@ -83,7 +112,8 @@ ImageEx AnimRender::render( int frame, AProcessWatcher* watcher ){
 	for( unsigned i=0; i<frames.count(); i++ )
 		frames.setMask( i, frames.addMask( difference( frames.image( i ), base ) ) );
 	
-	return AverageRender().render( frames, watcher );
+	//TODO: reduce
+	return modify( AverageRender().render( frames, watcher ), old[frame].size, old[frame].pos, reduce );
 }
 
 

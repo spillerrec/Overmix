@@ -20,10 +20,12 @@
 
 #include "ARender.hpp"
 #include "../containers/ImageContainer.hpp"
+#include <vector>
 
 class AnimRender{
 	protected:
 		ImageContainer frames;
+		std::vector<Rectangle<>> old;
 		
 	public:
 		AnimRender( const AContainer& aligner, ARender& render, AProcessWatcher* watcher=nullptr ); //TODO: watcher?
