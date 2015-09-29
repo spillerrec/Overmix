@@ -4,7 +4,7 @@ target.path = /usr/local/bin
 INSTALLS += target
 
 # Libraries used
-QT += widgets KPlotting
+QT += widgets printsupport
 LIBS += -llcms2
 unix{
 	QT += x11extras
@@ -29,6 +29,8 @@ HEADERS += src/gui/savers/DumpSaver.hpp src/gui/savers/ASaver.hpp
 SOURCES += src/gui/savers/DumpSaver.cpp
 
 # Visualisation
+HEADERS += src/gui/visualisations/QCustomPlot/qcustomplot.h
+SOURCES += src/gui/visualisations/QCustomPlot/qcustomplot.cpp
 HEADERS += src/gui/visualisations/MovementGraph.hpp
 SOURCES += src/gui/visualisations/MovementGraph.cpp
 

@@ -21,11 +21,7 @@
 #include "../../containers/FrameContainer.hpp"
 #include "../../containers/ImageContainer.hpp"
 
-#include <kplotwidget.h>
-#include <kplotobject.h>
-#include <kplotaxis.h>
-
-#include <QDebug>
+#include "QCustomPlot/qcustomplot.h"
 #include <QHBoxLayout>
 
 using namespace Overmix;
@@ -45,26 +41,40 @@ static Point<bool> imagesMoves( const AContainer& container ){
 	return moves;
 }
 
-static void addPoint( KPlotObject* line, FrameContainer& container, int index, Point<bool> moves ){
+class Line{
+	private:
+		QVector<double> x, y;
+		
+	public:
+		void add( double x_pos, double y_pos ){
+			x << x_pos;
+			y << y_pos;
+		}
+		void addToPlot( QCustomPlot& plot ){
+			plot.addGraph();
+			plot.graph(0)->setData( x, y );
+		}
+};
+
+static void addPoint( Line& line, FrameContainer& container, int index, Point<bool> moves ){
 	auto pos = container.pos( index );
 	auto real_index = container.realIndex( index );
 	
-	line->addPoint(
+	line.add(
 			moves.x ? pos.x : real_index
 		,	moves.y ? pos.y : real_index
 		);
 }
 
-static void setLimit( KPlotWidget* plot, const AContainer& images, Point<bool> moves ){
+static void setLimit( QCustomPlot& plot, const AContainer& images, Point<bool> moves ){
 	auto min_point = images.minPoint();
 	auto max_point = images.maxPoint();
-	plot->setLimits(
-			moves.x ? min_point.x : 0, moves.x ? max_point.x : images.count()
-		,	moves.y ? min_point.y : 0, moves.y ? max_point.y : images.count()
-		);
 	
-	plot->axis( KPlotWidget::LeftAxis   )->setLabel( moves.y ? QObject::tr("Y") : QObject::tr("Id") );
-	plot->axis( KPlotWidget::BottomAxis )->setLabel( moves.x ? QObject::tr("X") : QObject::tr("Id") );
+	plot.xAxis->setRange( moves.x ? min_point.x : 0, moves.x ? max_point.x : images.count() );
+	plot.yAxis->setRange( moves.y ? min_point.y : 0, moves.y ? max_point.y : images.count() );
+	
+	plot.yAxis->setLabel( moves.y ? QObject::tr("Y") : QObject::tr("Id") );
+	plot.xAxis->setLabel( moves.y ? QObject::tr("X") : QObject::tr("Id") );
 }
 
 QColor getColor( int frame ){
@@ -83,29 +93,22 @@ QColor getColor( int frame ){
 }
 
 MovementGraph::MovementGraph( ImageContainer& images ) : QWidget(nullptr), images(images) {
-	auto plot = new KPlotWidget( this );
+	auto plot = new QCustomPlot( this );
 	setLayout( new QHBoxLayout( this ) );
 	layout()->addWidget( plot );
 	layout()->setContentsMargins( 0, 0, 0, 0 );
 	
-	plot->setTopPadding(    4 );
-	plot->setRightPadding(  4 );
-	plot->setBackgroundColor( Qt::white );
-	plot->setForegroundColor( Qt::black );
-	plot->setAntialiasing( true );
-	
+	Line line;
 	auto moves = imagesMoves( images );
-	setLimit( plot, images, moves );
 	
 	for( auto frame : images.getFrames() ){
-		auto line = new KPlotObject( getColor( frame ), KPlotObject::Lines );
-		
 		FrameContainer container( images, frame );
 		for( unsigned i=0; i<container.count(); ++i )
 			addPoint( line, container, i, moves );
-		
-		plot->addPlotObject( line );
 	}
+	
+	line.addToPlot( *plot );
+	setLimit( *plot, images, moves );
 	
 	resize( 640, 480 );
 	show();
