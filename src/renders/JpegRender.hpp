@@ -23,6 +23,9 @@
 #include "../planes/ImageEx.hpp"
 #include "../degraders/JpegDegrader.hpp"
 #include <QString>
+
+namespace Overmix{
+
 struct Parameters;
 
 class JpegRender : public ARender{
@@ -40,5 +43,6 @@ class JpegRender : public ARender{
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
 
+}
 
 #endif

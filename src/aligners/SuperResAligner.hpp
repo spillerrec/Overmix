@@ -20,6 +20,8 @@
 
 #include "AImageAligner.hpp"
 
+namespace Overmix{
+
 class SuperResAligner : public AImageAligner{
 	private:
 		double local_scale;
@@ -28,5 +30,7 @@ class SuperResAligner : public AImageAligner{
 			:	AImageAligner( container, method, 1.0 ), local_scale( scale ) { }
 		virtual void align( AProcessWatcher* watcher=nullptr ) override;
 };
+
+}
 
 #endif

@@ -24,6 +24,8 @@
 #include <QImage>
 
 
+namespace Overmix{
+
 class ImagesModel : public QAbstractItemModel{
 	Q_OBJECT
 	
@@ -49,6 +51,8 @@ class ImagesModel : public QAbstractItemModel{
 		
 		QImage getImage( const QModelIndex& index ) const;
 };
+
+}
 
 #endif
 

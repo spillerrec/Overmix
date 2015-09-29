@@ -19,6 +19,8 @@
 #include "SuperResAligner.hpp"
 #include "../renders/RobustSrRender.hpp"
 
+using namespace Overmix;
+
 
 void SuperResAligner::align( AProcessWatcher* watcher ){
 	auto base = RobustSrRender( local_scale ).render( *this, watcher );

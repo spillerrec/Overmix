@@ -20,11 +20,15 @@
 
 #include "AImageAligner.hpp"
 
+namespace Overmix{
+
 class FrameAligner : public AImageAligner{
 	public:
 		FrameAligner( AContainer& container, AlignMethod method, double scale=1.0 )
 			:	AImageAligner( container, method, scale ){ }
 		virtual void align( AProcessWatcher* watcher=nullptr ) override;
 };
+
+}
 
 #endif

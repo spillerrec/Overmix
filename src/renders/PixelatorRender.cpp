@@ -27,6 +27,7 @@
 #include <QTime>
 #include <vector>
 using namespace std;
+using namespace Overmix;
 
 using Color = int;
 using Histogram = vector<Color>;

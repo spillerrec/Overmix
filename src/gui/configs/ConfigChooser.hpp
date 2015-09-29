@@ -27,6 +27,8 @@
 #include <QVBoxLayout>
 
 
+namespace Overmix{
+
 template<class Config>
 class ConfigChooser : public AConfig{
 	//NOTE: no Q_OBJECT, because fake-shit
@@ -84,6 +86,7 @@ class ConfigChooser : public AConfig{
 		}
 };
 
+}
 
 #endif
 

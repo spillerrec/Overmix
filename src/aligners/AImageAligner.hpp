@@ -24,6 +24,8 @@
 
 #include <vector>
 
+namespace Overmix{
+
 class AProcessWatcher;
 class ImageContainer;
 
@@ -109,5 +111,7 @@ class AImageAligner : public AContainer{
 		
 		virtual void align( AProcessWatcher* watcher=nullptr ) = 0;
 };
+
+}
 
 #endif

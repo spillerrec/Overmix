@@ -28,6 +28,8 @@
 
 #include <QGridLayout>
 
+using namespace Overmix;
+
 AlignerConfigChooser::AlignerConfigChooser( QWidget* parent, bool expand )
 	: ConfigChooser<AAlignerConfig>( parent, expand ){ }
 

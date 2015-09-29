@@ -27,6 +27,8 @@
 #include "color.hpp"
 #include "renders/ARender.hpp"
 
+namespace Overmix{
+
 struct PlaneItInfo{
 	Plane& p;
 	int x, y;
@@ -289,5 +291,7 @@ class MultiPlaneIterator{
 			return color( (*this)[0], (*this)[1], (*this)[2], (*this)[3] );
 		}
 };
+
+}
 
 #endif

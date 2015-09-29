@@ -22,6 +22,8 @@
 
 #include "ui_DumpSaver.h"
 
+namespace Overmix{
+
 class DumpSaver: public ASaver, private Ui::DumpSaver{
 	Q_OBJECT
 	
@@ -29,5 +31,7 @@ class DumpSaver: public ASaver, private Ui::DumpSaver{
 		explicit DumpSaver( const ImageEx& image, QString filename );
 		virtual void save( const ImageEx& image, QString filename ) override;
 };
+
+}
 
 #endif

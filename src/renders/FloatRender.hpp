@@ -21,6 +21,8 @@
 #include "ARender.hpp"
 #include "../Geometry.hpp"
 
+namespace Overmix{
+
 class FloatRender : public ARender{
 	Point<double> scale;
 	public:
@@ -28,5 +30,7 @@ class FloatRender : public ARender{
 		FloatRender( double scale=1.0 ) : FloatRender( scale, scale ) { }
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
+
+}
 
 #endif

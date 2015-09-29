@@ -22,6 +22,7 @@
 
 #include <limits>
 using namespace std;
+using namespace Overmix;
 
 static void copyLine( Plane& plane_out, const Plane& plane_in, unsigned y_out, unsigned y_in ){
 	auto out = plane_out.scan_line( y_out );
@@ -66,7 +67,7 @@ static Plane mergeVertical( const Plane& p1, const Plane& p2, int offset ){
 	return out;
 }
 
-class ImageGetter{
+class Overmix::ImageGetter{
 	private:
 		Plane p, a;
 		unsigned val;

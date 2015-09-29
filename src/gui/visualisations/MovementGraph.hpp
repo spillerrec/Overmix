@@ -20,6 +20,8 @@
 
 #include <QWidget>
 
+namespace Overmix{
+
 class MovementGraph : public QWidget{
 	Q_OBJECT
 	
@@ -30,6 +32,8 @@ class MovementGraph : public QWidget{
 		MovementGraph( ImageContainer& images );
 		
 };
+
+}
 
 #endif
 

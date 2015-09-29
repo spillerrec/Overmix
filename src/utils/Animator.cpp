@@ -22,6 +22,8 @@
 
 #include <QImage>
 
+using namespace Overmix;
+
 void blend( ImageEx& img, Point<int> pos, Point<int> size ){
 	Point<int> end = img.getSize().min( pos+size );
 	pos = pos.max( {0,0} );

@@ -20,6 +20,8 @@
 
 #include "AContainer.hpp"
 
+namespace Overmix{
+
 class FrameContainer : public AContainer{
 	private:
 		AContainer& container;
@@ -51,5 +53,7 @@ class FrameContainer : public AContainer{
 		
 		unsigned realIndex( unsigned index ) const{ return indexes[index]; }
 };
+
+}
 
 #endif

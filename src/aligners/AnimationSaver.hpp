@@ -24,6 +24,8 @@
 #include <vector>
 #include <utility>
 
+namespace Overmix{
+
 class ImageEx;
 
 class AnimationSaver{
@@ -59,5 +61,7 @@ class AnimationSaver{
 		
 		void write();
 };
+
+}
 
 #endif

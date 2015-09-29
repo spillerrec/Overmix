@@ -24,6 +24,8 @@
 #include <QStringList>
 #include <QUrl>
 
+using namespace Overmix;
+
 int main( int argc, char *argv[] ){
 	QApplication a( argc, argv );
 	auto args = a.arguments();

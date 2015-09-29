@@ -21,6 +21,8 @@
 #include "AImageAligner.hpp"
 #include <utility>
 
+namespace Overmix{
+
 class ImageGetter;
 
 class RecursiveAligner : public AImageAligner{
@@ -36,5 +38,7 @@ class RecursiveAligner : public AImageAligner{
 			:	AImageAligner( container, method, scale ){ }
 		virtual void align( AProcessWatcher* watcher=nullptr ) override;
 };
+
+}
 
 #endif

@@ -31,6 +31,7 @@
 
 #include "pugixml/pugixml.hpp"
 using namespace pugi;
+using namespace Overmix;
 
 const auto NODE_ROOT           = "alignment";
 const auto NODE_MASKS          = "masks";

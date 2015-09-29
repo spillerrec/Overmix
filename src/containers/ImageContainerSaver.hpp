@@ -20,6 +20,8 @@
 
 #include <QString>
 
+namespace Overmix{
+
 class ImageContainer;
 
 class ImageContainerSaver{
@@ -27,5 +29,7 @@ class ImageContainerSaver{
 		static QString load( ImageContainer& container, QString file );
 		static QString save( const ImageContainer& container, QString filename );
 };
+
+}
 
 #endif

@@ -22,6 +22,7 @@
 #include <QDebug>
 
 using namespace std;
+using namespace Overmix;
 
 static void apply_threshold( const SimplePixel& pixel ){
 	color_type threshold = *(color_type*)pixel.data;

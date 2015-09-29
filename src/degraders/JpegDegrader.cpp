@@ -22,6 +22,8 @@
 #include "../planes/FourierPlane.hpp"
 #include "../planes/ImageEx.hpp"
 
+using namespace Overmix;
+
 constexpr int DCTSIZE = 8;
 
 QuantTable::QuantTable() : table( DCTSIZE, DCTSIZE ) { table.fill( 1 ); }

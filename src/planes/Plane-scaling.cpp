@@ -24,6 +24,7 @@
 #include <boost/math/constants/constants.hpp>
 
 using namespace std;
+using namespace Overmix;
 
 Plane Plane::scale_nearest( Point<unsigned> wanted ) const{
 	Timer t( "scale_nearest" );

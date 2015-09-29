@@ -20,6 +20,12 @@
 
 #include "ConfigChooser.hpp"
 
+class QSpinBox;
+class QLineEdit;
+class QComboBox;
+
+namespace Overmix{
+
 class ARender;
 
 class ARenderConfig : public AConfig{
@@ -79,7 +85,7 @@ class FloatRenderConfig : public ARenderConfig{
 
 class StatisticsRenderConfig : public ARenderConfig{
 	private:
-		class QComboBox* function;
+		QComboBox* function;
 	public:
 		StatisticsRenderConfig( QWidget* parent );
 		std::unique_ptr<ARender> getRender() const override;
@@ -108,8 +114,8 @@ class PixelatorRenderConfig : public ARenderConfig{
 
 class JpegRenderConfig : public ARenderConfig{
 	private:
-		class QSpinBox* iterations;
-		class QLineEdit* path;
+		QSpinBox* iterations;
+		QLineEdit* path;
 	public:
 		JpegRenderConfig( QWidget* parent );
 		std::unique_ptr<ARender> getRender() const override;
@@ -118,5 +124,6 @@ class JpegRenderConfig : public ARenderConfig{
 		QString discription() const override{ return "Estimates a JPEG degraded image"; }
 };
 
+}
 
 #endif

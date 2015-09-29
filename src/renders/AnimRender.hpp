@@ -22,6 +22,8 @@
 #include "../containers/ImageContainer.hpp"
 #include <vector>
 
+namespace Overmix{
+
 class AnimRender{
 	protected:
 		ImageContainer frames;
@@ -32,5 +34,7 @@ class AnimRender{
 		
 		ImageEx render( int frame, AProcessWatcher* watcher=nullptr );
 };
+
+}
 
 #endif

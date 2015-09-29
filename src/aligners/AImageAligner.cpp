@@ -23,6 +23,8 @@
 
 #include <fstream>
 
+using namespace Overmix;
+
 
 AImageAligner::AImageAligner( AContainer& container, AlignMethod method, double scale )
 	:	method(method), scale(scale), raw(false), container(container){

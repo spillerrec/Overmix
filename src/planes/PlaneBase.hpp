@@ -20,6 +20,8 @@
 
 #include "../Geometry.hpp"
 
+namespace Overmix{
+
 template<typename T>
 class PlaneBase{
 	protected:
@@ -216,5 +218,7 @@ class PlaneBase{
 		LineIt<      PlaneBase<T>,       T> end()         { return { this, size.height() }; }
 		LineIt<const PlaneBase<T>, const T> end()   const { return { this, size.height() }; }
 };
+
+}
 
 #endif

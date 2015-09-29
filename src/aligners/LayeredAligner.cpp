@@ -19,6 +19,8 @@
 #include "LayeredAligner.hpp"
 #include "AverageAligner.hpp"
 
+using namespace Overmix;
+
 /*
 class InternAligner : public AverageAligner{
 	protected:

@@ -29,6 +29,7 @@
 #include "../color.hpp"
 
 using namespace std;
+using namespace Overmix;
 
 const unsigned long Plane::MAX_VAL = 0xFFFFFFFF;
 

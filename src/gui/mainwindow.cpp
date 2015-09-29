@@ -59,6 +59,8 @@
 #include <QtConcurrent>
 #include <QSettings>
 
+using namespace Overmix;
+
 class DialogWatcher : public AProcessWatcher{
 	private:
 		QProgressDialog dialog;

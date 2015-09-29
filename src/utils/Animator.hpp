@@ -20,6 +20,8 @@
 
 #include "../Geometry.hpp"
 
+namespace Overmix{
+
 class ImageEx;
 
 class Animator{
@@ -34,5 +36,7 @@ class Animator{
 		
 		void render( const ImageEx& img ) const;
 };
+
+}
 
 #endif

@@ -29,6 +29,7 @@ Q_LOGGING_CATEGORY(LogDelta,   "overmix.delta")
 Q_LOGGING_CATEGORY(LogImageIO, "overmix.imageio")
 
 using namespace std;
+using namespace Overmix;
 
 
 void debug::output_rectable( ImageContainer& imgs, Rectangle<> area ){

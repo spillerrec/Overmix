@@ -22,6 +22,8 @@
 
 #include "../MultiPlaneIterator.hpp"
 
+namespace Overmix{
+
 class PlaneRender : public ARender{
 	protected:
 		unsigned max_planes = -1;
@@ -34,5 +36,7 @@ class PlaneRender : public ARender{
 	public:
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
+
+}
 
 #endif

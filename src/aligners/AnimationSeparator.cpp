@@ -27,6 +27,7 @@
 #include "../debug.hpp"
 
 using namespace std;
+using namespace Overmix;
 
 
 class AnimFrame{

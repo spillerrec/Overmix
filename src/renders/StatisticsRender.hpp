@@ -20,6 +20,8 @@
 
 #include "PlaneRender.hpp"
 
+namespace Overmix{
+
 enum class Statistics{
 		AVG
 	,	MIN
@@ -39,5 +41,7 @@ class StatisticsRender : public PlaneRender{
 				max_planes = 1;
 		}
 };
+
+}
 
 #endif

@@ -29,6 +29,8 @@
 
 #include <vector>
 
+using namespace Overmix;
+
 
 JpegDegrader ImageEx::getJpegDegrader( QString path ){
 	JpegDegrader deg;

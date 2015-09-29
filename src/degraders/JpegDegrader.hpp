@@ -22,6 +22,8 @@
 
 #include "../planes/Plane.hpp"
 
+namespace Overmix{
+
 class ImageEx;
 class DctPlane;
 
@@ -68,5 +70,7 @@ class JpegDegrader{
 	public:
 		void addPlane( JpegPlane plane ){ planes.emplace_back( plane ); }
 };
+
+}
 
 #endif

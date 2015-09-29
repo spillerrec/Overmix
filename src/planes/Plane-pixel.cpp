@@ -21,6 +21,8 @@
 
 #include <QtConcurrent>
 
+using namespace Overmix;
+
 static void do_pixel_line_single( SimplePixel pix ){
 	for( unsigned i=0; i<pix.width; ++i ){
 		pix.f( pix );

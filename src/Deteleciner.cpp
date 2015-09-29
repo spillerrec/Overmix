@@ -19,6 +19,8 @@
 #include "Deteleciner.hpp"
 #include "planes/ImageEx.hpp"
 
+using namespace Overmix;
+
 ImageEx Deteleciner::addInterlaced( ImageEx image ){
 	if( !frame.is_valid() ){
 		frame = image;

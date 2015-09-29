@@ -23,6 +23,8 @@
 #include <QString>
 #include <QLabel>
 
+namespace Overmix{
+
 class AConfig : public QWidget{
 	Q_OBJECT
 	
@@ -56,6 +58,7 @@ class AConfig : public QWidget{
 		}
 };
 
+}
 
 #endif
 

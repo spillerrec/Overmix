@@ -28,6 +28,8 @@
 #include <QDebug>
 #include <QHBoxLayout>
 
+using namespace Overmix;
+
 static Point<bool> imagesMoves( const AContainer& container ){
 	if( container.count() == 0 )
 		return { false, false };

@@ -24,6 +24,8 @@
 
 #include <complex>
 
+namespace Overmix{
+
 class FourierPlane : public PlaneBase<std::complex<double>>{
 	private:
 		unsigned real_width;
@@ -78,5 +80,7 @@ class DctPlane : public PlaneBase<double>{
 		void initialize( const Plane& p, Point<unsigned> pos, double range=1.0 );
 		void toPlane( Plane& p, Point<unsigned> pos, double range=1.0 );
 };
+
+}
 
 #endif

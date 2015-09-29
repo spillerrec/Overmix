@@ -25,6 +25,7 @@
 
 
 using namespace std;
+using namespace Overmix;
 
 static Plane save( Plane p, QString name ){
 //	ImageEx( p ).to_qimage( ImageEx::SYSTEM_KEEP ).save( name + ".png" );
@@ -35,7 +36,7 @@ Point<double> channelScale( const AContainer& container, unsigned index, unsigne
 	return container.image(index)[channel].getSize() / container.image(index).getSize().to<double>();
 }
 
-struct Parameters{
+struct Overmix::Parameters{
 	//const Plane& background;
 	//double overlay{ 0.85 };
 	

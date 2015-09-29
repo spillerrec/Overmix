@@ -28,6 +28,7 @@
 #include <QTime>
 #include <vector>
 using namespace std;
+using namespace Overmix;
 
 static Plane expand( const Plane& p, Size<unsigned> size, Point<unsigned> pos ){
 	Plane out( size );

@@ -20,9 +20,13 @@
 
 #include "ARender.hpp"
 
+namespace Overmix{
+
 class PixelatorRender : public ARender{
 	public:
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
+
+}
 
 #endif

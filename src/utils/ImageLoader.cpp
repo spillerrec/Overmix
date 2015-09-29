@@ -26,6 +26,7 @@
 #include <QtConcurrent>
 
 using namespace std;
+using namespace Overmix;
 
 const vector<ImageLoader::Item>& ImageLoader::loadAll(){
 	QtConcurrent::blockingMap( images, []( Item& item ){

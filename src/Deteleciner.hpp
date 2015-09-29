@@ -20,6 +20,8 @@
 
 #include "planes/ImageEx.hpp"
 
+namespace Overmix{
+
 class Deteleciner{
 	private:
 		bool active{ false };
@@ -43,5 +45,7 @@ class Deteleciner{
 		}
 		ImageEx process( ImageEx img );
 };
+
+}
 
 #endif

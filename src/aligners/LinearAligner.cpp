@@ -18,6 +18,8 @@
 
 #include "LinearAligner.hpp"
 
+using namespace Overmix;
+
 struct LinearFunc{
 	double x1 = 0.0, x2 = 0.0, xy = 0.0, y1 = 0.0;
 	unsigned n = 0;

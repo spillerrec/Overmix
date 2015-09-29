@@ -22,6 +22,8 @@
 #include "../containers/ImageContainer.hpp"
 #include "../containers/FrameContainer.hpp"
 
+using namespace Overmix;
+
 void FrameAligner::align( AProcessWatcher* watcher ){
 	auto frames = getFrames();
 	auto base_point = minPoint();

@@ -24,6 +24,8 @@
 #include <QString>
 #include <vector>
 
+namespace Overmix{
+
 class ImageItem{
 	private:
 		ImageEx img;
@@ -86,5 +88,7 @@ class ImageGroup : public AContainer{
 		
 		virtual void setFrame( unsigned index, int newVal ) override{ items[index].frame = newVal; }
 };
+
+}
 
 #endif

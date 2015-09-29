@@ -21,6 +21,8 @@
 
 #include "ARender.hpp"
 
+namespace Overmix{
+
 class RobustSrRender : public ARender{
 	private:
 		int upscale_factor;
@@ -32,5 +34,6 @@ class RobustSrRender : public ARender{
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
 
+}
 
 #endif

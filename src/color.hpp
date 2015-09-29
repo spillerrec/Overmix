@@ -22,6 +22,8 @@
 #include <cmath>
 #include <limits>
 
+namespace Overmix{
+
 typedef short color_type;
 typedef int precision_color_type;
 
@@ -155,5 +157,7 @@ struct color{
 		return color(*this) /= other;
 	}
 };
+
+}
 
 #endif

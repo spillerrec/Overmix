@@ -24,6 +24,7 @@
 
 
 using namespace std;
+using namespace Overmix;
 
 static const double DOUBLE_MAX = std::numeric_limits<double>::max();
 
@@ -224,7 +225,7 @@ MergeResult ImageEx::best_round( const ImageEx& img, int level, double range_x, 
 		);
 }
 
-ImageEx deVlcImage( const ImageEx& img ){
+ImageEx Overmix::deVlcImage( const ImageEx& img ){
 	Timer t( "deVlcImage" );
 	if( img.getTransform() != Transform::RGB )
 		return {};

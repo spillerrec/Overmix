@@ -33,6 +33,8 @@
 #include <QSpinBox>
 #include <QLineEdit>
 
+using namespace Overmix;
+
 
 RenderConfigChooser::RenderConfigChooser( QWidget* parent, bool expand )
 	: ConfigChooser<ARenderConfig>( parent, expand )

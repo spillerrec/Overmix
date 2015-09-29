@@ -21,6 +21,8 @@
 #include "../Geometry.hpp"
 #include <utility>
 
+namespace Overmix{
+
 class ImageEx;
 class Plane;
 enum class ScalingFunction;
@@ -57,5 +59,7 @@ class AContainer{
 			{ for( unsigned i=0; i<count(); i++ ) setPos( i, pos( i ) + offset ); }
 		std::vector<int> getFrames() const;
 };
+
+}
 
 #endif

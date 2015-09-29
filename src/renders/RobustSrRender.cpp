@@ -30,6 +30,7 @@
 
 using namespace Eigen;
 using namespace std;
+using namespace Overmix;
 
 MatrixXf imageToMatrix( const Plane& p ){
 	MatrixXf out( 1, p.get_width() * p.get_height() );

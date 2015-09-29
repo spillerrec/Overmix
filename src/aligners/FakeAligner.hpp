@@ -20,10 +20,14 @@
 
 #include "AImageAligner.hpp"
 
+namespace Overmix{
+
 class FakeAligner : public AImageAligner{
 	public:
 		FakeAligner( AContainer& container ) : AImageAligner( container, ALIGN_BOTH, 1.0 ){ }
 		virtual void align( AProcessWatcher* ) override{ resetPosition(); }
 };
+
+}
 
 #endif

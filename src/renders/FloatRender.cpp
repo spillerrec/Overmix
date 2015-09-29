@@ -29,6 +29,7 @@
 #include <vector>
 #include <utility>
 using namespace std;
+using namespace Overmix;
 using PointF = Point<double>;
 
 static double cubic( double b, double c, double x ){

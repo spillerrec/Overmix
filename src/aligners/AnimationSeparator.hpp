@@ -20,6 +20,8 @@
 
 #include "AImageAligner.hpp"
 
+namespace Overmix{
+
 class AnimationSeparator : public AImageAligner{
 	private:
 		double find_threshold( AProcessWatcher* watcher );
@@ -28,5 +30,7 @@ class AnimationSeparator : public AImageAligner{
 			:	AImageAligner( container, method, scale ){ fast_diffing = false; }
 		virtual void align( AProcessWatcher* watcher=nullptr ) override;
 };
+
+}
 
 #endif

@@ -19,6 +19,8 @@
 #include "AverageAligner.hpp"
 #include "../renders/AverageRender.hpp"
 
+using namespace Overmix;
+
 void AverageAligner::align( AProcessWatcher* watcher ){
 	if( count() == 0 )
 		return;

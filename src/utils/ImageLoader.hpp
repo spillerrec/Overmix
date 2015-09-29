@@ -23,7 +23,9 @@ class QStringList;
 
 #include <vector>
 #include <utility>
-	
+
+namespace Overmix{
+
 class Deteleciner;
 class ImageEx;
 class ImageContainer;
@@ -42,5 +44,7 @@ class ImageLoader{
 		static std::vector<ImageEx> loadImages( QStringList list );
 		static void loadImages( QStringList list, ImageContainer& container, Deteleciner& detele, int alpha_mask=-1 );
 };
+
+}
 
 #endif

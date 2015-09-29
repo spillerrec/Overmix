@@ -21,6 +21,9 @@
 
 #include "ARender.hpp"
 #include "../planes/Plane.hpp"
+
+namespace Overmix{
+
 struct Parameters;
 
 class EstimatorRender : public ARender{
@@ -44,5 +47,6 @@ class EstimatorRender : public ARender{
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
 
+}
 
 #endif

@@ -24,6 +24,7 @@
 #include <vector>
 
 using namespace std;
+using namespace Overmix;
 
 
 template<typename T> void copyLine( color_type* out, const T* in, unsigned width, double scale ){

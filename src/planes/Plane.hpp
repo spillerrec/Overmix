@@ -23,6 +23,8 @@
 
 #include "PlaneBase.hpp"
 
+namespace Overmix{
+
 typedef short color_type;
 typedef std::pair<Point<>, double> MergeResult;
 
@@ -208,5 +210,7 @@ class Plane : public PlaneBase<color_type>{
 	//De-blurring
 		Plane deconvolve_rl( double amount, unsigned iterations ) const;
 };
+
+}
 
 #endif

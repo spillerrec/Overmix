@@ -22,6 +22,9 @@
 
 #include "../color.hpp"
 #include "../planes/PlaneBase.hpp"
+
+namespace Overmix{
+
 class Plane;
 
 class SumPlane {
@@ -56,5 +59,7 @@ class AverageRender : public ARender{
 		
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
+
+}
 
 #endif

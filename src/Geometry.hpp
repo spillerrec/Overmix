@@ -24,6 +24,8 @@
 #include <QSize>
 #include <QSizeF>
 
+namespace Overmix{
+
 template<typename T=int>
 struct Point{
 	T x{ 0 };
@@ -181,5 +183,7 @@ struct Rectangle{
 		   &&  other.pos.y <= endPos().y && other.endPos().y >= pos.y;
 	}
 };
+
+}
 
 #endif

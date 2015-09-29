@@ -20,6 +20,8 @@
 
 #include "AImageAligner.hpp"
 
+namespace Overmix{
+
 class ImageAligner : public AImageAligner{
 	protected:
 		std::vector<ImageOffset> offsets;
@@ -38,5 +40,7 @@ class ImageAligner : public AImageAligner{
 		void align( AProcessWatcher* watcher=nullptr );
 	
 };
+
+}
 
 #endif

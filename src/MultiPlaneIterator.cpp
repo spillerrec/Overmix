@@ -22,6 +22,8 @@
 #include <climits>
 #include <algorithm>
 
+using namespace Overmix;
+
 
 MultiPlaneLineIterator::MultiPlaneLineIterator(
 		int y, int left, int right, const std::vector<PlaneItInfo> &infos, void *data

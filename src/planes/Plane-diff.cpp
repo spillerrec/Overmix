@@ -25,6 +25,7 @@
 #include "../color.hpp"
 
 using namespace std;
+using namespace Overmix;
 
 static const double DOUBLE_MAX = numeric_limits<double>::max();
 

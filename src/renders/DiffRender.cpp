@@ -25,6 +25,7 @@
 
 #include <vector>
 using namespace std;
+using namespace Overmix;
 
 class StaticDiff{
 	private:

@@ -18,6 +18,8 @@
 #ifndef A_RENDER_HPP
 #define A_RENDER_HPP
 
+namespace Overmix{
+
 class AContainer;
 class ImageEx;
 
@@ -56,5 +58,7 @@ class ARender{
 	public:
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const = 0;
 };
+
+}
 
 #endif

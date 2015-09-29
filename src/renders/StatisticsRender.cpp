@@ -22,6 +22,8 @@
 #include <algorithm>
 #include <vector>
 
+using namespace Overmix;
+
 static void median_pixel( MultiPlaneLineIterator &it ){
 	std::vector<color_type> all;
 	for( unsigned i=1; i<it.size(); i++ )

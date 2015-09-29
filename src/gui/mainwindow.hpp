@@ -38,14 +38,16 @@
 #include "configs/AlignerConfigs.hpp"
 #include "configs/RenderConfigs.hpp"
 
+class QGroupBox;
+class imageCache;
+
+namespace Overmix{
+
 class ARender;
 class AContainer;
 class AImageAligner;
 class Deteleciner;
 class ImageContainer;
-class QGroupBox;
-
-class imageCache;
 
 class main_widget: public QMainWindow{
 	Q_OBJECT
@@ -154,5 +156,7 @@ class main_widget: public QMainWindow{
 		void crop_all();
 		void create_slide();
 };
+
+}
 
 #endif

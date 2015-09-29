@@ -21,6 +21,8 @@
 #include "../planes/Plane.hpp"
 #include "../color.hpp"
 
+namespace Overmix{
+
 class ScaledPlane{
 	private:
 		Plane scaled;
@@ -61,5 +63,7 @@ class ColorRow{
 			b[ix] = rgb.b;
 		}
 };
+
+}
 
 #endif

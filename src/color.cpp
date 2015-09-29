@@ -19,6 +19,8 @@
 
 #include <vector>
 
+using namespace Overmix;
+
 static std::vector<color_type> generate_gamma(){
 	std::vector<color_type> temp( UINT16_MAX );
 	

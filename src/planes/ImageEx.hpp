@@ -25,7 +25,8 @@
 class QImage;
 class QIODevice;
 class QString;
-class JpegDegrader;
+
+namespace Overmix{
 
 enum class Transform{
 		GRAY
@@ -64,7 +65,7 @@ class ImageEx{
 		Transfer  transfer;
 		bool read_dump_plane( QIODevice& dev );
 		bool from_dump(   QIODevice& dev );
-		bool from_jpeg(   QIODevice& dev, JpegDegrader* deg=nullptr );
+		bool from_jpeg(   QIODevice& dev, class JpegDegrader* deg=nullptr );
 		bool from_png(    QIODevice& dev );
 		bool from_qimage( QIODevice& dev, QString ext );
 		
@@ -181,5 +182,7 @@ class ImageEx{
 
 QImage setQImageAlpha( QImage img, const Plane& alpha );
 ImageEx deVlcImage( const ImageEx& img );
+
+}
 
 #endif

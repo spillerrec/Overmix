@@ -25,6 +25,8 @@
 #include <QDebug>
 #include <cmath>
 
+using namespace Overmix;
+
 
 void ImageAligner::on_add(){
 	//Compare this one against all other images

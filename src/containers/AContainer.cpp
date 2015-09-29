@@ -20,6 +20,8 @@
 
 #include "../planes/ImageEx.hpp"
 
+using namespace Overmix;
+
 
 const Plane& AContainer::alpha( unsigned index ) const{
 	return image( index ).alpha_plane();

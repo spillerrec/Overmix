@@ -30,8 +30,8 @@ Q_DECLARE_LOGGING_CATEGORY(LogTiming)
 Q_DECLARE_LOGGING_CATEGORY(LogDelta)
 Q_DECLARE_LOGGING_CATEGORY(LogImageIO)
 
-class ImageContainer;
 class QImage;
+namespace Overmix{ class ImageContainer; }
 
 struct Timer{
 	QElapsedTimer t;
@@ -48,7 +48,7 @@ namespace debug{
 	
 	void make_low_res( QImage image, QString dir, unsigned scale );
 	
-	void output_rectable( ImageContainer& imgs, Rectangle<> area );
+	void output_rectable( Overmix::ImageContainer& imgs, Overmix::Rectangle<> area );
 	
 	
 	class CsvFile{

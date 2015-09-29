@@ -26,6 +26,7 @@
 #include <QTime>
 #include <vector>
 using namespace std;
+using namespace Overmix;
 
 template<typename T>
 PlaneBase<T> resizePlaneToFit( const PlaneBase<T>& input, Size<> size, Point<> pos ){

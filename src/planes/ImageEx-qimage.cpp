@@ -27,6 +27,7 @@
 #include <vector>
 
 using namespace std;
+using namespace Overmix;
 
 
 bool ImageEx::from_qimage( QIODevice& dev, QString ext ){
@@ -164,7 +165,7 @@ QImage ImageEx::to_qimage( unsigned setting ) const{
 static QRgb setQRgbAlpha( QRgb in, int alpha )
 	{ return qRgba( qRed(in), qGreen(in), qBlue(in), alpha ); }
 
-QImage setQImageAlpha( QImage img, const Plane& alpha ){
+QImage Overmix::setQImageAlpha( QImage img, const Plane& alpha ){
 	if( !alpha )
 		return img;
 	

@@ -22,6 +22,8 @@
 
 #include <QFileInfo>
 
+using namespace Overmix;
+
 
 class ImagesIndex{
 	private:

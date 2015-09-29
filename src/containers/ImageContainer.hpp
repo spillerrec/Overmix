@@ -20,6 +20,8 @@
 
 #include "ImageGroup.hpp"
 
+namespace Overmix{
+
 class ImageContainer : public AContainer{
 	public:
 		/** A index to an ImageItem */
@@ -111,5 +113,7 @@ class ImageContainer : public AContainer{
 		
 		//TODO: Get render thing
 };
+
+}
 
 #endif

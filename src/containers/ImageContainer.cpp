@@ -20,6 +20,8 @@
 
 #include "../utils/utils.hpp"
 
+using namespace Overmix;
+
 void ImageContainer::prepareAdds( unsigned amount ){
 	if( groups.size() == 0 )
 		groups.emplace_back( "Auto group", masks ); //TODO: do not repeat this!

@@ -25,7 +25,7 @@
 #include <QDebug>
 
 using namespace std;
-
+using namespace Overmix;
 
 
 FourierPlane::FourierPlane( const Plane& p, double range )

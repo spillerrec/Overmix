@@ -22,6 +22,8 @@
 
 #include <utility>
 
+namespace Overmix{
+
 class ARenderPipe{
 	private:
 		ImageEx cache;
@@ -56,5 +58,7 @@ class ARenderPipe{
 		
 		virtual ~ARenderPipe(){ }
 };
+
+}
 
 #endif

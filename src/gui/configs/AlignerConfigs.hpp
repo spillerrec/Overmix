@@ -25,6 +25,8 @@
 #include "ui_imagealigner.h"
 
 
+namespace Overmix{
+
 class AAlignerConfig : public AConfig, private Ui::ImageAligner{
 	Q_OBJECT
 	
@@ -130,5 +132,6 @@ class SuperResAlignerConfig : public AAlignerConfig{
 		QString discription() const override{ return "Aligns against the super-resolution image"; }
 };
 
+}
 
 #endif

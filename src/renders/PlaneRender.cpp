@@ -24,6 +24,7 @@
 #include <QTime>
 #include <vector>
 using namespace std;
+using namespace Overmix;
 
 Plane PlaneRender::renderPlane( const AContainer& aligner, int plane, AProcessWatcher* watcher ) const{
 	auto scale = aligner.image( 0 )[plane].getSize().to<double>() / aligner.image( 0 )[0].getSize().to<double>();

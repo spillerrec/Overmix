@@ -20,6 +20,8 @@
 
 #include "AContainer.hpp"
 
+namespace Overmix{
+
 class ConstDelegatedContainer : public AContainer{
 	protected:
 		ImageEx* temp; //TODO: avoid? used in imageRef
@@ -56,5 +58,7 @@ class DelegatedContainer : public ConstDelegatedContainer{
 	public:
 		DelegatedContainer( AContainer& container ) : ConstDelegatedContainer(container), container(container) { }
 };
+
+}
 
 #endif

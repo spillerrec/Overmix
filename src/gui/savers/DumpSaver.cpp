@@ -20,6 +20,8 @@
 
 #include "../../planes/ImageEx.hpp"
 
+using namespace Overmix;
+
 DumpSaver::DumpSaver( const ImageEx& image, QString filename ) : ASaver( image, filename ){
 	setupUi(this);
 	

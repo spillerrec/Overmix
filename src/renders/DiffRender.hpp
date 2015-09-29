@@ -22,6 +22,8 @@
 
 #include "../Geometry.hpp"
 
+namespace Overmix{
+
 class Plane;
 
 class DiffRender : public ARender{
@@ -30,5 +32,7 @@ class DiffRender : public ARender{
 	public:
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
+
+}
 
 #endif

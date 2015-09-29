@@ -28,6 +28,7 @@
 #include <vector>
 
 using namespace std;
+using namespace Overmix;
 
 struct MemStream{
 	//TODO: kinda unnecessary, just pass dev*

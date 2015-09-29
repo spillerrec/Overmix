@@ -21,6 +21,8 @@
 #include <QDialog>
 #include <QString>
 
+namespace Overmix{
+
 class ImageEx;
 
 class ASaver: public QDialog{
@@ -40,5 +42,7 @@ class ASaver: public QDialog{
 			QDialog::accept();
 		}
 };
+
+}
 
 #endif

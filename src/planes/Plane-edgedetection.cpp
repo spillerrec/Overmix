@@ -22,6 +22,7 @@
 #include <QtConcurrent>
 
 using namespace std;
+using namespace Overmix;
 
 
 template<typename T>

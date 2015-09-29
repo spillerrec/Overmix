@@ -27,6 +27,7 @@
 #include <fstream>
 
 using namespace std;
+using namespace Overmix;
 
 //TODO: not needed, can be done with QString directly
 static QString numberZeroFill( int number, int digits ){

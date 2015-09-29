@@ -21,6 +21,8 @@
 #include "ARenderPipe.hpp"
 #include "color.hpp"
 
+namespace Overmix{
+
 class RenderPipeScaling : public ARenderPipe{
 	private:
 		Point<double> size;
@@ -167,5 +169,7 @@ class RenderPipeThreshold : public ARenderPipe{
 		void setThreshold( color_type threshold ){ set( this->threshold, threshold ); }
 		void setSize( int size ){ set( this->size, size ); }
 };
+
+}
 
 #endif
