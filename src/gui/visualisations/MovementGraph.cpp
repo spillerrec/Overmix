@@ -50,9 +50,10 @@ class Line{
 			x << x_pos;
 			y << y_pos;
 		}
-		void addToPlot( QCustomPlot& plot ){
-			plot.addGraph();
-			plot.graph(0)->setData( x, y );
+		void addToPlot( QCustomPlot& plot, QColor color ){
+			auto graph = plot.addGraph();
+			graph->setData( x, y );
+			graph->setPen( { color } );
 		}
 };
 
@@ -77,18 +78,15 @@ static void setLimit( QCustomPlot& plot, const AContainer& images, Point<bool> m
 	plot.xAxis->setLabel( moves.y ? QObject::tr("X") : QObject::tr("Id") );
 }
 
-QColor getColor( int frame ){
-	if( frame < 0 )
-		return Qt::black;
-	
-	switch( frame ){
+static QColor getColor( int frame ){
+	switch( frame % 6 ){
 		case 0: return Qt::red;
 		case 1: return Qt::green;
 		case 2: return Qt::blue;
 		case 3: return Qt::cyan;
 		case 4: return Qt::magenta;
 		case 5: return Qt::yellow;
-		default: return getColor( frame - 6 );
+		default: return Qt::black;
 	}
 }
 
@@ -98,17 +96,18 @@ MovementGraph::MovementGraph( ImageContainer& images ) : QWidget(nullptr), image
 	layout()->addWidget( plot );
 	layout()->setContentsMargins( 0, 0, 0, 0 );
 	
-	Line line;
 	auto moves = imagesMoves( images );
 	
 	for( auto frame : images.getFrames() ){
+		Line line;
 		FrameContainer container( images, frame );
 		for( unsigned i=0; i<container.count(); ++i )
 			addPoint( line, container, i, moves );
+		line.addToPlot( *plot, getColor( frame ) );
 	}
 	
-	line.addToPlot( *plot );
 	setLimit( *plot, images, moves );
+	plot->setInteractions( QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables );
 	
 	resize( 640, 480 );
 	show();
