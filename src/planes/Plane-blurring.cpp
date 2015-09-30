@@ -116,7 +116,7 @@ std::vector<WeightedSumLine<T>> prepare_weighted_sum(
 	WeightedSumLine<T> default_line;
 	default_line.width = size.width();
 	default_line.line_width = in.get_line_width();
-	default_line.weights = kernel.const_scan_line(0); //TODO: line_width ignored!
+	default_line.weights = kernel.scan_line(0).begin(); //TODO: line_width ignored!
 	default_line.w_width = kernel.get_width();
 	default_line.w_height = kernel.get_height();
 	default_line.full_sum = default_line.calculate_sum();
@@ -125,24 +125,24 @@ std::vector<WeightedSumLine<T>> prepare_weighted_sum(
 	std::vector<WeightedSumLine<T>> lines;
 	for( unsigned iy=0; iy<size.height(); ++iy ){
 		auto line = default_line;
-		line.out = out.scan_line( iy );
+		line.out = out.scan_line( iy ).begin();
 		
 		int top = iy - half_size;
 		if( top < 0 ){
 			//Cut stuff from top
 			line.w_height += top; //Subtracts!
 			line.weights += -top * line.w_width;
-			line.in = in.const_scan_line( 0 );
+			line.in = in.scan_line( 0 ).begin();
 			line.full_sum = line.calculate_sum();
 		}
 		else if( top+kernel.get_height() >= size.height() ){
 			//Cut stuff from bottom
-			line.in = in.const_scan_line( top );
+			line.in = in.scan_line( top ).begin();
 			line.w_height = size.height() - top;
 			line.full_sum = line.calculate_sum();
 		}
 		else //Use defaults
-			line.in = in.const_scan_line( top );
+			line.in = in.scan_line( top ).begin();
 		
 		lines.push_back( line );
 	}

@@ -207,7 +207,7 @@ ImageEx FloatRender::render( const AContainer& aligner, AProcessWatcher* watcher
 				return ImageEx();
 			progress.setCurrent( i*1000 + (iy * 1000 / out.get_height() ) );
 			
-			color_type* row = out.scan_line( iy );
+			auto row = out.scan_line( iy );
 			for( unsigned ix=0; ix<out.get_width(); ++ix ){
 				PointRender2 p( PointF( ix, iy ) + full.pos*scale/*, points*/ );
 				

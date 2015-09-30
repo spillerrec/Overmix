@@ -26,15 +26,15 @@ using namespace Overmix;
 
 static void copyLine( Plane& plane_out, const Plane& plane_in, unsigned y_out, unsigned y_in ){
 	auto out = plane_out.scan_line( y_out );
-	auto in = plane_in.const_scan_line( y_in );
+	auto in  = plane_in .scan_line( y_in  );
 	for( unsigned ix=0; ix<plane_out.get_width(); ++ix )
 		out[ix] = in[ix];
 }
 
 static void mergeLine( Plane& plane_out, const Plane& plane_in1, const Plane& plane_in2, unsigned y_out, unsigned y_in1, unsigned y_in2 ){
 	auto out = plane_out.scan_line( y_out );
-	auto in1 = plane_in1.const_scan_line( y_in1 );
-	auto in2 = plane_in2.const_scan_line( y_in2 );
+	auto in1 = plane_in1.scan_line( y_in1 );
+	auto in2 = plane_in2.scan_line( y_in2 );
 	for( unsigned ix=0; ix<plane_out.get_width(); ++ix )
 		out[ix] = (in1[ix] + in2[ix]) / 2; //TODO: use precisison_color_type
 }

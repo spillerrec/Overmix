@@ -48,10 +48,10 @@ bool ImageEx::from_qimage( QIODevice& dev, QString ext ){
 		planes.emplace_back( size );
 	
 	for( unsigned iy=0; iy<size.height(); ++iy ){
-		auto r = planes[0].p.scan_line( iy );
-		auto g = planes[1].p.scan_line( iy );
-		auto b = planes[2].p.scan_line( iy );
-		auto a = alpha ? alpha.scan_line( iy ) : nullptr;
+		auto r = planes[0].p.scan_line( iy ).begin();
+		auto g = planes[1].p.scan_line( iy ).begin();
+		auto b = planes[2].p.scan_line( iy ).begin();
+		auto a = alpha ? alpha.scan_line( iy ).begin() : nullptr;
 		
 		auto in = (const QRgb*)img.constScanLine( iy );
 		
@@ -70,7 +70,7 @@ bool ImageEx::from_qimage( QIODevice& dev, QString ext ){
 
 struct PlanesIt{
 	std::vector<ScaledPlane> planes;
-	std::vector<const color_type*> rows;
+	std::vector<const color_type*> rows; //TODO: see if we can replace it
 	
 	public:
 		void add( const Plane& p, Size<int> size )
@@ -79,7 +79,7 @@ struct PlanesIt{
 		void prepare_row( int iy ){
 			rows.clear();
 			for( auto& plane : planes )
-				rows.push_back( plane().const_scan_line( iy ) );
+				rows.push_back( plane().scan_line( iy ).begin() );
 		}
 		
 		auto at( int c ) const{ return *(rows[c]); }
@@ -175,7 +175,7 @@ QImage Overmix::setQImageAlpha( QImage img, const Plane& alpha ){
 	img = img.convertToFormat( QImage::Format_ARGB32 );
 	for( int iy=0; iy<img.height(); ++iy ){
 		auto out = (QRgb*)img.scanLine( iy );
-		auto in = alpha.const_scan_line( iy );
+		auto in  = alpha.scan_line( iy );
 		for( int ix=0; ix<img.width(); ++ix )
 			out[ix] = setQRgbAlpha( out[ix], color::as8bit( in[ix] ) );
 	}

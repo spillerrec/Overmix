@@ -63,9 +63,9 @@ class ImgRow{
 			,	width( img.get_width() ){
 			rows.reserve( pixels );
 			for( int i=0; i<colors; i++ )
-				rows.push_back( img[i].scan_line( iy ) );
+				rows.push_back( img[i].scan_line( iy ).begin() );
 			if( alpha )
-				rows.push_back( img.alpha_plane().scan_line( iy ) );
+				rows.push_back( img.alpha_plane().scan_line( iy ).begin() );
 		}
 		
 		void read8( png_bytep row_pointer ){

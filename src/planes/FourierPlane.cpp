@@ -38,7 +38,7 @@ FourierPlane::FourierPlane( const Plane& p, double range )
 	
 	//Fill data
 	for( unsigned iy=0; iy<p.get_height(); iy++ ){
-		auto row = p.const_scan_line( iy );
+		auto row = p.scan_line( iy );
 		for( unsigned ix=0; ix<p.get_width(); ix++ )
 			raw[iy*p.get_width()+ix] = color::asDouble( row[ix] ) * range;
 	}
@@ -49,8 +49,8 @@ FourierPlane::FourierPlane( const Plane& p, double range )
 }
 
 DctPlane::DctPlane( Size<unsigned> size ) :	PlaneBase( size ){
-	plan_dct  = fftw_plan_r2r_2d( size.height(), size.width(), scan_line(0), scan_line(0), FFTW_REDFT10, FFTW_REDFT10, FFTW_MEASURE );
-	plan_idct = fftw_plan_r2r_2d( get_height(), get_width(), scan_line(0), scan_line(0), FFTW_REDFT01, FFTW_REDFT01, FFTW_MEASURE );
+	plan_dct  = fftw_plan_r2r_2d( size.height(), size.width(), scan_line(0).begin(), scan_line(0).begin(), FFTW_REDFT10, FFTW_REDFT10, FFTW_MEASURE );
+	plan_idct = fftw_plan_r2r_2d( get_height(), get_width(), scan_line(0).begin(), scan_line(0).begin(), FFTW_REDFT01, FFTW_REDFT01, FFTW_MEASURE );
 }
 DctPlane::~DctPlane(){
 	fftw_destroy_plan( plan_dct );
@@ -61,8 +61,8 @@ void DctPlane::initialize( const Plane& p, Point<unsigned> pos, double range ){
 	auto size = p.getSize().min( getSize()+pos ) - pos; //Keep inside
 	fill( 0.0 );
 	for( unsigned iy=0; iy<size.height(); iy++ ){
-		auto row_in = p.const_scan_line( iy+pos.y );
-		auto row_out = scan_line( iy );
+		auto row_in  = p.scan_line( iy+pos.y );
+		auto row_out =   scan_line( iy       );
 		for( unsigned ix=0; ix<size.width(); ix++ )
 			row_out[ix] = color::asDouble( row_in[ix+pos.x] ) * range - 128;
 	}
@@ -90,9 +90,8 @@ Plane FourierPlane::asPlane() const{
 	//Find maximum value
 	double max_real = 0.0;
 	for( unsigned iy=0; iy<get_height(); iy++ ){
-		auto in = const_scan_line( iy );
-		for( unsigned ix=0; ix<get_width(); ix++ )
-			max_real = max( max_real, abs( in[ix] ) );
+		for( auto val : scan_line( iy ) )
+			max_real = max( max_real, abs( val ) );
 	}
 	
 	Plane output( getSize() );
@@ -100,7 +99,7 @@ Plane FourierPlane::asPlane() const{
 	double scale = 100000;
 	auto half_size = get_height() / 2;
 	for( unsigned iy=0; iy<get_height(); iy++ ){
-		auto in = const_scan_line( iy < half_size ? iy + half_size : iy - half_size );
+		auto in  = scan_line( iy < half_size ? iy + half_size : iy - half_size );
 		auto out = output.scan_line( iy );
 		for( unsigned ix=0; ix<get_width(); ix++ )
 			out[ix] = color::fromDouble( log( abs( in[ix] ) / max_real * scale + 1 ) / log( scale + 1 ) );
@@ -140,8 +139,8 @@ void FourierPlane::debugResolution( string path ) const{
 		double sum = 0.0;
 		
 		for( unsigned j=0; j<stride; j++, i++ ){
-			auto row1 = const_scan_line( i );
-			auto row2 = const_scan_line( get_height() - i - 1 );
+			auto row1 = scan_line( i );
+			auto row2 = scan_line( get_height() - i - 1 );
 			for( unsigned ix=0; ix<get_width(); ix++ )
 				sum += abs( row1[ix] ) + abs( row2[ix] );
 		}
@@ -160,10 +159,10 @@ FourierPlane FourierPlane::reduce( unsigned w, unsigned h ) const{
 	out.fill( std::complex<double>( 0, 0 ) );
 	
 	for( unsigned iy=0; iy<h/2; iy++ ){
-		auto in1 = const_scan_line( iy );
-		auto in2 = const_scan_line( get_height() - iy - 1 );
+		auto in1  =     scan_line( iy );
 		auto out1 = out.scan_line( iy );
-		auto out2 = out.scan_line( h - iy - 1 );
+		auto in2  =     scan_line( get_height() - iy - 1 );
+		auto out2 = out.scan_line( h            - iy - 1 );
 		for( unsigned ix=0; ix<out.get_width(); ix++ ){
 			out1[ix] = in1[ix];
 			out2[ix] = in2[ix];

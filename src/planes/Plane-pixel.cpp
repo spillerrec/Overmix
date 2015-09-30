@@ -40,7 +40,7 @@ static void do_pixel_line_double( SimplePixel pix ){
 void Plane::for_each_pixel( void (*f)( const SimplePixel& ), void *data ){
 	std::vector<SimplePixel> lines;
 	for( unsigned iy=0; iy<get_height(); ++iy ){
-		SimplePixel pix = { scan_line( iy )
+		SimplePixel pix = { scan_line( iy ).begin()
 			,	nullptr
 			,	get_width()
 			,	f
@@ -60,8 +60,8 @@ void Plane::for_each_pixel( Plane &p, void (*f)( const SimplePixel& ), void *dat
 	
 	std::vector<SimplePixel> lines;
 	for( unsigned iy=0; iy<get_height(); ++iy ){
-		SimplePixel pix = { scan_line( iy )
-			,	p.scan_line( iy )
+		SimplePixel pix = { scan_line( iy ).begin()
+			,	p.scan_line( iy ).begin()
 			,	get_width()
 			,	f
 			,	data

@@ -58,12 +58,12 @@ void SumPlane::addPlane( const Plane& p, Point<> pos ){
 	//TODO: make multi-threaded //NOTE: haven't been working out too well...
 	for( unsigned iy=0; iy<p.get_height(); iy++ ){
 		//Add to sum
-		auto in = p.scan_line( iy );
-		auto out =  sum.scan_line( iy + pos.y ) + pos.x;
-		auto a = amount.scan_line( iy + pos.y ) + pos.x;
+		auto in  = p     .scan_line(  iy         );
+		auto out = sum   .scan_line(  iy + pos.y );
+		auto a   = amount.scan_line( iy + pos.y );
 		for( unsigned ix=0; ix<p.get_width(); ix++ ){
-			out[ix] += in[ix];
-			a[ix] += color::WHITE;
+			out[ix+pos.x] += in[ix];
+			  a[ix+pos.x] += color::WHITE;
 		}
 	}
 }
@@ -81,15 +81,15 @@ void SumPlane::addAlphaPlane( const Plane& p, const Plane& alpha, Point<> pos ){
 	resizeToFit( pos, p.getSize() );
 	for( unsigned iy=0; iy<p.get_height(); iy++ ){
 		//Add to sum
-		auto in = p.const_scan_line( iy );
-		auto out = sum.scan_line( iy + pos.y ) + pos.x;
-		auto a_in = alpha_scaled().const_scan_line( iy );
-		auto a_out = amount.scan_line( iy + pos.y ) + pos.x;
+		auto in    = p             .scan_line( iy         );
+		auto a_in  = alpha_scaled().scan_line( iy         );
+		auto out   = sum           .scan_line( iy + pos.y );
+		auto a_out = amount        .scan_line( iy + pos.y );
 		
 		for( unsigned ix=0; ix<p.get_width(); ix++ ){
 			auto a_val = a_in[ix];
-			out[ix] += in[ix] * color::asDouble( a_val );
-			a_out[ix] += a_val;
+			  out[ix+pos.x] += in[ix] * color::asDouble( a_val );
+			a_out[ix+pos.x] += a_val;
 		}
 	}
 }
@@ -98,9 +98,9 @@ Plane SumPlane::average() const{
 	Plane avg( sum.getSize() );
 	
 	for( unsigned iy=0; iy<avg.get_height(); iy++ ){
-		auto sums = sum.const_scan_line( iy );
-		auto amounts = amount.const_scan_line( iy );
-		auto out = avg.scan_line( iy );
+		auto sums    = sum   .scan_line( iy );
+		auto amounts = amount.scan_line( iy );
+		auto out     = avg   .scan_line( iy );
 		
 		//Calculate the average for each point using sum and amount
 		for( unsigned ix=0; ix<avg.get_width(); ix++ )
@@ -117,8 +117,8 @@ Plane SumPlane::alpha() const{
 	Plane alpha( amount.getSize() );
 	
 	for( unsigned iy=0; iy<alpha.get_height(); iy++ ){
-		auto amounts = amount.const_scan_line( iy );
-		auto out = alpha.scan_line( iy );
+		auto amounts = amount.scan_line( iy );
+		auto out     = alpha .scan_line( iy );
 		
 		//Set to transparent if nothing have been added here
 		for( unsigned ix=0; ix<alpha.get_width(); ix++ )

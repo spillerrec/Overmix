@@ -42,7 +42,7 @@ class DiffCache{
 		double get_diff( int x, int y, unsigned precision ) const;
 		void add_diff( int x, int y, double diff, unsigned precision );
 };
-struct SimplePixel{
+struct SimplePixel{ //TODO: this is pretty ugly
 	color_type *row1;
 	color_type *row2;
 	unsigned width;

@@ -109,8 +109,8 @@ Plane parallel_edge_line( const Plane& p, vector<T> weights_x, vector<T> weights
 	std::vector<EdgeLine<T> > lines;
 	for( unsigned iy=0; iy<p.get_height(); ++iy ){
 		EdgeLine<T> line;
-		line.out = out.scan_line( iy );
-		line.width = p.get_width();
+		line.out = out.scan_line( iy ).begin();
+		line.width = p.get_width(); //TODO: investigate
 		
 		line.size = size;
 		line.weights_x = weights_x.data();
@@ -119,7 +119,7 @@ Plane parallel_edge_line( const Plane& p, vector<T> weights_x, vector<T> weights
 		
 		line.func = func;
 		
-		line.in = p.const_scan_line( std::min( std::max( int(iy-size/2), 0 ), int(p.get_height()-size-1) ) ); //Always stay inside
+		line.in = p.scan_line( std::min( std::max( int(iy-size/2), 0 ), int(p.get_height()-size-1) ) ).begin(); //Always stay inside
 		line.line_width = p.get_line_width();
 		
 		lines.push_back( line );

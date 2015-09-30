@@ -57,7 +57,7 @@ Plane EstimatorRender::degrade( const Plane& original, const Parameters& para ) 
 	/* Overlay
 	for( unsigned iy=0; iy<out.get_height(); iy++ ){
 		auto row_out = out.scan_line( iy );
-		auto row_back  = para.background.const_scan_line( iy );
+		auto row_back  = para.background.scan_line( iy );
 		for( unsigned ix=0; ix<out.get_width(); ix++ )
 			row_out[ix] = row_out[ix] * (1-para.overlay) + row_back[ix] * (para.overlay);
 	}
@@ -87,7 +87,7 @@ void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, d
 	Plane delta( p1 );
 	for( unsigned iy=0; iy<p2.get_height(); iy++ ){
 		auto row_out = delta.scan_line( iy );
-		auto row_in  = p2.const_scan_line( iy );
+		auto row_in  = p2   .scan_line( iy );
 		for( unsigned ix=0; ix<p2.get_width(); ix++ )
 			row_out[ix] = signFloat( row_out[ix], row_in[ix], beta );
 	}
@@ -95,8 +95,8 @@ void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, d
 	delta = delta.scale_select( delta.getSize()*scale, ScalingFunction::SCALE_MITCHELL );
 	
 	for( unsigned iy=0; iy<delta.get_height(); iy++ ){
-		auto row_out = out.scan_line( iy+pos.y );
-		auto row_in  = delta.const_scan_line( iy );
+		auto row_out = out  .scan_line( iy+pos.y );
+		auto row_in  = delta.scan_line( iy       );
 		for( unsigned ix=0; ix<delta.get_width(); ix++ )
 			row_out[ix+pos.x] = color::truncate( row_out[ix+pos.x] - row_in[ix] );
 	}
@@ -110,13 +110,13 @@ void regularize( Plane& input, const Plane& copy, int p, double alpha, double be
 	
 	for( unsigned iy=p; iy < copy.get_height()-p; iy++ ){
 		auto output_row = input.scan_line( iy );
-		auto row_0  = copy.const_scan_line( iy );
+		auto row_0      = copy .scan_line( iy );
 		for( unsigned ix=p; ix < copy.get_width()-p; ix++ ){
 			
 			double sum = 0;
 			for( int m=0, count=0; m<=p; m++ ){
-			auto row_pl = copy.const_scan_line( iy + m );
-			auto row_nl = copy.const_scan_line( iy - m );
+			//auto row_pl = copy.scan_line( iy + m );
+			//auto row_nl = copy.scan_line( iy - m );
 				for( int l=p; l+m>=0; l-- ){
 					sum += alphas[ count++ ]
 						* (  signFloat( copy.pixel( {ix, iy} ),     copy.pixel( {ix+m, iy+l} ), beta )

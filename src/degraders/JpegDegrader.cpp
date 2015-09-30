@@ -41,9 +41,9 @@ unsigned QuantTable::degrade8x8Comp( DctPlane& f1, DctPlane& f2, const Plane& p1
 	unsigned change = 0;
 	
 	for( unsigned iy=0; iy<f1.get_height(); iy++ ){
-		auto row1 = f1.scan_line( iy );
-		auto row2 = f2.scan_line( iy );
-		auto quant = table.const_scan_line( iy );
+		auto row1  = f1   .scan_line( iy );
+		auto row2  = f2   .scan_line( iy );
+		auto quant = table.scan_line( iy );
 		for( unsigned ix=0; ix<f1.get_width(); ix++ ){
 			auto deg1 = quantize( row1[ix], quant[ix] );
 			auto deg2 = quantize( row2[ix], quant[ix] );

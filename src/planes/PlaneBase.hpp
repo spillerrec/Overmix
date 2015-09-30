@@ -107,12 +107,29 @@ class PlaneBase{
 			return size == p.size;
 		}
 		
+	//Row iterator
+		template<typename T2>
+		class RowIt{
+			private:
+				T2* row;
+				unsigned w;
+				
+			public:
+				RowIt( T2* row, unsigned width ) : row(row), w(width) { }
+				
+				T2* line() const{ return row; }
+				unsigned width() const{ return w; }
+				
+				T2& operator[]( int index ){ return row[index]; }
+				T2* begin() const{ return row;     }
+				T2* end()   const{ return row + w; }
+		};
+		
 	//Pixel/Row query
 		const T& pixel( Point<unsigned> pos        ) const{ return data[ getOffset( pos.x, pos.y ) ];       }
 		void  setPixel( Point<unsigned> pos, T val )      {        data[ getOffset( pos.x, pos.y ) ] = val; }
-		const T*       scan_line( unsigned y ) const{ return data + getOffset( 0, y ); } //TODO: !!!!!!!!
-		      T*       scan_line( unsigned y )      { return data + getOffset( 0, y ); } //TODO: !!!!!!!!
-		const T* const_scan_line( unsigned y ) const{ return data + getOffset( 0, y ); }
+		RowIt<const T> scan_line( unsigned y ) const{ return { data + getOffset( 0, y ), get_width() }; }
+		RowIt<T>       scan_line( unsigned y )      { return { data + getOffset( 0, y ), get_width() }; }
 		
 	//Resizing
 		void crop( Point<unsigned> pos, Size<unsigned> newsize ){
@@ -133,8 +150,8 @@ class PlaneBase{
 			auto range_from = from.getSize().min(pos+ size) - pos;
 			auto range = range_this.min( range_from );
 			for( unsigned iy=0; iy < range.height(); iy++ ){
-				T* dest = scan_line( iy+to.y );
-				const T* source = from.scan_line( iy + pos.y );
+				auto dest = scan_line( iy+to.y );
+				auto source = from.scan_line( iy + pos.y );
 				for( unsigned ix=0; ix < range.width(); ix++ )
 					dest[ix+to.x] = source[ix+pos.x];
 			}
@@ -166,7 +183,7 @@ class PlaneBase{
 		PlaneBase<T2> to() const{
 			PlaneBase<T2> out( getSize() );
 			for( unsigned iy=0; iy<get_height(); iy++ ){
-				auto row_in = const_scan_line( iy );
+				auto row_in  =      scan_line( iy );
 				auto row_out =  out.scan_line( iy );
 				for( unsigned ix=0; ix<get_width(); ix++ )
 					row_out[ix] = T2( row_in[ix] );
@@ -176,25 +193,6 @@ class PlaneBase{
 		
 	//Iterators
 	public:
-		template<typename T2>
-		class RowIt{
-			private:
-				T2* row;
-				unsigned iy;
-				unsigned w;
-				
-			public:
-				RowIt( T2* row, unsigned iy, unsigned width ) : row(row), iy(iy), w(width) { }
-				
-				T2* line() const{ return row; }
-				unsigned y() const{ return iy; }
-				unsigned width() const{ return w; }
-				
-				T2& operator[]( int index ){ return row[index]; }
-				T2* begin() const{ return row;     }
-				T2* end()   const{ return row + w; }
-		};
-		
 		template<typename T1, typename T2>
 		class LineIt{
 			private:
@@ -209,7 +207,7 @@ class PlaneBase{
 					iy++;
 					return *this;
 				}
-				RowIt<T2> operator*() { return { p->scan_line( iy ), iy, p->get_width() }; }
+				RowIt<T2> operator*() { return p->scan_line( iy ); }
 		};
 		
 	public:

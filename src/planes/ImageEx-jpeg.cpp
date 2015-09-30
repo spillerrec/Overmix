@@ -102,7 +102,7 @@ class RawReader{
 				for( int i=0; i<jpeg.components(); i++ ){
 					row_bufs.emplace_back( plane_buf[i].get_height(), nullptr );
 					for( unsigned iy=0; iy<row_bufs[i].size(); iy++ )
-						row_bufs[i][iy] = plane_buf[i].scan_line( iy );
+						row_bufs[i][iy] = plane_buf[i].scan_line( iy ).begin();
 				}
 				
 				//Apply "fake" crop

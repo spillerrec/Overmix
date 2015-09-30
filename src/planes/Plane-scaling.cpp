@@ -31,7 +31,7 @@ Plane Plane::scale_nearest( Point<unsigned> wanted ) const{
 	Plane scaled( wanted );
 	
 	for( unsigned iy=0; iy<wanted.height(); iy++ ){
-		color_type* row = scaled.scan_line( iy );
+		auto row = scaled.scan_line( iy );
 		for( unsigned ix=0; ix<wanted.width(); ix++ )
 			row[ix] = pixel( (Size<double>( ix, iy ) / (wanted-1) * (getSize()-1)).round() );
 	}
@@ -122,12 +122,12 @@ struct ScaleLine{
 };
 
 void ScaleLine::do_line() const{
-	color_type *out = wanted.scan_line( index );
+	color_type *out = wanted.scan_line( index ).begin();
 	ScalePoint ver( index, input.get_height(), wanted.get_height(), offset, window, f );
 	
 	for( auto& x : points ){
 		double avg = 0;
-		auto row = input.const_scan_line( ver.start ) + x.start;
+		auto row = input.scan_line( ver.start ).begin() + x.start;
 		
 		for( auto wy : ver.weights ){
 			auto row2 = row;
@@ -166,7 +166,7 @@ static Plane scale2x( const Plane& p, int window, Plane::Filter f ){
 	for( unsigned iy=4; iy<scaled.get_height()-4; iy+=2 ){
 		auto out1 = scaled.scan_line( iy   );
 		auto out2 = scaled.scan_line( iy+1 );
-		auto in  = p.const_scan_line( iy/2-2 );
+		auto in  = p.scan_line( iy/2-2 ).begin();
 		
 		std::pair<float,float> c[4];
 		c[0] = column( in++ );

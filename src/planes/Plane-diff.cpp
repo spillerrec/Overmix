@@ -106,10 +106,11 @@ double Plane::diffAlpha( const Plane& p, const Plane& alpha, const Plane& alpha_
 	unsigned height = min( get_height() - p1_top, p.get_height() - p2_top );
 	
 	//Initial offsets on the two planes
-	auto c1 =   const_scan_line( p1_top ) + p1_left;
-	auto c2 = p.const_scan_line( p2_top ) + p2_left;
-	auto a1 = alpha   ? alpha  .const_scan_line( p1_top ) + p1_left : nullptr;
-	auto a2 = alpha_p ? alpha_p.const_scan_line( p2_top ) + p2_left : nullptr;
+	//TODO: avoid using pointer math
+	auto c1 =   scan_line( p1_top ).begin() + p1_left;
+	auto c2 = p.scan_line( p2_top ).begin() + p2_left;
+	auto a1 = alpha   ? alpha  .scan_line( p1_top ).begin() + p1_left : nullptr;
+	auto a2 = alpha_p ? alpha_p.scan_line( p2_top ).begin() + p2_left : nullptr;
 	
 	
 	//Calculate all the offsets for QtConcurrent::mappedReduced

@@ -246,8 +246,8 @@ ImageEx Overmix::deVlcImage( const ImageEx& img ){
 		Plane downscaled( out[c].getSize() / 2 );
 		
 		for( unsigned iy=0; iy<downscaled.get_height(); iy++ ){
-			auto row_in1 = out[c].const_scan_line( iy*2   );
-			auto row_in2 = out[c].const_scan_line( iy*2+1 );
+			auto row_in1 = out[c].scan_line( iy*2   );
+			auto row_in2 = out[c].scan_line( iy*2+1 );
 			auto row_out = downscaled.  scan_line( iy     );
 			for( unsigned ix=0; ix<downscaled.get_width(); ix++ )
 				row_out[ix] =

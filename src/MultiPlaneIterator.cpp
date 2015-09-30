@@ -36,11 +36,10 @@ MultiPlaneLineIterator::MultiPlaneLineIterator(
 		for( PlaneItInfo info : infos ){
 			int local_y = y - info.y;
 			if( info.check_y( local_y ) ){
-				color_type* row = info.p.scan_line( local_y );
+				auto row = info.p.scan_line( local_y );
 				
-				lines.push_back( PlaneLine( row
-						,	row + info.p.get_width()
-						,	row + ( x - info.x ) )
+				lines.push_back( PlaneLine( row.begin(), row.end()
+						,	row.begin() + ( x - info.x ) )
 						);
 			}
 		}
@@ -86,7 +85,7 @@ void MultiPlaneIterator::new_y( int y ){
 	
 	for( auto& info : infos ){
 		int local_y = y - info.y;
-		info.row_start = info.check_y( local_y ) ? info.p.scan_line( local_y ) : 0;
+		info.row_start = info.check_y( local_y ) ? info.p.scan_line( local_y ).begin() : nullptr;
 		info.row = 0;
 	}
 }
