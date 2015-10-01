@@ -19,6 +19,7 @@
 #include <algorithm> //For min, max, and accumulate
 #include <cstdlib> //For abs(int)
 #include <cassert>
+#include <utility>
 
 #include "../color.hpp"
 
@@ -80,13 +81,9 @@ void Plane::replace_line( const Plane &p, bool top ){
 		return;
 	}
 	
-	for( unsigned iy=(top ? 0 : 1); iy<get_height(); iy+=2 ){
-		auto row1 =   scan_line( iy );
-		auto row2 = p.scan_line( iy );
-		
-		for( unsigned ix=0; ix<get_width(); ++ix )
-			row1[ix] = row2[ix];
-	}
+	for( unsigned iy=(top ? 0 : 1); iy<get_height(); iy+=2 )
+		for( auto val : makeZipRowIt( scan_line(iy), p.scan_line( iy ) ) )
+			val.first = val.second;
 }
 
 void Plane::combine_line( const Plane &p, bool top ){
@@ -95,13 +92,9 @@ void Plane::combine_line( const Plane &p, bool top ){
 		return;
 	}
 	
-	for( unsigned iy=(top ? 0 : 1); iy<get_height(); iy+=2 ){
-		auto row1 =   scan_line( iy );
-		auto row2 = p.scan_line( iy );
-		
-		for( unsigned ix=0; ix<get_width(); ++ix )
-			row1[ix] = ( (unsigned)row1[ix] + row2[ix] ) / 2;
-	}
+	for( unsigned iy=(top ? 0 : 1); iy<get_height(); iy+=2 )
+		for( auto val : makeZipRowIt( scan_line(iy), p.scan_line( iy ) ) )
+			val.first = ( (precision_color_type)val.first + val.second ) / 2;
 }
 
 Plane Plane::normalize() const{
@@ -111,24 +104,18 @@ Plane Plane::normalize() const{
 Plane Plane::maxPlane( const Plane& p ) const{
 	assert( getSize() == p.getSize() );
 	auto out = *this;
-	for( unsigned iy=0; iy<get_height(); ++iy ){
-		auto row_in  = p  .scan_line( iy );
-		auto row_out = out.scan_line( iy );
-		for( unsigned ix=0; ix<get_width(); ++ix )
-			row_out[ix] = std::max( row_out[ix], row_in[ix] );
-	}
+	for( unsigned iy=0; iy<get_height(); ++iy )
+		for( auto val : makeZipRowIt( out.scan_line(iy), p.scan_line( iy ) ) )
+			val.first = std::max( val.first, val.second );
 	return out;
 }
 
 Plane Plane::minPlane( const Plane& p ) const{
 	assert( getSize() == p.getSize() );
 	auto out = *this;
-	for( unsigned iy=0; iy<get_height(); ++iy ){
-		auto row_in  = p  .scan_line( iy );
-		auto row_out = out.scan_line( iy );
-		for( unsigned ix=0; ix<get_width(); ++ix )
-			row_out[ix] = std::min( row_out[ix], row_in[ix] );
-	}
+	for( unsigned iy=0; iy<get_height(); ++iy )
+		for( auto val : makeZipRowIt( out.scan_line(iy), p.scan_line( iy ) ) )
+			val.first = std::min( val.first, val.second );
 	return out;
 }
 

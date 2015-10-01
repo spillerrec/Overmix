@@ -20,7 +20,62 @@
 
 #include "../Geometry.hpp"
 
+#include <cassert>
+
 namespace Overmix{
+
+//Array iterator
+template<typename T2>
+class RowIt{
+	private:
+		T2* row;
+		unsigned w;
+		
+	public:
+		RowIt( T2* row, unsigned width ) : row(row), w(width) { }
+		
+		T2* line() const{ return row; }
+		unsigned width() const{ return w; }
+		
+		T2& operator[]( int index ){ return row[index]; }
+		T2* begin() const{ return row;     }
+		T2* end()   const{ return row + w; }
+};
+
+template<typename T1, typename T2>
+class ZipRowIt{
+	private:
+		RowIt<T1> a;
+		RowIt<T2> b;
+		
+		struct Iterator{
+			T1* a;
+			T2* b;
+			Iterator( T1* a, T2* b ) : a(a), b(b) { }
+			
+			std::pair<T1&,T2&> operator*() { return { *a, *b }; }
+			Iterator& operator++() {
+				a++; b++;
+				return *this;
+			}
+			
+			bool operator!=( const Iterator& other ) const
+				{ return a != other.a && b != other.b; }
+		};
+		
+	public:
+		ZipRowIt( RowIt<T1> a, RowIt<T2> b ) : a(a), b(b)
+			{ assert( a.width() == b.width() ); }
+		auto width() const{ return a.width(); }
+		
+		Iterator begin() const { return { a.begin(), b.begin() }; }
+		Iterator end()   const { return { a.end(),   b.end()   }; }
+		std::pair<T1&,T2&> operator[]( int index ) { return { a[index], b[index] }; }
+};
+
+template<typename T1, typename T2>
+auto makeZipRowIt( RowIt<T1> a, RowIt<T2> b )
+	{ return ZipRowIt<T1,T2>( a, b ); }
 
 template<typename T>
 class PlaneBase{
@@ -106,24 +161,6 @@ class PlaneBase{
 		bool equalSize( const PlaneBase& p ) const{
 			return size == p.size;
 		}
-		
-	//Row iterator
-		template<typename T2>
-		class RowIt{
-			private:
-				T2* row;
-				unsigned w;
-				
-			public:
-				RowIt( T2* row, unsigned width ) : row(row), w(width) { }
-				
-				T2* line() const{ return row; }
-				unsigned width() const{ return w; }
-				
-				T2& operator[]( int index ){ return row[index]; }
-				T2* begin() const{ return row;     }
-				T2* end()   const{ return row + w; }
-		};
 		
 	//Pixel/Row query
 		const T& pixel( Point<unsigned> pos        ) const{ return data[ getOffset( pos.x, pos.y ) ];       }
