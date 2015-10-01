@@ -83,8 +83,6 @@ class Plane : public PlaneBase<color_type>{
 		
 		Plane( const PlaneBase<color_type>& p ) : PlaneBase( p ) { }
 		
-		static const unsigned long MAX_VAL;
-		
 	//Plane handling
 		
 	//Queries

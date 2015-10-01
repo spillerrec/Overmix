@@ -16,62 +16,47 @@
 */
 
 #include "Plane.hpp"
-#include <algorithm> //For min
-#include <cstdint> //For abs(int) and uint*_t
-#include <limits>
-#include <vector>
-#include <cstring> //For memcpy
+#include <algorithm> //For min, max, and accumulate
+#include <cstdlib> //For abs(int)
 #include <cassert>
-
-#include <QtConcurrent>
-#include <QDebug>
 
 #include "../color.hpp"
 
-using namespace std;
 using namespace Overmix;
-
-const unsigned long Plane::MAX_VAL = 0xFFFFFFFF;
-
 
 color_type Plane::min_value() const{
 	color_type min = color::MAX_VAL;
-	for( unsigned iy=0; iy<get_height(); ++iy )
-		for( auto val : scan_line( iy ) )
+	for( auto row : *this )
+		for( auto val : row )
 			min = std::min( min, val );
 	return min;
 }
 color_type Plane::max_value() const{
 	color_type max = color::MIN_VAL;
-	for( unsigned iy=0; iy<get_height(); ++iy )
-		for( auto val : scan_line( iy ) )
+	for( auto row : *this )
+		for( auto val : row )
 			max = std::max( max, val );
 	return max;
 }
 color_type Plane::mean_value() const{
 	precision_color_type avg = color::BLACK;
-	for( unsigned iy=0; iy<get_height(); ++iy ){
-		//TODO: use accumulate
-		precision_color_type avg_y = color::BLACK;
-		for( auto val : scan_line( iy ) )
-			avg_y += val;
-		avg += avg_y / get_width();
-	}
+	for( auto row : *this )
+		avg += std::accumulate( row.begin(), row.end(), precision_color_type(color::BLACK) ) / row.width();
 	return avg / get_height();
 }
 
 bool Plane::is_interlaced() const{
 	double avg2_uneven = 0, avg2_even = 0;
-	for( unsigned iy=0; iy<get_height()/4*4; ){
-		auto row1 = scan_line( iy++ );
-		auto row2 = scan_line( iy++ );
-		auto row3 = scan_line( iy++ );
-		auto row4 = scan_line( iy++ );
+	for( unsigned iy=0; iy<get_height()/4*4; iy+=4 ){
+		auto row1 = scan_line( iy+0 );
+		auto row2 = scan_line( iy+1 );
+		auto row3 = scan_line( iy+2 );
+		auto row4 = scan_line( iy+3 );
 		
 		unsigned long long line_avg_uneven = 0, line_avg_even = 0;
 		for( unsigned ix=0; ix<get_width(); ++ix ){
-			color_type diff_uneven = abs( row2[ix]-row1[ix] ) + abs( row4[ix]-row3[ix] );
-			color_type diff_even   = abs( row3[ix]-row1[ix] ) + abs( row4[ix]-row2[ix] );
+			color_type diff_uneven = std::abs( row2[ix]-row1[ix] ) + std::abs( row4[ix]-row3[ix] );
+			color_type diff_even   = std::abs( row3[ix]-row1[ix] ) + std::abs( row4[ix]-row2[ix] );
 			line_avg_uneven += (unsigned long long)diff_uneven*diff_uneven;
 			line_avg_even   += (unsigned long long)diff_even  *diff_even;
 		}
@@ -130,7 +115,7 @@ Plane Plane::maxPlane( const Plane& p ) const{
 		auto row_in  = p  .scan_line( iy );
 		auto row_out = out.scan_line( iy );
 		for( unsigned ix=0; ix<get_width(); ++ix )
-			row_out[ix] = max( row_out[ix], row_in[ix] );
+			row_out[ix] = std::max( row_out[ix], row_in[ix] );
 	}
 	return out;
 }
@@ -142,7 +127,7 @@ Plane Plane::minPlane( const Plane& p ) const{
 		auto row_in  = p  .scan_line( iy );
 		auto row_out = out.scan_line( iy );
 		for( unsigned ix=0; ix<get_width(); ++ix )
-			row_out[ix] = min( row_out[ix], row_in[ix] );
+			row_out[ix] = std::min( row_out[ix], row_in[ix] );
 	}
 	return out;
 }
