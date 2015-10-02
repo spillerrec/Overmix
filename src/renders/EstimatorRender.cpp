@@ -85,12 +85,10 @@ void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, d
 	
 	//Find diff
 	Plane delta( p1 );
-	for( unsigned iy=0; iy<p2.get_height(); iy++ ){
-		auto row_out = delta.scan_line( iy );
-		auto row_in  = p2   .scan_line( iy );
-		for( unsigned ix=0; ix<p2.get_width(); ix++ )
-			row_out[ix] = signFloat( row_out[ix], row_in[ix], beta );
-	}
+	for( unsigned iy=0; iy<p2.get_height(); iy++ )
+		for( auto val : makeZipRowIt( delta.scan_line( iy ), p2.scan_line( iy ) ) )
+			val.first = signFloat( val.first, val.second, beta );
+	
 	//Upscale delta to fit
 	delta = delta.scale_select( delta.getSize()*scale, ScalingFunction::SCALE_MITCHELL );
 	

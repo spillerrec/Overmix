@@ -116,14 +116,10 @@ Plane SumPlane::average() const{
 Plane SumPlane::alpha() const{
 	Plane alpha( amount.getSize() );
 	
-	for( unsigned iy=0; iy<alpha.get_height(); iy++ ){
-		auto amounts = amount.scan_line( iy );
-		auto out     = alpha .scan_line( iy );
-		
-		//Set to transparent if nothing have been added here
-		for( unsigned ix=0; ix<alpha.get_width(); ix++ )
-			out[ix] = amounts[ix] != 0 ? color::WHITE : color::BLACK;
-	}
+	//Set to transparent if nothing have been added here
+	for( unsigned iy=0; iy<alpha.get_height(); iy++ )
+		for( auto val : makeZipRowIt( alpha.scan_line( iy ), amount.scan_line( iy ) ) )
+			val.first = val.second != 0 ? color::WHITE : color::BLACK;
 	
 	return alpha;
 }

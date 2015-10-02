@@ -89,8 +89,8 @@ void DctPlane::toPlane( Plane& p, Point<unsigned> pos, double range ){
 Plane FourierPlane::asPlane() const{
 	//Find maximum value
 	double max_real = 0.0;
-	for( unsigned iy=0; iy<get_height(); iy++ ){
-		for( auto val : scan_line( iy ) )
+	for( auto row : *this ){
+		for( auto val : row )
 			max_real = max( max_real, abs( val ) );
 	}
 	
@@ -99,10 +99,9 @@ Plane FourierPlane::asPlane() const{
 	double scale = 100000;
 	auto half_size = get_height() / 2;
 	for( unsigned iy=0; iy<get_height(); iy++ ){
-		auto in  = scan_line( iy < half_size ? iy + half_size : iy - half_size );
-		auto out = output.scan_line( iy );
-		for( unsigned ix=0; ix<get_width(); ix++ )
-			out[ix] = color::fromDouble( log( abs( in[ix] ) / max_real * scale + 1 ) / log( scale + 1 ) );
+		auto pos = iy < half_size ? iy + half_size : iy - half_size;
+		for( auto val : makeZipRowIt( output.scan_line(iy), scan_line( pos ) ) )
+			val.first = color::fromDouble( log( abs( val.second ) / max_real * scale + 1 ) / log( scale + 1 ) );
 	}
 	
 	return output;

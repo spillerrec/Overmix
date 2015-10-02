@@ -25,10 +25,8 @@ using namespace std;
 using namespace Overmix;
 
 static void copyLine( Plane& plane_out, const Plane& plane_in, unsigned y_out, unsigned y_in ){
-	auto out = plane_out.scan_line( y_out );
-	auto in  = plane_in .scan_line( y_in  );
-	for( unsigned ix=0; ix<plane_out.get_width(); ++ix )
-		out[ix] = in[ix];
+	for( auto val : makeZipRowIt( plane_out.scan_line( y_out ), plane_in.scan_line( y_in  ) ) )
+		val.first = val.second;
 }
 
 static void mergeLine( Plane& plane_out, const Plane& plane_in1, const Plane& plane_in2, unsigned y_out, unsigned y_in1, unsigned y_in2 ){
