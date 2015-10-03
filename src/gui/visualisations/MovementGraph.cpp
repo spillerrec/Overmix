@@ -51,9 +51,10 @@ class Line{
 			y << y_pos;
 		}
 		void addToPlot( QCustomPlot& plot, QColor color ){
-			auto graph = plot.addGraph();
-			graph->setData( x, y );
-			graph->setPen( { color } );
+			auto curve = new QCPCurve( plot.xAxis, plot.yAxis );
+			curve->setData( x, y );
+			curve->setPen( { color } );
+			plot.addPlottable( curve );
 		}
 };
 
