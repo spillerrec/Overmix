@@ -136,8 +136,8 @@ void FourierPlane::debugResolution( string path ) const{
 	for( unsigned i=0; i<half_size; i++ ){
 		double sum = 0.0;
 		for( unsigned j=0; j<stride; j++, i++ )
-			for( auto val = makeZipRowIt( scan_line( i ), scan_line( get_height() - i - 1 ) ) )
-				sum += abs( row1[ix] ) + abs( row2[ix] );
+			for( auto val : makeZipRowIt( scan_line( i ), scan_line( get_height() - i - 1 ) ) )
+				sum += abs( val.first ) + abs( val.second );
 		
 		csv.add( to_string( i*2 ) ).add( sum );
 		
@@ -152,7 +152,7 @@ FourierPlane FourierPlane::reduce( unsigned w, unsigned h ) const{
 	out.fill( std::complex<double>( 0, 0 ) );
 	
 	for( unsigned iy=0; iy<h/2; iy++ ){
-		for( auto val : makeZipRowIt( out.scan_line( iy ), scan_line( iy ) )
+		for( auto val : makeZipRowIt( out.scan_line( iy ), scan_line( iy ) ) )
 			val.first = val.second;
 		for( auto val : makeZipRowIt( out.scan_line( h-iy-1 ), scan_line( get_height()-iy-1 ) ) )
 			val.first = val.second;
