@@ -134,21 +134,15 @@ void FourierPlane::debugResolution( string path ) const{
 	
 	unsigned stride = 10;
 	for( unsigned i=0; i<half_size; i++ ){
-		
 		double sum = 0.0;
-		
-		for( unsigned j=0; j<stride; j++, i++ ){
-			auto row1 = scan_line( i );
-			auto row2 = scan_line( get_height() - i - 1 );
-			for( unsigned ix=0; ix<get_width(); ix++ )
+		for( unsigned j=0; j<stride; j++, i++ )
+			for( auto val = makeZipRowIt( scan_line( i ), scan_line( get_height() - i - 1 ) ) )
 				sum += abs( row1[ix] ) + abs( row2[ix] );
-		}
 		
 		csv.add( to_string( i*2 ) ).add( sum );
 		
 		csv.stop();
 	}
-	
 }
 
 FourierPlane FourierPlane::reduce( unsigned w, unsigned h ) const{
@@ -158,14 +152,10 @@ FourierPlane FourierPlane::reduce( unsigned w, unsigned h ) const{
 	out.fill( std::complex<double>( 0, 0 ) );
 	
 	for( unsigned iy=0; iy<h/2; iy++ ){
-		auto in1  =     scan_line( iy );
-		auto out1 = out.scan_line( iy );
-		auto in2  =     scan_line( get_height() - iy - 1 );
-		auto out2 = out.scan_line( h            - iy - 1 );
-		for( unsigned ix=0; ix<out.get_width(); ix++ ){
-			out1[ix] = in1[ix];
-			out2[ix] = in2[ix];
-		}
+		for( auto val : makeZipRowIt( out.scan_line( iy ), scan_line( iy ) )
+			val.first = val.second;
+		for( auto val : makeZipRowIt( out.scan_line( h-iy-1 ), scan_line( get_height()-iy-1 ) ) )
+			val.first = val.second;
 	}
 	
 	return out;
