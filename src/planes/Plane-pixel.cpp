@@ -23,89 +23,56 @@
 
 using namespace Overmix;
 
-static void do_pixel_line_single( SimplePixel pix ){
-	for( unsigned i=0; i<pix.width; ++i ){
-		pix.f( pix );
-		++pix.row1;
-	}
-}
-static void do_pixel_line_double( SimplePixel pix ){
-	for( unsigned i=0; i<pix.width; ++i ){
-		pix.f( pix );
-		++pix.row1;
-		++pix.row2;
-	}
-}
-
-void Plane::for_each_pixel( void (*f)( const SimplePixel& ), void *data ){
-	std::vector<SimplePixel> lines;
-	for( unsigned iy=0; iy<get_height(); ++iy ){
-		SimplePixel pix = { scan_line( iy ).begin()
-			,	nullptr
-			,	get_width()
-			,	f
-			,	data
-			};
-		lines.push_back( pix );
-	}
+void Plane::for_each_pixel( Plane::PixelFunc1 f, void* data ){
+	struct Block{
+		RowIt<color_type> row;
+		void* data;
+		PixelFunc1 f;
+	};
+	std::vector<Block> lines;
+	for( auto row : *this ) lines.push_back( { row, data, f } );
 	
-	QtConcurrent::blockingMap( lines, &do_pixel_line_single );
+	QtConcurrent::blockingMap( lines, [](auto& block){
+			for( auto& val : block.row )
+				val = block.f( val, block.data );
+		} );
 }
 
-void Plane::for_each_pixel( Plane &p, void (*f)( const SimplePixel& ), void *data ){
-	if( get_height() != p.get_height() || get_width() != p.get_width() ){
-		qWarning( "Plane::for_each_pixel: Planes not equally sized, operation skipped!" );
-		return;
-	}
+void Plane::for_each_pixel( const Plane& p, Plane::PixelFunc2 f, void* data ){
+	struct Block{
+		ZipRowIt<color_type, const color_type> row;
+		void* data;
+		PixelFunc2 f;
+	};
+	std::vector<Block> lines;
+	for( unsigned iy=0; iy<get_height(); iy++ )
+		lines.push_back( { { scan_line(iy), p.scan_line(iy) }, data, f } );
 	
-	std::vector<SimplePixel> lines;
-	for( unsigned iy=0; iy<get_height(); ++iy ){
-		SimplePixel pix = { scan_line( iy ).begin()
-			,	p.scan_line( iy ).begin()
-			,	get_width()
-			,	f
-			,	data
-			};
-		lines.push_back( pix );
-	}
-	
-	QtConcurrent::blockingMap( lines, &do_pixel_line_double );
-}
-
-
-static void add_pixel( const SimplePixel& pix ){
-	*pix.row1 = std::min( (int)*pix.row2 + (int)*pix.row1, (int)color::WHITE );
-}
-static void substract_pixel( const SimplePixel& pix ){
-	*pix.row1 = std::max( (int)*pix.row2 - (int)*pix.row1, (int)color::BLACK );
-}
-static void divide_pixel( const SimplePixel& pix ){
-	double val1 = color::asDouble( *pix.row1 );
-	double val2 = color::asDouble( *pix.row2 );
-	*pix.row1 = color::fromDouble( val2 / val1 );
-}
-static void multiply_pixel( const SimplePixel& pix ){
-	double val1 = color::asDouble( *pix.row1 );
-	double val2 = color::asDouble( *pix.row2 );
-	*pix.row1 = color::fromDouble( val2 * val1 );
+	QtConcurrent::blockingMap( lines, [](auto& block){
+			for( auto val : block.row )
+				val.first = block.f( val.first, val.second, block.data );
+		} );
 }
 
 void Plane::add( Plane &p ){
-	for_each_pixel( p, &add_pixel );
+	for_each_pixel( p, []( color_type a, color_type b, void* )
+		{ return color::truncateFullRange( precision_color_type(a) + b ); } );
 }
 void Plane::substract( Plane &p ){
-	for_each_pixel( p, &substract_pixel );
+	for_each_pixel( p, []( color_type a, color_type b, void* )
+		{ return color::truncateFullRange( precision_color_type(b) - a ); } );
 }
 void Plane::difference( Plane &p ){
-	for_each_pixel( p, []( const SimplePixel& pix ){
-			*pix.row1 = std::abs( *pix.row2 - *pix.row1 );
-		} );
+	for_each_pixel( p, []( color_type a, color_type b, void* )
+		{ return (color_type)std::abs( precision_color_type(b) - a ); } );
 }
 void Plane::divide( Plane &p ){
-	for_each_pixel( p, &divide_pixel );
+	for_each_pixel( p, []( color_type a, color_type b, void* )
+		{ return color::fromDouble( color::asDouble( b ) / color::asDouble( a ) ); } );
 }
 void Plane::multiply( Plane &p ){
-	for_each_pixel( p, &multiply_pixel );
+	for_each_pixel( p, []( color_type a, color_type b, void* )
+		{ return color::fromDouble( color::asDouble( b ) * color::asDouble( a ) ); } );
 }
 
 
@@ -117,12 +84,12 @@ struct LevelOptions{
 	double gamma;
 };
 
-static void level_pixel( const SimplePixel& pix ){
-	LevelOptions *opt = (LevelOptions*)pix.data;
+static color_type level_pixel( color_type in, void* data ){
+	LevelOptions *opt = (LevelOptions*)data;
 	
 	//Limit
 	double scale = 1.0 / ( opt->limit_max - opt->limit_min );
-	double val = ( (int)*pix.row1 - opt->limit_min ) * scale;
+	double val = ( (precision_color_type)in - opt->limit_min ) * scale;
 	val = std::min( std::max( val, 0.0 ), 1.0 );
 	
 	//Gamma
@@ -131,7 +98,7 @@ static void level_pixel( const SimplePixel& pix ){
 	
 	//Output
 	scale = opt->output_max - opt->output_min;
-	*pix.row1 = opt->output_min + std::round( val * scale );
+	return opt->output_min + std::round( val * scale );
 }
 
 Plane Plane::level(

@@ -42,13 +42,6 @@ class DiffCache{
 		double get_diff( int x, int y, unsigned precision ) const;
 		void add_diff( int x, int y, double diff, unsigned precision );
 };
-struct SimplePixel{ //TODO: this is pretty ugly
-	color_type *row1;
-	color_type *row2;
-	unsigned width;
-	void (*f)( const SimplePixel& );
-	void *data;
-};
 
 using Kernel = PlaneBase<double>;
 
@@ -97,8 +90,10 @@ class Plane : public PlaneBase<color_type>{
 		
 	//Overlays
 	private:
-		void for_each_pixel( void (*f)( const SimplePixel& ), void *data=nullptr );
-		void for_each_pixel( Plane &p, void (*f)( const SimplePixel& ), void *data=nullptr );
+		using PixelFunc1 = color_type (*)( color_type, void* );
+		using PixelFunc2 = color_type (*)( color_type, color_type, void* );
+		void for_each_pixel( Plane::PixelFunc1 f, void* data=nullptr );
+		void for_each_pixel( const Plane& p, Plane::PixelFunc2 f, void* data=nullptr );
 	public:
 		void add( Plane &p );
 		void substract( Plane &p );

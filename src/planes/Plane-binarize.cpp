@@ -24,19 +24,19 @@
 using namespace std;
 using namespace Overmix;
 
-static void apply_threshold( const SimplePixel& pixel ){
-	color_type threshold = *(color_type*)pixel.data;
-	*pixel.row1 = *pixel.row1 > threshold ? color::WHITE : color::BLACK;
+static color_type apply_threshold( color_type in, void* data ){
+	color_type threshold = *(color_type*)data;
+	return in > threshold ? color::WHITE : color::BLACK;
 }
 
 void Plane::binarize_threshold( color_type threshold ){
 	for_each_pixel( &apply_threshold, &threshold );
 }
 
-static void adaptive_threshold( const SimplePixel& pixel ){
-	color_type c = *(color_type*)pixel.data;
-	color_type threshold = *pixel.row2 - c;
-	*pixel.row1 = *pixel.row1 > threshold ? color::WHITE : color::BLACK;
+static color_type adaptive_threshold( color_type row1, color_type row2, void* data ){
+	color_type c = *(color_type*)data;
+	color_type threshold = row2 - c;
+	return row1 > threshold ? color::WHITE : color::BLACK;
 }
 void Plane::binarize_adaptive( unsigned amount, color_type threshold ){
 	Plane blurred = blur_box( amount, amount );
@@ -64,9 +64,8 @@ void Plane::binarize_dither(){
 Plane Plane::dilate( int size ) const{
 	Plane blurred = blur_box( size, size );
 	Plane copy(blurred);
-	blurred.for_each_pixel( copy, [](const SimplePixel& pixel){
-			*pixel.row1 = 
-				( *pixel.row2 > color::WHITE*0.5 && *pixel.row1 >= color::WHITE )
+	blurred.for_each_pixel( copy, [](color_type row1, color_type row2, void*){
+			return ( row2 > color::WHITE*0.5 && row1 >= color::WHITE )
 				?	color::WHITE : color::BLACK;
 		} );
 	return blurred;
