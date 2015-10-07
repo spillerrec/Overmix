@@ -51,9 +51,10 @@ struct MemStream{
 	}
 };
 
+//TODO: how to best bound-check? avoid width, or do asserts?
 class ImgRow{
 	private:
-		std::vector<color_type*> rows;
+		std::vector<RowIt<color_type>> rows;
 		int pixels;
 		unsigned width;
 		
@@ -63,9 +64,9 @@ class ImgRow{
 			,	width( img.get_width() ){
 			rows.reserve( pixels );
 			for( int i=0; i<colors; i++ )
-				rows.push_back( img[i].scan_line( iy ).begin() );
+				rows.push_back( img[i].scan_line( iy ) );
 			if( alpha )
-				rows.push_back( img.alpha_plane().scan_line( iy ).begin() );
+				rows.push_back( img.alpha_plane().scan_line( iy ) );
 		}
 		
 		void read8( png_bytep row_pointer ){
