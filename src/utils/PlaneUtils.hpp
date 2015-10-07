@@ -43,15 +43,13 @@ class ScaledPlane{
 
 class ColorRow{
 	private:
-		color_type* r, * g, * b;
+		RowIt<color_type> r, g, b;
 		
 	public:
-		ColorRow( color_type* r, color_type* g, color_type* b )
-			: r(r), g(g), b(b) { }
 		ColorRow( ImageEx& img, int ix )
-			:	r(img[0].scan_line(ix).begin())
-			,	g(img[1].scan_line(ix).begin())
-			,	b(img[2].scan_line(ix).begin())
+			:	r(img[0].scan_line(ix))
+			,	g(img[1].scan_line(ix))
+			,	b(img[2].scan_line(ix))
 			{ }
 		
 		color operator[]( int i ) const

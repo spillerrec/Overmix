@@ -33,11 +33,9 @@ class RowIt{
 		
 	public:
 		RowIt( T2* row, unsigned width ) : row(row), w(width) { }
-		
-		T2* line() const{ return row; }
 		unsigned width() const{ return w; }
 		
-		T2& operator[]( int index ){ return row[index]; }
+		T2& operator[]( int index ) const{ return row[index]; }
 		T2* begin() const{ return row;     }
 		T2* end()   const{ return row + w; }
 };
