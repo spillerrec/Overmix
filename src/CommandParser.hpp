@@ -15,29 +15,25 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "CommandParser.hpp"
-#include "containers/ImageContainer.hpp"
-#include "gui/mainwindow.hpp"
+#ifndef COMMAND_PARSER_HPP
+#define COMMAND_PARSER_HPP
 
-#include <QApplication>
-#include <QStringList>
+class QStringList;
+namespace Overmix{
+class ImageContainer;
 
-int main( int argc, char *argv[] ){
-	QApplication a( argc, argv );
-	Overmix::ImageContainer images;
-	Overmix::CommandParser parser( images );
-	
-	//Parse command-line arguments
-	auto args = a.arguments();
-	args.removeFirst();
-	parser.parse( args );
-	
-	//Do not run GUI if the user is not interested in doing so
-	if( !parser.useGui() )
-		return 0;
-	
-	//Start GUI
-	Overmix::main_widget w( images );
-	w.show();
-	return a.exec();
+class CommandParser{
+	private:
+		ImageContainer& images;
+		bool use_gui{ true };
+		
+	public:
+		CommandParser( ImageContainer& images ) : images(images) { }
+		
+		void parse( QStringList commands );
+		bool useGui() const{ return use_gui; }
+};
+
 }
+
+#endif

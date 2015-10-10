@@ -15,29 +15,26 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
 #include "CommandParser.hpp"
+
 #include "containers/ImageContainer.hpp"
-#include "gui/mainwindow.hpp"
+#include "containers/ImageContainerSaver.hpp"
 
-#include <QApplication>
 #include <QStringList>
+#include <QFileInfo>
+#include <QUrl>
 
-int main( int argc, char *argv[] ){
-	QApplication a( argc, argv );
-	Overmix::ImageContainer images;
-	Overmix::CommandParser parser( images );
-	
-	//Parse command-line arguments
-	auto args = a.arguments();
-	args.removeFirst();
-	parser.parse( args );
-	
-	//Do not run GUI if the user is not interested in doing so
-	if( !parser.useGui() )
-		return 0;
-	
-	//Start GUI
-	Overmix::main_widget w( images );
-	w.show();
-	return a.exec();
+using namespace Overmix;
+
+void CommandParser::parse( QStringList commands ){
+	for( auto arg : commands ){
+		//TODO: handle arguments
+		if( !arg.startsWith( "-" ) ){
+			if( QFileInfo( arg ).completeSuffix() == "xml.overmix" )
+				ImageContainerSaver::load( images, arg );
+			else
+				images.addImage( ImageEx::fromFile( arg ), -1, -1, arg );
+		}
+	}
 }
