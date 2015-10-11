@@ -21,20 +21,93 @@
 #include "containers/ImageContainer.hpp"
 #include "containers/ImageContainerSaver.hpp"
 
-#include <QStringList>
 #include <QFileInfo>
+#include <QImage>
+#include <QStringList>
 #include <QUrl>
+#include <QDebug>
+
+#include <vector>
 
 using namespace Overmix;
 
+struct Splitter{
+	QString left;
+	QString right;
+	Splitter( QString str, auto split ){
+		auto pos = str.indexOf( split );
+		left  = str.left( pos );
+		right = ( pos >= 0 ) ? str.right( str.length() - (pos+1) ) : "";
+	}
+};
+
+static int asInt( QString encoded ){
+	bool result;
+	auto integer = encoded.toInt( &result );
+	//if( !result )
+		//TODO:
+	return integer;
+}
+
+struct Command{
+	bool is_file;
+	Splitter parts;
+	
+	Command( QString cmd )
+		:	is_file( !cmd.startsWith( "--" ) )
+		,	parts( cmd.right( is_file ? cmd.length() : cmd.length()-2 ), '=' )
+		{ }
+	
+	bool is( auto name ) const { return parts.left == name; }
+	QString filename() const { return parts.left; }
+	QString arguments() const { return parts.right; }
+};
+
+#include "renders/AverageRender.hpp"
+static ImageEx renderParser( QString parameters, const AContainer& container ){
+	//TODO: parse parameters
+	return AverageRender().render( container );
+}
+
+#include "aligners/AverageAligner.hpp"
+static void alignerParser( QString parameters, AContainer& container ){
+	//TODO: parse parameters
+	AverageAligner aligner( container, AImageAligner::ALIGN_BOTH );
+	aligner.addImages();
+	aligner.align();
+}
+
 void CommandParser::parse( QStringList commands ){
-	for( auto arg : commands ){
-		//TODO: handle arguments
-		if( !arg.startsWith( "-" ) ){
-			if( QFileInfo( arg ).completeSuffix() == "xml.overmix" )
-				ImageContainerSaver::load( images, arg );
+	std::vector<ImageEx> renders;
+	
+	for( Command cmd : commands ){
+		if( cmd.is_file ){ //Load a file
+			if( QFileInfo( cmd.filename() ).completeSuffix() == "xml.overmix" )
+				ImageContainerSaver::load( images, cmd.filename() );
 			else
-				images.addImage( ImageEx::fromFile( arg ), -1, -1, arg );
+				images.addImage( ImageEx::fromFile( cmd.filename() ), -1, -1, cmd.filename() );
+		}
+		else if( cmd.is( "no-gui" ) ) //Prevent GUI from starting
+			use_gui = false;
+		else if( cmd.is( "pre-process" ) ){
+			//TODO:
+			qWarning( "processing not yet implemented" );
+		}
+		else if( cmd.is( "post-process" ) ){
+			//TODO:
+			qWarning( "processing not yet implemented" );
+		}
+		else if( cmd.is( "align" ) ){
+			alignerParser( cmd.arguments(), images );
+		}
+		else if( cmd.is( "render" ) ){
+			renders.push_back( renderParser( cmd.arguments(), images ) );
+		}
+		else if( cmd.is( "save" ) ){
+			Splitter args( cmd.arguments(), ':' );
+			auto id = asInt( args.left ); //TODO: bounds-check
+			renders[id].to_qimage().save( args.right );
 		}
 	}
+	
 }
