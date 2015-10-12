@@ -36,17 +36,10 @@ Point<double> asPoint( Splitter split ){
 }
 
 template<typename T>
-struct EnumCase{
-	const char* name;
-	T value;
-	EnumCase( const char* name, T value ) : name(name), value(value) { }
-};
-
-template<typename T>
-T getEnum( QString str, std::vector<EnumCase<T>> cases ){
-	auto pos = std::find_if( cases.begin(), cases.end(), [&]( auto pair ){ return pair.name == str; } );
+T getEnum( QString str, std::vector<std::pair<const char*, T>> cases ){
+	auto pos = std::find_if( cases.begin(), cases.end(), [&]( auto pair ){ return pair.first == str; } );
 	if( pos != cases.end() )
-		return pos->value;
+		return pos->second;
 	throw std::invalid_argument( "Unknown enum value" );
 }
 
