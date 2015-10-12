@@ -17,37 +17,20 @@
 
 
 #include "CommandParser.hpp"
+#include "Parsing.hpp"
+#include "Processor.hpp"
 
-#include "containers/ImageContainer.hpp"
-#include "containers/ImageContainerSaver.hpp"
+#include "../containers/ImageContainer.hpp"
+#include "../containers/ImageContainerSaver.hpp"
 
 #include <QFileInfo>
 #include <QImage>
 #include <QStringList>
-#include <QUrl>
-#include <QDebug>
 
 #include <vector>
 
 using namespace Overmix;
 
-struct Splitter{
-	QString left;
-	QString right;
-	Splitter( QString str, auto split ){
-		auto pos = str.indexOf( split );
-		left  = str.left( pos );
-		right = ( pos >= 0 ) ? str.right( str.length() - (pos+1) ) : "";
-	}
-};
-
-static int asInt( QString encoded ){
-	bool result;
-	auto integer = encoded.toInt( &result );
-	//if( !result )
-		//TODO:
-	return integer;
-}
 
 struct Command{
 	bool is_file;
@@ -63,13 +46,13 @@ struct Command{
 	QString arguments() const { return parts.right; }
 };
 
-#include "renders/AverageRender.hpp"
+#include "../renders/AverageRender.hpp"
 static ImageEx renderParser( QString parameters, const AContainer& container ){
 	//TODO: parse parameters
 	return AverageRender().render( container );
 }
 
-#include "aligners/AverageAligner.hpp"
+#include "../aligners/AverageAligner.hpp"
 static void alignerParser( QString parameters, AContainer& container ){
 	//TODO: parse parameters
 	AverageAligner aligner( container, AImageAligner::ALIGN_BOTH );
@@ -94,7 +77,10 @@ void CommandParser::parse( QStringList commands ){
 			qWarning( "processing not yet implemented" );
 		}
 		else if( cmd.is( "post-process" ) ){
-			//TODO:
+			auto processor = processingParser( cmd.arguments() );
+			if( processor )
+				for( auto& img : renders )
+					img = processor->process( img );
 			qWarning( "processing not yet implemented" );
 		}
 		else if( cmd.is( "align" ) ){

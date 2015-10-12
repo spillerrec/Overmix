@@ -19,8 +19,8 @@ HEADERS += src/gui/mainwindow.hpp src/gui/ImagesModel.hpp src/gui/FullscreenView
 SOURCES += src/gui/mainwindow.cpp src/gui/ImagesModel.cpp src/gui/FullscreenViewer.cpp src/main.cpp
 
 # CLI interface
-HEADERS += src/cli/CommandParser.hpp
-SOURCES += src/cli/CommandParser.cpp
+HEADERS += src/cli/CommandParser.hpp src/cli/Processor.hpp src/cli/Parsing.hpp
+SOURCES += src/cli/CommandParser.cpp src/cli/Processor.cpp
 
 # Configurators
 FORMS   += src/gui/configs/ImageAligner.ui
