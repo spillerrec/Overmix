@@ -15,7 +15,7 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "CommandParser.hpp"
+#include "cli/CommandParser.hpp"
 #include "containers/ImageContainer.hpp"
 #include "gui/mainwindow.hpp"
 

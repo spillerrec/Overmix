@@ -13,10 +13,14 @@ unix{
 
 include(overmix.pri)
 
-# Interface
+# GUI interface
 FORMS   += src/gui/mainwindow.ui
-HEADERS += src/gui/mainwindow.hpp src/gui/ImagesModel.hpp src/gui/FullscreenViewer.hpp src/CommandParser.hpp
-SOURCES += src/gui/mainwindow.cpp src/gui/ImagesModel.cpp src/gui/FullscreenViewer.cpp src/CommandParser.cpp src/main.cpp
+HEADERS += src/gui/mainwindow.hpp src/gui/ImagesModel.hpp src/gui/FullscreenViewer.hpp
+SOURCES += src/gui/mainwindow.cpp src/gui/ImagesModel.cpp src/gui/FullscreenViewer.cpp src/main.cpp
+
+# CLI interface
+HEADERS += src/cli/CommandParser.hpp
+SOURCES += src/cli/CommandParser.cpp
 
 # Configurators
 FORMS   += src/gui/configs/ImageAligner.ui
