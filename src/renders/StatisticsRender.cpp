@@ -30,10 +30,11 @@ static void median_pixel( MultiPlaneLineIterator &it ){
 		if( it.valid( i ) )
 			all.push_back( it[i] );
 	
-	std::sort( all.begin(), all.end() );
-	
-	if( all.size() )
-		it[0] = all[all.size()/2];
+	if( all.size() ){
+		auto pos = all.size() / 2;
+		std::nth_element( all.begin(), all.begin()+pos, all.end() );
+		it[0] = all[pos];
+	}
 }
 static void min_pixel( MultiPlaneLineIterator &it ){
 	it[0] = color::MAX_VAL;
