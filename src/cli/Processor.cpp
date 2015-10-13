@@ -76,10 +76,33 @@ class ScaleProcessor : public Processor{
 		}
 };
 
+class EdgeProcessor : public Processor {
+	private:
+		using planeFunc = Plane (Plane::*)() const;
+		planeFunc function;
+		
+	public:
+		EdgeProcessor( QString str ){
+			function = getEnum<planeFunc>( str, {
+					{ "robert",          &Plane::edge_robert          }
+				,	{ "sobel",           &Plane::edge_sobel           }
+				,	{ "prewitt",         &Plane::edge_prewitt         }
+				,	{ "laplacian",       &Plane::edge_laplacian       }
+				,	{ "laplacian-large", &Plane::edge_laplacian_large }
+				} );
+		}
+		
+		ImageEx process( const ImageEx& img ) override{
+			return img.copyApply( function );
+		}
+};
+
 std::unique_ptr<Processor> Overmix::processingParser( QString parameters ){
 	Splitter split( parameters, '&' );
 	if( split.left == "scale" )
 		return std::make_unique<ScaleProcessor>( split.right );
+	if( split.left == "edge" )
+		return std::make_unique<EdgeProcessor>( split.right );
 	qDebug() << "No processor found!" << split.left;
 	//TODO: Deconvolve
 	//TODO: Blurring
