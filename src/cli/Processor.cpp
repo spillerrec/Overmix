@@ -20,6 +20,7 @@
 #include "Parsing.hpp"
 
 #include "../planes/ImageEx.hpp"
+#include "../color.hpp"
 
 #include <QString>
 #include <QDebug>
@@ -31,10 +32,6 @@
 using namespace Overmix;
 
 
-Point<double> asPoint( Splitter split ){
-	return { asDouble( split.left ), asDouble( split.right ) };
-}
-
 template<typename T>
 T getEnum( QString str, std::vector<std::pair<const char*, T>> cases ){
 	auto pos = std::find_if( cases.begin(), cases.end(), [&]( auto pair ){ return pair.first == str; } );
@@ -43,66 +40,102 @@ T getEnum( QString str, std::vector<std::pair<const char*, T>> cases ){
 	throw std::invalid_argument( "Unknown enum value" );
 }
 
-class ScaleProcessor : public Processor{
-	private:
-		ScalingFunction function{ ScalingFunction::SCALE_CATROM };
-		Point<double> scale;
-		
-		auto getFunction( QString str ){
-			return getEnum<ScalingFunction>( str, {
-					{ "none",     ScalingFunction::SCALE_NEAREST   }
-				,	{ "linear",   ScalingFunction::SCALE_LINEAR    }
-				,	{ "mitchell", ScalingFunction::SCALE_MITCHELL  }
-				,	{ "catrom",   ScalingFunction::SCALE_CATROM    }
-				,	{ "spline",   ScalingFunction::SCALE_SPLINE    }
-				,	{ "lanczos3", ScalingFunction::SCALE_LANCZOS_3 }
-				,	{ "lanczos5", ScalingFunction::SCALE_LANCZOS_5 }
-				,	{ "lanczos7", ScalingFunction::SCALE_LANCZOS_7 }
-				} );
-		}
-		
-	public:
-		ScaleProcessor( QString str ){
-			//method:XxY
-			Splitter split( str, ':' );
-			function = getFunction( split.left );
-			scale = asPoint( { split.right, 'x' } );
-		}
-		
-		ImageEx process( const ImageEx& img ) override{
-			ImageEx copy( img );
-			copy.scaleFactor( scale, function );
-			return copy;
-		}
+template<typename Arg, typename Arg2, typename... Args>
+void convert( QString str, Arg& val, Arg2& val2, Args... args ){
+	Splitter split( str, ':' );
+	convert( split.left, val );
+	convert( split.right, val2, args... );
+}
+
+void convert( QString str, double& val ) { val = asDouble(str); }
+void convert( QString str, int& val ) { val = asInt(str); }
+
+template<typename T>
+void convert( QString str, Point<T>& val ){
+	Splitter split( str, 'x' );
+	convert( split.left,  val.x );
+	convert( split.right, val.y );
+}
+
+void convert( QString str, ScalingFunction& func ){
+	func = getEnum<ScalingFunction>( str,
+		{	{ "none",     ScalingFunction::SCALE_NEAREST   }
+		,	{ "linear",   ScalingFunction::SCALE_LINEAR    }
+		,	{ "mitchell", ScalingFunction::SCALE_MITCHELL  }
+		,	{ "catrom",   ScalingFunction::SCALE_CATROM    }
+		,	{ "spline",   ScalingFunction::SCALE_SPLINE    }
+		,	{ "lanczos3", ScalingFunction::SCALE_LANCZOS_3 }
+		,	{ "lanczos5", ScalingFunction::SCALE_LANCZOS_5 }
+		,	{ "lanczos7", ScalingFunction::SCALE_LANCZOS_7 }
+		} );
+}
+
+using PlaneFunc = Plane (Plane::*)() const;
+void convert( QString str, PlaneFunc& func ){
+	func = getEnum<PlaneFunc>( str,
+		{	{ "robert",          &Plane::edge_robert          }
+		,	{ "sobel",           &Plane::edge_sobel           }
+		,	{ "prewitt",         &Plane::edge_prewitt         }
+		,	{ "laplacian",       &Plane::edge_laplacian       }
+		,	{ "laplacian-large", &Plane::edge_laplacian_large }
+		} );
+}
+
+struct ScaleProcessor : public Processor{
+	ScalingFunction function{ ScalingFunction::SCALE_CATROM };
+	Point<double> scale;
+	
+	ScaleProcessor( QString str ) { convert( str, function, scale ); }
+	
+	ImageEx process( const ImageEx& img ) override{
+		ImageEx copy( img );
+		copy.scaleFactor( scale, function );
+		return copy;
+	}
 };
 
-class EdgeProcessor : public Processor {
-	private:
-		using planeFunc = Plane (Plane::*)() const;
-		planeFunc function;
-		
-	public:
-		EdgeProcessor( QString str ){
-			function = getEnum<planeFunc>( str, {
-					{ "robert",          &Plane::edge_robert          }
-				,	{ "sobel",           &Plane::edge_sobel           }
-				,	{ "prewitt",         &Plane::edge_prewitt         }
-				,	{ "laplacian",       &Plane::edge_laplacian       }
-				,	{ "laplacian-large", &Plane::edge_laplacian_large }
-				} );
-		}
-		
-		ImageEx process( const ImageEx& img ) override{
-			return img.copyApply( function );
-		}
+struct EdgeProcessor : public Processor {
+	PlaneFunc function;
+	
+	EdgeProcessor( QString str ) { convert( str, function ); }
+	
+	ImageEx process( const ImageEx& img ) override
+		{ return img.copyApply( function ); }
 };
+
+struct DilateProcessor : public Processor {
+	int size;
+	
+	DilateProcessor( QString str ) { convert( str, size ); }
+	
+	ImageEx process( const ImageEx& img ) override
+		{ return img.copyApply( Plane::dilate, size ); }
+};
+
+struct BinarizeThresholdProcessor : public Processor {
+	double threshold;
+	
+	BinarizeThresholdProcessor( QString str ) { convert( str, threshold ); }
+	
+	ImageEx process( const ImageEx& img ) override {
+		ImageEx copy( img );
+		for( unsigned i=0; i<copy.size(); i++ )
+			copy[i].binarize_threshold( color::fromDouble( threshold ) );
+		return copy;
+	}
+};
+
 
 std::unique_ptr<Processor> Overmix::processingParser( QString parameters ){
-	Splitter split( parameters, '&' );
+	Splitter split( parameters, ':' );
 	if( split.left == "scale" )
 		return std::make_unique<ScaleProcessor>( split.right );
 	if( split.left == "edge" )
 		return std::make_unique<EdgeProcessor>( split.right );
+	if( split.left == "dilate" )
+		return std::make_unique<DilateProcessor>( split.right );
+	if( split.left == "binarize-threshold" )
+		return std::make_unique<BinarizeThresholdProcessor>( split.right );
 	qDebug() << "No processor found!" << split.left;
 	//TODO: Deconvolve
 	//TODO: Blurring
