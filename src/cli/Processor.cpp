@@ -109,7 +109,7 @@ struct DilateProcessor : public Processor {
 	DilateProcessor( QString str ) { convert( str, size ); }
 	
 	ImageEx process( const ImageEx& img ) override
-		{ return img.copyApply( Plane::dilate, size ); }
+		{ return img.copyApply( &Plane::dilate, size ); }
 };
 
 struct BinarizeThresholdProcessor : public Processor {
