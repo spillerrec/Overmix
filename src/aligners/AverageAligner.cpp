@@ -22,13 +22,13 @@
 using namespace Overmix;
 
 void AverageAligner::align( AProcessWatcher* watcher ){
-	if( count() == 0 )
+	resetPosition();
+	if( count() <= 1 ) //If there is nothing to align
 		return;
 	
 	ProgressWrapper( watcher ).setTotal( count() );
 	
 	raw = true;
-	resetPosition();
 	
 	SumPlane render;
 	render.addAlphaPlane( image( 0 )[0], alpha( 0 ), {0,0} );
