@@ -80,7 +80,7 @@ void CommandParser::parse( QStringList commands ){
 			auto processor = processingParser( cmd.arguments() );
 			if( processor )
 				for( auto& img : renders )
-					img = processor->process( img );
+					processor->process( img );
 			qWarning( "processing not yet implemented" );
 		}
 		else if( cmd.is( "align" ) ){

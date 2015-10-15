@@ -27,7 +27,7 @@ class ImageEx;
 
 class Processor{
 	public:
-		virtual ImageEx process( const ImageEx& ) = 0;
+		virtual void process( ImageEx& ) = 0;
 		virtual ~Processor() { }
 };
 

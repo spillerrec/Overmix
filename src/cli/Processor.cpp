@@ -87,11 +87,8 @@ struct ScaleProcessor : public Processor{
 	
 	ScaleProcessor( QString str ) { convert( str, function, scale ); }
 	
-	ImageEx process( const ImageEx& img ) override{
-		ImageEx copy( img );
-		copy.scaleFactor( scale, function );
-		return copy;
-	}
+	void process( ImageEx& img ) override
+		{ img.scaleFactor( scale, function ); }
 };
 
 struct EdgeProcessor : public Processor {
@@ -99,8 +96,8 @@ struct EdgeProcessor : public Processor {
 	
 	EdgeProcessor( QString str ) { convert( str, function ); }
 	
-	ImageEx process( const ImageEx& img ) override
-		{ return img.copyApply( function ); }
+	void process( ImageEx& img ) override
+		{ img.apply( function ); }
 };
 
 struct DilateProcessor : public Processor {
@@ -108,8 +105,8 @@ struct DilateProcessor : public Processor {
 	
 	DilateProcessor( QString str ) { convert( str, size ); }
 	
-	ImageEx process( const ImageEx& img ) override
-		{ return img.copyApply( &Plane::dilate, size ); }
+	void process( ImageEx& img ) override
+		{ img.apply( &Plane::dilate, size ); }
 };
 
 struct BinarizeThresholdProcessor : public Processor {
@@ -117,11 +114,9 @@ struct BinarizeThresholdProcessor : public Processor {
 	
 	BinarizeThresholdProcessor( QString str ) { convert( str, threshold ); }
 	
-	ImageEx process( const ImageEx& img ) override {
-		ImageEx copy( img );
-		for( unsigned i=0; i<copy.size(); i++ )
-			copy[i].binarize_threshold( color::fromDouble( threshold ) );
-		return copy;
+	void process( ImageEx& img ) override {
+		for( unsigned i=0; i<img.size(); i++ )
+			img[i].binarize_threshold( color::fromDouble( threshold ) );
 	}
 };
 
