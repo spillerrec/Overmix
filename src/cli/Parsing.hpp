@@ -26,7 +26,9 @@ namespace Overmix{
 struct Splitter{
 	QString left;
 	QString right;
-	Splitter( QString str, auto split ){
+        
+        template<typename T>
+	Splitter( QString str, T split ){
 		auto pos = str.indexOf( split );
 		left  = str.left( pos );
 		right = ( pos >= 0 ) ? str.right( str.length() - (pos+1) ) : "";

@@ -41,7 +41,8 @@ struct Command{
 		,	parts( cmd.right( is_file ? cmd.length() : cmd.length()-2 ), '=' )
 		{ }
 	
-	bool is( auto name ) const { return parts.left == name; }
+	template<typename T>
+	bool is( T name ) const { return parts.left == name; }
 	QString filename() const { return parts.left; }
 	QString arguments() const { return parts.right; }
 };
