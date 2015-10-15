@@ -1,6 +1,6 @@
 # Libraries used
 QT += concurrent
-LIBS += -lfftw3 -lm -lpng -ljpeg -lz -llzma
+LIBS += -lfftw3-3 -lm -lpng -ljpeg -lz -llzma
 
 # C++11 support
 QMAKE_CXXFLAGS += -std=c++14
