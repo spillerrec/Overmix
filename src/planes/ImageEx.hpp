@@ -48,8 +48,8 @@ class ImageEx{
 		struct PlaneInfo{
 			Plane p;
 			Size<int> subsampling;
-			PlaneInfo( Plane p, Size<int> sub={0,0} )
-				:	p(p), subsampling(sub) {}
+			PlaneInfo( Plane&& p, Size<int> sub={0,0} )
+				:	p(std::move(p)), subsampling(sub) {}
 		};
 		
 		enum Settings{
@@ -70,10 +70,10 @@ class ImageEx{
 		bool from_qimage( QIODevice& dev, QString ext );
 		
 	public:
-		void addPlane( Plane&& p ){ if( p.valid() ) planes.emplace_back( p ); }
+		void addPlane( Plane&& p ){ if( p.valid() ) planes.emplace_back( std::move(p) ); }
 		
 		ImageEx() { }
-		ImageEx( Transform t ) : transform(t) { }
+		ImageEx( Transform t ) : transform(t) { planes.reserve(3); }
 		ImageEx( Plane p ) : transform( Transform::GRAY )
 			{ addPlane( std::move(p) ); }
 		ImageEx( Plane p, Plane a  ) : ImageEx( p ) { alpha = a; }
