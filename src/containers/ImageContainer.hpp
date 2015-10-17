@@ -55,7 +55,7 @@ class ImageContainer : public AContainer{
 		std::vector<ImageGroup>::const_iterator  end()    const{ return groups.end();   }
 		
 	public: //AContainer implementation
-		virtual       unsigned  count() const;
+		virtual       unsigned     count()                 const override;
 		virtual const ImageEx&     image( unsigned index ) const override;
 		virtual       ImageEx&  imageRef( unsigned index ) override;
 		virtual const Plane&       alpha( unsigned index ) const override;

@@ -82,10 +82,10 @@ class AImageAligner : public AContainer{
 		void setMask( unsigned index, int id ) override { container.setMask( index, id ); }
 		const Plane& mask( unsigned index ) const override{ return container.mask( index ); }
 		unsigned maskCount() const override{ return container.maskCount(); }
-		Point<double> pos( unsigned index ) const;
-		void setPos( unsigned index, Point<double> newVal );
-		int frame( unsigned index ) const{ return container.frame( index ); }
-		void setFrame( unsigned index, int newVal ){ container.setFrame( index, newVal ); }
+		Point<double> pos( unsigned index ) const override;
+		void setPos( unsigned index, Point<double> newVal ) override;
+		int frame( unsigned index ) const override{ return container.frame( index ); }
+		void setFrame( unsigned index, int newVal ) override{ container.setFrame( index, newVal ); }
 		
 		//Construction
 		void addImages();

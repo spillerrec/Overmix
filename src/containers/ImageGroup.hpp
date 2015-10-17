@@ -74,7 +74,7 @@ class ImageGroup : public AContainer{
 		std::vector<ImageItem>::const_iterator  end()    const{ return items.end();   }
 		
 	public: //AContainer implementation
-		virtual unsigned count() const{ return items.size(); }
+		virtual unsigned       count()                     const override{ return items.size(); }
 		virtual const ImageEx& image(     unsigned index ) const override{ return items[index].image(); }
 		virtual       ImageEx& imageRef(  unsigned index )       override{ return items[index].imageRef(); }
 		virtual int            imageMask( unsigned index ) const override{ return items[index].maskId(); }
