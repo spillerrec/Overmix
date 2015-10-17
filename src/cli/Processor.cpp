@@ -41,7 +41,7 @@ T getEnum( QString str, std::vector<std::pair<const char*, T>> cases ){
 }
 
 template<typename Arg, typename Arg2, typename... Args>
-void convert( QString str, Arg& val, Arg2& val2, Args... args ){
+void convert( QString str, Arg& val, Arg2& val2, Args&... args ){
 	Splitter split( str, ':' );
 	convert( split.left, val );
 	convert( split.right, val2, args... );
@@ -120,6 +120,68 @@ struct BinarizeThresholdProcessor : public Processor {
 	}
 };
 
+struct BinarizeAdaptiveProcessor : public Processor {
+	int amount;
+	double threshold;
+	
+	BinarizeAdaptiveProcessor( QString str ) { convert( str, amount, threshold ); }
+	
+	void process( ImageEx& img ) override {
+		for( unsigned i=0; i<img.size(); i++ )
+			img[i].binarize_adaptive( amount, color::fromDouble( threshold ) );
+	}
+};
+
+struct BinarizeDitherProcessor : public Processor {
+	BinarizeDitherProcessor( QString ) { }
+	
+	void process( ImageEx& img ) override {
+		for( unsigned i=0; i<img.size(); i++ )
+			img[i].binarize_dither();
+	}
+};
+
+struct BlurProcessor : public Processor {
+	Point<double> deviation;
+	
+	BlurProcessor( QString str ) { convert( str, deviation ); }
+	
+	void process( ImageEx& img ) override {
+		for( unsigned i=0; i<img.size(); i++ )
+			img[i] = img[i].blur_gaussian( deviation.x, deviation.y );
+	}
+};
+
+struct DeconvolveProcessor : public Processor {
+	double deviation;
+	int iterations;
+	
+	DeconvolveProcessor( QString str ) { convert( str, deviation, iterations ); }
+	
+	void process( ImageEx& img ) override {
+		for( unsigned i=0; i<img.size(); i++ )
+			img[i] = img[i].deconvolve_rl( deviation, iterations );
+	}
+};
+
+struct LevelProcessor : public Processor {
+	double limit_min, limit_max, output_min, output_max, gamma;
+	
+	LevelProcessor( QString str )
+		{ convert( str, limit_min, limit_max, output_min, output_max, gamma ); }
+	
+	void process( ImageEx& img ) override {
+		for( unsigned i=0; i<img.size(); i++ )
+			img[i] = img[i].level( 
+					color::fromDouble( limit_min )
+				,	color::fromDouble( limit_max )
+				,	color::fromDouble( output_min )
+				,	color::fromDouble( output_max )
+				,	gamma
+				);
+	}
+};
+
 
 std::unique_ptr<Processor> Overmix::processingParser( QString parameters ){
 	Splitter split( parameters, ':' );
@@ -131,12 +193,17 @@ std::unique_ptr<Processor> Overmix::processingParser( QString parameters ){
 		return std::make_unique<DilateProcessor>( split.right );
 	if( split.left == "binarize-threshold" )
 		return std::make_unique<BinarizeThresholdProcessor>( split.right );
+	if( split.left == "binarize-adaptive" )
+		return std::make_unique<BinarizeAdaptiveProcessor>( split.right );
+	if( split.left == "binarize-dither" )
+		return std::make_unique<BinarizeDitherProcessor>( split.right );
+	if( split.left == "blur" )
+		return std::make_unique<BlurProcessor>( split.right );
+	if( split.left == "deconvolve" )
+		return std::make_unique<DeconvolveProcessor>( split.right );
+	if( split.left == "level" )
+		return std::make_unique<LevelProcessor>( split.right );
 	qDebug() << "No processor found!" << split.left;
-	//TODO: Deconvolve
-	//TODO: Blurring
-	//TODO: edge detection
-	//TODO: level
-	//TODO: binarize
 	
 	return {};
 }
