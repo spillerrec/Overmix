@@ -19,8 +19,8 @@
 #include "Processor.hpp"
 #include "Parsing.hpp"
 
-#include "../planes/ImageEx.hpp"
-#include "../color.hpp"
+#include "planes/ImageEx.hpp"
+#include "color.hpp"
 
 #include <QString>
 #include <QDebug>

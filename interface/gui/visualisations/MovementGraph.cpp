@@ -18,8 +18,8 @@
 
 #include "MovementGraph.hpp"
 
-#include "../../containers/FrameContainer.hpp"
-#include "../../containers/ImageContainer.hpp"
+#include "containers/FrameContainer.hpp"
+#include "containers/ImageContainer.hpp"
 
 #include "QCustomPlot/qcustomplot.h"
 #include <QHBoxLayout>

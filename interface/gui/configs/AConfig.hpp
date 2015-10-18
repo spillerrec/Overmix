@@ -26,7 +26,6 @@
 namespace Overmix{
 
 class AConfig : public QWidget{
-	Q_OBJECT
 	
 	public:
 		AConfig( QWidget* parent ) : QWidget(parent) { }

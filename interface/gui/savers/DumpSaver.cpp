@@ -15,34 +15,24 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef A_SAVER_HPP
-#define A_SAVER_HPP
 
-#include <QDialog>
-#include <QString>
+#include "DumpSaver.hpp"
 
-namespace Overmix{
+#include "planes/ImageEx.hpp"
 
-class ImageEx;
+using namespace Overmix;
 
-class ASaver: public QDialog{
-	Q_OBJECT
+DumpSaver::DumpSaver( const ImageEx& image, QString filename ) : ASaver( image, filename ){
+	setupUi(this);
 	
-	private:
-		const ImageEx& image;
-		QString filename;
-		
-	public:
-		explicit ASaver( const ImageEx& image, QString filename ) : image(image), filename(filename) { }
-		virtual void save( const ImageEx& image, QString filename ) = 0;
-		
-	public slots:
-		virtual void accept() override{
-			save( image, filename );
-			QDialog::accept();
-		}
-};
-
+	save_alpha->setChecked( image.alpha_plane() );
+	save_alpha->setEnabled( false );//save_alpha->isChecked() );
+	compression->setEnabled( false );
 }
 
-#endif
+
+void DumpSaver::save( const ImageEx& image, QString filename ){
+	image.saveDump( filename, color_depth->value() );
+}
+
+

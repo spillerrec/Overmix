@@ -18,7 +18,7 @@
 
 #include "ImagesModel.hpp"
 
-#include "../utils/utils.hpp"
+#include "utils/utils.hpp"
 
 #include <QFileInfo>
 

@@ -18,15 +18,15 @@
 
 #include "RenderConfigs.hpp"
 
-#include "../../renders/AnimRender.hpp" //TODO: how to handle?
-#include "../../renders/AverageRender.hpp"
-#include "../../renders/DiffRender.hpp"
-#include "../../renders/FloatRender.hpp"
-#include "../../renders/StatisticsRender.hpp"
-#include "../../renders/PixelatorRender.hpp"
-#include "../../renders/RobustSrRender.hpp"
-#include "../../renders/EstimatorRender.hpp"
-#include "../../renders/JpegRender.hpp"
+#include "renders/AnimRender.hpp" //TODO: how to handle?
+#include "renders/AverageRender.hpp"
+#include "renders/DiffRender.hpp"
+#include "renders/FloatRender.hpp"
+#include "renders/StatisticsRender.hpp"
+#include "renders/PixelatorRender.hpp"
+#include "renders/RobustSrRender.hpp"
+#include "renders/EstimatorRender.hpp"
+#include "renders/JpegRender.hpp"
 
 #include <QComboBox>
 #include <QVBoxLayout>

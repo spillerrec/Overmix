@@ -23,21 +23,21 @@
 
 #include "FullscreenViewer.hpp"
 
-#include "../color.hpp"
-#include "../debug.hpp"
-#include "../renders/AnimRender.hpp"
-#include "../Deteleciner.hpp"
-#include "../containers/DelegatedContainer.hpp"
-#include "../containers/FrameContainer.hpp"
-#include "../containers/ImageContainer.hpp"
-#include "../containers/ImageContainerSaver.hpp"
-#include "../utils/Animator.hpp"
-#include "../utils/ImageLoader.hpp"
+#include "color.hpp"
+#include "debug.hpp"
+#include "renders/AnimRender.hpp"
+#include "Deteleciner.hpp"
+#include "containers/DelegatedContainer.hpp"
+#include "containers/FrameContainer.hpp"
+#include "containers/ImageContainer.hpp"
+#include "containers/ImageContainerSaver.hpp"
+#include "utils/Animator.hpp"
+#include "utils/ImageLoader.hpp"
 
 #include "savers/DumpSaver.hpp"
 #include "visualisations/MovementGraph.hpp"
 
-#include "../debug.hpp"
+#include "debug.hpp"
 
 #include <vector>
 #include <utility>

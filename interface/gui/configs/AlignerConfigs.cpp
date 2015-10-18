@@ -18,13 +18,13 @@
 
 #include "AlignerConfigs.hpp"
 
-#include "../../aligners/AnimationSeparator.hpp"
-#include "../../aligners/AverageAligner.hpp"
-#include "../../aligners/FakeAligner.hpp"
-#include "../../aligners/FrameAligner.hpp"
-#include "../../aligners/RecursiveAligner.hpp"
-#include "../../aligners/LinearAligner.hpp"
-#include "../../aligners/SuperResAligner.hpp"
+#include "aligners/AnimationSeparator.hpp"
+#include "aligners/AverageAligner.hpp"
+#include "aligners/FakeAligner.hpp"
+#include "aligners/FrameAligner.hpp"
+#include "aligners/RecursiveAligner.hpp"
+#include "aligners/LinearAligner.hpp"
+#include "aligners/SuperResAligner.hpp"
 
 #include <QGridLayout>
 

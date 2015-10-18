@@ -109,7 +109,7 @@ colorManager::colorManager(){
 	while( EnumDisplayDevices( NULL, index++, &disp, 0 ) != 0 ){
 		//Temporaries for converting
 		DWORD size = 250;
-		wchar_t icc_path[size];
+		TCHAR icc_path[size];
 		char path_ancii[size*2];
 		
 		//Get profile
@@ -118,8 +118,8 @@ colorManager::colorManager(){
 		DeleteDC( hdc );
 		
 		//Read and add
-		wcstombs( path_ancii, icc_path, size*2 );
-		monitors.push_back( MonitorIcc( cmsOpenProfileFromFile( path_ancii, "r") ) );
+		//wcstombs( path_ancii, icc_path, size*2 ); //TODO: find out why the type of TCHAR changed!!
+		monitors.push_back( MonitorIcc( cmsOpenProfileFromFile( icc_path, "r") ) );
 	}
 #else
 	#ifdef Q_OS_UNIX

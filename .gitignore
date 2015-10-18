@@ -2,6 +2,7 @@ Makefile
 *.Debug
 *.Release
 /out
+/build
 *.pro.user
 
 debug

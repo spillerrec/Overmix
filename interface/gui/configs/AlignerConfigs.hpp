@@ -19,7 +19,7 @@
 #define ALIGNER_CONFIGS_HPP
 
 #include "ConfigChooser.hpp"
-#include "../../aligners/AImageAligner.hpp"
+#include "aligners/AImageAligner.hpp"
 
 
 #include "ui_imagealigner.h"

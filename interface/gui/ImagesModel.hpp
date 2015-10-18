@@ -18,7 +18,7 @@
 #ifndef IMAGES_MODEL_HPP
 #define IMAGES_MODEL_HPP
 
-#include "../containers/ImageContainer.hpp"
+#include "containers/ImageContainer.hpp"
 
 #include <QAbstractItemModel>
 #include <QImage>

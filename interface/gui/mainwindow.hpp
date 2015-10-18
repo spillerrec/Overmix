@@ -27,13 +27,13 @@
 #include <memory>
 #include <vector>
 
-#include "../planes/ImageEx.hpp"
+#include "planes/ImageEx.hpp"
 #include "viewer/imageViewer.h"
 
 #include "ImagesModel.hpp"
 
-#include "../Deteleciner.hpp"
-#include "../RenderOperations.hpp"
+#include "Deteleciner.hpp"
+#include "RenderOperations.hpp"
 
 #include "configs/AlignerConfigs.hpp"
 #include "configs/RenderConfigs.hpp"
