@@ -34,16 +34,16 @@ set(SOURCE_GUI_VISUALISATION
 	gui/visualisations/MovementGraph.cpp
 	)
 
+# Viewer module #TODO: move to its own sub-folder?
+if( WIN32 ) # Don't use registry on windows for saving options
+	add_definitions( -DPORTABLE )
+endif( WIN32 )
 set(SOURCE_GUI_VIEWER
 	gui/viewer/colorManager.cpp
 	gui/viewer/imageCache.cpp
 	gui/viewer/imageViewer.cpp
 	gui/viewer/qrect_extras.cpp
 	)
-
-# win32{
-# 	DEFINES += PORTABLE
-# }
 
 add_executable(OvermixCli ${SOURCE_CLI} main-cli.cpp)
 add_executable(Overmix ${SOURCE_CLI} ${SOURCE_GUI} ${SOURCE_GUI_CONFIGS} ${SOURCE_GUI_SAVERS} ${SOURCE_GUI_VISUALISATION} ${SOURCE_GUI_VIEWER} ${extra_moc} main.cpp)
