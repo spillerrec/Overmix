@@ -79,9 +79,9 @@ set(SOURCES_OTHERS
 # mingw uses a different naming for FFTW apparently # TODO: find a better solution
 if( WIN32 )
 	set(PLATFORM_LIBRARIES ${PLATFORM_LIBRARIES} -lfftw3-3)
-elseif( UNIX )
+else( WIN32 )
 	set(PLATFORM_LIBRARIES ${PLATFORM_LIBRARIES} -lfftw3)
-endif( UNIX )
+endif( WIN32 )
 
 add_library(OvermixCore ${SOURCES_CONTAINERS} ${SOURCES_PLANES} ${SOURCES_CONTAINER_SAVER} ${SOURCES_ALIGNERS} ${SOURCES_RENDERS} ${SOURCES_DEGRADERS} ${SOURCES_OTHERS} )
 target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -lm -lpng -ljpeg -lz -llzma ${PLATFORM_LIBRARIES})
