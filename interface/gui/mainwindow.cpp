@@ -218,10 +218,8 @@ void main_widget::closeEvent( QCloseEvent *event ){
 
 
 void main_widget::process_urls( QStringList files ){
-	//QProgressDialog progress( tr("Loading images"), tr("Stop"), 0, files.count(), this );
-	//progress.setWindowModality( Qt::WindowModal );
-	//TODO: 
-	ImageLoader::loadImages( files, images, detelecine, alpha_mask );
+	DialogWatcher watcher( this, tr("Loading images") );
+	ImageLoader::loadImages( files, images, detelecine, alpha_mask, &watcher );
 	
 	clear_cache();
 	refresh_text();

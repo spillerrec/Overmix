@@ -19,38 +19,53 @@
 
 #include "../Deteleciner.hpp"
 #include "../planes/ImageEx.hpp"
+#include "../renders/ARender.hpp"
 #include "../containers/ImageContainer.hpp"
 #include "../containers/ImageContainerSaver.hpp"
 
 #include <QStringList>
 #include <QtConcurrent>
+#include <QFutureWatcher>
+#include <QCoreApplication>
 
 using namespace std;
 using namespace Overmix;
 
-const vector<ImageLoader::Item>& ImageLoader::loadAll(){
-	QtConcurrent::blockingMap( images, []( Item& item ){
+const vector<ImageLoader::Item>& ImageLoader::loadAll( AProcessWatcher* watcher ){
+	// Set-up watcher
+	ProgressWrapper(watcher).setTotal( images.size() );
+	QFutureWatcher<void> future_watcher;
+	QObject::connect( &future_watcher, &QFutureWatcher<void>::progressValueChanged
+		,	[&](int val){ ProgressWrapper(watcher).setCurrent( val ); } );
+	
+	// Start loading images
+	auto future = QtConcurrent::map( images, []( Item& item ){
 			item.second = ImageEx::fromFile( item.first );
 		} );
+	future_watcher.setFuture( future );
+	
+	//Wait for completion and handle all events
+	while( !future.isFinished() )
+		QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
 	return images;
 }
 
-vector<ImageEx> ImageLoader::loadImages( QStringList list ){
+vector<ImageEx> ImageLoader::loadImages( QStringList list, AProcessWatcher* watcher ){
 	std::vector<ImageEx> cache( list.count() );
 	ImageLoader loader( list.count() );
 	
 	for( unsigned i=0; i<cache.size(); i++ )
 		loader.add( list[i], cache[i] );
-	loader.loadAll(); //TODO: show progress
+	loader.loadAll(watcher);
 	
 	return cache;
 }
 
-void ImageLoader::loadImages( QStringList files, ImageContainer& container, Deteleciner& detelecine, int alpha_mask ){
-	auto cache = loadImages( files ); //TODO: show progress
+void ImageLoader::loadImages( QStringList files, ImageContainer& container, Deteleciner& detelecine, int alpha_mask, AProcessWatcher* watcher ){
+	auto cache = loadImages( files, watcher );
 	container.prepareAdds( files.count() );
 	
-	for( unsigned i=0; i<cache.size(); i++ ){
+	for( unsigned i=0; i<cache.size(); i++ ){ //TODO: Show process
 		auto file = files[i];
 		
 		if( QFileInfo( file ).completeSuffix() == "xml.overmix" )

@@ -26,6 +26,7 @@ class QStringList;
 
 namespace Overmix{
 
+class AProcessWatcher;
 class Deteleciner;
 class ImageEx;
 class ImageContainer;
@@ -39,10 +40,10 @@ class ImageLoader{
 		ImageLoader( int reserve ) { images.reserve( reserve ); }
 		
 		void add( QString filename, ImageEx& image ) { images.emplace_back( filename, image ); }
-		const std::vector<Item>& loadAll();
+		const std::vector<Item>& loadAll( AProcessWatcher* watcher=nullptr );
 		
-		static std::vector<ImageEx> loadImages( QStringList list );
-		static void loadImages( QStringList list, ImageContainer& container, Deteleciner& detele, int alpha_mask=-1 );
+		static std::vector<ImageEx> loadImages( QStringList list, AProcessWatcher* watcher=nullptr );
+		static void loadImages( QStringList list, ImageContainer& container, Deteleciner& detele, int alpha_mask=-1, AProcessWatcher* watcher=nullptr );
 };
 
 }
