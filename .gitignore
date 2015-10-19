@@ -2,10 +2,11 @@ Makefile
 *.Debug
 *.Release
 /out
-/build
 *.pro.user
 
+build
 debug
+profile
 release
 */debug
 */release
