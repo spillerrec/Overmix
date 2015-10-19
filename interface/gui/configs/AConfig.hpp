@@ -43,7 +43,7 @@ class AConfig : public QWidget{
 
 		template<class Widget>
 		Widget* addWidget( QString description ){
-			auto text_layout = new QHBoxLayout( this );
+			auto text_layout = new QHBoxLayout();
 			auto w = new Widget( this );
 			text_layout->addWidget( new QLabel( description, this ) );
 			text_layout->addWidget( w );
