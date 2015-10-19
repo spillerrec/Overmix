@@ -21,6 +21,8 @@
 #include "../planes/ImageEx.hpp"
 #include "../color.hpp"
 
+#include "../MultiPlaneIterator.hpp"
+
 #include <QTime>
 #include <vector>
 using namespace std;

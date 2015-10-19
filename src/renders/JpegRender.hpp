@@ -20,13 +20,14 @@
 
 
 #include "ARender.hpp"
-#include "../planes/ImageEx.hpp"
 #include "../degraders/JpegDegrader.hpp"
 #include <QString>
 
 namespace Overmix{
 
 struct Parameters;
+class Plane;
+class ImageEx;
 
 class JpegRender : public ARender{
 	private:

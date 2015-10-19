@@ -18,12 +18,13 @@
 #ifndef JPEG_DEGRADER_HPP
 #define JPEG_DEGRADER_HPP
 
-#include <vector>
+#include "../planes/PlaneBase.hpp"
 
-#include "../planes/Plane.hpp"
+#include <vector>
 
 namespace Overmix{
 
+class Plane;
 class ImageEx;
 class DctPlane;
 

@@ -19,6 +19,8 @@
 #include "StatisticsRender.hpp"
 #include "../color.hpp"
 
+#include "../MultiPlaneIterator.hpp"
+
 #include <algorithm>
 #include <vector>
 

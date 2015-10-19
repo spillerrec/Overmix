@@ -18,7 +18,7 @@
 #ifndef IMAGE_CONTAINER_SAVER_HPP
 #define IMAGE_CONTAINER_SAVER_HPP
 
-#include <QString>
+class QString;
 
 namespace Overmix{
 
