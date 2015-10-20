@@ -15,61 +15,26 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../src/containers/ImageContainer.hpp"
-#include "../src/containers/ImageContainerSaver.hpp"
+#include "planes/Plane.hpp"
+#include "color.hpp"
+using namespace Overmix;
 
-#include "../src/aligners/RecursiveAligner.hpp"
-#include "../src/aligners/AverageAligner.hpp"
-#include "../src/renders/AverageRender.hpp"
-#include "../src/renders/RobustSrRender.hpp"
 
-#include <QCoreApplication>
-#include <QFileInfo>
-#include <QDebug>
-#include <QTime>
+#include <benchmark/benchmark.h>
 
-int main( int argc, char *argv[] ){
-	QCoreApplication a( argc, argv );
-	ImageContainer images;
-	
-	auto args = a.arguments();
-	args.removeFirst();
-	if( args.size() == 0 ){
-		qDebug() << "Needs files to load";
-		return -1;
+static void BM_PlaneCreation( benchmark::State& state ) {
+	while (state.KeepRunning()){
+		Plane p( state.range_x(), state.range_x() );
 	}
-	
-	QTime t;
-	t.start();
-	
-	for( auto arg : args ){
-		if( QFileInfo( arg ).completeSuffix() == "xml.overmix" )
-			ImageContainerSaver::load( images, arg );
-		else
-			images.addImage( ImageEx::fromFile( arg ), -1, -1, arg );
-	}
-	
-	qDebug() << "Loading took: " << t.restart();
-	
-	//*
-	//RecursiveAligner aligner( images, AImageAligner::ALIGN_BOTH, 1 );
-	//AverageAligner aligner( images, AImageAligner::ALIGN_VER, 1 );
-	//aligner.addImages();
-	//qDebug() << "Preparing alignment took: " << t.restart();
-	//return 0;
-	//aligner.align();
-	//qDebug() << "Aligning took: " << t.restart();
-	//return 0;
-	
-	//auto img( AverageRender().render( images ) );
-	auto img( RobustSrRender( 4 ).render( images ) );
-	qDebug() << "Rendering took: " << t.restart();
-	/*
-	
-	img.to_qimage( ImageEx::SYSTEM_REC709, ImageEx::SETTING_GAMMA | ImageEx::SETTING_DITHER );
-	qDebug() << "to_qimage() took: " << t.restart();
-	
-	qDebug() << "Done";
-	*/
-	return 0;
 }
+
+static void BM_PlaneFill( benchmark::State& state ) {
+	while (state.KeepRunning()){
+		Plane p( state.range_x(), state.range_x() );
+		p.fill(color::WHITE);
+	}
+}
+BENCHMARK(BM_PlaneCreation)->Arg(64)->Arg(128)->Arg(256)->Arg(512)->Arg(1024)->Arg(2048)->Arg(4096);
+BENCHMARK(BM_PlaneFill    )->Arg(64)->Arg(128)->Arg(256)->Arg(512)->Arg(1024)->Arg(2048)->Arg(4096);
+
+BENCHMARK_MAIN();
