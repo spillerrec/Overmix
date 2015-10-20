@@ -176,8 +176,9 @@ class PlaneBase{
 		
 	//Drawing methods
 		void fill( T value ){
-			for( unsigned i=0; i<dataSize(); ++i )
-				data[i] = value;
+			for( auto row : *this )
+				for( auto& val : row )
+					val = value;
 		}
 		void copy( const PlaneBase& from, Point<unsigned> pos, Size<unsigned> size, Point<unsigned> to ){
 			//TODO: check offsets
@@ -194,35 +195,28 @@ class PlaneBase{
 		
 	//Transformations
 		void flipHor(){
-			for( unsigned iy=0; iy<get_height(); iy++ ){
-				auto row = scan_line( iy );
-				for( unsigned ix=0; ix<get_width()/2; ix++ )
+			for( auto row : *this )
+				for( unsigned ix=0; ix<row.width()/2; ix++ )
 					std::swap( row[ix], row[get_width()-ix-1] );
-			}
 		}
 		void flipVer(){
-			for( unsigned iy=0; iy<get_height()/2; iy++ ){
-				auto row1 = scan_line( iy );
-				auto row2 = scan_line( get_height()-iy-1 );
-				for( unsigned ix=0; ix<get_width(); ix++ )
-					std::swap( row1[ix], row2[ix] );
-			}
+			for( unsigned iy=0; iy<get_height()/2; iy++ )
+				for( auto rows : makeZipRowIt( scan_line( iy ), scan_line( get_height()-iy-1 ) ) )
+					std::swap( rows.first, rows.second );
 		}
 		
 		void truncate( T min, T max ){
-			for( unsigned i=0; i<dataSize(); ++i )
-				data[i] = std::min( std::max( data[i], min ), max );
+			for( auto row : *this )
+				for( auto& val : row )
+					val = std::min( std::max( val, min ), max );
 		}
 		
 		template<typename T2>
 		PlaneBase<T2> to() const{
 			PlaneBase<T2> out( getSize() );
-			for( unsigned iy=0; iy<get_height(); iy++ ){
-				auto row_in  =      scan_line( iy );
-				auto row_out =  out.scan_line( iy );
-				for( unsigned ix=0; ix<get_width(); ix++ )
-					row_out[ix] = T2( row_in[ix] );
-			}
+			for( unsigned iy=0; iy<get_height(); iy++ )
+				for( auto rows : makeZipRowIt( out.scan_line(iy), scan_line(iy) ) )
+					rows.first = T2( rows.second );
 			return out;
 		}
 		
