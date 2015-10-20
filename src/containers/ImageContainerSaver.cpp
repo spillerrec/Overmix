@@ -29,7 +29,7 @@
 #include <QtConcurrent>
 #include <QStringList>
 
-#include "pugixml/pugixml.hpp"
+#include <pugixml.hpp>
 using namespace pugi;
 using namespace Overmix;
 

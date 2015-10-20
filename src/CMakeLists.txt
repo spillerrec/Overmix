@@ -12,6 +12,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(SOURCES_CONTAINERS
 	containers/AContainer.cpp
 	containers/ImageContainer.cpp
+	containers/ImageContainerSaver.cpp
 	)
 
 set(SOURCES_PLANES
@@ -29,11 +30,6 @@ set(SOURCES_PLANES
 	planes/ImageEx-png.cpp
 	planes/ImageEx-qimage.cpp
 	planes/gwenview/iodevicejpegsourcemanager.cpp
-	)
-	
-set(SOURCES_CONTAINER_SAVER
-	containers/ImageContainerSaver.cpp
-	containers/pugixml/pugixml.cpp
 	)
 	
 set(SOURCES_ALIGNERS
@@ -83,5 +79,5 @@ else( WIN32 )
 	set(PLATFORM_LIBRARIES ${PLATFORM_LIBRARIES} -lfftw3)
 endif( WIN32 )
 
-add_library(OvermixCore ${SOURCES_CONTAINERS} ${SOURCES_PLANES} ${SOURCES_CONTAINER_SAVER} ${SOURCES_ALIGNERS} ${SOURCES_RENDERS} ${SOURCES_DEGRADERS} ${SOURCES_OTHERS} )
-target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -lm -lpng -ljpeg -lz -llzma ${PLATFORM_LIBRARIES})
+add_library(OvermixCore ${SOURCES_CONTAINERS} ${SOURCES_PLANES} ${SOURCES_ALIGNERS} ${SOURCES_RENDERS} ${SOURCES_DEGRADERS} ${SOURCES_OTHERS} )
+target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -lm -lpng -ljpeg -lz -llzma -lpugixml ${PLATFORM_LIBRARIES})
