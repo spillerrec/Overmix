@@ -68,13 +68,6 @@ std::unique_ptr<wchar_t[]> getUnicodeFilepath( QString filename ){
 	return wpath;
 }
 
-unsigned countChildren( xml_node t, const char* name ){
-	unsigned count=0;
-	for( auto item : t.children( name ) ) //TODO: find a better way of doing this?
-		count++;
-	return count;
-}
-
 QString ImageContainerSaver::load( ImageContainer& container, QString filename ){
 	//TODO: progress monitoring
 	xml_document doc;
@@ -106,11 +99,12 @@ QString ImageContainerSaver::load( ImageContainer& container, QString filename )
 		
 		//Figure out how many images there is in this group
 		//NOTE: needed, as otherwise the references will be broken
-		auto amount = countChildren( group, NODE_ITEM );
+		auto children = group.children( NODE_ITEM );
+		auto amount = std::distance( children.begin(), children.end() );
 		ImageLoader images( amount );
 		container.prepareAdds( amount );
 		
-		for( auto item : group.children( NODE_ITEM ) ){
+		for( auto item : children ){
 			//Translate mask id
 			auto mask  = item.child( NODE_ITEM_MASK  ).text().as_int( -1 );
 			if( mask >= 0 ){
