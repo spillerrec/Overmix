@@ -36,7 +36,7 @@ void normalize( Histogram& h ){
 	Color sum = 0;
 	for( auto val : h )
 		sum += val;
-	auto avg = sum / h.size();
+	auto avg = sum / (Color)h.size();
 	for( auto& val : h )
 		val = val < avg ? color::BLACK : color::WHITE/2;
 }

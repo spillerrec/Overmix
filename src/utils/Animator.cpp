@@ -57,7 +57,7 @@ void blend( ImageEx& img, Point<int> pos, Point<int> size ){
 }
 
 void pixelate( ImageEx& img, Point<int> offset, Point<double> pos, Size<double> view_size, Size<int> pixel_size ){
-	auto end = img.getSize().min( pos+view_size );
+	auto end = img.getSize().min( pos+view_size ).to<int>();
 	
 	//Skip unneeded pixels
 	while( (pos+pixel_size).x < 0 )
@@ -70,12 +70,9 @@ void pixelate( ImageEx& img, Point<int> offset, Point<double> pos, Size<double> 
 	pos.y = int(pos.y) / 11 * 11;
 	
 	//For each pixel
-	for(    int iy=pos.y; iy<end.y; iy+=pixel_size.height() ){
-		for( int ix=pos.x; ix<end.x; ix+=pixel_size.width()   ){
-			Point<int> p( ix, iy );
-			blend( img, p, pixel_size );
-		}
-	}
+	for(    int iy=pos.y; iy<end.y; iy+=pixel_size.height() )
+		for( int ix=pos.x; ix<end.x; ix+=pixel_size.width()  )
+			blend( img, {ix, iy}, pixel_size );
 }
 
 void Animator::render( const ImageEx& img ) const{

@@ -66,6 +66,7 @@ MatrixImg::MatrixImg( const Plane& p, Point<double> offset, Size<unsigned> size,
 	,	img( imageToMatrix(p) )
 	{
 	qDebug() << "dhf: " << dhf.rows() << "x" << dhf.cols();
+	int width = size.width(), height = size.height();
 	
 	offset *= upscale_factor;
 
@@ -86,19 +87,19 @@ MatrixImg::MatrixImg( const Plane& p, Point<double> offset, Size<unsigned> size,
 	vector<Triplet<float>> triplets;
 	auto add = [&]( int x, int y, float val ){ triplets.emplace_back( x, y, val ); };
 
-	const auto step = size.width() / upscale_factor;
-	for( unsigned j=0; j<size.height(); j+=upscale_factor )
-		for( unsigned i=0; i<size.width(); i+=upscale_factor ){
-			int y = size.width() * j + i;
+	const auto step = width / upscale_factor;
+	for( int j=0; j<height; j+=upscale_factor )
+		for( int i=0; i<width; i+=upscale_factor ){
+			int y = width * j + i;
 			int s = step * j / upscale_factor + i / upscale_factor;
 
-			if( i>=bsx &&i<size.width()-bsx-upscale_factor &&j>=bsy &&j<size.height()-bsy-upscale_factor ){
+			if( i>=bsx &&i<width-bsx-upscale_factor &&j>=bsy &&j<height-bsy-upscale_factor ){
 				for( int l=0; l<upscale_factor; l++ )
 					for( int k=0; k<upscale_factor; k++ ){
-						add( y+size.width()*(y0+l)+x0+k,s, a0*b0*div );
-						add( y+size.width()*(y0+l)+x1+k,s, a1*b0*div );
-						add( y+size.width()*(y1+l)+x0+k,s, a0*b1*div );
-						add( y+size.width()*(y1+l)+x1+k,s, a1*b1*div );
+						add( y+width*(y0+l)+x0+k,s, a0*b0*div );
+						add( y+width*(y0+l)+x1+k,s, a1*b0*div );
+						add( y+width*(y1+l)+x0+k,s, a0*b1*div );
+						add( y+width*(y1+l)+x1+k,s, a1*b1*div );
 					}
 			}
 		}
