@@ -21,6 +21,22 @@ using namespace Overmix;
 
 
 #include <benchmark/benchmark.h>
+#include <random>
+
+Plane makeRandomPlane( unsigned width, unsigned height ){
+	//Set-up random number generation
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> dis( color::BLACK, color::WHITE );
+	
+	//Fill plane with random numbers
+	Plane p( width, height );
+	for( auto row : p )
+		for( auto& val : row )
+			val = dis( gen );
+	
+	return p;
+}
 
 static void BM_PlaneCreation( benchmark::State& state ) {
 	while (state.KeepRunning()){
@@ -34,7 +50,33 @@ static void BM_PlaneFill( benchmark::State& state ) {
 		p.fill(color::WHITE);
 	}
 }
-BENCHMARK(BM_PlaneCreation)->Arg(64)->Arg(128)->Arg(256)->Arg(512)->Arg(1024)->Arg(2048)->Arg(4096);
-BENCHMARK(BM_PlaneFill    )->Arg(64)->Arg(128)->Arg(256)->Arg(512)->Arg(1024)->Arg(2048)->Arg(4096);
+
+static void BM_PlaneRandom( benchmark::State& state ) {
+	while (state.KeepRunning()){
+		makeRandomPlane( state.range_x(), state.range_x() );
+	}
+}
+
+static void BM_PlaneBlur( benchmark::State& state ) {
+	while (state.KeepRunning()){
+		makeRandomPlane( state.range_x(), state.range_x() ).blur_gaussian( state.range_y(), state.range_y() );
+	}
+}
+static void BM_PlaneBlurBox( benchmark::State& state ) {
+	while (state.KeepRunning()){
+		makeRandomPlane( state.range_x(), state.range_x() ).blur_box( state.range_y(), state.range_y() );
+	}
+}
+static void BM_PlaneEdgeLarge( benchmark::State& state ) {
+	while (state.KeepRunning()){
+		makeRandomPlane( state.range_x(), state.range_x() ).edge_laplacian_large();
+	}
+}
+BENCHMARK(BM_PlaneCreation )->Arg(8)->Arg(64)->Arg(128)->Arg(256)->Arg(1024);
+BENCHMARK(BM_PlaneFill     )->Arg(8)->Arg(64)->Arg(128)->Arg(256)->Arg(1024);
+BENCHMARK(BM_PlaneRandom   )->Arg(8)->Arg(64)->Arg(128)->Arg(256)->Arg(1024);
+BENCHMARK(BM_PlaneEdgeLarge)->Arg(8)->Arg(64)->Arg(128)->Arg(256)->Arg(1024);
+BENCHMARK(BM_PlaneBlur     )->ArgPair(256,3)->ArgPair(256,5)->ArgPair(256,9)->ArgPair(256,15)->ArgPair(256,21);
+BENCHMARK(BM_PlaneBlurBox  )->ArgPair(256,3)->ArgPair(256,5)->ArgPair(256,9)->ArgPair(256,15)->ArgPair(256,21);
 
 BENCHMARK_MAIN();
