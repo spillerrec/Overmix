@@ -30,10 +30,11 @@ Plane Plane::scale_nearest( Point<unsigned> wanted ) const{
 	Timer t( "scale_nearest" );
 	Plane scaled( wanted );
 	
+	auto scale = getSize().to<double>() / wanted;
 	for( unsigned iy=0; iy<wanted.height(); iy++ ){
 		auto row = scaled.scan_line( iy );
 		for( unsigned ix=0; ix<wanted.width(); ix++ )
-			row[ix] = pixel( (Size<double>( ix, iy ) / (wanted-1) * (getSize()-1)).round() );
+			row[ix] = pixel( (Size<double>( ix+0.5, iy+0.5 ) * scale).floor() );
 	}
 	
 	return scaled;
@@ -41,9 +42,7 @@ Plane Plane::scale_nearest( Point<unsigned> wanted ) const{
 
 double Plane::linear( double x ){
 	x = abs( x );
-	if( x <= 1.0 )
-		return 1.0 - x;
-	return 0;
+	return ( x <= 1.0 ) ? 1.0 - x : 0.0;
 }
 
 double Plane::cubic( double b, double c, double x ){
