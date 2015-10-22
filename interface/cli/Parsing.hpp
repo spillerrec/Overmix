@@ -18,7 +18,11 @@
 #ifndef PARSING_HPP
 #define PARSING_HPP
 
+#include "Geometry.hpp"
+
 #include <QString>
+
+#include <stdexcept>
 
 namespace Overmix{
 
@@ -49,6 +53,32 @@ inline double asDouble( QString encoded ){
 	//if( !result )
 		//TODO:
 	return integer;
+}
+
+template<typename T>
+T getEnum( QString str, std::vector<std::pair<const char*, T>> cases ){
+	auto pos = std::find_if( cases.begin(), cases.end(), [&]( auto pair ){ return pair.first == str; } );
+	if( pos != cases.end() )
+		return pos->second;
+	throw std::invalid_argument( "Unknown enum value" );
+}
+
+inline void convert( QString str, double& val ) { val = asDouble(str); }
+inline void convert( QString str, int& val ) { val = asInt(str); }
+inline void convert( QString str_in, QString& str_out ) { str_out = str_in; }
+
+template<typename Arg, typename Arg2, typename... Args>
+void convert( QString str, Arg& val, Arg2& val2, Args&... args ){
+	Splitter split( str, ':' );
+	convert( split.left, val );
+	convert( split.right, val2, args... );
+}
+
+template<typename T>
+void convert( QString str, Point<T>& val ){
+	Splitter split( str, 'x' );
+	convert( split.left,  val.x );
+	convert( split.right, val.y );
 }
 
 }

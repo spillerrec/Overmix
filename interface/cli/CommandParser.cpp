@@ -74,15 +74,22 @@ void CommandParser::parse( QStringList commands ){
 		else if( cmd.is( "no-gui" ) ) //Prevent GUI from starting
 			use_gui = false;
 		else if( cmd.is( "pre-process" ) ){
-			//TODO:
-			qWarning( "processing not yet implemented" );
-		}
-		else if( cmd.is( "post-process" ) ){
 			auto processor = processingParser( cmd.arguments() );
 			if( processor )
-				for( auto& img : renders )
-					processor->process( img );
-			qWarning( "processing not yet implemented" );
+				for( auto& group : images )
+					for( auto& item : group )
+						processor->process( item.imageRef() );
+		}
+		else if( cmd.is( "post-process" ) ){
+			int id;
+			QString arguments;
+			convert( cmd.arguments(), id, arguments );
+			
+			auto processor = processingParser( arguments );
+			if( processor && id >= 0 && id < (int)renders.size() ) //TODO: better bound check with warning!
+				processor->process( renders[id] );
+			else
+				qWarning( "Could not post-process image" );
 		}
 		else if( cmd.is( "align" ) ){
 			alignerParser( cmd.arguments(), images );
