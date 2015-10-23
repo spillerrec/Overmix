@@ -166,7 +166,8 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 	if( movement.first && movement.second )
 		use_plane_alpha = true;
 	
-	ImageEx img( for_merging ? Transform::GRAY : aligner.image(0).getTransform() );
+	auto color_space = aligner.image(0).getColorSpace();
+	ImageEx img( for_merging ? color_space.changed( Transform::GRAY ) : color_space );
 	
 	AlphaScales masks;
 	for( unsigned c=0; c<planes_amount; c++ ){

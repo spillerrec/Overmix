@@ -175,11 +175,10 @@ bool ImageEx::from_jpeg( QIODevice& dev, JpegDegrader* deg ){
 	
 	//TODO: use the correct color space info
 	switch( jpeg.cinfo.out_color_components ){ //jpeg_color_space, JCS_YCbCr GRAYSCALE, RGB
-		case 1: transform = Transform::GRAY; qCDebug(LogImageIO) << "Gray-scale JPEG"; break;
-		case 3: transform = Transform::JPEG; break;
+		case 1: color_space = { Transform::GRAY, Transfer::SRGB }; qCDebug(LogImageIO) << "Gray-scale JPEG"; break;
+		case 3: color_space = { Transform::JPEG, Transfer::SRGB }; break;
 		default: qCWarning(LogImageIO) << "Unknown components count:" << jpeg.cinfo.out_color_components;
 	}
-	transfer = Transfer::SRGB;
 	
 	RawReader reader( jpeg, *this );
 	reader.readAll();

@@ -16,19 +16,20 @@ set(SOURCES_CONTAINERS
 	)
 
 set(SOURCES_PLANES
+	planes/ColorSpace.cpp
 	planes/ImageEx.cpp
-	planes/Plane.cpp
+	planes/ImageEx-dump.cpp
+	planes/ImageEx-jpeg.cpp
+	planes/ImageEx-png.cpp
+	planes/ImageEx-qimage.cpp
 	planes/FourierPlane.cpp
+	planes/Plane.cpp
 	planes/Plane-scaling.cpp
 	planes/Plane-edgedetection.cpp
 	planes/Plane-blurring.cpp
 	planes/Plane-diff.cpp
 	planes/Plane-pixel.cpp
 	planes/Plane-binarize.cpp
-	planes/ImageEx-dump.cpp
-	planes/ImageEx-jpeg.cpp
-	planes/ImageEx-png.cpp
-	planes/ImageEx-qimage.cpp
 	planes/gwenview/iodevicejpegsourcemanager.cpp
 	)
 	

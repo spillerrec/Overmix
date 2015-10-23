@@ -45,7 +45,7 @@ static Plane reduce( const Plane& p, Size<unsigned> size, Point<unsigned> pos ){
 
 template<typename Func>
 ImageEx modify( const ImageEx& img, Size<unsigned> size, Point<unsigned> pos, Func f ){
-	ImageEx out( img.getTransform() );
+	ImageEx out( img.getColorSpace() );
 	
 	auto max_size = img.getSize();
 	for( auto i=0u; i<img.size(); i++ ){

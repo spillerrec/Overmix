@@ -131,8 +131,7 @@ bool ImageEx::from_png( QIODevice& dev ){
 		planes.emplace_back( Plane{width, height} );
 	if( alpha )
 		alpha_plane() = Plane( width, height );
-	transform = gray ? Transform::GRAY : Transform::RGB;
-	transfer = Transfer::SRGB;
+	color_space = { gray ? Transform::GRAY : Transform::RGB, Transfer::SRGB };
 	
 	for( unsigned iy=0; iy<height; iy++ ){
 		ImgRow row( *this, iy, colors, alpha );

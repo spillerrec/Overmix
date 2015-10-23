@@ -36,8 +36,7 @@ bool ImageEx::from_qimage( QIODevice& dev, QString ext ){
 	if( !img.load( &dev, ext.toLocal8Bit().constData() ) )
 		return false;
 	
-	transform = Transform::RGB;
-	transfer  = Transfer::SRGB;
+	color_space = { Transform::RGB, Transfer::SRGB };
 	Point<unsigned> size( img.size() );
 	
 	if( img.hasAlphaChannel() )
@@ -98,7 +97,7 @@ QImage ImageEx::to_qimage( unsigned setting ) const{
 	//Settings
 	bool dither = setting & SETTING_DITHER;
 	bool gamma = setting & SETTING_GAMMA;
-	bool is_yuv = isYCbCr();
+	bool is_yuv = color_space.isYCbCr();
 	//TODO: be smarter now we have access to the color info!
 	
 	//Create iterator
@@ -110,7 +109,7 @@ QImage ImageEx::to_qimage( unsigned setting ) const{
 		it.add( alpha_plane(), img_size );
 	
 	//Fetch with alpha
-	auto pixel = ( transform == Transform::GRAY )
+	auto pixel = ( color_space.isGray() )
 		?	( alpha_plane() ? &PlanesIt::gray_a : &PlanesIt::gray )
 		:	( alpha_plane() ? &PlanesIt::rgb_a  : &PlanesIt::rgb  );
 	
@@ -129,13 +128,12 @@ QImage ImageEx::to_qimage( unsigned setting ) const{
 		for( unsigned ix=0; ix<img_size.width(); ix++, it.next_x() ){
 			color p = (it.*pixel)();
 			if( is_yuv ){
-				if( transform == Transform::YCbCr_709 )
-					p = p.rec709ToRgb( gamma );
-				else if( transform == Transform::YCbCr_601 )
-					p = p.rec601ToRgb( gamma );
-				else if( transform == Transform::JPEG )
-					p = p.jpegToRgb( false );
-					
+				switch( color_space.transform() ){
+					case Transform::YCbCr_709: p = p.rec709ToRgb( gamma ); break;
+					case Transform::YCbCr_601: p = p.rec601ToRgb( gamma ); break;
+					case Transform::JPEG     : p = p.jpegToRgb(   false ); break;
+					default: break;
+				}
 			}
 			
 			if( dither )

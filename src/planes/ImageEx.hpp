@@ -19,6 +19,7 @@
 #define IMAGE_EX_HPP
 
 #include "Plane.hpp"
+#include "ColorSpace.hpp"
 #include <algorithm>
 #include <vector>
 
@@ -27,21 +28,6 @@ class QIODevice;
 class QString;
 
 namespace Overmix{
-
-enum class Transform{
-		GRAY
-	,	RGB
-	,	YCbCr_601 //As specified in Rec. 601
-	,	YCbCr_709 //As specified in Rec. 709
-	,	JPEG      //As YCbCr_601, but without studio-swing
-	,	UNKNOWN
-};
-enum class Transfer{ //i.e. gamma function
-		LINEAR
-	,	SRGB    //As specified in the sRGB standard
-	,	REC709  //As specified in Rec. 601 and 709
-	,	UNKNOWN
-};
 
 class ImageEx{
 	public:
@@ -61,8 +47,7 @@ class ImageEx{
 	private:
 		std::vector<PlaneInfo> planes;
 		Plane alpha;
-		Transform transform{ Transform::RGB };
-		Transfer  transfer;
+		ColorSpace color_space;
 		bool read_dump_plane( QIODevice& dev );
 		bool from_dump(   QIODevice& dev );
 		bool from_jpeg(   QIODevice& dev, class JpegDegrader* deg=nullptr );
@@ -72,30 +57,19 @@ class ImageEx{
 	public:
 		void addPlane( Plane&& p ){ if( p.valid() ) planes.emplace_back( std::move(p) ); }
 		
-		ImageEx() { }
-		ImageEx( Transform t ) : transform(t) { planes.reserve(3); }
-		ImageEx( Plane p ) : transform( Transform::GRAY )
-			{ addPlane( std::move(p) ); }
-		ImageEx( Plane p, Plane a  ) : ImageEx( p ) { alpha = a; }
+		ImageEx() : color_space( Transform::UNKNOWN, Transfer::UNKNOWN ) { }
+		ImageEx( ColorSpace s ) : color_space(s) { planes.reserve(s.components()); }
+		ImageEx( Plane p ) : ImageEx( { Transform::GRAY, Transfer::UNKNOWN } )
+			{ addPlane( std::move(p) ); } //TODO: transfer function!
+		ImageEx( Plane p, Plane a ) : ImageEx( p ) { alpha = a; }
 		
 		unsigned size() const{ return planes.size(); }
 		void to_grayscale();
 		ImageEx toRgb() const;
 		
-		///Returns true if transform is YCbCr
-		bool isYCbCr() const{
-			switch( transform ){
-				case Transform::YCbCr_601:
-				case Transform::YCbCr_709:
-				case Transform::JPEG:
-					return true;
-				default: return false;
-			}
-		}
-		
 		template<typename... Args>
 		void apply( Plane (Plane::*func)( Args... ) const, Args... args ){
-			if( isYCbCr() )
+			if( color_space.isYCbCr() )
 				planes[0].p = (planes[0].p.*func)( args... );
 			else
 				applyAll( false, func, args... );
@@ -145,7 +119,7 @@ class ImageEx{
 		
 		Rectangle<unsigned> getCrop() const;
 		
-		Transform getTransform() const{ return transform; }
+		ColorSpace getColorSpace() const{ return color_space; }
 		
 		
 		double diff( const ImageEx& img, int x, int y ) const;

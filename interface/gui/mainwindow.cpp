@@ -398,7 +398,7 @@ void main_widget::refresh_image(){
 	
 	refreshQImageCache();
 	
-	ui->btn_as_mask->setEnabled( renders.size() == 1 && renders[0].raw.getTransform() == Transform::GRAY );
+	ui->btn_as_mask->setEnabled( renders.size() == 1 && renders[0].raw.getColorSpace().isGray() );
 	viewer.change_image( createViewerCache(), true );
 	refresh_text();
 	ui->btn_save->setEnabled( true );

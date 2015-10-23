@@ -76,8 +76,7 @@ bool ImageEx::from_dump( QIODevice& dev ){
 	
 	//Find type and validate
 	//NOTE: we don't really know the YCbCr format!
-	transform = (amount == 1) ? Transform::GRAY : Transform::YCbCr_709;
-	transfer = Transfer::REC709;
+	color_space = { (amount == 1) ? Transform::GRAY : Transform::YCbCr_709, Transfer::REC709 };
 	return amount < 4;
 }
 

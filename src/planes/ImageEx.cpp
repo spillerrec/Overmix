@@ -30,7 +30,7 @@ static const double DOUBLE_MAX = std::numeric_limits<double>::max();
 
 void ImageEx::to_grayscale(){
 	Timer t( "to_grayscale" );
-	switch( transform ){
+	switch( color_space.transform() ){
 		case Transform::RGB:
 				//TODO: properly convert to grayscale
 				while( planes.size() > 1 )
@@ -45,13 +45,13 @@ void ImageEx::to_grayscale(){
 			break;
 		default: ; //TODO: throw
 	}
-	transform = Transform::GRAY;
+	color_space = color_space.changed( Transform::GRAY );
 }
 
 
 static ImageEx yuvToRgb( const ImageEx& img ){
 	//TODO: assert YUV
-	ImageEx out( Transform::RGB );
+	ImageEx out( img.getColorSpace().changed( Transform::RGB ) );
 	out.addPlane( Plane( ScaledPlane( img[0], img.getSize() )() ) );
 	out.addPlane( Plane( ScaledPlane( img[1], img.getSize() )() ) );
 	out.addPlane( Plane( ScaledPlane( img[2], img.getSize() )() ) );
@@ -68,9 +68,9 @@ static ImageEx yuvToRgb( const ImageEx& img ){
 
 ImageEx ImageEx::toRgb() const{
 	Timer t( "toRgb" );
-	switch( transform ){
+	switch( color_space.transform() ){
 		case Transform::GRAY:{
-				ImageEx out( Transform::RGB );
+				ImageEx out( color_space.changed( Transform::RGB ) );
 				//TODO: replicate transfer
 				out.addPlane( Plane{ planes[0].p } );
 				out.addPlane( Plane{ planes[0].p } );
@@ -166,7 +166,7 @@ Point<unsigned> ImageEx::crop( unsigned left, unsigned top, unsigned right, unsi
 	Size<unsigned> decrease( right + left, top + bottom );
 	
 	//TODO: use subsampling
-	if( transform == Transform::YCbCr_709 ){
+	if( color_space.isYCbCr() ){
 		planes[0].p.crop( pos*2, planes[0].p.getSize() - decrease*2 );
 		planes[1].p.crop( pos,   planes[1].p.getSize() - decrease   );
 		planes[2].p.crop( pos,   planes[2].p.getSize() - decrease   );
@@ -198,7 +198,7 @@ Rectangle<unsigned> ImageEx::getCrop() const{
 		return { {0,0}, {0,0} };
 	
 	//TODO: fix cropping with subsampling
-	auto& cropped = planes[ (transform == Transform::YCbCr_709) ? 1 : 0 ].p;
+	auto& cropped = planes[ color_space.isYCbCr() ? 1 : 0 ].p;
 	return { cropped.getOffset(), cropped.getRealSize() - cropped.getSize() - cropped.getOffset() };
 }
 
@@ -227,10 +227,10 @@ MergeResult ImageEx::best_round( const ImageEx& img, int level, double range_x, 
 
 ImageEx Overmix::deVlcImage( const ImageEx& img ){
 	Timer t( "deVlcImage" );
-	if( img.getTransform() != Transform::RGB )
+	if( !img.getColorSpace().isRgb() )
 		return {};
 	
-	ImageEx out( Transform::YCbCr_709 );
+	ImageEx out( img.getColorSpace().changed( Transform::YCbCr_709 ) );
 	//TODO: transfer?
 	for( int i=0; i<3; i++ )
 		out.addPlane( Plane( img[i] ) );

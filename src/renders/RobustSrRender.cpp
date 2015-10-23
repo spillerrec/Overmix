@@ -123,7 +123,7 @@ MatrixXf sign( const MatrixXf& mat1, const MatrixXf& mat2 ){
 
 ImageEx RobustSrRender::render(const AContainer &group, AProcessWatcher *watcher) const {
 	auto planes_amount = group.image(0).size();
-	ImageEx img( group.image(0).getTransform() );
+	ImageEx img( group.image(0).getColorSpace() );
 	auto min_point = group.minPoint();
 	
 	auto est = AverageRender().render(group); //Starting estimate
