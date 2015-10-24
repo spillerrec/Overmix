@@ -86,10 +86,6 @@ class PlaneBase{
 		std::unique_ptr<T[]> data;
 		
 		unsigned dataSize() const{ return realsize.height() * line_width; }
-		void clearContainer(){
-			data = {};
-			size = realsize = { 0,0 };
-		}
 		void copySettings( const PlaneBase<T>& other ){
 			realsize = other.realsize;
 			offset = other.offset;
@@ -99,7 +95,7 @@ class PlaneBase{
 		void copyAndMove( PlaneBase<T>& other ){
 			copySettings( other );
 			data = std::move( other.data );
-			other.clearContainer();
+			other.size = other.realsize = { 0,0 };
 		}
 		
 		unsigned getOffset( unsigned x, unsigned y ) const
@@ -153,10 +149,6 @@ class PlaneBase{
 		unsigned get_line_width() const{ return line_width; }
 		
 		Size<unsigned> getSize() const{ return size; }
-		
-		bool equalSize( const PlaneBase& p ) const{
-			return size == p.size;
-		}
 		
 	//Pixel/Row query
 		const T& pixel( Point<unsigned> pos        ) const{ return data[ getOffset( pos.x, pos.y ) ];       }
