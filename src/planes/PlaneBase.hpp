@@ -21,6 +21,7 @@
 #include "../Geometry.hpp"
 
 #include <cassert>
+#include <memory>
 
 namespace Overmix{
 
@@ -82,11 +83,11 @@ class PlaneBase{
 		Point<unsigned> offset{ 0, 0 };
 		Size<unsigned> size{ 0, 0 };
 		unsigned line_width{ 0 };
-		T* data{ nullptr };
+		std::unique_ptr<T[]> data;
 		
 		unsigned dataSize() const{ return realsize.height() * line_width; }
 		void clearContainer(){
-			delete[] data;
+			data = {};
 			size = realsize = { 0,0 };
 		}
 		void copySettings( const PlaneBase<T>& other ){
@@ -96,10 +97,8 @@ class PlaneBase{
 			line_width = other.line_width;
 		}
 		void copyAndMove( PlaneBase<T>& other ){
-			//NOTICE: delete anything in 'data' first
 			copySettings( other );
-			data = other.data;
-			other.data = nullptr;
+			data = std::move( other.data );
 			other.clearContainer();
 		}
 		
@@ -109,47 +108,46 @@ class PlaneBase{
 	public:
 		PlaneBase() { }
 		PlaneBase( Size<unsigned> size )
-			:	realsize(size), size(size), line_width( size.width() ), data( new T[dataSize()] ) { }
+			:	realsize(size), size(size), line_width( size.width() )
+			,	data( std::make_unique<T[]>( dataSize() ) ) { }
 		PlaneBase( unsigned w, unsigned h ) : PlaneBase( Size<unsigned>( w, h ) ) { }
 		
-	//Memory handling
+	//Memory copying
 		PlaneBase( const PlaneBase<T>& other ){
 			copySettings( other );
 			if( other.data ){
-				data = new T[dataSize()];
-				std::copy( other.data, other.data + dataSize(), data );
+				data = std::make_unique<T[]>( dataSize() );
+				std::copy( other.data.get(), other.data.get() + dataSize(), data.get() );
 			}
 		}
-		PlaneBase( PlaneBase<T>&& other ){ copyAndMove( other ); }
-		~PlaneBase() { delete[] data; }
 		
 		PlaneBase<T>& operator=( const PlaneBase<T>& other ){
 			if( this != &other ){
 				if( other.data ){
 					//Try to reuse the old allocation if possible
-					if( dataSize() != other.dataSize() || data == nullptr ){
-						delete[] data;
-						data = new T[other.dataSize()];
-					}
-					copySettings( other );
-					std::copy( other.data, other.data + dataSize(), data );
+					if( dataSize() != other.dataSize() || !data ) //TODO: require dataSize() to be 0 if !data
+						data = std::make_unique<T[]>( other.dataSize() );
+					std::copy( other.data.get(), other.data.get() + other.dataSize(), data.get() );
 				}
 				else
-					clearContainer();
+					data = {};
+				
+				copySettings( other );
 			}
 			return *this;
 		}
+		
+	//Memory moving
+		PlaneBase( PlaneBase<T>&& other ){ copyAndMove( other ); }
 		PlaneBase<T>& operator=( PlaneBase<T>&& other ){
-			if( this != &other ){
-				delete[] data;
+			if( this != &other )
 				copyAndMove( other );
-			}
 			return *this;
 		}
 		
 	//Status
 		operator bool() const{ return valid(); }
-		bool valid() const{ return data != nullptr && size.x != 0 && size.y != 0; }
+		bool valid() const{ return data && size.x != 0 && size.y != 0; }
 		unsigned get_height() const{ return size.height(); }
 		unsigned get_width() const{ return size.width(); }
 		unsigned get_line_width() const{ return line_width; }
@@ -163,8 +161,8 @@ class PlaneBase{
 	//Pixel/Row query
 		const T& pixel( Point<unsigned> pos        ) const{ return data[ getOffset( pos.x, pos.y ) ];       }
 		void  setPixel( Point<unsigned> pos, T val )      {        data[ getOffset( pos.x, pos.y ) ] = val; }
-		RowIt<const T> scan_line( unsigned y ) const{ return { data + getOffset( 0, y ), get_width() }; }
-		RowIt<T>       scan_line( unsigned y )      { return { data + getOffset( 0, y ), get_width() }; }
+		RowIt<const T> scan_line( unsigned y ) const{ return { data.get() + getOffset( 0, y ), get_width() }; }
+		RowIt<T>       scan_line( unsigned y )      { return { data.get() + getOffset( 0, y ), get_width() }; }
 		
 	//Resizing
 		void crop( Point<unsigned> pos, Size<unsigned> newsize ){

@@ -34,7 +34,7 @@ FourierPlane::FourierPlane( const Plane& p, double range )
 	scaling = 1.0 / (real_width * get_height() * range);
 	vector<double> raw( p.get_width() * p.get_height() );
 	
-	fftw_plan plan = fftw_plan_dft_r2c_2d( p.get_height(), p.get_width(), raw.data(), (fftw_complex*)data, FFTW_ESTIMATE );
+	fftw_plan plan = fftw_plan_dft_r2c_2d( p.get_height(), p.get_width(), raw.data(), (fftw_complex*)data.get(), FFTW_ESTIMATE );
 	
 	//Fill data
 	for( unsigned iy=0; iy<p.get_height(); iy++ ){
@@ -110,7 +110,7 @@ Plane FourierPlane::asPlane() const{
 Plane FourierPlane::toPlaneInvalidate(){
 	//Convert
 	vector<double> raw( real_width * get_height() );
-	fftw_plan plan = fftw_plan_dft_c2r_2d( get_height(), real_width, (fftw_complex*)data, raw.data(), FFTW_ESTIMATE );
+	fftw_plan plan = fftw_plan_dft_c2r_2d( get_height(), real_width, (fftw_complex*)data.get(), raw.data(), FFTW_ESTIMATE );
 	fftw_execute( plan );
 	fftw_destroy_plan( plan );
 	
