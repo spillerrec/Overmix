@@ -23,9 +23,10 @@ Development is now geared towards understanding the more theoretical parts about
 ### Current work
 
 - Separation of foreground and background in slides where foreground and background moves with different speeds
-- Minimization of JPEG compression, as an intro to MPEG with motion compensation
+- MPEG2 decoder for minimizing MPEG2 compression artefacts, which should help especially with motion compensation.
 - Revamp GUI so it is more easy to add advanced settings for operations
 - Maybe including the de-mosaic censor technique in the GUI
+- Command line interface
 
 ### Future work
 
