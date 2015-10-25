@@ -51,14 +51,18 @@ Several tools related to the format have been developed, most importantly an app
 
 *Dependencies*
 - Qt5
-- C++11
-- libpng
+- C++14 (generic lambdas, `std::make_unique<>`)
+- cmake (for compiling)
 - zlib
 - lzma
-- lcms2
+- libpng
+- libjpeg
 - fftw3
+- pugixml
+- lcms2 (required for GUI)
+- google/benchmark (required for unit-benchmarking)
 
 *Building*
 
-1. qmake
+1. cmake
 2. make

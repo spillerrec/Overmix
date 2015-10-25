@@ -72,10 +72,10 @@ static void BM_PlaneEdgeLarge( benchmark::State& state ) {
 		makeRandomPlane( state.range_x(), state.range_x() ).edge_laplacian_large();
 	}
 }
-BENCHMARK(BM_PlaneCreation )->Arg(8)->Arg(64)->Arg(128)->Arg(256)->Arg(1024);
-BENCHMARK(BM_PlaneFill     )->Arg(8)->Arg(64)->Arg(128)->Arg(256)->Arg(1024);
-BENCHMARK(BM_PlaneRandom   )->Arg(8)->Arg(64)->Arg(128)->Arg(256)->Arg(1024);
-BENCHMARK(BM_PlaneEdgeLarge)->Arg(8)->Arg(64)->Arg(128)->Arg(256)->Arg(1024);
+BENCHMARK(BM_PlaneCreation )->Range( 8, 1024 );
+BENCHMARK(BM_PlaneFill     )->Range( 8, 1024 );
+BENCHMARK(BM_PlaneRandom   )->Range( 8, 1024 );
+BENCHMARK(BM_PlaneEdgeLarge)->Range( 8, 1024 );
 BENCHMARK(BM_PlaneBlur     )->ArgPair(256,3)->ArgPair(256,5)->ArgPair(256,9)->ArgPair(256,15)->ArgPair(256,21);
 BENCHMARK(BM_PlaneBlurBox  )->ArgPair(256,3)->ArgPair(256,5)->ArgPair(256,9)->ArgPair(256,15)->ArgPair(256,21);
 
