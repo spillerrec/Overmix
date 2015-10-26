@@ -75,21 +75,16 @@ void CommandParser::parse( QStringList commands ){
 			use_gui = false;
 		else if( cmd.is( "pre-process" ) ){
 			auto processor = processingParser( cmd.arguments() );
-			if( processor )
-				for( auto& group : images )
-					for( auto& item : group )
-						processor->process( item.imageRef() );
+			for( auto& group : images )
+				for( auto& item : group )
+					processor->process( item.imageRef() );
 		}
 		else if( cmd.is( "post-process" ) ){
 			int id;
 			QString arguments;
 			convert( cmd.arguments(), id, arguments );
 			
-			auto processor = processingParser( arguments );
-			if( processor && id >= 0 && id < (int)renders.size() ) //TODO: better bound check with warning!
-				processor->process( renders[id] );
-			else
-				qWarning( "Could not post-process image" );
+			processingParser( arguments )->process( renders[requireBound( id, 0, renders.size() )] );
 		}
 		else if( cmd.is( "align" ) ){
 			alignerParser( cmd.arguments(), images );
@@ -99,7 +94,7 @@ void CommandParser::parse( QStringList commands ){
 		}
 		else if( cmd.is( "save" ) ){
 			Splitter args( cmd.arguments(), ':' );
-			auto id = asInt( args.left ); //TODO: bounds-check
+			auto id = requireBound( asInt( args.left ), 0, renders.size() );
 			renders[id].to_qimage().save( args.right );
 		}
 	}

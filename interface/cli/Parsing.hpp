@@ -39,19 +39,31 @@ struct Splitter{
 	}
 };
 
+inline std::string fromQString( QString str )
+	{ return std::string( str.toLocal8Bit().constData() ); }
+
+inline int requireBound( int value, int from, int to ){
+	if( value < from || value >= to )
+		throw std::invalid_argument( "Value: " + std::to_string(value)
+			+	" should be at least " + std::to_string(from)
+			+	" and below " + std::to_string(to)
+			);
+	return value;
+}
+
 inline int asInt( QString encoded ){
 	bool result;
 	auto integer = encoded.toInt( &result );
-	//if( !result )
-		//TODO:
+	if( !result )
+		throw std::invalid_argument( fromQString("Could not parse '" + encoded + "' as an integer") );
 	return integer;
 }
 
 inline double asDouble( QString encoded ){
 	bool result;
 	auto integer = encoded.toDouble( &result );
-	//if( !result )
-		//TODO:
+	if( !result )
+		throw std::invalid_argument( fromQString("Could not parse '" + encoded + "' as a real number") );
 	return integer;
 }
 
@@ -60,7 +72,7 @@ T getEnum( QString str, std::vector<std::pair<const char*, T>> cases ){
 	auto pos = std::find_if( cases.begin(), cases.end(), [&]( auto pair ){ return pair.first == str; } );
 	if( pos != cases.end() )
 		return pos->second;
-	throw std::invalid_argument( "Unknown enum value" );
+	throw std::invalid_argument( fromQString("Unknown enum value: '" + str + "'") );
 }
 
 inline void convert( QString str, double& val ) { val = asDouble(str); }

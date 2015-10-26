@@ -22,15 +22,25 @@
 #include <QStringList>
 #include <QLoggingCategory>
 
+#include <stdexcept>
+#include <iostream>
+
 int main( int argc, char *argv[] ){
 	QCoreApplication a( argc, argv );
 	Overmix::ImageContainer images;
 	Overmix::CommandParser parser( images );
 	
-	//Parse command-line arguments
-	auto args = a.arguments();
-	args.removeFirst();
-	parser.parse( args );
-	
-	return 0;
+	try{
+		//Parse command-line arguments
+		auto args = a.arguments();
+		args.removeFirst();
+		parser.parse( args );
+		
+		return 0;
+	}
+	catch( std::exception& e ){
+		std::cout << "Some error occurred:" << std::endl;
+		std::cout << e.what();
+		return -1;
+	}
 }

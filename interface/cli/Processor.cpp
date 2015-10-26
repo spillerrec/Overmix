@@ -23,7 +23,6 @@
 #include "color.hpp"
 
 #include <QString>
-#include <QDebug>
 
 #include <algorithm>
 #include <vector>
@@ -177,7 +176,6 @@ std::unique_ptr<Processor> Overmix::processingParser( QString parameters ){
 		return std::make_unique<DeconvolveProcessor>( split.right );
 	if( split.left == "level" )
 		return std::make_unique<LevelProcessor>( split.right );
-	qDebug() << "No processor found!" << split.left;
 	
-	return {};
+	throw std::invalid_argument( fromQString( "No processor found with the name: '" + split.left + "'" ) );
 }
