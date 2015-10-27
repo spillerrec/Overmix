@@ -18,6 +18,7 @@
 
 #include "CommandParser.hpp"
 #include "Parsing.hpp"
+#include "Parsers.hpp"
 #include "Processor.hpp"
 
 #include "containers/ImageContainer.hpp"
@@ -47,19 +48,6 @@ struct Command{
 	QString arguments() const { return parts.right; }
 };
 
-#include "renders/AverageRender.hpp"
-static ImageEx renderParser( QString parameters, const AContainer& container ){
-	//TODO: parse parameters
-	return AverageRender().render( container );
-}
-
-#include "aligners/AverageAligner.hpp"
-static void alignerParser( QString parameters, AContainer& container ){
-	//TODO: parse parameters
-	AverageAligner aligner( container, AImageAligner::ALIGN_BOTH );
-	aligner.addImages();
-	aligner.align();
-}
 
 void CommandParser::parse( QStringList commands ){
 	std::vector<ImageEx> renders;

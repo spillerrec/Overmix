@@ -30,7 +30,7 @@
 using namespace Overmix;
 
 
-void convert( QString str, ScalingFunction& func ){
+static void convert( QString str, ScalingFunction& func ){
 	func = getEnum<ScalingFunction>( str,
 		{	{ "none",     ScalingFunction::SCALE_NEAREST   }
 		,	{ "linear",   ScalingFunction::SCALE_LINEAR    }
@@ -44,7 +44,7 @@ void convert( QString str, ScalingFunction& func ){
 }
 
 using PlaneFunc = Plane (Plane::*)() const;
-void convert( QString str, PlaneFunc& func ){
+static void convert( QString str, PlaneFunc& func ){
 	func = getEnum<PlaneFunc>( str,
 		{	{ "robert",          &Plane::edge_robert          }
 		,	{ "sobel",           &Plane::edge_sobel           }

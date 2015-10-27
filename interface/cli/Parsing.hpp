@@ -79,6 +79,17 @@ inline void convert( QString str, double& val ) { val = asDouble(str); }
 inline void convert( QString str, int& val ) { val = asInt(str); }
 inline void convert( QString str_in, QString& str_out ) { str_out = str_in; }
 
+inline void convert( QString str, bool& value ){
+	value = getEnum<bool>( str.toLower(),
+		{	{ "0",     false }
+		,	{ "f",     false }
+		,	{ "false", false }
+		,	{ "1",     true  }
+		,	{ "t",     true  }
+		,	{ "true",  true  }
+		} );
+}
+
 template<typename Arg, typename Arg2, typename... Args>
 void convert( QString str, Arg& val, Arg2& val2, Args&... args ){
 	Splitter split( str, ':' );

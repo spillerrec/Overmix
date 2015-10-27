@@ -10,7 +10,9 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(SOURCE_CLI
+	cli/AlignParser.cpp
 	cli/CommandParser.cpp
+	cli/RenderParser.cpp
 	cli/Processor.cpp
 	)
 
