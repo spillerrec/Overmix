@@ -46,10 +46,10 @@ class ColorRow{
 		RowIt<color_type> r, g, b;
 		
 	public:
-		ColorRow( ImageEx& img, int ix )
-			:	r(img[0].scan_line(ix))
-			,	g(img[1].scan_line(ix))
-			,	b(img[2].scan_line(ix))
+		ColorRow( ImageEx& img, int iy )
+			:	r(img[0].scan_line(iy))
+			,	g(img[1].scan_line(iy))
+			,	b(img[2].scan_line(iy))
 			{ }
 		
 		color operator[]( int i ) const

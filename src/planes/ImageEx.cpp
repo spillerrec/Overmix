@@ -21,6 +21,7 @@
 #include "../utils/PlaneUtils.hpp"
 
 #include <QFileInfo>
+#include <stdexcept>
 
 
 using namespace std;
@@ -48,44 +49,31 @@ void ImageEx::to_grayscale(){
 	color_space = color_space.changed( Transform::GRAY );
 }
 
+ImageEx ImageEx::toRgb() const
+	{ return toColorSpace( color_space.changed( Transform::RGB ) ); }
 
-static ImageEx yuvToRgb( const ImageEx& img ){
-	//TODO: assert YUV
-	ImageEx out( img.getColorSpace().changed( Transform::RGB ) );
-	out.addPlane( Plane( ScaledPlane( img[0], img.getSize() )() ) );
-	out.addPlane( Plane( ScaledPlane( img[1], img.getSize() )() ) );
-	out.addPlane( Plane( ScaledPlane( img[2], img.getSize() )() ) );
+
+ImageEx ImageEx::toColorSpace( ColorSpace to ) const{
+	Timer t( "ImageEx::toColorSpace" );
+	if( color_space.components() != to.components() || to.components() != 3 )
+		throw std::runtime_error( "Unsupported color space conversion" );
 	
-	for( unsigned iy=0; iy<img.get_height(); iy++ ){
+	ImageEx out( *this );
+	out.color_space = to;
+	
+	//Upscale planes
+	auto img_size = out.getSize();
+	for( auto& info : out.planes )
+		if( info.p.getSize() != img_size )
+			info.p = info.p.scale_cubic( img_size );
+	
+	for( unsigned iy=0; iy<img_size.height(); iy++ ){
 		ColorRow row( out, iy );
-		for( unsigned ix=0; ix<img.get_width(); ix++ )
-			row.set( ix, row[ix].rec709ToRgb() );
-		//TODO: use color info
+		for( unsigned ix=0; ix<img_size.width(); ix++ )
+			row.set( ix, color_space.convert( row[ix], to ) );
 	}
 	
 	return out;
-}
-
-ImageEx ImageEx::toRgb() const{
-	Timer t( "toRgb" );
-	switch( color_space.transform() ){
-		case Transform::GRAY:{
-				ImageEx out( color_space.changed( Transform::RGB ) );
-				//TODO: replicate transfer
-				out.addPlane( Plane{ planes[0].p } );
-				out.addPlane( Plane{ planes[0].p } );
-				out.addPlane( Plane{ planes[0].p } );
-				return out;
-			}
-		
-		case Transform::RGB: return *this;
-		
-		case Transform::YCbCr_601:
-		case Transform::YCbCr_709:
-		case Transform::JPEG:
-			return yuvToRgb( *this );
-		default: return { }; //TODO: throw
-	}
 }
 
 

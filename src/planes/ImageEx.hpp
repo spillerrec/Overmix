@@ -66,6 +66,7 @@ class ImageEx{
 		unsigned size() const{ return planes.size(); }
 		void to_grayscale();
 		ImageEx toRgb() const;
+		ImageEx toColorSpace( ColorSpace to ) const;
 		
 		template<typename... Args>
 		void apply( Plane (Plane::*func)( Args... ) const, Args... args ){
