@@ -24,12 +24,33 @@
 
 #include <QString>
 
+using namespace std;
 using namespace Overmix;
+
+static void convert( QString str, AImageAligner::AlignMethod& func ){
+	func = getEnum<AImageAligner::AlignMethod>( str,
+		{	{ "both", AImageAligner::ALIGN_BOTH }
+		,	{ "ver",  AImageAligner::ALIGN_VER  }
+		,	{ "hor",  AImageAligner::ALIGN_HOR  }
+		} );
+}
 
 
 void Overmix::alignerParser( QString parameters, AContainer& container ){
-	//TODO: parse parameters
-	AverageAligner aligner( container, AImageAligner::ALIGN_BOTH );
-	aligner.addImages();
-	aligner.align();
+	unique_ptr<AImageAligner> aligner;
+	
+	Splitter split( parameters, ':' );
+	if( split.left == "average" ){
+		AImageAligner::AlignMethod method;
+		double scale;
+		convert( split.right, method, scale );
+		//TODO: parse parameters
+		aligner = make_unique<AverageAligner>( container, method, scale );
+	}
+	else
+		throw std::invalid_argument( fromQString( "No aligner found with the name: '" + split.left + "'" ) );
+	
+	
+	aligner->addImages();
+	aligner->align();
 }

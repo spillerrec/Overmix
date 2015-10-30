@@ -23,6 +23,7 @@
 #include <QString>
 
 #include <stdexcept>
+#include <memory>
 
 namespace Overmix{
 
@@ -30,8 +31,8 @@ namespace Overmix{
 struct Splitter{
 	QString left;
 	QString right;
-        
-        template<typename T>
+
+	template<typename T>
 	Splitter( QString str, T split ){
 		auto pos = str.indexOf( split );
 		left  = str.left( pos );
@@ -102,6 +103,28 @@ void convert( QString str, Point<T>& val ){
 	Splitter split( str, 'x' );
 	convert( split.left,  val.x );
 	convert( split.right, val.y );
+}
+
+
+template<typename Tuple, std::size_t... I>
+Tuple callConvert( QString str, Tuple tuple, std::index_sequence<I...> ){
+	convert( str, std::get<I>(tuple)... );
+	return tuple;
+}
+
+template<typename... Args>
+std::tuple<Args...> convertTuple( QString str )
+	{ return callConvert( str, std::tuple<Args...>(), std::index_sequence_for<Args...>{} ); }
+	
+
+template<typename Output, typename Tuple, std::size_t... I>
+std::unique_ptr<Output> uniqueFromTuple( Tuple& tuple, std::index_sequence<I...> )
+	{ return std::make_unique<Output>( std::get<I>(tuple)... ); }
+
+template<typename Output, typename... Args>
+std::unique_ptr<Output> convertUnique( QString parameters ){
+	auto args = convertTuple<Args...>( parameters );
+	return uniqueFromTuple<Output>( args, std::index_sequence_for<Args...>{} );
 }
 
 }

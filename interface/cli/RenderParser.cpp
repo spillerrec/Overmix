@@ -39,17 +39,10 @@ static void convert( QString str, Statistics& func ){
 
 ImageEx Overmix::renderParser( QString parameters, const AContainer& container ){
 	Splitter split( parameters, ':' );
-	if( split.left == "average" ){
-		bool upscale_chroma;
-		bool for_merging;
-		convert( split.right, upscale_chroma, for_merging );
-		return AverageRender( upscale_chroma, for_merging ).render( container );
-	}
-	else if( split.left == "statistics" ){
-		Statistics stats;
-		convert( split.right, stats );
-		return StatisticsRender(stats).render( container );
-	}
+	if( split.left == "average" )
+		return convertUnique<AverageRender, bool, bool>( split.right )->render( container );
+	else if( split.left == "statistics" )
+		return convertUnique<StatisticsRender, Statistics>( split.right )->render( container );
 	
 	throw std::invalid_argument( fromQString( "No render found with the name: '" + split.left + "'" ) );
 }
