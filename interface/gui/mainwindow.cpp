@@ -474,22 +474,16 @@ void main_widget::alignImage(){
 	clear_cache(); //Prevent any animation from running
 	DialogWatcher watcher( this, "Aligning" );
 	
-	auto alignContainer = [&]( auto& container, auto& watcher ){
-			auto aligner = aligner_config.getAligner( container );
-			aligner->addImages();
-			aligner->align( &watcher );
-		};
-	
-	
+	auto aligner = aligner_config.getAligner();
 	if( ui->cbx_each_frame->isChecked() ){
 		//TODO: support displaying several frames in watcher
 		for( auto frame : getAlignedImages().getFrames() ){
 			FrameContainer container( getAlignedImages(), frame );
-			alignContainer( container, watcher );
+			aligner->align( container, &watcher );
 		}
 	}
 	else
-		alignContainer( getAlignedImages(), watcher );
+		aligner->align( getAlignedImages(), &watcher );
 	
 	clear_cache();
 	refresh_text();

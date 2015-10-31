@@ -22,11 +22,16 @@
 
 namespace Overmix{
 
-class AverageAligner : public AImageAligner{
+class AverageAlignerImpl : public AImageAligner{
 	public:
-		AverageAligner( AContainer& container, AlignMethod method, double scale=1.0 )
+		AverageAlignerImpl( AContainer& container, AlignMethod method, double scale=1.0 )
 			:	AImageAligner( container, method, scale ){ }
 		virtual void align( AProcessWatcher* watcher=nullptr ) override;
+};
+
+class AverageAligner : public WrapperImageAligner{
+	virtual std::unique_ptr<AImageAligner> makeAligner( AContainer& container ) override
+		{ return std::make_unique<AverageAlignerImpl>( container, method, scale ); }
 };
 
 }

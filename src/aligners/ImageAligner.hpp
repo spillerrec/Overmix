@@ -22,7 +22,7 @@
 
 namespace Overmix{
 
-class ImageAligner : public AImageAligner{
+class ImageAlignerImpl : public AImageAligner{
 	protected:
 		std::vector<ImageOffset> offsets;
 		
@@ -34,11 +34,16 @@ class ImageAligner : public AImageAligner{
 		virtual void on_add();
 	
 	public:
-		ImageAligner( AContainer& container, AlignMethod method, double scale=1.0 )
+		ImageAlignerImpl( AContainer& container, AlignMethod method, double scale=1.0 )
 			:	AImageAligner( container, method, scale ){ }
 		
 		void align( AProcessWatcher* watcher=nullptr );
 	
+};
+
+class ImageAligner : public WrapperImageAligner{
+	virtual std::unique_ptr<AImageAligner> makeAligner( AContainer& container ) override
+		{ return std::make_unique<ImageAlignerImpl>( container, method, scale ); }
 };
 
 }

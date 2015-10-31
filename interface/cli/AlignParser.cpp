@@ -37,7 +37,7 @@ static void convert( QString str, AImageAligner::AlignMethod& func ){
 
 
 void Overmix::alignerParser( QString parameters, AContainer& container ){
-	unique_ptr<AImageAligner> aligner;
+	unique_ptr<AAligner> aligner;
 	
 	Splitter split( parameters, ':' );
 	if( split.left == "average" ){
@@ -45,12 +45,12 @@ void Overmix::alignerParser( QString parameters, AContainer& container ){
 		double scale;
 		convert( split.right, method, scale );
 		//TODO: parse parameters
-		aligner = make_unique<AverageAligner>( container, method, scale );
+		auto avg = make_unique<AverageAligner>();
+		avg->setOptions( method, scale );
+		aligner = std::move( avg );
 	}
 	else
 		throw std::invalid_argument( fromQString( "No aligner found with the name: '" + split.left + "'" ) );
 	
-	
-	aligner->addImages();
-	aligner->align();
+	aligner->align( container );
 }

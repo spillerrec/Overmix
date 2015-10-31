@@ -32,11 +32,11 @@ using namespace Overmix;
 
 class AnimFrame{
 	public:
-		AnimationSeparator& aligner;
+		AnimationSeparatorImpl& aligner;
 		std::vector<unsigned> indexes;
 		
 	public:
-		AnimFrame( AnimationSeparator& aligner ) : aligner(aligner) { }
+		AnimFrame( AnimationSeparatorImpl& aligner ) : aligner(aligner) { }
 		void add_index( unsigned index, int frame ){
 			indexes.push_back( index );
 			aligner.setFrame( index, frame );
@@ -47,7 +47,7 @@ class AnimFrame{
 			{ return aligner.findOffset( indexes.back(), index ).error; }
 };
 
-double AnimationSeparator::find_threshold( AProcessWatcher* watcher ){
+double AnimationSeparatorImpl::find_threshold( AProcessWatcher* watcher ){
 	ProgressWrapper progress( watcher );
 	vector<color_type> errors;
 	set_raw( true ); //TODO: remove the need of this
@@ -93,7 +93,7 @@ double AnimationSeparator::find_threshold( AProcessWatcher* watcher ){
 	return threshold;
 }
 
-void AnimationSeparator::align( AProcessWatcher* watcher ){
+void AnimationSeparatorImpl::align( AProcessWatcher* watcher ){
 	ProgressWrapper progress( watcher );
 	progress.setTotal( count() * 2 );
 	if( count() == 0 )

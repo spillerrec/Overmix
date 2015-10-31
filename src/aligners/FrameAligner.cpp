@@ -24,7 +24,7 @@
 
 using namespace Overmix;
 
-void FrameAligner::align( AProcessWatcher* watcher ){
+void FrameAlignerImpl::align( AProcessWatcher* watcher ){
 	auto frames = getFrames();
 	auto base_point = minPoint();
 	
@@ -36,9 +36,7 @@ void FrameAligner::align( AProcessWatcher* watcher ){
 	}
 	
 	//TODO: also show progress for this!
-	RecursiveAligner aligner( images, get_method(), get_scale() ); //TODO: try with AverageAligner
-	aligner.addImages();
-	aligner.align();
+	RecursiveAligner( get_method(), get_scale() ).align( images ); //TODO: try with AverageAligner
 	
 	ProgressWrapper( watcher ).loopAll( frames.size(), [&](int i){
 			FrameContainer current( *this, frames[i] );

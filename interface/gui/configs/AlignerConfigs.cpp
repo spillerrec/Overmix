@@ -85,10 +85,8 @@ void AAlignerConfig::toggled_ver(){
 		cbx_merge_h->setChecked( true );
 }
 
-void AAlignerConfig::configure( AImageAligner& aligner ) const{
-	//TODO: See if AImageAligner can have method and scale as settings
-	aligner.set_edges( cbx_edges->isChecked() );
-	aligner.set_movement( merge_movement->value() / 100.0 );
+void AAlignerConfig::configure( WrapperImageAligner& aligner ) const{
+	aligner.setOptions( getMethod(), getScale(), cbx_edges->isChecked(), merge_movement->value() / 100.0 );
 }
 
 
@@ -108,47 +106,44 @@ double AAlignerConfig::getScale() const{
 }
 
 
-std::unique_ptr<AImageAligner> AverageAlignerConfig::getAligner( AContainer& container ) const{
-	auto aligner = std::make_unique<AverageAligner>( container, getMethod(), getScale() );
+std::unique_ptr<AAligner> AverageAlignerConfig::getAligner() const{
+	auto aligner = std::make_unique<AverageAligner>();
 	configure( *aligner );
 	return std::move( aligner );
 }
 
 
-std::unique_ptr<AImageAligner> RecursiveAlignerConfig::getAligner( AContainer& container ) const{
-	auto aligner = std::make_unique<RecursiveAligner>( container, getMethod(), getScale() );
+std::unique_ptr<AAligner> RecursiveAlignerConfig::getAligner() const{
+	auto aligner = std::make_unique<RecursiveAligner>( getMethod(), getScale() );
 	configure( *aligner );
 	return std::move( aligner );
 }
 
 
-std::unique_ptr<AImageAligner> FakeAlignerConfig::getAligner( AContainer& container ) const{
-	auto aligner = std::make_unique<FakeAligner>( container );
+std::unique_ptr<AAligner> FakeAlignerConfig::getAligner() const
+	{ return std::make_unique<FakeAligner>(); }
+
+
+std::unique_ptr<AAligner> LinearAlignerConfig::getAligner() const{
+	auto aligner = std::make_unique<LinearAligner>();
 	configure( *aligner );
 	return std::move( aligner );
 }
 
-
-std::unique_ptr<AImageAligner> LinearAlignerConfig::getAligner( AContainer& container ) const{
-	auto aligner = std::make_unique<LinearAligner>( container, getMethod() );
+std::unique_ptr<AAligner> SeperateAlignerConfig::getAligner() const{
+	auto aligner = std::make_unique<AnimationSeparator>();
 	configure( *aligner );
 	return std::move( aligner );
 }
 
-std::unique_ptr<AImageAligner> SeperateAlignerConfig::getAligner( AContainer& container ) const{
-	auto aligner = std::make_unique<AnimationSeparator>( container, getMethod(), getScale() );
+std::unique_ptr<AAligner> AlignFrameAlignerConfig::getAligner() const{
+	auto aligner = std::make_unique<FrameAligner>();
 	configure( *aligner );
 	return std::move( aligner );
 }
 
-std::unique_ptr<AImageAligner> AlignFrameAlignerConfig::getAligner( AContainer& container ) const{
-	auto aligner = std::make_unique<FrameAligner>( container, getMethod(), getScale() );
-	configure( *aligner );
-	return std::move( aligner );
-}
-
-std::unique_ptr<AImageAligner> SuperResAlignerConfig::getAligner( AContainer& container ) const{
-	auto aligner = std::make_unique<SuperResAligner>( container, getMethod(), getScale() );
+std::unique_ptr<AAligner> SuperResAlignerConfig::getAligner() const{
+	auto aligner = std::make_unique<SuperResAligner>();
 	configure( *aligner );
 	return std::move( aligner );
 }

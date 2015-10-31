@@ -19,6 +19,7 @@
 #define ALIGNER_CONFIGS_HPP
 
 #include "ConfigChooser.hpp"
+#include "aligners/AAligner.hpp"
 #include "aligners/AImageAligner.hpp"
 
 
@@ -31,7 +32,7 @@ class AAlignerConfig : public AConfig, private Ui::ImageAligner{
 	Q_OBJECT
 	
 	protected:
-		virtual void configure( AImageAligner& container ) const;
+		virtual void configure( WrapperImageAligner& container ) const;
 		
 		enum Enabled{
 			ENABLE_ALL    = 0x0,
@@ -45,7 +46,7 @@ class AAlignerConfig : public AConfig, private Ui::ImageAligner{
 	public:
 		AAlignerConfig( QWidget* parent, int edits );
 		
-		virtual std::unique_ptr<AImageAligner> getAligner(AContainer&) const = 0;
+		virtual std::unique_ptr<AAligner> getAligner() const = 0;
 		
 		AImageAligner::AlignMethod getMethod() const;
 		double getScale() const;
@@ -62,8 +63,7 @@ class AlignerConfigChooser : public ConfigChooser<AAlignerConfig>{
 		AlignerConfigChooser( QWidget* parent, bool expand=false ); //Add all the configs
 		virtual void p_initialize();
 		
-		std::unique_ptr<AImageAligner> getAligner( AContainer& container ) const
-			{ return getSelected().getAligner( container ); }
+		std::unique_ptr<AAligner> getAligner() const { return getSelected().getAligner(); }
 		
 		QString name() const override{ return "Aligner selector"; }
 		QString discription() const override{ return "Selects a method for aligning images"; }
@@ -72,7 +72,7 @@ class AlignerConfigChooser : public ConfigChooser<AAlignerConfig>{
 class AverageAlignerConfig : public AAlignerConfig{
 	public:
 		AverageAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, ENABLE_ALL ) { }
-		std::unique_ptr<AImageAligner> getAligner(AContainer&) const override;
+		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Ordered"; }
 		QString discription() const override{ return "Aligns images by aligning one image against the previously aligned images"; }
@@ -81,7 +81,7 @@ class AverageAlignerConfig : public AAlignerConfig{
 class RecursiveAlignerConfig : public AAlignerConfig{
 	public:
 		RecursiveAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, ENABLE_ALL ) { }
-		std::unique_ptr<AImageAligner> getAligner(AContainer&) const override;
+		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Recursive"; }
 		QString discription() const override{ return "Splits the set of images into two halves, and applies the algorithm recursively"; }
@@ -90,7 +90,7 @@ class RecursiveAlignerConfig : public AAlignerConfig{
 class FakeAlignerConfig : public AAlignerConfig{
 	public:
 		FakeAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
-		std::unique_ptr<AImageAligner> getAligner(AContainer&) const override;
+		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "None (Stills)"; }
 		QString discription() const override{ return "Sets all images to 0x0"; }
@@ -99,7 +99,7 @@ class FakeAlignerConfig : public AAlignerConfig{
 class LinearAlignerConfig : public AAlignerConfig{
 	public:
 		LinearAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_RES | DISABLE_EXTRA | DISABLE_MOVE ) { }
-		std::unique_ptr<AImageAligner> getAligner(AContainer&) const override;
+		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Fit to Linear Curve"; }
 		QString discription() const override{ return "Tries to fit all images onto a linear curve which fits the current data the best."; }
@@ -108,7 +108,7 @@ class LinearAlignerConfig : public AAlignerConfig{
 class SeperateAlignerConfig : public AAlignerConfig{
 	public:
 		SeperateAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, ENABLE_ALL ) { }
-		std::unique_ptr<AImageAligner> getAligner(AContainer&) const override;
+		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Seperate Frames"; }
 		QString discription() const override{ return "Detects cyclic animation by assuming each animation-frame is repeated at least twice"; }
@@ -117,7 +117,7 @@ class SeperateAlignerConfig : public AAlignerConfig{
 class AlignFrameAlignerConfig : public AAlignerConfig{
 	public:
 		AlignFrameAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, ENABLE_ALL ) { }
-		std::unique_ptr<AImageAligner> getAligner(AContainer&) const override;
+		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Align Frames"; }
 		QString discription() const override{ return "Aligns animation frames"; }
@@ -126,7 +126,7 @@ class AlignFrameAlignerConfig : public AAlignerConfig{
 class SuperResAlignerConfig : public AAlignerConfig{
 	public:
 		SuperResAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, ENABLE_ALL ) { }
-		std::unique_ptr<AImageAligner> getAligner(AContainer&) const override;
+		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "SuperRes"; }
 		QString discription() const override{ return "Aligns against the super-resolution image"; }

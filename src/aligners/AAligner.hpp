@@ -15,17 +15,16 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef FAKE_ALIGNER_HPP
-#define FAKE_ALIGNER_HPP
-
-#include "AAligner.hpp"
+#ifndef A_ALIGNER_HPP
+#define A_ALIGNER_HPP
 
 namespace Overmix{
 
-class FakeAligner : public AAligner{
+class AAligner{
 	public:
-		virtual void align( AContainer& container, AProcessWatcher* ) override
-			{ container.resetPosition(); }
+		virtual ~AAligner() { }
+		
+		virtual void align( class AContainer& container, class AProcessWatcher* watcher=nullptr ) = 0;
 };
 
 }

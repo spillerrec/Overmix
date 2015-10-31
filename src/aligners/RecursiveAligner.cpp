@@ -80,11 +80,11 @@ class Overmix::ImageGetter{
 			{ return p ? a : container.alpha(val); }
 };
 
-ImageGetter RecursiveAligner::getGetter( unsigned index ) const{
+ImageGetter RecursiveAlignerImpl::getGetter( unsigned index ) const{
 	auto processed = AImageAligner::prepare_plane( image(index)[0] );
 	return processed ? ImageGetter( std::move(processed), Plane(alpha(index)) ) : ImageGetter( index );
 }
-pair<ImageGetter,Point<double>> RecursiveAligner::combine( const ImageGetter& first, const ImageGetter& second ) const{
+pair<ImageGetter,Point<double>> RecursiveAlignerImpl::combine( const ImageGetter& first, const ImageGetter& second ) const{
 	auto offset = find_offset( first.plane(*this), second.plane(*this), first.alpha(*this), second.alpha(*this) ).distance;
 	
 	if( offset.x == 0
@@ -105,7 +105,7 @@ pair<ImageGetter,Point<double>> RecursiveAligner::combine( const ImageGetter& fi
 	}
 }
 
-ImageGetter RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, unsigned end ){
+ImageGetter RecursiveAlignerImpl::align( AProcessWatcher* watcher, unsigned begin, unsigned end ){
 	auto amount = end - begin;
 	switch( amount ){
 		case 0: qFatal( "No images to align!" );
@@ -140,7 +140,7 @@ ImageGetter RecursiveAligner::align( AProcessWatcher* watcher, unsigned begin, u
 	}
 }
 
-void RecursiveAligner::align( AProcessWatcher* watcher ){
+void RecursiveAlignerImpl::align( AProcessWatcher* watcher ){
 	if( count() == 0 )
 		return;
 	

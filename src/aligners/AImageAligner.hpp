@@ -18,6 +18,7 @@
 #ifndef A_IMAGE_ALIGNER_HPP
 #define A_IMAGE_ALIGNER_HPP
 
+#include "AAligner.hpp"
 #include "../planes/Plane.hpp"
 #include "../planes/ImageEx.hpp"
 #include "../containers/AContainer.hpp"
@@ -110,6 +111,32 @@ class AImageAligner : public AContainer{
 		double get_edges() const{ return use_edges; }
 		
 		virtual void align( AProcessWatcher* watcher=nullptr ) = 0;
+};
+
+/* Until we have fixed all the methods */
+class WrapperImageAligner : public AAligner{
+	protected:
+		AImageAligner::AlignMethod method;
+		double scale;
+		bool edges { false };
+		double movement{ 0.75 };
+		virtual std::unique_ptr<AImageAligner> makeAligner( AContainer& container ) = 0;
+		
+	public:
+		void setOptions( AImageAligner::AlignMethod method, double scale, bool edges=false, double movement=0.75 ){
+			this->method   = method;
+			this->scale    = scale;
+			this->edges    = edges;
+			this->movement = movement;
+		}
+		
+		virtual void align( AContainer& container, class AProcessWatcher* watcher=nullptr ) override{
+			auto aligner = makeAligner( container );
+			aligner->set_edges( edges );
+			aligner->set_movement( movement );
+			aligner->addImages();
+			aligner->align( watcher );
+		}
 };
 
 }

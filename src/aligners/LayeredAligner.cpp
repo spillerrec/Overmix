@@ -37,7 +37,7 @@ class InternAligner : public AverageAligner{
 		}
 };*/
 
-void LayeredAligner::align( AProcessWatcher* watcher ){
+void LayeredAlignerImpl::align( AProcessWatcher* watcher ){
 	/*
 	if( count() == 0 )
 		return;

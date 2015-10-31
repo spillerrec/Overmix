@@ -22,13 +22,18 @@
 
 namespace Overmix{
 
-class SuperResAligner : public AImageAligner{
+class SuperResAlignerImpl : public AImageAligner{
 	private:
 		double local_scale;
 	public:
-		SuperResAligner( AContainer& container, AlignMethod method, double scale=1.0 )
+		SuperResAlignerImpl( AContainer& container, AlignMethod method, double scale=1.0 )
 			:	AImageAligner( container, method, 1.0 ), local_scale( scale ) { }
 		virtual void align( AProcessWatcher* watcher=nullptr ) override;
+};
+
+class SuperResAligner : public WrapperImageAligner{
+	virtual std::unique_ptr<AImageAligner> makeAligner( AContainer& container ) override
+		{ return std::make_unique<SuperResAlignerImpl>( container, method, scale ); }
 };
 
 }

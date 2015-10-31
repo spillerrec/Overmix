@@ -28,13 +28,13 @@
 using namespace Overmix;
 
 
-void ImageAligner::on_add(){
+void ImageAlignerImpl::on_add(){
 	//Compare this one against all other images
 	for( unsigned i=0; i<count()-1; ++i )
 		offsets.push_back( findOffset( i, count()-1 ) );
 }
 
-ImageAligner::ImageOffset ImageAligner::get_offset( unsigned img1, unsigned img2 ) const{
+ImageAlignerImpl::ImageOffset ImageAlignerImpl::get_offset( unsigned img1, unsigned img2 ) const{
 	if( img1 == img2 ){
 		qWarning( "Attempting to get offset of the same image!" );
 		return { {0, 0}, 0, 1 };
@@ -59,7 +59,7 @@ ImageAligner::ImageOffset ImageAligner::get_offset( unsigned img1, unsigned img2
 }
 
 
-void ImageAligner::rough_align(){
+void ImageAlignerImpl::rough_align(){
 	//Use two lists, one containing all uninitialized images (indexes) and another
 	//containing all initialized ones. Set all images as unset as starting point.
 	std::vector<unsigned> unset;
@@ -104,7 +104,7 @@ void ImageAligner::rough_align(){
 	}
 }
 
-double ImageAligner::total_error() const{
+double ImageAlignerImpl::total_error() const{
 	double error=0;
 	
 	for( unsigned i=0; i<count(); ++i ){
@@ -136,7 +136,7 @@ double ImageAligner::total_error() const{
 }
 
 #include <QTime>
-void ImageAligner::align( AProcessWatcher* watcher ){
+void ImageAlignerImpl::align( AProcessWatcher* watcher ){
 	if( count() == 0 ){
 		qWarning( "No images to align" );
 		return;

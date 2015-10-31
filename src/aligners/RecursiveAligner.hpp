@@ -25,7 +25,7 @@ namespace Overmix{
 
 class ImageGetter;
 
-class RecursiveAligner : public AImageAligner{
+class RecursiveAlignerImpl : public AImageAligner{
 	protected:
 		std::pair<ImageGetter,Point<double>> combine( const ImageGetter& first, const ImageGetter& second ) const;
 		ImageGetter align( AProcessWatcher* watcher, unsigned begin, unsigned end );
@@ -34,9 +34,18 @@ class RecursiveAligner : public AImageAligner{
 		ImageGetter getGetter( unsigned index ) const;
 		
 	public:
-		RecursiveAligner( AContainer& container, AlignMethod method, double scale=1.0 )
+		RecursiveAlignerImpl( AContainer& container, AlignMethod method, double scale=1.0 )
 			:	AImageAligner( container, method, scale ){ }
 		virtual void align( AProcessWatcher* watcher=nullptr ) override;
+};
+
+class RecursiveAligner : public WrapperImageAligner{
+	virtual std::unique_ptr<AImageAligner> makeAligner( AContainer& container ) override
+		{ return std::make_unique<RecursiveAlignerImpl>( container, method, scale ); }
+		
+	public:
+		RecursiveAligner( AImageAligner::AlignMethod method, double scale=1.0 )
+			{ setOptions( method, scale ); }
 };
 
 }
