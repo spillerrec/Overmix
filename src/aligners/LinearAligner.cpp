@@ -39,19 +39,19 @@ struct LinearFunc{
 	double operator()( double x ) const{ return a() * x + b(); }
 };
 
-void LinearAlignerImpl::align( AProcessWatcher* watcher ){
+void LinearAligner::align( AContainer& container, AProcessWatcher* watcher ){
 	LinearFunc hor, ver;//, both;
-	for( unsigned i=0; i<count(); i++ ){
-		hor.add( i, pos(i).x );
-		ver.add( i, pos(i).y );
+	for( unsigned i=0; i<container.count(); i++ ){
+		hor.add( i, container.pos(i).x );
+		ver.add( i, container.pos(i).y );
 		//both.add( pos(i).x, pos(i).y );
 	}
 	
-	for( unsigned i=0; i<count(); i++ ){
-		switch( get_method() ){
-			case ALIGN_BOTH: setPos( i, { hor(i), ver(i) } ); break;
-			case ALIGN_VER:  setPos( i, { 0, ver(i) } ); break;
-			case ALIGN_HOR:  setPos( i, { hor(i), 0 } ); break;
+	for( unsigned i=0; i<container.count(); i++ ){
+		switch( method ){
+			case AImageAligner::ALIGN_BOTH: container.setPos( i, { hor(i), ver(i) } ); break;
+			case AImageAligner::ALIGN_VER:  container.setPos( i, { 0, ver(i) } ); break;
+			case AImageAligner::ALIGN_HOR:  container.setPos( i, { hor(i), 0 } ); break;
 		};
 	}
 }
