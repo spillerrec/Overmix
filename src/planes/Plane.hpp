@@ -82,6 +82,7 @@ class Plane : public PlaneBase<color_type>{
 		color_type min_value() const;
 		color_type max_value() const;
 		color_type mean_value() const;
+		double meanSquaredError( const Plane& other ) const;
 		
 	//Interlacing methods
 		bool is_interlaced() const;

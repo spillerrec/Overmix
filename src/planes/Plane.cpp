@@ -46,6 +46,20 @@ color_type Plane::mean_value() const{
 	return avg / get_height();
 }
 
+double Plane::meanSquaredError( const Plane& other ) const{
+	assert( getSize() == other.getSize() );
+	double mean = 0.0;
+	for( unsigned iy=0; iy<get_height(); iy++ ){
+		double local_mean = 0.0;
+		for( auto row : makeZipRowIt( scan_line(iy), other.scan_line(iy) ) ){
+			auto err = color::asDouble( row.first ) - color::asDouble( row.second );
+			local_mean += err*err;
+		}
+		mean += local_mean / get_width();
+	}
+	return mean / get_height();
+}
+
 bool Plane::is_interlaced() const{
 	double avg2_uneven = 0, avg2_even = 0;
 	for( unsigned iy=0; iy<get_height()/4*4; iy+=4 ){
