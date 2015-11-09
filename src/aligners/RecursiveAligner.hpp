@@ -39,6 +39,8 @@ class RecursiveAlignerImpl : public AImageAligner{
 		virtual void align( AProcessWatcher* watcher=nullptr ) override;
 };
 
+/** Aligns the container using a divide and conquer algorithm. Assumes that each image
+  * overlaps the images right next to it. */
 class RecursiveAligner : public WrapperImageAligner{
 	virtual std::unique_ptr<AImageAligner> makeAligner( AContainer& container ) override
 		{ return std::make_unique<RecursiveAlignerImpl>( container, method, scale ); }

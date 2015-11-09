@@ -13,6 +13,8 @@ release
 */*/debug
 */*/release
 
+docs
+
 .kdev4/*
 *.kate-swp
 **/.directory

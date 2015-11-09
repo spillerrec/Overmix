@@ -62,6 +62,7 @@ void AContainer::scaleImage( unsigned index, Point<double> scale, ScalingFunctio
 	img.scaleFactor( scale, scaling );
 }
 
+/** @return The smallest rectangle which can contain all the images */
 Rectangle<double> AContainer::size() const{
 	auto min = minPoint();
 	auto max = min;
@@ -70,6 +71,7 @@ Rectangle<double> AContainer::size() const{
 	return { min, max-min };
 }
 
+/** @return The lowest x and y cordinates of all items */
 Point<double> AContainer::minPoint() const{
 	if( count() == 0 )
 		return { 0, 0 };
@@ -81,6 +83,7 @@ Point<double> AContainer::minPoint() const{
 	return min;
 }
 
+/** @return The highest x and y cordinates of all items */
 Point<double> AContainer::maxPoint() const{
 	if( count() == 0 )
 		return { 0, 0 };

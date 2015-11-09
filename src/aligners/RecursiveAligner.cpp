@@ -37,6 +37,7 @@ static void mergeLine( Plane& plane_out, const Plane& plane_in1, const Plane& pl
 		out[ix] = (in1[ix] + in2[ix]) / 2; //TODO: use precisison_color_type
 }
 
+/** Efficient rendering of the mean of two planes, assuming only a vertical offset */
 static Plane mergeVertical( const Plane& p1, const Plane& p2, int offset ){
 	auto& top    = offset < 0 ? p2 : p1;
 	auto& bottom = offset < 0 ? p1 : p2;
@@ -65,6 +66,7 @@ static Plane mergeVertical( const Plane& p1, const Plane& p2, int offset ){
 	return out;
 }
 
+/** Refers to a plane+alpha in a container, or contains an instance of a plane+alpha */
 class Overmix::ImageGetter{
 	private:
 		Plane p, a;
@@ -80,10 +82,13 @@ class Overmix::ImageGetter{
 			{ return p ? a : container.alpha(val); }
 };
 
+/** Creates a ImageGetter from this container with the specified index */
 ImageGetter RecursiveAlignerImpl::getGetter( unsigned index ) const{
 	auto processed = AImageAligner::prepare_plane( image(index)[0] );
 	return processed ? ImageGetter( std::move(processed), Plane(alpha(index)) ) : ImageGetter( index );
 }
+
+/** Aligns two ImageGetters, and renders the average. Returns the render and the offset betten the getters */
 pair<ImageGetter,Point<double>> RecursiveAlignerImpl::combine( const ImageGetter& first, const ImageGetter& second ) const{
 	auto offset = find_offset( first.plane(*this), second.plane(*this), first.alpha(*this), second.alpha(*this) ).distance;
 	
@@ -105,6 +110,7 @@ pair<ImageGetter,Point<double>> RecursiveAlignerImpl::combine( const ImageGetter
 	}
 }
 
+/** Internal implementation of align, supporting a recursive interface */
 ImageGetter RecursiveAlignerImpl::align( AProcessWatcher* watcher, unsigned begin, unsigned end ){
 	auto amount = end - begin;
 	switch( amount ){
