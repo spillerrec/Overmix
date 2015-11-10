@@ -23,22 +23,26 @@
 
 namespace Overmix{
 
-class ScaledPlane{
+/** Contains either a const reference or an instance to a plane. This makes
+  * it easy to only send a reference instead of a copy if an image operation
+  * could be avoided. */
+class ModifiedPlane{
 	private:
-		Plane scaled;
-		const Plane* original;
+		Plane modified;
+		const Plane* original{ nullptr };
 		
 	public:
-		ScaledPlane( const Plane& p, Size<unsigned> size ) : original( &p ){
-			if( p.getSize() != size )
-				scaled = p.scale_cubic( size );
-		}
-		
-		ScaledPlane( const Plane& p, const Plane& wanted_size )
-			: ScaledPlane( p, wanted_size.getSize() ) { }
-		
-		const Plane& operator()() const{ return scaled.valid() ? scaled : *original; }
+		ModifiedPlane( Plane&& p ) : modified(std::move(p)) { }
+		ModifiedPlane( const Plane& p ) : original(&p) { }
+		const Plane& operator()() const{ return original ? *original : modified; }
 };
+
+inline ModifiedPlane getScaled( const Plane& p, Size<unsigned> size ){
+	if( p.getSize() != size )
+		return { p.scale_cubic( size ) };
+	else
+		return { p };
+}
 
 
 class ColorRow{

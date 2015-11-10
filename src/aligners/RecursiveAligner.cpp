@@ -19,6 +19,7 @@
 #include "RecursiveAligner.hpp"
 #include "../containers/ImageContainer.hpp"
 #include "../renders/AverageRender.hpp"
+#include "../utils/PlaneUtils.hpp"
 
 #include <limits>
 using namespace std;
@@ -67,41 +68,32 @@ static Plane mergeVertical( const Plane& p1, const Plane& p2, int offset ){
 }
 
 /** Refers to a plane+alpha in a container, or contains an instance of a plane+alpha */
-class Overmix::ImageGetter{
-	private:
-		Plane p, a;
-		unsigned val;
-		
-	public:
-		ImageGetter( Plane&& p, Plane&& alpha ) : p(std::move(p)), a(std::move(alpha)) {  }
-		ImageGetter( unsigned index ) : val( index ) { }
-		
-		const Plane& plane( const AContainer& container ) const
-			{ return p ? p : container.image(val)[0]; }
-		const Plane& alpha( const AContainer& container ) const
-			{ return p ? a : container.alpha(val); }
+struct Overmix::ImageGetter{
+	ModifiedPlane plane, alpha;
+	ImageGetter( ModifiedPlane p, ModifiedPlane a ) : plane(p), alpha(a) { }
 };
 
 /** Creates a ImageGetter from this container with the specified index */
 ImageGetter RecursiveAlignerImpl::getGetter( unsigned index ) const{
 	auto processed = AImageAligner::prepare_plane( image(index)[0] );
-	return processed ? ImageGetter( std::move(processed), Plane(alpha(index)) ) : ImageGetter( index );
+	auto output = processed ? ModifiedPlane( std::move(processed) ) : ModifiedPlane( image(index)[0] );
+	return { output, getScaled( alpha(index), output().getSize() ) };
 }
 
 /** Aligns two ImageGetters, and renders the average. Returns the render and the offset betten the getters */
 pair<ImageGetter,Point<double>> RecursiveAlignerImpl::combine( const ImageGetter& first, const ImageGetter& second ) const{
-	auto offset = find_offset( first.plane(*this), second.plane(*this), first.alpha(*this), second.alpha(*this) ).distance;
+	auto offset = find_offset( first.plane(), second.plane(), first.alpha(), second.alpha() ).distance;
 	
 	if( offset.x == 0
-		&&	!first.alpha(*this) && !second.alpha(*this)
-		&&	first.plane(*this).get_width() == second.plane(*this).get_width() )
-		return { ImageGetter{ mergeVertical( first.plane(*this), second.plane(*this), offset.y ), Plane() }, offset };
+		&&	!first.alpha() && !second.alpha()
+		&&	first.plane().get_width() == second.plane().get_width() )
+		return { ImageGetter{ mergeVertical( first.plane(), second.plane(), offset.y ), Plane() }, offset };
 	else{
 		//Wrap planes in ImageContainer
 		//TODO: Optimize this
 		ImageContainer container;
-		container.addImage( ImageEx(  first.plane(*this),  first.alpha(*this) ) ); //We are having copies here!!
-		container.addImage( ImageEx( second.plane(*this), second.alpha(*this) ) );
+		container.addImage( ImageEx(  first.plane(),  first.alpha() ) ); //We are having copies here!!
+		container.addImage( ImageEx( second.plane(), second.alpha() ) );
 		container.setPos( 1, offset );
 		
 		//Render it

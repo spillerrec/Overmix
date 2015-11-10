@@ -76,7 +76,7 @@ void SumPlane::addAlphaPlane( const Plane& p, const Plane& alpha, Point<> pos ){
 	}
 	
 	//Scale alpha if needed
-	ScaledPlane alpha_scaled( alpha, p );
+	auto alpha_scaled = getScaled( alpha, p.getSize() );
 	
 	resizeToFit( pos, p.getSize() );
 	for( unsigned iy=0; iy<p.get_height(); iy++ ){
@@ -126,15 +126,15 @@ Plane SumPlane::alpha() const{
 
 class AlphaScales{
 	private:
-		vector<vector<ScaledPlane>> items;
+		vector<vector<ModifiedPlane>> items;
 		
 	public:
 		void addScale( const AContainer& aligner, Point<double> scale ){
-			vector<ScaledPlane> scales;
+			vector<ModifiedPlane> scales;
 			scales.reserve( aligner.maskCount() );
 			for( unsigned i=0; i<aligner.maskCount(); i++ ){
 				auto& mask = aligner.mask( i );
-				scales.emplace_back( mask, (mask.getSize() * scale).round() );
+				scales.emplace_back( getScaled( mask, (mask.getSize() * scale).round() ) );
 			}
 			items.emplace_back( scales );
 		}
@@ -190,7 +190,7 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 		for( unsigned j=0; j<aligner.count(); j++ ){
 			auto& image = aligner.image( j );
 			auto pos = (scale * (aligner.pos(j) - min_point)).round();
-			ScaledPlane plane( image[c], (scale * image[0].getSize()).round() );
+			auto plane = getScaled( image[c], (scale * image[0].getSize()).round() );
 			
 			const Plane& alpha_plane = masks.getAlpha( c, aligner.imageMask( j ), aligner.alpha( j ) );
 			if( use_plane_alpha && alpha_plane.valid() )

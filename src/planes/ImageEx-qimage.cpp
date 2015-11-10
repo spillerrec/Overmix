@@ -68,12 +68,12 @@ bool ImageEx::from_qimage( QIODevice& dev, QString ext ){
 
 
 struct PlanesIt{
-	std::vector<ScaledPlane> planes;
+	std::vector<ModifiedPlane> planes;
 	std::vector<const color_type*> rows; //TODO: see if we can replace it
 	
 	public:
 		void add( const Plane& p, Size<int> size )
-			{ planes.emplace_back( p, size ); }
+			{ planes.emplace_back( getScaled( p, size ) ); }
 		void next_x(){ for( auto& row : rows ) row++; }
 		void prepare_row( int iy ){
 			rows.clear();
