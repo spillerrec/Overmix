@@ -2,6 +2,7 @@ Overmix
 =======
 [![GitHub license](https://img.shields.io/badge/license-GPLv3-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0.txt)
 [![GitHub release](https://img.shields.io/badge/release-v0.3.0-blue.svg?style=flat-square)](https://github.com/spillerrec/Overmix/releases/tag/v0.3.0)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/7062/badge.svg)](https://scan.coverity.com/projects/spillerrec-overmix)
 
 Overmix can stitch fractions of smaller images together to create the original full image. It is specifically made for stitching anime screenshots, where a small portion of a scene is shown and the viewpoint slides to show the remaining area.
 
