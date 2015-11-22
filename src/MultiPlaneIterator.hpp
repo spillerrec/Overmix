@@ -157,7 +157,7 @@ class MultiPlaneIterator{
 			right = bottom = -1;
 		}
 		
-		void *data;
+		void *data{ nullptr };
 		
 		bool valid() const{ return y <= bottom && x <= right; }
 		unsigned width(){ return right - left + 1; }

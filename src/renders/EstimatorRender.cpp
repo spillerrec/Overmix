@@ -149,7 +149,7 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 			
 			//Regularization
 			if( lambda > 0.0 )
-				regularize( est[c], output_copy, reg_size, lambda, beta, alpha );
+				regularize( est[c], output_copy, reg_size, alpha, beta, lambda );
 			else
 				est[c] = output_copy;
 		}

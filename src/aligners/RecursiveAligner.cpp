@@ -22,6 +22,7 @@
 #include "../utils/PlaneUtils.hpp"
 
 #include <limits>
+#include <stdexcept>
 using namespace std;
 using namespace Overmix;
 
@@ -104,9 +105,11 @@ pair<ImageGetter,Point<double>> RecursiveAlignerImpl::combine( const ImageGetter
 
 /** Internal implementation of align, supporting a recursive interface */
 ImageGetter RecursiveAlignerImpl::align( AProcessWatcher* watcher, unsigned begin, unsigned end ){
+	if( begin >= end )
+		throw invalid_argument( "Invalid image range" );
+	
 	auto amount = end - begin;
 	switch( amount ){
-		case 0: qFatal( "No images to align!" );
 		case 1: ProgressWrapper( watcher ).add( 1 );
 				return getGetter( begin ); //Just return this one
 		case 2: { //Optimization for two images

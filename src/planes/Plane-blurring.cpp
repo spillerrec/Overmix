@@ -114,6 +114,7 @@ std::vector<WeightedSumLine<T>> prepare_weighted_sum(
 	
 	//Set default settings
 	WeightedSumLine<T> default_line;
+	default_line.out = nullptr;
 	default_line.width = size.width();
 	default_line.line_width = in.get_line_width();
 	default_line.weights = kernel.scan_line(0).begin(); //TODO: line_width ignored!

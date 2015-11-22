@@ -26,7 +26,7 @@ namespace Overmix{
 class RenderPipeScaling : public ARenderPipe{
 	private:
 		Point<double> size;
-		ScalingFunction scaling;
+		ScalingFunction scaling = ScalingFunction::SCALE_MITCHELL;
 		
 	protected:
 		virtual bool renderNeeded() const override{
@@ -141,7 +141,7 @@ class RenderPipeLevel : public ARenderPipe{
 
 class RenderPipeThreshold : public ARenderPipe{
 	private:
-		unsigned method;
+		unsigned method{ 0 };
 		color_type threshold{ color::BLACK };
 		int size{ 20 };
 		
