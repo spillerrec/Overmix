@@ -38,7 +38,7 @@ class ModifiedPlane{
 };
 
 inline ModifiedPlane getScaled( const Plane& p, Size<unsigned> size ){
-	if( p.getSize() != size )
+	if( p && p.getSize() != size )
 		return { p.scale_cubic( size ) };
 	else
 		return { p };

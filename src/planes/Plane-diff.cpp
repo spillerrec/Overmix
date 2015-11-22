@@ -156,26 +156,24 @@ struct img_comp{
 	bool fast;
 	int h_middle;
 	int v_middle;
-	double diff;
+	double diff{ -1.0 };
 	int level;
 	int left;
 	int right;
 	int top;
 	int bottom;
 	double precision;
-	bool diff_set;
+	bool diff_set{ false }; //TODO: name is missleading, interface unclear as well
 	
 	img_comp( const Plane& image1, const Plane& image2, const Plane& a1, const Plane& a2, bool fast, int hm, int vm, int lvl=0, int l=0, int r=0, int t=0, int b=0, double p=1 )
 		:	img1( image1 ), img2( image2 )
 		,	a1( a1 ), a2( a2 )
 		,	fast(fast)
 		,	h_middle( hm ), v_middle( vm )
-		,	diff( -1 )
 		,	level( lvl )
 		,	left( l ), right( r )
 		,	top( t ), bottom( b )
 		,	precision( p )
-		,	diff_set( false )
 		{ }
 	void do_diff(){
 		if( !diff_set )
