@@ -68,5 +68,12 @@ Several tools related to the format have been developed, most importantly an app
 
 *Building*
 
-1. cmake
+1. cmake -DCMAKE_BUILD_TYPE=release
 2. make
+
+It is recormended to build in a seperate folder, as cmake polutes the all the directories otherwise. You can do it like this:
+
+1. mkdir release
+2. cd release
+3. cmake ../ -DCMAKE_BUILD_TYPE=release
+4. make
