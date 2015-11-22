@@ -20,26 +20,30 @@
 
 #include "AContainer.hpp"
 
+#include <exception>
+
 namespace Overmix{
 
 class ConstDelegatedContainer : public AContainer{
 	protected:
-		ImageEx* temp; //TODO: avoid? used in imageRef
 		const AContainer& container;
+		auto const_exception() const
+			{ return std::invalid_argument("Const container does not allow calling mutation methods!"); }
 		
 	public: //AContainer implementation
 		virtual unsigned count() const override{ return container.count(); }
 		virtual const ImageEx& image( unsigned index ) const override{ return container.image( index ); }
-		virtual ImageEx& imageRef( unsigned ) override{ return *temp; } //TODO: throw exception
-		virtual void setMask( unsigned, int ) override { } //TODO: throw exception
 		virtual int imageMask( unsigned index ) const override{ return container.imageMask( index ); }
 		virtual const Plane& alpha( unsigned index ) const override{ return container.alpha( index ); }
 		virtual const Plane& mask( unsigned index ) const override{ return container.mask( index ); }
 		virtual unsigned maskCount() const override{ return container.maskCount(); }
 		virtual Point<double> pos( unsigned index ) const override{ return container.pos( index ); }
-		virtual void setPos( unsigned, Point<double> ) override{  }
 		virtual int frame( unsigned index ) const override{ return container.frame( index ); }
-		virtual void setFrame( unsigned, int ) override{  }
+		
+		virtual ImageEx& imageRef( unsigned ) override{ throw const_exception(); }
+		virtual void setMask( unsigned, int ) override { throw const_exception(); }
+		virtual void setFrame( unsigned, int ) override{ throw const_exception(); }
+		virtual void setPos( unsigned, Point<double> ) override{ throw const_exception(); }
 		
 	public:
 		ConstDelegatedContainer( const AContainer& container ) : container(container) { }
