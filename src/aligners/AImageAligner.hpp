@@ -19,9 +19,10 @@
 #define A_IMAGE_ALIGNER_HPP
 
 #include "AAligner.hpp"
+#include "../containers/AContainer.hpp"
 #include "../planes/Plane.hpp"
 #include "../planes/ImageEx.hpp"
-#include "../containers/AContainer.hpp"
+#include "../utils/PlaneUtils.hpp"
 
 #include <vector>
 
@@ -38,7 +39,7 @@ class AImageAligner : public AContainer{
 			ALIGN_HOR
 		};
 		
-	protected:
+	public:
 		struct ImageOffset{
 			Point<double> distance;
 			double error;
@@ -56,6 +57,8 @@ class AImageAligner : public AContainer{
 			{ return findOffset( index, image( index2 )[0], alpha( index2 ) ); }
 		ImageOffset findOffset( const ImageEx& img1, const ImageEx& img2 ) const
 			{ return find_offset( img1[0], img2[0], img1.alpha_plane(), img2.alpha_plane() ); }
+			
+		static ImageOffset findOffset( Point<double> movement, const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 );
 	
 	protected:
 		const AlignMethod method;
@@ -111,6 +114,24 @@ class AImageAligner : public AContainer{
 		double get_edges() const{ return use_edges; }
 		
 		virtual void align( AProcessWatcher* watcher=nullptr ) = 0;
+};
+
+class AlignerProcessor{
+	private:
+		AImageAligner::AlignMethod method;
+		double scale_amount{ 1.0 };
+		bool edges{ false };
+		
+	public:
+		AlignerProcessor( AImageAligner::AlignMethod method, double scale, bool edges=false )
+			: method(method), scale_amount(scale), edges(edges) { }
+		
+		Point<double> scale() const;
+		Point<double> filter( Point<double> value ) const;
+		
+		ModifiedPlane operator()( const Plane& ) const;
+		ModifiedPlane scalePlane( const Plane& p ) const
+			{ return getScaled( p, p.getSize()*scale() ); }
 };
 
 /* Until we have fixed all the methods */

@@ -64,27 +64,37 @@ double AImageAligner::calculate_overlap( Point<> offset, const Plane& img1, cons
 }
 
 AImageAligner::ImageOffset AImageAligner::find_offset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ) const{
+	//Restrict movement
+	Point<double> movement_point{ movement, movement };
+	switch( method ){
+		case ALIGN_HOR:	movement_point.y = 0; break;
+		case ALIGN_VER:	movement_point.x = 0; break;
+		default: break;
+	}
+	
+	return findOffset( movement_point, img1, img2, a1, a2 );
+}
+
+AImageAligner::ImageOffset AImageAligner::findOffset( Point<double> movement, const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ){
 	//Keep repeating with higher levels until it drops
 	//below threshold
-	int level = 1; //TODO: magic number
+	//TODO: magic settings which should be configurable
+	int level = 1;
+	int max_level = 6;
+	bool fast_diffing = true;
+	auto max_difference = 0.10*color::WHITE; //Difference must not be above this to match
+	
 	std::pair<Point<>,double> result;
 	DiffCache cache;
 	
-	//Restrict movement
-	double movement_x = movement, movement_y = movement;
-	switch( method ){
-		case ALIGN_HOR:	movement_y = 0; break;
-		case ALIGN_VER:	movement_x = 0; break;
-		default: break;
-	}
 	do{
 		result = img1.best_round_sub( img2
 			,	a1, a2, level
-			,	((int)1 - (int)img2.get_width()) * movement_x, ((int)img1.get_width() - 1) * movement_x
-			,	((int)1 - (int)img2.get_height()) * movement_y, ((int)img1.get_height() - 1) * movement_y
+			,	((int)1 - (int)img2.get_width()) * movement.x, ((int)img1.get_width() - 1) * movement.x
+			,	((int)1 - (int)img2.get_height()) * movement.y, ((int)img1.get_height() - 1) * movement.y
 			,	&cache, fast_diffing
 			);
-	}while( result.second > 0.10*color::WHITE && level++ < 6 ); //TODO: magic number!
+	}while( result.second > max_difference && level++ < max_level );
 	
 	return { result.first, result.second, calculate_overlap( result.first, img1, img2 ) };
 }
@@ -109,5 +119,28 @@ Point<double> AImageAligner::pos( unsigned index ) const{
 }
 void AImageAligner::setPos( unsigned index, Point<double> newVal ){
 	container.setPos( index, raw ? newVal / scales() : newVal );
+}
+
+Point<double> AlignerProcessor::scale() const{
+	switch( method ){
+		case AImageAligner::ALIGN_VER: return { 1.0, scale_amount };
+		case AImageAligner::ALIGN_HOR: return { scale_amount, 1.0 };
+		default: return { scale_amount, scale_amount };
+	}
+}
+
+Point<double> AlignerProcessor::filter( Point<double> value ) const{
+	switch( method ){
+		case AImageAligner::ALIGN_VER: return { 0.0, value.x };
+		case AImageAligner::ALIGN_HOR: return { value.y, 0.0 };
+		default: return value;
+	}
+}
+
+ModifiedPlane AlignerProcessor::operator()( const Plane& p ) const{
+	auto output = scalePlane( p );
+	if( edges )
+		output.modify( [&](const Plane& p){ return p.edge_sobel(); } );
+	return output;
 }
 

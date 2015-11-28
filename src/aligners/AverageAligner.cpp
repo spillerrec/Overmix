@@ -21,26 +21,25 @@
 
 using namespace Overmix;
 
-void AverageAlignerImpl::align( AProcessWatcher* watcher ){
-	resetPosition();
-	if( count() <= 1 ) //If there is nothing to align
+void AverageAligner::align( AContainer& container, AProcessWatcher* watcher ){
+	container.resetPosition();
+	if( container.count() <= 1 ) //If there is nothing to align
 		return;
 	
-	ProgressWrapper( watcher ).setTotal( count() );
-	
-	raw = true;
+	ProgressWrapper( watcher ).setTotal( container.count() );
 	
 	SumPlane render;
-	render.addAlphaPlane( image( 0 )[0], alpha( 0 ), {0,0} );
+	render.addAlphaPlane( process( container.image( 0 )[0] )(), process( container.alpha( 0 ) )(), {0,0} );
 	
-	for( unsigned i=1; i<count(); i++ ){
+	for( unsigned i=1; i<container.count(); i++ ){
 		ProgressWrapper( watcher ).setCurrent( i );
+		auto img   = process( container.image( i )[0] );
+		auto alpha = process.scalePlane( container.alpha( i ) );
 		
-		auto offset = find_offset( render.average(), image( i )[0], render.alpha(), alpha( i ) ).distance;
-		setPos( i, minPoint() + offset );
-		render.addAlphaPlane( image( i )[0], alpha( i ), offset );
+		//TODO: fix findOffset and movement constant
+		auto offset = AImageAligner::findOffset( process.filter({0.5,0.5}), render.average(), img(), render.alpha(), alpha() ).distance;
+		container.setPos( i, container.minPoint() + offset/process.scale() );
+		render.addAlphaPlane( img(), alpha(), offset );
 	}
-	
-	raw = false;
 }
 

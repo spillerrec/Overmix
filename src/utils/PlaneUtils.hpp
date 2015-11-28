@@ -35,6 +35,10 @@ class ModifiedPlane{
 		ModifiedPlane( Plane&& p ) : modified(std::move(p)) { }
 		ModifiedPlane( const Plane& p ) : original(&p) { }
 		const Plane& operator()() const{ return original ? *original : modified; }
+		
+		//TODO: "modifier" must not modify the original plane??
+		template<typename Func> void modify( Func modifier )
+			{ modified = modifier(modified); }
 };
 
 inline ModifiedPlane getScaled( const Plane& p, Size<unsigned> size ){
