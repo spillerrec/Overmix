@@ -22,12 +22,13 @@
 using namespace Overmix;
 
 
-void SuperResAlignerImpl::align( AProcessWatcher* watcher ){
-	auto base = RobustSrRender( local_scale ).render( *this, watcher );
-	for( unsigned i=0; i<count(); i++ ){
-		auto img = image( i );
-		img.scaleFactor( {local_scale, local_scale} );
-		setPos( i, findOffset( base, img ).distance / local_scale );
+void SuperResAligner::align( class AContainer& container, class AProcessWatcher* watcher ){
+	auto base = RobustSrRender( scale ).render( container, watcher );
+	for( unsigned i=0; i<container.count(); i++ ){
+		auto img = container.image( i );
+		img.scaleFactor( {scale, scale} );
+		//TODO: movement...
+		container.setPos( i, AImageAligner::findOffset( {0.25,0.25}, base[0], img[0], base.alpha_plane(), img.alpha_plane() ).distance / scale );
 	}
 }
 

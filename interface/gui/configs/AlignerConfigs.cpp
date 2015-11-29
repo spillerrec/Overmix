@@ -133,9 +133,6 @@ std::unique_ptr<AAligner> SeperateAlignerConfig::getAligner() const{
 std::unique_ptr<AAligner> AlignFrameAlignerConfig::getAligner() const
 	{ return std::make_unique<FrameAligner>( getMethod() ); }
 
-std::unique_ptr<AAligner> SuperResAlignerConfig::getAligner() const{
-	auto aligner = std::make_unique<SuperResAligner>();
-	configure( *aligner );
-	return std::move( aligner );
-}
+std::unique_ptr<AAligner> SuperResAlignerConfig::getAligner() const
+	{ return std::make_unique<SuperResAligner>( getMethod(), getScale() ); }
 
