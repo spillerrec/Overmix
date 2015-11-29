@@ -90,15 +90,15 @@ void AAlignerConfig::configure( WrapperImageAligner& aligner ) const{
 }
 
 
-AImageAligner::AlignMethod AAlignerConfig::getMethod() const{
+AlignMethod AAlignerConfig::getMethod() const{
 	bool h = cbx_merge_h->isChecked(), v = cbx_merge_v->isChecked();
 	if( h && v )
-		return AImageAligner::ALIGN_BOTH;
+		return AlignMethod::ALIGN_BOTH;
 	if( h )
-		return AImageAligner::ALIGN_VER;
+		return AlignMethod::ALIGN_VER;
 	if( v )
-		return AImageAligner::ALIGN_HOR;
-	return AImageAligner::ALIGN_VER;
+		return AlignMethod::ALIGN_HOR;
+	return AlignMethod::ALIGN_VER;
 }
 
 double AAlignerConfig::getScale() const{

@@ -46,7 +46,7 @@ class RecursiveAligner : public WrapperImageAligner{
 		{ return std::make_unique<RecursiveAlignerImpl>( container, method, scale ); }
 		
 	public:
-		RecursiveAligner( AImageAligner::AlignMethod method, double scale=1.0 )
+		RecursiveAligner( AlignMethod method, double scale=1.0 )
 			{ setOptions( method, scale ); }
 };
 

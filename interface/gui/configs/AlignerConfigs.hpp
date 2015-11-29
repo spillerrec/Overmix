@@ -48,7 +48,7 @@ class AAlignerConfig : public AConfig, private Ui::ImageAligner{
 		
 		virtual std::unique_ptr<AAligner> getAligner() const = 0;
 		
-		AImageAligner::AlignMethod getMethod() const;
+		AlignMethod getMethod() const;
 		double getScale() const;
 	
 	private slots:

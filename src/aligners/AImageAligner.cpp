@@ -67,8 +67,8 @@ AImageAligner::ImageOffset AImageAligner::find_offset( const Plane& img1, const 
 	//Restrict movement
 	Point<double> movement_point{ movement, movement };
 	switch( method ){
-		case ALIGN_HOR:	movement_point.y = 0; break;
-		case ALIGN_VER:	movement_point.x = 0; break;
+		case AlignMethod::ALIGN_HOR:	movement_point.y = 0; break;
+		case AlignMethod::ALIGN_VER:	movement_point.x = 0; break;
 		default: break;
 	}
 	
@@ -123,16 +123,16 @@ void AImageAligner::setPos( unsigned index, Point<double> newVal ){
 
 Point<double> AlignerProcessor::scale() const{
 	switch( method ){
-		case AImageAligner::ALIGN_VER: return { 1.0, scale_amount };
-		case AImageAligner::ALIGN_HOR: return { scale_amount, 1.0 };
+		case AlignMethod::ALIGN_VER: return { 1.0, scale_amount };
+		case AlignMethod::ALIGN_HOR: return { scale_amount, 1.0 };
 		default: return { scale_amount, scale_amount };
 	}
 }
 
 Point<double> AlignerProcessor::filter( Point<double> value ) const{
 	switch( method ){
-		case AImageAligner::ALIGN_VER: return { 0.0, value.x };
-		case AImageAligner::ALIGN_HOR: return { value.y, 0.0 };
+		case AlignMethod::ALIGN_VER: return { 0.0, value.x };
+		case AlignMethod::ALIGN_HOR: return { value.y, 0.0 };
 		default: return value;
 	}
 }

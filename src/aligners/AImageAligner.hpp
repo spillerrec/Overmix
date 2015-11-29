@@ -31,14 +31,13 @@ namespace Overmix{
 class AProcessWatcher;
 class ImageContainer;
 
+enum class AlignMethod{
+		ALIGN_BOTH
+	,	ALIGN_VER
+	,	ALIGN_HOR
+};
+
 class AImageAligner : public AContainer{
-	public:
-		enum AlignMethod{
-			ALIGN_BOTH,
-			ALIGN_VER,
-			ALIGN_HOR
-		};
-		
 	public:
 		struct ImageOffset{
 			Point<double> distance;
@@ -71,7 +70,7 @@ class AImageAligner : public AContainer{
 		
 	public:
 		Point<double> scales() const
-			{ return { (method != ALIGN_VER) ? scale : 1.0, (method != ALIGN_HOR) ? scale : 1.0 }; }
+			{ return { (method != AlignMethod::ALIGN_VER) ? scale : 1.0, (method != AlignMethod::ALIGN_HOR) ? scale : 1.0 }; }
 		AContainer& getContainer(){ return container; }
 		
 	private:
@@ -118,12 +117,12 @@ class AImageAligner : public AContainer{
 
 class AlignerProcessor{
 	private:
-		AImageAligner::AlignMethod method;
+		AlignMethod method;
 		double scale_amount{ 1.0 };
 		bool edges{ false };
 		
 	public:
-		AlignerProcessor( AImageAligner::AlignMethod method, double scale, bool edges=false )
+		AlignerProcessor( AlignMethod method, double scale, bool edges=false )
 			: method(method), scale_amount(scale), edges(edges) { }
 		
 		Point<double> scale() const;
@@ -137,14 +136,14 @@ class AlignerProcessor{
 /* Until we have fixed all the methods */
 class WrapperImageAligner : public AAligner{
 	protected:
-		AImageAligner::AlignMethod method;
+		AlignMethod method;
 		double scale;
 		bool edges { false };
 		double movement{ 0.75 };
 		virtual std::unique_ptr<AImageAligner> makeAligner( AContainer& container ) = 0;
 		
 	public:
-		void setOptions( AImageAligner::AlignMethod method, double scale, bool edges=false, double movement=0.75 ){
+		void setOptions( AlignMethod method, double scale, bool edges=false, double movement=0.75 ){
 			this->method   = method;
 			this->scale    = scale;
 			this->edges    = edges;

@@ -27,11 +27,11 @@
 using namespace std;
 using namespace Overmix;
 
-static void convert( QString str, AImageAligner::AlignMethod& func ){
-	func = getEnum<AImageAligner::AlignMethod>( str,
-		{	{ "both", AImageAligner::ALIGN_BOTH }
-		,	{ "ver",  AImageAligner::ALIGN_VER  }
-		,	{ "hor",  AImageAligner::ALIGN_HOR  }
+static void convert( QString str, AlignMethod& func ){
+	func = getEnum<AlignMethod>( str,
+		{	{ "both", AlignMethod::ALIGN_BOTH }
+		,	{ "ver",  AlignMethod::ALIGN_VER  }
+		,	{ "hor",  AlignMethod::ALIGN_HOR  }
 		} );
 }
 
@@ -41,7 +41,7 @@ void Overmix::alignerParser( QString parameters, AContainer& container ){
 	
 	Splitter split( parameters, ':' );
 	if( split.left == "average" ){
-		AImageAligner::AlignMethod method;
+		AlignMethod method;
 		double scale;
 		convert( split.right, method, scale );
 		//TODO: parse parameters

@@ -24,10 +24,10 @@ namespace Overmix{
 
 class LinearAligner : public AAligner{
 	private:
-		AImageAligner::AlignMethod method;
+		AlignMethod method;
 		
 	public:
-		LinearAligner( AImageAligner::AlignMethod method ) :	method(method) { }
+		LinearAligner( AlignMethod method ) :	method(method) { }
 		virtual void align( AContainer& container, AProcessWatcher* watcher=nullptr ) override;
 };
 
