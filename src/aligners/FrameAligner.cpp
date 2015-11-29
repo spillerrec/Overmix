@@ -24,22 +24,22 @@
 
 using namespace Overmix;
 
-void FrameAlignerImpl::align( AProcessWatcher* watcher ){
-	auto frames = getFrames();
-	auto base_point = minPoint();
+void FrameAligner::align( class AContainer& container, class AProcessWatcher* watcher ){
+	auto frames = container.getFrames();
+	auto base_point = container.minPoint();
 	
 	ImageContainer images;
 	for( auto& frame : frames ){
-		FrameContainer current( *this, frame );
+		FrameContainer current( container, frame );
 		images.addImage( FloatRender( 1.0, 1.0 ).render( current ) );
 		//TODO: this should be a sub-pixel precision render!
 	}
 	
 	//TODO: also show progress for this!
-	RecursiveAligner( get_method(), get_scale() ).align( images ); //TODO: try with AverageAligner
+	RecursiveAligner( method, 1.0 ).align( images ); //TODO: make configurable
 	
 	ProgressWrapper( watcher ).loopAll( frames.size(), [&](int i){
-			FrameContainer current( *this, frames[i] );
+			FrameContainer current( container, frames[i] );
 			auto aligned_offset = base_point - current.minPoint();
 			current.offsetAll( aligned_offset + (images.pos(i) - images.minPoint()) );
 		} );
