@@ -110,11 +110,8 @@ std::unique_ptr<AAligner> AverageAlignerConfig::getAligner() const
 	{ return std::make_unique<AverageAligner>( getMethod(), getScale() ); }
 
 
-std::unique_ptr<AAligner> RecursiveAlignerConfig::getAligner() const{
-	auto aligner = std::make_unique<RecursiveAligner>( getMethod(), getScale() );
-	configure( *aligner );
-	return std::move( aligner );
-}
+std::unique_ptr<AAligner> RecursiveAlignerConfig::getAligner() const
+	{ return std::make_unique<RecursiveAligner>( getMethod(), getScale() ); }
 
 
 std::unique_ptr<AAligner> FakeAlignerConfig::getAligner() const

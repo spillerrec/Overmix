@@ -75,15 +75,12 @@ struct Overmix::ImageGetter{
 };
 
 /** Creates a ImageGetter from this container with the specified index */
-ImageGetter RecursiveAlignerImpl::getGetter( unsigned index ) const{
-	auto processed = AImageAligner::prepare_plane( image(index)[0] );
-	auto output = processed ? ModifiedPlane( std::move(processed) ) : ModifiedPlane( image(index)[0] );
-	return { output, getScaled( alpha(index), output().getSize() ) };
-}
+ImageGetter RecursiveAligner::getGetter( const AContainer& container, unsigned index ) const
+	{ return { process( container.image(index)[0] ), process.scalePlane( container.alpha(index) ) }; }
 
 /** Aligns two ImageGetters, and renders the average. Returns the render and the offset betten the getters */
-pair<ImageGetter,Point<double>> RecursiveAlignerImpl::combine( const ImageGetter& first, const ImageGetter& second ) const{
-	auto offset = find_offset( first.plane(), second.plane(), first.alpha(), second.alpha() ).distance;
+pair<ImageGetter,Point<double>> RecursiveAligner::combine( const ImageGetter& first, const ImageGetter& second ) const{
+	auto offset = AImageAligner::findOffset( process.filter({0.75, 0.75}), first.plane(), second.plane(), first.alpha(), second.alpha() ).distance;
 	
 	if( offset.x == 0
 		&&	!first.alpha() && !second.alpha()
@@ -104,51 +101,48 @@ pair<ImageGetter,Point<double>> RecursiveAlignerImpl::combine( const ImageGetter
 }
 
 /** Internal implementation of align, supporting a recursive interface */
-ImageGetter RecursiveAlignerImpl::align( AProcessWatcher* watcher, unsigned begin, unsigned end ){
+ImageGetter RecursiveAligner::align( AContainer& container, AProcessWatcher* watcher, unsigned begin, unsigned end ) const{
 	if( begin >= end )
 		throw invalid_argument( "Invalid image range" );
 	
 	auto amount = end - begin;
 	switch( amount ){
 		case 1: ProgressWrapper( watcher ).add( 1 );
-				return getGetter( begin ); //Just return this one
+				return getGetter( container, begin ); //Just return this one
 		case 2: { //Optimization for two images
-				auto offset = combine( getGetter( begin ), getGetter( begin+1 ) );
-				setPos( begin+1, pos(begin) + offset.second );
+				auto offset = combine( getGetter( container, begin ), getGetter( container, begin+1 ) );
+				container.setPos( begin+1, container.pos(begin) + offset.second );
 				ProgressWrapper( watcher ).add( 2 );
 				return std::move( offset.first );
 			}
 		default: { //More than two images
 				//Solve sub-areas recursively
 				unsigned middle = amount / 2 + begin;
-				auto offset = combine( align( watcher, begin, middle ), align( watcher, middle, end ) );
+				auto offset = combine( align( container, watcher, begin, middle ), align( container, watcher, middle, end ) );
 				
 				//Find top-left corner of first
 				auto corner1 = Point<double>( numeric_limits<double>::max(), numeric_limits<double>::max() );
 				auto corner2 = corner1;
 				for( unsigned i=begin; i<middle; i++ )
-					corner1 = corner1.min( pos(i) );
+					corner1 = corner1.min( container.pos(i) );
 				//Find top-left corner of second
 				for( unsigned i=middle; i<end; i++ )
-					corner2 = corner2.min( pos(i) );
+					corner2 = corner2.min( container.pos(i) );
 				
 				//move all in "middle to end" using the offset
 				for( unsigned i=middle; i<end; i++ )
-					setPos( i, pos( i ) + corner1 + offset.second - corner2 );
+					container.setPos( i, container.pos( i ) + corner1 + offset.second - corner2 );
 				
 				return std::move( offset.first ); //Return the combined image
 			}
 	}
 }
 
-void RecursiveAlignerImpl::align( AProcessWatcher* watcher ){
-	if( count() == 0 )
+void RecursiveAligner::align( AContainer& container, AProcessWatcher* watcher ){
+	if( container.count() == 0 )
 		return;
 	
-	ProgressWrapper( watcher ).setTotal( count() );
-	
-	raw = true;
-	align( watcher, 0, count() );
-	raw = false;
+	ProgressWrapper( watcher ).setTotal( container.count() );
+	align( container, watcher, 0, container.count() );
 }
 
