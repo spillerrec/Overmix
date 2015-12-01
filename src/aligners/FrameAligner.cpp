@@ -24,7 +24,7 @@
 
 using namespace Overmix;
 
-void FrameAligner::align( class AContainer& container, class AProcessWatcher* watcher ){
+void FrameAligner::align( class AContainer& container, class AProcessWatcher* watcher ) const{
 	auto frames = container.getFrames();
 	auto base_point = container.minPoint();
 	

@@ -32,7 +32,7 @@ class AnimationSeparatorImpl : public AImageAligner{
 };
 
 class AnimationSeparator : public WrapperImageAligner{
-	virtual std::unique_ptr<AImageAligner> makeAligner( AContainer& container ) override
+	virtual std::unique_ptr<AImageAligner> makeAligner( AContainer& container ) const override
 		{ return std::make_unique<AnimationSeparatorImpl>( container, method, scale ); }
 };
 

@@ -140,7 +140,7 @@ class WrapperImageAligner : public AAligner{
 		double scale;
 		bool edges { false };
 		double movement{ 0.75 };
-		virtual std::unique_ptr<AImageAligner> makeAligner( AContainer& container ) = 0;
+		virtual std::unique_ptr<AImageAligner> makeAligner( AContainer& container ) const = 0;
 		
 	public:
 		void setOptions( AlignMethod method, double scale, bool edges=false, double movement=0.75 ){
@@ -150,7 +150,7 @@ class WrapperImageAligner : public AAligner{
 			this->movement = movement;
 		}
 		
-		virtual void align( AContainer& container, class AProcessWatcher* watcher=nullptr ) override{
+		virtual void align( AContainer& container, class AProcessWatcher* watcher=nullptr ) const override{
 			auto aligner = makeAligner( container );
 			aligner->set_edges( edges );
 			aligner->set_movement( movement );

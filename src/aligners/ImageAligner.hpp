@@ -42,7 +42,7 @@ class ImageAlignerImpl : public AImageAligner{
 };
 
 class ImageAligner : public WrapperImageAligner{
-	virtual std::unique_ptr<AImageAligner> makeAligner( AContainer& container ) override
+	virtual std::unique_ptr<AImageAligner> makeAligner( AContainer& container ) const override
 		{ return std::make_unique<ImageAlignerImpl>( container, method, scale ); }
 };
 

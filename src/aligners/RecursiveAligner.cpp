@@ -138,7 +138,7 @@ ImageGetter RecursiveAligner::align( AContainer& container, AProcessWatcher* wat
 	}
 }
 
-void RecursiveAligner::align( AContainer& container, AProcessWatcher* watcher ){
+void RecursiveAligner::align( AContainer& container, AProcessWatcher* watcher ) const{
 	if( container.count() == 0 )
 		return;
 	

@@ -24,7 +24,7 @@ class AAligner{
 	public:
 		virtual ~AAligner() { }
 		
-		virtual void align( class AContainer& container, class AProcessWatcher* watcher=nullptr ) = 0;
+		virtual void align( class AContainer& container, class AProcessWatcher* watcher=nullptr ) const = 0;
 };
 
 }

@@ -39,7 +39,7 @@ class RecursiveAligner : public AAligner{
 	public:
 		RecursiveAligner( AlignMethod method, double scale=1.0 )
 			: process( method, scale ) { }
-		virtual void align( AContainer& container, AProcessWatcher* watcher=nullptr ) override;
+		virtual void align( AContainer& container, AProcessWatcher* watcher=nullptr ) const override;
 };
 
 }

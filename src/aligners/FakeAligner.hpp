@@ -24,7 +24,7 @@ namespace Overmix{
 
 class FakeAligner : public AAligner{
 	public:
-		virtual void align( AContainer& container, AProcessWatcher* ) override
+		virtual void align( AContainer& container, AProcessWatcher* ) const override
 			{ container.resetPosition(); }
 };
 

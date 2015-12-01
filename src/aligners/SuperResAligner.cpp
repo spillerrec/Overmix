@@ -22,7 +22,7 @@
 using namespace Overmix;
 
 
-void SuperResAligner::align( class AContainer& container, class AProcessWatcher* watcher ){
+void SuperResAligner::align( class AContainer& container, class AProcessWatcher* watcher ) const {
 	auto base = RobustSrRender( scale ).render( container, watcher );
 	for( unsigned i=0; i<container.count(); i++ ){
 		auto img = container.image( i );

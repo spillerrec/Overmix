@@ -21,7 +21,7 @@
 
 using namespace Overmix;
 
-void AverageAligner::align( AContainer& container, AProcessWatcher* watcher ){
+void AverageAligner::align( AContainer& container, AProcessWatcher* watcher ) const {
 	container.resetPosition();
 	if( container.count() <= 1 ) //If there is nothing to align
 		return;

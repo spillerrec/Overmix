@@ -39,7 +39,7 @@ struct LinearFunc{
 	double operator()( double x ) const{ return a() * x + b(); }
 };
 
-void LinearAligner::align( AContainer& container, AProcessWatcher* watcher ){
+void LinearAligner::align( AContainer& container, AProcessWatcher* watcher ) const {
 	LinearFunc hor, ver;//, both;
 	for( unsigned i=0; i<container.count(); i++ ){
 		hor.add( i, container.pos(i).x );

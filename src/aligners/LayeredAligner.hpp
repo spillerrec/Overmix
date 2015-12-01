@@ -30,7 +30,7 @@ class LayeredAlignerImpl : public AImageAligner{
 };
 
 class LayeredAligner : public WrapperImageAligner{
-	virtual std::unique_ptr<AImageAligner> makeAligner( AContainer& container ) override
+	virtual std::unique_ptr<AImageAligner> makeAligner( AContainer& container ) const override
 		{ return std::make_unique<LayeredAlignerImpl>( container, method, scale ); }
 };
 

@@ -29,7 +29,7 @@ class SuperResAligner : public AAligner{
 		
 	public:
 		SuperResAligner( AlignMethod method, double scale ) : method(method), scale(scale) { }
-		virtual void align( class AContainer& container, class AProcessWatcher* watcher=nullptr ) override;
+		virtual void align( class AContainer& container, class AProcessWatcher* watcher=nullptr ) const override;
 };
 
 }

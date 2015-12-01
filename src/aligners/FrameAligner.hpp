@@ -28,7 +28,7 @@ class FrameAligner : public AAligner{
 	
 	public:
 		FrameAligner( AlignMethod method ) : method(method) { }
-		virtual void align( class AContainer& container, class AProcessWatcher* watcher=nullptr ) override;
+		virtual void align( class AContainer& container, class AProcessWatcher* watcher=nullptr ) const override;
 };
 
 }
