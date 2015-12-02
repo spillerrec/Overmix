@@ -25,37 +25,50 @@
 
 #include "../renders/ARender.hpp"
 #include "../debug.hpp"
+#include "../containers/DelegatedContainer.hpp"
 
 using namespace std;
 using namespace Overmix;
 
+class ModifiedContainer : public ConstDelegatedContainer {
+	private:
+		vector<Modified<ImageEx>> images;
+		
+	public:
+		ModifiedContainer( AContainer& container, AlignerProcessor f ) : ConstDelegatedContainer( container ) {
+			images.reserve( container.count() );
+			for( unsigned i=0; i<container.count(); i++ )
+				images.push_back( f.image( container.image( i ) ) );
+		}
+		
+		
+		virtual const ImageEx& image( unsigned index ) const override{ return images[index](); }
+		virtual const Plane& alpha(   unsigned index ) const override{ return image( index ).alpha_plane(); }
+};
+
 
 class AnimFrame{
 	public:
-		AnimationSeparatorImpl& aligner;
+		AContainer& aligner;
 		std::vector<unsigned> indexes;
 		
 	public:
-		AnimFrame( AnimationSeparatorImpl& aligner ) : aligner(aligner) { }
-		void add_index( unsigned index, int frame ){
-			indexes.push_back( index );
-			aligner.setFrame( index, frame );
-		}
+		AnimFrame( AContainer& aligner ) : aligner(aligner) { }
+		void add_index( unsigned index, int frame ){ indexes.push_back( index ); }
 		unsigned size() const{ return indexes.size(); }
 		
 		double find_error( unsigned index )
-			{ return aligner.findOffset( indexes.back(), index ).error; }
+			{ return 0.0;/*aligner.findOffset( indexes.back(), index ).error;*/ } //TODO:
 };
 
-double AnimationSeparatorImpl::find_threshold( AProcessWatcher* watcher ){
+double AnimationSeparator::find_threshold( const AContainer& container, AProcessWatcher* watcher ){
 	ProgressWrapper progress( watcher );
 	vector<color_type> errors;
-	set_raw( true ); //TODO: remove the need of this
-	for( unsigned i=0; i<count()-1; ++i ){
-		errors.push_back( findOffset( i, i+1 ).error );
+	
+	for( unsigned i=0; i<container.count()-1; ++i ){
+		//errors.push_back( findOffset( i, i+1 ).error ); //TODO:
 		progress.add();
 	}
-	set_raw( false );
 	
 	auto errors2 = errors;
 	sort( errors.begin(), errors.end() );
@@ -93,27 +106,31 @@ double AnimationSeparatorImpl::find_threshold( AProcessWatcher* watcher ){
 	return threshold;
 }
 
-void AnimationSeparatorImpl::align( AProcessWatcher* watcher ){
+void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher ) const{
 	ProgressWrapper progress( watcher );
-	progress.setTotal( count() * 2 );
-	if( count() == 0 )
+	progress.setTotal( container.count() * 2 );
+	if( container.count() == 0 )
 		return;
 	
+	ModifiedContainer modified( container, process );
+	
 	double factor = 1.0;//QInputDialog::getDouble( nullptr, "Specify threshold", "Threshold", 1.0, 0.01, 9.99, 2 );
-	double threshold = find_threshold( watcher ) * factor;
+	double threshold = find_threshold( modified, watcher ) * factor;
+	
 	
 	//Init
 	std::vector<int> backlog;
-	for( unsigned i=0; i<count(); i++ )
+	for( unsigned i=0; i<container.count(); i++ )
 		backlog.push_back( i );
 	
 	for( int iteration=0; true; iteration++ ){
-		AnimFrame frame( *this );
+		AnimFrame frame( modified );
 		
 		for( int& index : backlog )
 			if( index >= 0 )
 				if( frame.size() == 0 || frame.find_error( index ) < threshold ){
 					frame.add_index( index, iteration );
+					container.setFrame( index, iteration );
 					index = -1;
 					progress.add();
 				}

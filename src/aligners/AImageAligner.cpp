@@ -144,3 +144,24 @@ ModifiedPlane AlignerProcessor::operator()( const Plane& p ) const{
 	return output;
 }
 
+template<typename Func>
+static ImageEx applyFunc( ImageEx img, Func f ){
+	img[0] = f( img[0] );
+	img.alpha_plane() = f( img.alpha_plane() );
+	return img;
+}
+
+static Modified<ImageEx> getScaled2( const ImageEx& img, Size<unsigned> size ){
+	if( img && img.getSize() != size )
+		return { std::move( applyFunc( img, [=]( auto& p ){ return p.scale_cubic( size ); } ) ) };
+	else
+		return { img };
+}
+
+Modified<ImageEx> AlignerProcessor::image( const ImageEx& img ) const{
+	auto output = getScaled2( img, img.getSize()*scale() );
+	if( edges )
+		output.modify( [=]( auto& img ){ return applyFunc( img, []( auto& p ){ return p.edge_sobel(); } ); } );
+	return output;
+}
+

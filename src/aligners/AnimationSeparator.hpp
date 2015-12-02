@@ -22,18 +22,14 @@
 
 namespace Overmix{
 
-class AnimationSeparatorImpl : public AImageAligner{
+class AnimationSeparator : public AAligner{
 	private:
-		double find_threshold( AProcessWatcher* watcher );
+		AlignerProcessor process;
+		static double find_threshold( const AContainer& container, AProcessWatcher* watcher );
 	public:
-		AnimationSeparatorImpl( AContainer& container, AlignMethod method, double scale=1.0 )
-			:	AImageAligner( container, method, scale ){ fast_diffing = false; }
-		virtual void align( AProcessWatcher* watcher=nullptr ) override;
-};
-
-class AnimationSeparator : public WrapperImageAligner{
-	virtual std::unique_ptr<AImageAligner> makeAligner( AContainer& container ) const override
-		{ return std::make_unique<AnimationSeparatorImpl>( container, method, scale ); }
+		AnimationSeparator( AlignMethod method, double scale=1.0 )
+			:	process( method, scale ){ /*TODO: fast_diffing = false;*/ }
+		virtual void align( AContainer& container, AProcessWatcher* watcher=nullptr ) const override;
 };
 
 }

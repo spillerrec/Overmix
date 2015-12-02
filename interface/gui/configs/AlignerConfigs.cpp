@@ -121,11 +121,8 @@ std::unique_ptr<AAligner> FakeAlignerConfig::getAligner() const
 std::unique_ptr<AAligner> LinearAlignerConfig::getAligner() const
 	{ return std::make_unique<LinearAligner>( getMethod() ); }
 
-std::unique_ptr<AAligner> SeperateAlignerConfig::getAligner() const{
-	auto aligner = std::make_unique<AnimationSeparator>();
-	configure( *aligner );
-	return std::move( aligner );
-}
+std::unique_ptr<AAligner> SeperateAlignerConfig::getAligner() const
+	{ return std::make_unique<AnimationSeparator>( getMethod(), getScale() ); }
 
 std::unique_ptr<AAligner> AlignFrameAlignerConfig::getAligner() const
 	{ return std::make_unique<FrameAligner>( getMethod() ); }

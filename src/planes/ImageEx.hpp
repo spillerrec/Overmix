@@ -98,6 +98,7 @@ class ImageEx{
 		}
 		
 		bool is_valid() const{ return planes.size() > 0; }
+		operator bool() const{ return is_valid(); }
 		
 		bool read_file( QString path );
 		static ImageEx fromFile( QString path );

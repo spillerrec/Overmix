@@ -26,20 +26,23 @@ namespace Overmix{
 /** Contains either a const reference or an instance to a plane. This makes
   * it easy to only send a reference instead of a copy if an image operation
   * could be avoided. */
-class ModifiedPlane{
+template<class T>
+class Modified{
 	private:
-		Plane modified;
-		const Plane* original{ nullptr };
+		T modified;
+		const T* original{ nullptr };
 		
 	public:
-		ModifiedPlane( Plane&& p ) : modified(std::move(p)) { }
-		ModifiedPlane( const Plane& p ) : original(&p) { }
-		const Plane& operator()() const{ return original ? *original : modified; }
+		Modified( T&& p ) : modified(std::move(p)) { }
+		Modified( const T& p ) : original(&p) { }
+		const T& operator()() const{ return original ? *original : modified; }
 		
 		//TODO: "modifier" must not modify the original plane??
 		template<typename Func> void modify( Func modifier )
 			{ modified = modifier(modified); }
 };
+
+using ModifiedPlane = Modified<Plane>;
 
 inline ModifiedPlane getScaled( const Plane& p, Size<unsigned> size ){
 	if( p && p.getSize() != size )

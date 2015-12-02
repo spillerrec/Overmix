@@ -129,6 +129,7 @@ class AlignerProcessor{
 		Point<double> filter( Point<double> value ) const;
 		
 		ModifiedPlane operator()( const Plane& ) const;
+		Modified<ImageEx> image( const ImageEx& ) const;
 		ModifiedPlane scalePlane( const Plane& p ) const
 			{ return getScaled( p, p.getSize()*scale() ); }
 };
