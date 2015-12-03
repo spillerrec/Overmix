@@ -57,16 +57,16 @@ class AnimFrame{
 		void add_index( unsigned index, int frame ){ indexes.push_back( index ); }
 		unsigned size() const{ return indexes.size(); }
 		
-		double find_error( unsigned index )
-			{ return 0.0;/*aligner.findOffset( indexes.back(), index ).error;*/ } //TODO:
+		double find_error( Point<double> movement, unsigned index )
+			{ return AImageAligner::findOffset( aligner, movement, indexes.back(), index ).error; }
 };
 
-double AnimationSeparator::find_threshold( const AContainer& container, AProcessWatcher* watcher ){
+double AnimationSeparator::find_threshold( const AContainer& container, Point<double> movement, AProcessWatcher* watcher ){
 	ProgressWrapper progress( watcher );
 	vector<color_type> errors;
 	
 	for( unsigned i=0; i<container.count()-1; ++i ){
-		//errors.push_back( findOffset( i, i+1 ).error ); //TODO:
+		errors.push_back( AImageAligner::findOffset( container, movement, i, i+1 ).error );
 		progress.add();
 	}
 	
@@ -114,8 +114,9 @@ void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher 
 	
 	ModifiedContainer modified( container, process );
 	
+	auto movement = process.filter({0.75,0.75});
 	double factor = 1.0;//QInputDialog::getDouble( nullptr, "Specify threshold", "Threshold", 1.0, 0.01, 9.99, 2 );
-	double threshold = find_threshold( modified, watcher ) * factor;
+	double threshold = find_threshold( modified, movement, watcher ) * factor;
 	
 	
 	//Init
@@ -128,7 +129,7 @@ void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher 
 		
 		for( int& index : backlog )
 			if( index >= 0 )
-				if( frame.size() == 0 || frame.find_error( index ) < threshold ){
+				if( frame.size() == 0 || frame.find_error( movement, index ) < threshold ){
 					frame.add_index( index, iteration );
 					container.setFrame( index, iteration );
 					index = -1;

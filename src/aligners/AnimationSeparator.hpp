@@ -25,7 +25,7 @@ namespace Overmix{
 class AnimationSeparator : public AAligner{
 	private:
 		AlignerProcessor process;
-		static double find_threshold( const AContainer& container, AProcessWatcher* watcher );
+		static double find_threshold( const AContainer& container, Point<double> movement, AProcessWatcher* watcher );
 	public:
 		AnimationSeparator( AlignMethod method, double scale=1.0 )
 			:	process( method, scale ){ /*TODO: fast_diffing = false;*/ }
