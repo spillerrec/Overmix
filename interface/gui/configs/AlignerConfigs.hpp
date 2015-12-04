@@ -32,8 +32,6 @@ class AAlignerConfig : public AConfig, private Ui::ImageAligner{
 	Q_OBJECT
 	
 	protected:
-		virtual void configure( WrapperImageAligner& container ) const;
-		
 		enum Enabled{
 			ENABLE_ALL    = 0x0,
 			DISABLE_DIR   = 0x1,

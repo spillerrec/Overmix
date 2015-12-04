@@ -27,7 +27,7 @@
 
 using namespace Overmix;
 
-
+/*
 void ImageAlignerImpl::on_add(){
 	//Compare this one against all other images
 	for( unsigned i=0; i<count()-1; ++i )
@@ -150,7 +150,7 @@ void ImageAlignerImpl::align( AProcessWatcher* watcher ){
 	rough_align();
 	
 	//Update overlap values
-	//*
+	
 	unsigned offset_index = 0;
 	for( unsigned i=1; i<count(); ++i ){
 		for( unsigned j=0; j<i; ++j ){
@@ -170,7 +170,7 @@ void ImageAlignerImpl::align( AProcessWatcher* watcher ){
 			offset.overlap = new_overlap;
 		}
 	}
-	//*/
+	
 	rel << "rough_align() took: " << t.restart() << " msec\n";
 	
 	for( unsigned iterations=0; iterations<2000; ++iterations ){
@@ -210,4 +210,4 @@ void ImageAlignerImpl::align( AProcessWatcher* watcher ){
 	
 	rel.close();
 }
-
+*/

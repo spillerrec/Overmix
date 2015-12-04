@@ -22,16 +22,15 @@
 
 namespace Overmix{
 
-class LayeredAlignerImpl : public AImageAligner{
+class LayeredAligner : public AAligner{
+	private:
+		AlignMethod method;
+		double scale;
+	
 	public:
-		LayeredAlignerImpl( AContainer& container, AlignMethod method, double scale=1.0 )
-			:	AImageAligner( container, method, scale ){ }
-		virtual void align( AProcessWatcher* watcher=nullptr ) override;
-};
-
-class LayeredAligner : public WrapperImageAligner{
-	virtual std::unique_ptr<AImageAligner> makeAligner( AContainer& container ) const override
-		{ return std::make_unique<LayeredAlignerImpl>( container, method, scale ); }
+		LayeredAligner( AlignMethod method, double scale=1.0 )
+			:	method(method), scale(scale) { }
+		virtual void align( AContainer& container, AProcessWatcher* watcher=nullptr ) const override;
 };
 
 }

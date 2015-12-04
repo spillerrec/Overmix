@@ -85,10 +85,6 @@ void AAlignerConfig::toggled_ver(){
 		cbx_merge_h->setChecked( true );
 }
 
-void AAlignerConfig::configure( WrapperImageAligner& aligner ) const{
-	aligner.setOptions( getMethod(), getScale(), cbx_edges->isChecked(), merge_movement->value() / 100.0 );
-}
-
 
 AlignMethod AAlignerConfig::getMethod() const{
 	bool h = cbx_merge_h->isChecked(), v = cbx_merge_v->isChecked();
