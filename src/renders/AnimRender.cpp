@@ -31,6 +31,9 @@ using namespace std;
 using namespace Overmix;
 
 static Plane expand( const Plane& p, Size<unsigned> size, Point<unsigned> pos ){
+	if( !p )
+		return {};
+	
 	Plane out( size );
 	out.fill( 0 );
 	out.copy( p, {0,0}, p.getSize(), pos );
@@ -78,9 +81,6 @@ Plane difference( Plane base, Plane& other ){
 	//Dilate needs the colors reversed
 	base = base.level( color::BLACK, color::WHITE, color::WHITE, color::BLACK, 1.0 );
 	base = base.dilate( 3 ); //TODO: constant as setting
-	
-	//static int ID = 0;
-	//ImageEx( base ).to_qimage().save( "base" + QString::number( ID++ ) + ".png" );
 	
 	return base;
 }
