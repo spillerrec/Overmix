@@ -20,6 +20,7 @@
 #include <cstdlib> //For abs(int)
 #include <cassert>
 #include <utility>
+#include <QDebug>
 
 #include "../color.hpp"
 
@@ -60,33 +61,32 @@ double Plane::meanSquaredError( const Plane& other ) const{
 	return mean / get_height();
 }
 
-bool Plane::is_interlaced() const{
-	double avg2_uneven = 0, avg2_even = 0;
-	for( unsigned iy=0; iy<get_height()/4*4; iy+=4 ){
-		auto row1 = scan_line( iy+0 );
-		auto row2 = scan_line( iy+1 );
-		auto row3 = scan_line( iy+2 );
-		auto row4 = scan_line( iy+3 );
-		
-		unsigned long long line_avg_uneven = 0, line_avg_even = 0;
-		for( unsigned ix=0; ix<get_width(); ++ix ){
-			color_type diff_uneven = std::abs( row2[ix]-row1[ix] ) + std::abs( row4[ix]-row3[ix] );
-			color_type diff_even   = std::abs( row3[ix]-row1[ix] ) + std::abs( row4[ix]-row2[ix] );
-			line_avg_uneven += (unsigned long long)diff_uneven*diff_uneven;
-			line_avg_even   += (unsigned long long)diff_even  *diff_even;
-		}
-		avg2_uneven += (double)line_avg_uneven / get_width();
-		avg2_even   += (double)line_avg_even   / get_width();
-	}
-	avg2_uneven /= get_height()/2;
-	avg2_uneven /= 0xFFFF;
-	avg2_uneven /= 0xFFFF;
-	avg2_even /= get_height()/2;
-	avg2_even /= 0xFFFF;
-	avg2_even /= 0xFFFF;
+static Plane everySecond( const Plane& p, bool even=true ){
+	//TODO: assert that height is even
+	auto offset = even ? 0 : 1;
 	
-	qDebug( "interlace factor: %f > %f", avg2_uneven, avg2_even );
-	return avg2_uneven > avg2_even;
+	Plane out( p.get_width(), p.get_height()/2 );
+	for( unsigned iy=0; iy<out.get_height(); iy++ )
+		for( auto pix : makeZipRowIt( out.scan_line( iy ), p.scan_line( iy*2+offset ) ) )
+			pix.first = pix.second;
+	return out;
+}
+
+bool Plane::is_interlaced() const{
+	auto frame1 = everySecond( *this, true  );
+	auto frame2 = everySecond( *this, false );
+	
+	DiffCache cache;
+	auto offset = frame1.best_round_sub( frame2, {}, {}, 20, 0, 0, -10, 10, &cache, false ).first;
+	
+	double diff_normal    = frame1.diff( frame2, 0, 0 );
+	double diff_interlace;
+	if( offset.y == 0 || offset.y == 1 )
+		diff_interlace = frame1.diff( frame1, 0, 1 )/2 + frame2.diff( frame2, 0, 1 )/2;
+	else
+		diff_interlace = frame1.diff( frame2, offset.x, offset.y );
+		
+	return diff_interlace < diff_normal*0.95;
 }
 
 void Plane::replace_line( const Plane &p, bool top ){
