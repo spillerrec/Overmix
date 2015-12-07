@@ -20,24 +20,40 @@
 #include "gui/mainwindow.hpp"
 
 #include <QApplication>
+#include <QMessageBox>
 #include <QStringList>
+
+#include <iostream>
 
 int main( int argc, char *argv[] ){
 	QApplication a( argc, argv );
 	Overmix::ImageContainer images;
 	Overmix::CommandParser parser( images );
 	
-	//Parse command-line arguments
-	auto args = a.arguments();
-	args.removeFirst();
-	parser.parse( args );
-	
-	//Do not run GUI if the user is not interested in doing so
-	if( !parser.useGui() )
-		return 0;
-	
-	//Start GUI
-	Overmix::main_widget w( images );
-	w.show();
-	return a.exec();
+	try{
+		//Parse command-line arguments
+		auto args = a.arguments();
+		args.removeFirst();
+		parser.parse( args );
+		
+		//Do not run GUI if the user is not interested in doing so
+		if( !parser.useGui() )
+			return 0;
+		
+		//Start GUI
+		Overmix::main_widget w( images );
+		w.show();
+		return a.exec();
+	}
+	catch( std::exception& e ){
+		if( parser.useGui() ){
+			QMessageBox::critical( nullptr, "An uncaught error occurred", e.what() );
+			return -1;
+		}
+		else{
+			std::cout << "Some error occurred:" << std::endl;
+			std::cout << e.what();
+			return -1;
+		}
+	}
 }
