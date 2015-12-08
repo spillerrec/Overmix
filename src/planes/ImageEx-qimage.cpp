@@ -36,30 +36,44 @@ bool ImageEx::from_qimage( QIODevice& dev, QString ext ){
 	if( !img.load( &dev, ext.toLocal8Bit().constData() ) )
 		return false;
 	
-	color_space = { Transform::RGB, Transfer::SRGB };
 	Point<unsigned> size( img.size() );
-	
 	if( img.hasAlphaChannel() )
 		alpha = Plane( size );
-	img = img.convertToFormat( QImage::Format_ARGB32 );
 	
-	for( int i=0; i<3; i++ )
+	if( img.format() == QImage::Format_Grayscale8 ){
+		color_space = { Transform::GRAY, Transfer::SRGB };
 		planes.emplace_back( size );
-	
-	for( unsigned iy=0; iy<size.height(); ++iy ){
-		auto r = planes[0].p.scan_line( iy ).begin();
-		auto g = planes[1].p.scan_line( iy ).begin();
-		auto b = planes[2].p.scan_line( iy ).begin();
-		auto a = alpha ? alpha.scan_line( iy ).begin() : nullptr;
 		
-		auto in = (const QRgb*)img.constScanLine( iy );
+		for( unsigned iy=0; iy<size.height(); ++iy ){
+			auto out = planes[0].p.scan_line( iy ).begin();
+			auto in = img.constScanLine( iy );
+			
+			for( unsigned ix=0; ix<size.width(); ++ix )
+				out[ix] = color::from8bit( in[ix] );
+		}
+	}
+	else{
+		color_space = { Transform::RGB, Transfer::SRGB };
+		img = img.convertToFormat( QImage::Format_ARGB32 );
 		
-		for( unsigned ix=0; ix<size.width(); ++ix, ++in ){
-			*(r++) = color::from8bit( qRed( *in ) );
-			*(g++) = color::from8bit( qGreen( *in ) );
-			*(b++) = color::from8bit( qBlue( *in ) );
-			if( a )
-				*(a++) = color::from8bit( qAlpha( *in ) );
+		for( int i=0; i<3; i++ )
+			planes.emplace_back( size );
+		
+		for( unsigned iy=0; iy<size.height(); ++iy ){
+			auto r = planes[0].p.scan_line( iy ).begin();
+			auto g = planes[1].p.scan_line( iy ).begin();
+			auto b = planes[2].p.scan_line( iy ).begin();
+			auto a = alpha ? alpha.scan_line( iy ).begin() : nullptr;
+			
+			auto in = (const QRgb*)img.constScanLine( iy );
+			
+			for( unsigned ix=0; ix<size.width(); ++ix, ++in ){
+				*(r++) = color::from8bit( qRed( *in ) );
+				*(g++) = color::from8bit( qGreen( *in ) );
+				*(b++) = color::from8bit( qBlue( *in ) );
+				if( a )
+					*(a++) = color::from8bit( qAlpha( *in ) );
+			}
 		}
 	}
 	
