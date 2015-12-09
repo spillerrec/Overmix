@@ -86,6 +86,7 @@ class main_widget: public QMainWindow{
 		
 		
 	private:
+		class DoubleSpinbox2D* scale_spinbox;
 		RenderPipeScaling pipe_scaling;
 		RenderPipeDeconvolve pipe_deconvolve;
 		RenderPipeBlurring pipe_blurring;

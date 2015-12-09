@@ -36,6 +36,7 @@
 
 #include "savers/DumpSaver.hpp"
 #include "visualisations/MovementGraph.hpp"
+#include "Spinbox2D.hpp"
 
 #include "debug.hpp"
 
@@ -113,6 +114,15 @@ main_widget::main_widget( ImageContainer& images )
 	 render_config.initialize();
 	ui->align_layout ->insertWidget( 0, &aligner_config );
 	ui->render_layout->insertWidget( 0, & render_config );
+	
+	scale_spinbox = new DoubleSpinbox2D( this );
+	ui->scale_layout->addWidget( scale_spinbox );
+	scale_spinbox->setValue( {1.0, 1.0} );
+	scale_spinbox->modifySpinboxes( [](auto spinbox){
+			spinbox->setSingleStep( 0.001 );
+			spinbox->setDecimals( 3 );
+			spinbox->setRange( 0.001, 32.0 );
+		});
 	
 	//Buttons
 	connect( ui->btn_clear,      SIGNAL( clicked() ), this, SLOT( clear_image()          ) );
@@ -258,8 +268,8 @@ static ScalingFunction translateScaling( int id ){
 }
 
 const ImageEx& main_widget::postProcess( const ImageEx& input, bool new_image ){
-	pipe_scaling.setWidth( ui->dsbx_scale_width->value() );
-	pipe_scaling.setHeight( ui->dsbx_scale_height->value() );
+	pipe_scaling.setWidth(  scale_spinbox->getValue().x );
+	pipe_scaling.setHeight( scale_spinbox->getValue().y );
 	pipe_scaling.setScaling( translateScaling( ui->post_scaling->currentIndex() ) );
 	
 	
