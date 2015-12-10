@@ -62,6 +62,7 @@ class AbstractSpinbox2D : public QWidget {
 		}
 		
 		bool isLocked() const { return locker.isChecked(); }
+		void setScale( double new_scale ) { scale = new_scale; }
 		
 		Point<T> getValue() const{ return {spin_x.value(), spin_y.value()}; }
 		void setValue( Point<T> value ){
@@ -83,10 +84,10 @@ class AbstractSpinbox2D : public QWidget {
 				setValueNoScale( { getValue().x, new_y } );
 		}
 		
-		template<typename Func>
-		void modifySpinboxes( Func modifier ){
-			modifier( &spin_x );
-			modifier( &spin_y );
+		template<typename Return, typename... Args>
+		void call( Return (SpinBox::*func)(Args...), Args... args ){
+			(spin_x.*func)( args... );
+			(spin_y.*func)( args... );
 		}
 };
 

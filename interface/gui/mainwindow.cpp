@@ -115,14 +115,24 @@ main_widget::main_widget( ImageContainer& images )
 	ui->align_layout ->insertWidget( 0, &aligner_config );
 	ui->render_layout->insertWidget( 0, & render_config );
 	
-	scale_spinbox = new DoubleSpinbox2D( this );
+	//Add 2D spinboxes
+	scale_spinbox      = new DoubleSpinbox2D( this );
+	deconvolve_spinbox = new DoubleSpinbox2D( this );
+	
 	ui->scale_layout->addWidget( scale_spinbox );
+	ui->post_deconvolve_layout->insertRow( 0, "Deviation", deconvolve_spinbox );
+	
 	scale_spinbox->setValue( {1.0, 1.0} );
-	scale_spinbox->modifySpinboxes( [](auto spinbox){
-			spinbox->setSingleStep( 0.001 );
-			spinbox->setDecimals( 3 );
-			spinbox->setRange( 0.001, 32.0 );
-		});
+	deconvolve_spinbox->setValue( {0.0, 0.0} );
+	deconvolve_spinbox->setScale( 1.0 );
+	
+		 scale_spinbox->call( &QDoubleSpinBox::setSingleStep, 0.001 );
+	deconvolve_spinbox->call( &QDoubleSpinBox::setSingleStep, 0.001 );
+		 scale_spinbox->call( &QDoubleSpinBox::setDecimals, 3 );
+	deconvolve_spinbox->call( &QDoubleSpinBox::setDecimals, 3 );
+		 scale_spinbox->call( &QDoubleSpinBox::setRange, 0.001,  32.0 );
+	deconvolve_spinbox->call( &QDoubleSpinBox::setRange, 0.000, 128.0 );
+	
 	
 	//Buttons
 	connect( ui->btn_clear,      SIGNAL( clicked() ), this, SLOT( clear_image()          ) );
@@ -273,7 +283,7 @@ const ImageEx& main_widget::postProcess( const ImageEx& input, bool new_image ){
 	pipe_scaling.setScaling( translateScaling( ui->post_scaling->currentIndex() ) );
 	
 	
-	pipe_deconvolve.setDeviation( ui->dsbx_deviation->value() );
+	pipe_deconvolve.setDeviation( deconvolve_spinbox->getValue().x ); //TODO: y as well
 	pipe_deconvolve.setIterations( ui->sbx_iterations->value() );
 	
 	pipe_blurring.setMethod( ui->cbx_blur->currentIndex() );
