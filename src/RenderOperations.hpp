@@ -49,17 +49,18 @@ class RenderPipeScaling : public ARenderPipe{
 
 class RenderPipeDeconvolve : public ARenderPipe{
 	private:
-		double deviation{ 1.0 };
+		Point<double> deviation{ 1.0, 1.0 };
 		unsigned iterations{ 0 };
 		
 	protected:
-		virtual bool renderNeeded() const override{ return deviation > 0.0009 && iterations > 0; }
+		virtual bool renderNeeded() const override
+			{ return deviation.x > 0.0009 && deviation.y > 0.0009 && iterations > 0; }
 		virtual ImageEx render( const ImageEx& img ) const override{
 			return img.copyApply( &Plane::deconvolve_rl, deviation, iterations );
 		}
 		
 	public:
-		void setDeviation( double deviation ){ set( this->deviation, deviation ); }
+		void setDeviation( Point<double> deviation ){ set( this->deviation, deviation ); }
 		void setIterations( unsigned iterations ){ set( this->iterations, iterations ); }
 };
 

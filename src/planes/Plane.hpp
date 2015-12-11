@@ -202,7 +202,7 @@ class Plane : public PlaneBase<color_type>{
 		Plane blur_gaussian( double amount_x, double amount_y ) const;
 		
 	//De-blurring
-		Plane deconvolve_rl( double amount, unsigned iterations ) const;
+		Plane deconvolve_rl( Point<double> amount, unsigned iterations ) const;
 };
 
 }

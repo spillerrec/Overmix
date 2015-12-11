@@ -126,7 +126,7 @@ struct BlurProcessor : public Processor {
 };
 
 struct DeconvolveProcessor : public Processor {
-	double deviation;
+	Point<double> deviation;
 	int iterations;
 	
 	DeconvolveProcessor( QString str ) { convert( str, deviation, iterations ); }

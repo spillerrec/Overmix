@@ -254,7 +254,7 @@ static double change( const DPlane& left, const DPlane& right ){
 }
 
 
-Plane Plane::deconvolve_rl( double amount, unsigned iterations ) const{
+Plane Plane::deconvolve_rl( Point<double> amount, unsigned iterations ) const{
 	//TODO: fail on uneven kernels
 	//TODO: take input in both directions, perhaps even custom PSFs
 	Timer t( "deconvolve_rl" );
@@ -263,7 +263,7 @@ Plane Plane::deconvolve_rl( double amount, unsigned iterations ) const{
 	//Where Est=estimation, New_Est replaces Est in next iteration
 	
 	//Create point spread function
-	Kernel psf = gaussian_kernel( amount, amount );
+	Kernel psf = gaussian_kernel( amount.x, amount.y );
 	Kernel flipped( psf );
 	flipped.flipHor();
 	flipped.flipVer();

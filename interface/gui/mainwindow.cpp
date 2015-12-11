@@ -283,7 +283,7 @@ const ImageEx& main_widget::postProcess( const ImageEx& input, bool new_image ){
 	pipe_scaling.setScaling( translateScaling( ui->post_scaling->currentIndex() ) );
 	
 	
-	pipe_deconvolve.setDeviation( deconvolve_spinbox->getValue().x ); //TODO: y as well
+	pipe_deconvolve.setDeviation( deconvolve_spinbox->getValue() );
 	pipe_deconvolve.setIterations( ui->sbx_iterations->value() );
 	
 	pipe_blurring.setMethod( ui->cbx_blur->currentIndex() );
@@ -620,6 +620,7 @@ void main_widget::applyModifications(){
 	
 	//Deconvolve
 	double   deviation      = ui->pre_deconvolve_deviation ->value();
+	Point<double> deviation_both( deviation, deviation ); //TODO: use spinbox
 	unsigned dev_iterations = ui->pre_deconvolve_iterations->value();
 	
 	//Scale
@@ -629,7 +630,7 @@ void main_widget::applyModifications(){
 	auto& container = getAlignedImages();
 	DialogWatcher( this, "Applying modifications" ).loopAll( container.count(), [&]( int i ){
 			if( deviation > 0.0009 && dev_iterations > 0 )
-				container.imageRef( i ).apply( &Plane::deconvolve_rl, deviation, dev_iterations );
+				container.imageRef( i ).apply( &Plane::deconvolve_rl, deviation_both, dev_iterations );
 			
 			container.cropImage( i, left, top, right, bottom );
 			container.scaleImage( i, scale, scale_method );
