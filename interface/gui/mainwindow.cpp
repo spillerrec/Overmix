@@ -118,9 +118,11 @@ main_widget::main_widget( ImageContainer& images )
 	//Add 2D spinboxes
 	scale_spinbox      = new DoubleSpinbox2D( this );
 	deconvolve_spinbox = new DoubleSpinbox2D( this );
+	blur_spinbox       = new       Spinbox2D( this );
 	
 	ui->scale_layout->addWidget( scale_spinbox );
 	ui->post_deconvolve_layout->insertRow( 0, "Deviation", deconvolve_spinbox );
+	ui->post_blur_layout->addWidget( blur_spinbox );
 	
 	scale_spinbox->setValue( {1.0, 1.0} );
 	deconvolve_spinbox->setValue( {0.0, 0.0} );
@@ -287,8 +289,8 @@ const ImageEx& main_widget::postProcess( const ImageEx& input, bool new_image ){
 	pipe_deconvolve.setIterations( ui->sbx_iterations->value() );
 	
 	pipe_blurring.setMethod( ui->cbx_blur->currentIndex() );
-	pipe_blurring.setWidth( ui->spbx_blur_x->value() );
-	pipe_blurring.setHeight( ui->spbx_blur_y->value() );
+	pipe_blurring.setWidth( blur_spinbox->getValue().x );
+	pipe_blurring.setHeight( blur_spinbox->getValue().x );
 	
 	pipe_edge.setMethod( ui->cbx_edge_filter->currentIndex() );
 	

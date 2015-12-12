@@ -20,6 +20,7 @@
 
 #include <QWidget>
 #include <QPushButton>
+#include <QSpinBox>
 #include <QDoubleSpinBox>
 #include <QHBoxLayout>
 
@@ -35,7 +36,7 @@ class AbstractSpinbox2D : public QWidget {
 		QPushButton locker;
 		double scale = 1.0;
 		
-		void setValueNoScale( Point<double> value ){
+		void setValueNoScale( Point<T> value ){
 			spin_x.setValue( value.x );
 			spin_y.setValue( value.y );
 		}
@@ -89,6 +90,10 @@ class AbstractSpinbox2D : public QWidget {
 			(spin_x.*func)( args... );
 			(spin_y.*func)( args... );
 		}
+};
+
+struct Spinbox2D : public AbstractSpinbox2D<QSpinBox,int>{
+	Spinbox2D( QWidget* parent ) : AbstractSpinbox2D( parent ) { }
 };
 
 struct DoubleSpinbox2D : public AbstractSpinbox2D<QDoubleSpinBox,double>{
