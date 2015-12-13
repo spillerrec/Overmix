@@ -26,10 +26,6 @@
 using namespace Overmix;
 
 
-static Plane scalePlane( const Plane& p, Point<double> scale )
-	{ return p.scale_cubic( (p.getSize() * scale).round() ); }
-
-
 double AImageAligner::calculate_overlap( Point<> offset, const Plane& img1, const Plane& img2 ){
 	QRect first( 0,0, img1.get_width(), img1.get_height() );
 	QRect second( { offset.x, offset.y }, QSize(img2.get_width(), img2.get_height()) );
