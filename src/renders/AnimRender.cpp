@@ -24,9 +24,8 @@
 #include "../renders/AverageRender.hpp"
 #include "../containers/FrameContainer.hpp"
 #include "../planes/ImageEx.hpp"
+#include "../utils/PlaneUtils.hpp"
 
-#include <QTime>
-#include <vector>
 using namespace std;
 using namespace Overmix;
 
@@ -68,6 +67,13 @@ AnimRender::AnimRender( const AContainer& aligner, ARender& render, AProcessWatc
 		FrameContainer frame_con( const_cast<AContainer&>(aligner), frame ); //TODO: const_cast
 		auto pos = frame_con.minPoint() - min_point;
 		auto img = render.render( frame_con );
+
+		//Upscale img.planes to same size, as otherwise alpha checking will become much more expensive
+		auto full_size = img.getSize();
+		for( unsigned i=0; i<img.size(); i++ )
+			if( img[i].getSize() != full_size )
+				img[i] = img[i].scale_cubic( full_size );
+
 		frames.addImage( modify( img, size, pos, expand ) );
 		old.emplace_back( pos, img.getSize() );
 	}
@@ -91,13 +97,13 @@ Plane difference( const ImageEx& base, const ImageEx& other ){
 	
 	for( unsigned i=0; i<base.size(); i++ ){
 		auto img = difference( base[i], other[i] );
-		if( mask.getSize() == img.getSize() )
-			mask = mask.minPlane( img );
-		else
-			mask = mask.minPlane( img.scale_cubic( mask.getSize() ) );
+		mask = mask.minPlane( getScaled( img, mask.getSize() )() );
 	}
-	mask = mask.minPlane( other.alpha_plane() );
-	mask = mask.minPlane( base.alpha_plane() );
+
+	if( other.alpha_plane() )
+		mask = mask.minPlane( other.alpha_plane() );
+	if( base.alpha_plane() )
+		mask = mask.minPlane( base.alpha_plane() );
 	
 	return mask;
 }
@@ -106,9 +112,8 @@ ImageEx AnimRender::render( int frame, AProcessWatcher* watcher ){
 	if( frame < 0 )
 		return AverageRender().render( frames, watcher );
 	
-	//TODO: remove old masks
-	
-	//Create masks
+	//Setup masks
+	frames.clearMasks();
 	auto& base = frames.image( frame );
 	for( unsigned i=0; i<frames.count(); i++ )
 		frames.setMask( i, frames.addMask( difference( frames.image( i ), base ) ) );

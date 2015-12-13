@@ -48,6 +48,11 @@ class ImageContainer : public AContainer{
 			masks.clear();
 			indexes.clear();
 		}
+		void clearMasks(){
+			for( unsigned i=0; i<count(); i++ )
+				setMask( i, -1 );
+			masks.clear();
+		}
 		
 		std::vector<ImageGroup>::iterator        begin()       { return groups.begin(); }
 		std::vector<ImageGroup>::const_iterator  begin()  const{ return groups.begin(); }
