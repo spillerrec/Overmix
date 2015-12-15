@@ -17,12 +17,15 @@
 
 #include "MainWindow.hpp"
 
+#include <imageCache.h>
 #include <imageViewer.h>
 
+#include <QKeyEvent>
 #include <QHBoxLayout>
 #include <QDropEvent>
 #include <QDragEnterEvent>
 #include <QMimeData>
+#include <QImage>
 
 
 using namespace Overmix;
@@ -44,6 +47,11 @@ MainWindow::MainWindow() : QWidget(), s_model(&s), view(this)
 	
 	viewer = new imageViewer( settings, this );
 	layout()->addWidget( viewer );
+	
+	connect( view.selectionModel(), &QItemSelectionModel::currentChanged, [&]( auto index ){
+		auto info = s.images[index.row()];
+		viewer->change_image( new imageCache( QImage( info.filename ) ), true );
+	} );
 }
 
 
@@ -59,5 +67,21 @@ void MainWindow::dropEvent( QDropEvent *event ){
 		for( auto url : event->mimeData()->urls() )
 			s.add( url.toLocalFile(), false );
 		view.reset();
+	}
+}
+
+void MainWindow::keyPressEvent( QKeyEvent* event ) {
+	switch( event->key() ){
+		case Qt::Key_I: toogleInterlaze(); break;
+	}
+}
+
+void MainWindow::toogleInterlaze() {
+	auto index = view.selectionModel()->currentIndex();
+	auto row = index.row();
+	if( row >= 0 && (unsigned)row < s.images.size() ){
+		s.images[row].interlazed = true;
+		view.reset();
+		view.selectionModel()->setCurrentIndex( index, QItemSelectionModel::Select );
 	}
 }

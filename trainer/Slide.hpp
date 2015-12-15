@@ -37,7 +37,6 @@ class Slide{
 		void add( QString filename, bool interlazed )
 			{ images.emplace_back( filename, interlazed ); }
 		
-		
 };
 
 }

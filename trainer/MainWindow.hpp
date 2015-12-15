@@ -49,6 +49,11 @@ class MainWindow: public QWidget{
 		
 		void dragEnterEvent( QDragEnterEvent* ) override;
 		void dropEvent( QDropEvent* ) override;
+		void keyPressEvent( QKeyEvent* ) override;
+		
+		
+	private:
+		void toogleInterlaze();
 };
 
 }
