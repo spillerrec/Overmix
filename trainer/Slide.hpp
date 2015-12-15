@@ -26,8 +26,11 @@ namespace Overmix{
 struct ImageInfo{
 	QString filename;
 	bool interlazed{ false };
+	bool interlaze_predicted{ false };
 	ImageInfo( QString filename, bool interlazed )
 		: filename(filename), interlazed(interlazed) { }
+	
+	bool interlazeTest();
 };
 
 class Slide{

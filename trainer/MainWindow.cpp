@@ -21,6 +21,7 @@
 #include <imageViewer.h>
 
 #include <QKeyEvent>
+#include <QMessageBox>
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QDropEvent>
@@ -76,6 +77,7 @@ void MainWindow::keyPressEvent( QKeyEvent* event ) {
 		case Qt::Key_I: toogleInterlaze(); break;
 		case Qt::Key_O: loadSlide(); break;
 		case Qt::Key_S: saveSlide(); break;
+		case Qt::Key_E: evaluateInterlaze(); break;
 	}
 }
 
@@ -101,4 +103,17 @@ void MainWindow::toogleInterlaze() {
 		view.reset();
 		view.selectionModel()->setCurrentIndex( index, QItemSelectionModel::Select );
 	}
+}
+
+void MainWindow::evaluateInterlaze() {
+	int correct = 0;
+	
+	for( auto& img : s.images )
+		if( img.interlazeTest() )
+			correct++;
+		
+	int wrong = s.images.size() - correct;
+	view.reset();
+	
+	QMessageBox::information( this, "Test", QString::number(correct) + " - " + QString::number(wrong) );
 }

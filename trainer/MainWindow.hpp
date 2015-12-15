@@ -56,6 +56,7 @@ class MainWindow: public QWidget{
 		void toogleInterlaze();
 		void loadSlide();
 		void saveSlide();
+		void evaluateInterlaze();
 };
 
 }

@@ -20,9 +20,22 @@
 #include <memory>
 #include <QObject>
 
+#include <planes/ImageEx.hpp>
+
 #include <pugixml.hpp>
 using namespace pugi;
 using namespace Overmix;
+
+
+bool ImageInfo::interlazeTest() {
+	auto img = ImageEx::fromFile( filename );
+	if( !img.is_valid() )
+		return false;
+	interlaze_predicted = img.is_interlaced();
+	qDebug( "made prediction %s", interlaze_predicted ? "true" : "false" );
+	return interlaze_predicted == interlazed;
+}
+
 
 const auto NODE_ROOT           = "slide";
 const auto NODE_IMAGE          = "image";

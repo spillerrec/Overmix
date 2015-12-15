@@ -21,6 +21,7 @@
 #include "Slide.hpp"
 
 #include <QAbstractListModel>
+#include <QBrush>
 
 namespace Overmix{
 
@@ -43,26 +44,30 @@ class SlideModel : public QAbstractListModel{
 			if( rowCount(index) < index.row() )
 				return {};
 			
+			auto info = slide->images[index.row()];
 			if( role == Qt::DisplayRole ){
-				auto info = slide->images[index.row()];
-				
 				switch( index.column() ){
 					case 0: return info.filename;
 					case 1: return info.interlazed;
+					case 2: return info.interlaze_predicted;
 					default: return {};
 				}
+			}
+			else if( role == Qt::BackgroundRole && index.column() == 2 ){
+				return QBrush( (info.interlazed == info.interlaze_predicted) ? Qt::green : Qt::red );
 			}
 			
 			return {};
 		}
 		
-		int columnCount( const QModelIndex& ) const override{ return 2; }
+		int columnCount( const QModelIndex& ) const override{ return 3; }
 		
 		QVariant headerData( int section, Qt::Orientation orientation, int role ) const override{
 			if( role == Qt::DisplayRole ){
 				switch( section ){
 					case 0: return "Filename";
 					case 1: return "Interlazed?";
+					case 2: return "Predicted";
 					default: return {};
 				}
 			}
