@@ -17,15 +17,47 @@
 
 #include "MainWindow.hpp"
 
+#include <imageViewer.h>
+
 #include <QHBoxLayout>
+#include <QDropEvent>
+#include <QDragEnterEvent>
+#include <QMimeData>
 
 
 using namespace Overmix;
 
-MainWindow::MainWindow() : QWidget(), s_model(&s), view(this) {
+MainWindow::MainWindow() : QWidget(), s_model(&s), view(this)
+#ifdef PORTABLE //Portable settings
+	,	settings( QCoreApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat )
+#else
+	,	settings( "spillerrec", "overmix" )
+#endif
+{
 	setLayout( new QHBoxLayout( this ) );
-	s.add( QString("test"), false );
 	
 	view.setModel( &s_model );
+	view.setSizePolicy( QSizePolicy::Maximum, QSizePolicy::Preferred );
 	layout()->addWidget( &view );
+	
+	setAcceptDrops( true );
+	
+	viewer = new imageViewer( settings, this );
+	layout()->addWidget( viewer );
+}
+
+
+void MainWindow::dragEnterEvent( QDragEnterEvent *event ){
+	if( event->mimeData()->hasUrls() )
+		event->acceptProposedAction();
+}
+void MainWindow::dropEvent( QDropEvent *event ){
+	if( event->mimeData()->hasUrls() ){
+		event->setDropAction( Qt::CopyAction );
+		event->accept();
+		
+		for( auto url : event->mimeData()->urls() )
+			s.add( url.toLocalFile(), false );
+		view.reset();
+	}
 }

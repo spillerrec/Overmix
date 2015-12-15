@@ -19,10 +19,13 @@
 #define MAIN_WINDOW_HPP
 
 #include <QWidget>
+#include <QSettings>
 #include <QTreeView>
 
 #include "Slide.hpp"
 #include "SlideModel.hpp"
+
+class imageViewer;
 
 namespace Overmix{
 
@@ -35,11 +38,17 @@ class MainWindow: public QWidget{
 		SlideModel s_model;
 		
 		QTreeView view;
+		imageViewer* viewer;
+		QSettings settings;
 		
 	public:
 		explicit MainWindow();
-	
 		
+		
+	protected:
+		
+		void dragEnterEvent( QDragEnterEvent* ) override;
+		void dropEvent( QDropEvent* ) override;
 };
 
 }
