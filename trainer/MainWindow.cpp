@@ -21,6 +21,7 @@
 #include <imageViewer.h>
 
 #include <QKeyEvent>
+#include <QFileDialog>
 #include <QHBoxLayout>
 #include <QDropEvent>
 #include <QDragEnterEvent>
@@ -73,7 +74,23 @@ void MainWindow::dropEvent( QDropEvent *event ){
 void MainWindow::keyPressEvent( QKeyEvent* event ) {
 	switch( event->key() ){
 		case Qt::Key_I: toogleInterlaze(); break;
+		case Qt::Key_O: loadSlide(); break;
+		case Qt::Key_S: saveSlide(); break;
 	}
+}
+
+void MainWindow::loadSlide() {
+	auto filename = QFileDialog::getOpenFileName( this, "Open Slide", QString(), "Slide information (*.xml)" );
+	if( !filename.isNull() ){
+		s.loadXml( filename );
+		view.reset();
+	}
+}
+
+void MainWindow::saveSlide() {
+	auto filename = QFileDialog::getSaveFileName( this, "Save Slide", QString(), "Slide information (*.xml)" );
+	if( !filename.isNull() )
+		s.saveXml( filename );
 }
 
 void MainWindow::toogleInterlaze() {

@@ -19,6 +19,7 @@
 #define SLIDE_HPP
 
 #include <vector>
+#include <QString>
 
 namespace Overmix{
 
@@ -37,6 +38,8 @@ class Slide{
 		void add( QString filename, bool interlazed )
 			{ images.emplace_back( filename, interlazed ); }
 		
+		QString saveXml( QString filename );
+		QString loadXml( QString filename );
 };
 
 }

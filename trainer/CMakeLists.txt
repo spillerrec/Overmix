@@ -11,6 +11,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(SOURCE_TRAINER
 	MainWindow.cpp
+	Slide.cpp
 	)
 
 
@@ -26,4 +27,4 @@ endif( UNIX )
 
 include_directories ("${PROJECT_SOURCE_DIR}/../src")
 include_directories ("${PROJECT_SOURCE_DIR}/../interface/gui/viewer")
-target_link_libraries(OvermixTrainer OvermixCore ImgViewer Qt5::Widgets -llcms2 ${PLATFORM_LIBRARIES})
+target_link_libraries(OvermixTrainer OvermixCore ImgViewer Qt5::Widgets -lpugixml -llcms2 ${PLATFORM_LIBRARIES})
