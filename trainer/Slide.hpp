@@ -30,7 +30,7 @@ struct ImageInfo{
 	ImageInfo( QString filename, bool interlazed )
 		: filename(filename), interlazed(interlazed) { }
 	
-	bool interlazeTest();
+	bool interlazeTest( QString prev );
 };
 
 class Slide{

@@ -108,9 +108,11 @@ void MainWindow::toogleInterlaze() {
 void MainWindow::evaluateInterlaze() {
 	int correct = 0;
 	
-	for( auto& img : s.images )
-		if( img.interlazeTest() )
+	for( unsigned i=0; i<s.images.size(); i++ ){
+		auto prev_file = (i > 0) ? s.images[i-1].filename : QString();
+		if( s.images[i].interlazeTest( prev_file ) )
 			correct++;
+	}
 		
 	int wrong = s.images.size() - correct;
 	view.reset();

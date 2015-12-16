@@ -89,6 +89,21 @@ bool Plane::is_interlaced() const{
 	return diff_interlace < diff_normal*0.95;
 }
 
+bool Plane::is_interlaced( const Plane& previous ) const{
+	if( !previous )
+		return is_interlaced();
+	
+	auto frame_old = everySecond( previous, false );
+	
+	auto frame1 = everySecond( *this, true  );
+	auto frame2 = everySecond( *this, false );
+	
+	auto diff_previous = frame1.diff( frame_old, 0, 0 );
+	auto diff_normal   = frame1.diff( frame2,    0, 0 );
+	
+	return diff_previous < diff_normal*0.95;
+}
+
 void Plane::replace_line( const Plane &p, bool top ){
 	if( get_height() != p.get_height() || get_width() != p.get_width() ){
 		qWarning( "replace_line: Planes not equaly sized!" );

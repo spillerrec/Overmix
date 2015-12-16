@@ -86,6 +86,7 @@ class Plane : public PlaneBase<color_type>{
 		
 	//Interlacing methods
 		bool is_interlaced() const;
+		bool is_interlaced( const Plane& previous ) const;
 		void replace_line( const Plane &p, bool top );
 		void combine_line( const Plane &p, bool top );
 		

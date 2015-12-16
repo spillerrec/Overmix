@@ -136,6 +136,13 @@ double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 bool ImageEx::is_interlaced() const{
 	return planes[0].p.is_interlaced();
 }
+bool ImageEx::is_interlaced( const ImageEx& previous ) const{
+	if( !previous )
+		return is_interlaced();
+	
+	return planes[0].p.is_interlaced( previous[0] );
+}
+
 void ImageEx::replace_line( ImageEx& img, bool top ){
 	for( unsigned i=0; i<max(size(), img.size()); ++i )
 		planes[i].p.replace_line( img[i], top );

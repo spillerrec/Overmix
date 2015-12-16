@@ -27,12 +27,14 @@ using namespace pugi;
 using namespace Overmix;
 
 
-bool ImageInfo::interlazeTest() {
-	auto img = ImageEx::fromFile( filename );
+bool ImageInfo::interlazeTest( QString prev ) {
+	auto img      = ImageEx::fromFile( filename );
+	auto img_prev = ImageEx::fromFile( prev );
 	if( !img.is_valid() )
 		return false;
-	interlaze_predicted = img.is_interlaced();
-	qDebug( "made prediction %s", interlaze_predicted ? "true" : "false" );
+	interlaze_predicted = img.is_interlaced( img_prev );
+	auto bool_str = [](bool val){ return val ? "true" : "false"; };
+	qDebug( "made prediction %s, should be %s", bool_str(interlaze_predicted), bool_str(interlazed) );
 	return interlaze_predicted == interlazed;
 }
 

@@ -126,6 +126,7 @@ class ImageEx{
 		
 		double diff( const ImageEx& img, int x, int y ) const;
 		bool is_interlaced() const;
+		bool is_interlaced( const ImageEx& previous ) const;
 		void replace_line( ImageEx& img, bool top );
 		void combine_line( ImageEx& img, bool top );
 		
