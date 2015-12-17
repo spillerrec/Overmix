@@ -78,12 +78,14 @@ void MainWindow::keyPressEvent( QKeyEvent* event ) {
 		case Qt::Key_O: loadSlide(); break;
 		case Qt::Key_S: saveSlide(); break;
 		case Qt::Key_E: evaluateInterlaze(); break;
+		case Qt::Key_N: newSlide(); break;
 	}
 }
 
 void MainWindow::loadSlide() {
 	auto filename = QFileDialog::getOpenFileName( this, "Open Slide", QString(), "Slide information (*.xml)" );
 	if( !filename.isNull() ){
+		newSlide();
 		s.loadXml( filename );
 		view.reset();
 	}
@@ -118,4 +120,9 @@ void MainWindow::evaluateInterlaze() {
 	view.reset();
 	
 	QMessageBox::information( this, "Test", QString::number(correct) + " - " + QString::number(wrong) );
+}
+
+void MainWindow::newSlide(){
+	s.images.clear();
+	view.reset();
 }
