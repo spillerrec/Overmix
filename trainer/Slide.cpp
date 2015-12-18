@@ -16,6 +16,7 @@
 */
 
 #include "Slide.hpp"
+#include "ConfusionMatrix.hpp"
 
 #include <memory>
 #include <QObject>
@@ -27,15 +28,15 @@ using namespace pugi;
 using namespace Overmix;
 
 
-bool ImageInfo::interlazeTest( QString prev ) {
+ConfusionMatrix ImageInfo::interlazeTest( QString prev ) {
 	auto img      = ImageEx::fromFile( filename );
 	auto img_prev = ImageEx::fromFile( prev );
 	if( !img.is_valid() )
-		return false;
+		return {};
 	interlaze_predicted = img.is_interlaced( img_prev );
 	auto bool_str = [](bool val){ return val ? "true" : "false"; };
 	qDebug( "made prediction %s, should be %s", bool_str(interlaze_predicted), bool_str(interlazed) );
-	return interlaze_predicted == interlazed;
+	return { interlazed, interlaze_predicted };
 }
 
 
@@ -91,5 +92,16 @@ QString Slide::loadXml( QString filename ){
 	}
 	
 	return {};
+}
+
+ConfusionMatrix Slide::evaluateInterlaze(){
+	ConfusionMatrix matrix;
+	
+	for( unsigned i=0; i<images.size(); i++ ){
+		auto prev_file = (i > 0) ? images[i-1].filename : QString();
+		matrix += images[i].interlazeTest( prev_file );
+	}
+	
+	return matrix;
 }
 

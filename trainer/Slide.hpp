@@ -23,6 +23,8 @@
 
 namespace Overmix{
 
+struct ConfusionMatrix;
+
 struct ImageInfo{
 	QString filename;
 	bool interlazed{ false };
@@ -30,7 +32,7 @@ struct ImageInfo{
 	ImageInfo( QString filename, bool interlazed )
 		: filename(filename), interlazed(interlazed) { }
 	
-	bool interlazeTest( QString prev );
+	ConfusionMatrix interlazeTest( QString prev );
 };
 
 class Slide{
@@ -43,6 +45,8 @@ class Slide{
 		
 		QString saveXml( QString filename );
 		QString loadXml( QString filename );
+		
+		ConfusionMatrix evaluateInterlaze();
 };
 
 }

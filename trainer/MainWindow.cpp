@@ -16,6 +16,7 @@
 */
 
 #include "MainWindow.hpp"
+#include "ConfusionMatrix.hpp"
 
 #include <imageCache.h>
 #include <imageViewer.h>
@@ -108,18 +109,10 @@ void MainWindow::toogleInterlaze() {
 }
 
 void MainWindow::evaluateInterlaze() {
-	int correct = 0;
-	
-	for( unsigned i=0; i<s.images.size(); i++ ){
-		auto prev_file = (i > 0) ? s.images[i-1].filename : QString();
-		if( s.images[i].interlazeTest( prev_file ) )
-			correct++;
-	}
-		
-	int wrong = s.images.size() - correct;
+	auto matrix = s.evaluateInterlaze();
 	view.reset();
 	
-	QMessageBox::information( this, "Test", QString::number(correct) + " - " + QString::number(wrong) );
+	QMessageBox::information( this, "Test", QString::number(matrix.tp+matrix.tn) + " - " + QString::number(matrix.fp+matrix.fn) );
 }
 
 void MainWindow::newSlide(){
