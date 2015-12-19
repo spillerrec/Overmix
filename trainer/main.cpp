@@ -17,16 +17,42 @@
 
 #include "MainWindow.hpp"
 
+#include "Slide.hpp"
+#include "ConfusionMatrix.hpp"
+
 #include <QApplication>
 #include <QMessageBox>
+#include <QDebug>
 
 int main( int argc, char *argv[] ){
 	QApplication a( argc, argv );
 	
 	try{
-		Overmix::MainWindow w;
-		w.show();
-		return a.exec();
+		auto args = a.arguments();
+		args.removeFirst();
+		if( args.size() > 0 ){
+			Overmix::ConfusionMatrix matrix;
+			
+			for( auto arg : args ){
+				Overmix::Slide s;
+				s.loadXml( arg );
+				
+				matrix += s.evaluateInterlaze();
+			}
+			
+			qDebug() << "Results:";
+			qDebug() << "tp:" << matrix.tp;
+			qDebug() << "fp:" << matrix.fp;
+			qDebug() << "tn:" << matrix.tn;
+			qDebug() << "fn:" << matrix.fn;
+			
+			return 0;
+		}
+		else{
+			Overmix::MainWindow w;
+			w.show();
+			return a.exec();
+		}
 	}
 	catch( std::exception& e ){
 		QMessageBox::critical( nullptr, "An uncaught error occurred", e.what() );
