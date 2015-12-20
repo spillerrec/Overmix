@@ -25,22 +25,15 @@
 #include <QPainter>
 #include <QTime>
 
-colorManager* imageCache::manager = NULL;
+colorManager* imageCache::manager = nullptr;
 
 void imageCache::init(){
 	if( !manager )
 		manager = new colorManager();
-	
-	profile = NULL;
-	frames_loaded = 0;
-	memory_size = 0;
-	current_status = EMPTY;
 }
 
 void imageCache::reset(){
-	if( profile )
-		cmsCloseProfile( this->profile );
-	profile = nullptr;
+	profile = {};
 	frames.clear();
 	frame_delays.clear();
 	error_msgs.clear();
@@ -50,10 +43,8 @@ void imageCache::reset(){
 	emit info_loaded();
 }
 
-void imageCache::set_profile( cmsHPROFILE profile ){
-	if( profile )
-		cmsCloseProfile( this->profile );
-	this->profile = profile;
+void imageCache::set_profile( ColorProfile&& profile ){
+	this->profile = std::move(profile);
 	emit info_loaded();
 }
 

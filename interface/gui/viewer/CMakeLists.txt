@@ -13,14 +13,16 @@ set(SOURCE_GUI_VIEWER
 	imageCache.cpp
 	imageViewer.cpp
 	qrect_extras.cpp
+	ZoomBox.cpp
 	)
 
 # Set-up libraries
 find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Concurrent REQUIRED)
 if( UNIX )
 	find_package(Qt5X11Extras REQUIRED)
 	set(PLATFORM_LIBRARIES ${PLATFORM_LIBRARIES} Qt5::X11Extras -lxcb)
 endif( UNIX )
 
 add_library(ImgViewer ${SOURCE_GUI_VIEWER} )
-target_link_libraries(ImgViewer Qt5::Gui Qt5::Widgets -llcms2 ${PLATFORM_LIBRARIES})
+target_link_libraries(ImgViewer Qt5::Gui Qt5::Widgets Qt5::Concurrent -llcms2 ${PLATFORM_LIBRARIES})

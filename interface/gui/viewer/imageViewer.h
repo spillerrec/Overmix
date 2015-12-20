@@ -23,6 +23,8 @@
 #include <QSettings>
 #include <QContextMenuEvent>
 
+#include "ZoomBox.hpp"
+
 class imageCache;
 
 class QStaticText;
@@ -31,13 +33,12 @@ class imageViewer: public QWidget{
 	Q_OBJECT
 	
 	private:
-		imageCache *image_cache;
-		int frame_amount;
-		int current_frame;
-		int loop_counter;
-		bool continue_animating;
-		int waiting_on_frame;
-		QImage get_frame() const;
+		imageCache *image_cache{ nullptr };
+		int frame_amount{ 0 };
+		int current_frame{ 0 };
+		int loop_counter{ 0 };
+		bool continue_animating{ false };
+		int waiting_on_frame{ -1 };
 	public:
 		int get_frame_amount() const{ return frame_amount; }
 		int get_current_frame() const{ return current_frame; }
@@ -47,7 +48,7 @@ class imageViewer: public QWidget{
 	//Color managed cache
 	private:
 		QImage converted;
-		int converted_monitor;
+		int converted_monitor{ -1 };
 		void clear_converted(){
 			converted = QImage();
 			converted_monitor = -1;
@@ -55,14 +56,11 @@ class imageViewer: public QWidget{
 	
 	//How the image is to be viewed
 	private:
-		QPoint shown_pos;
-		QSize shown_size;
-		double shown_zoom_level;
-		bool moveable() const;
+		ZoomBox zoom;
 		
 	//Settings to autoscale
 	private:
-		bool auto_scale_on;
+		bool auto_scale_on{ true };
 		bool auto_aspect_ratio;
 		bool auto_downscale_only;
 		bool auto_upscale_only;
@@ -104,10 +102,10 @@ class imageViewer: public QWidget{
 	
 	//Controlling mouse actions
 	protected:
-		Qt::MouseButtons mouse_active;
-		bool multi_button;
-		bool is_zooming;
-		double start_zoom;
+		Qt::MouseButtons mouse_active{ Qt::NoButton };
+		bool multi_button{ false };
+		bool is_zooming{ false };
+		double start_zoom{ 1.0 };
 		QPoint mouse_last_pos;
 		void update_cursor();
 		
@@ -136,6 +134,7 @@ class imageViewer: public QWidget{
 		
 		bool auto_zoom_active() const{ return auto_scale_on; }
 		QSize sizeHint() const;
+		QImage get_frame() const;
 	
 	signals:
 		void image_info_read();

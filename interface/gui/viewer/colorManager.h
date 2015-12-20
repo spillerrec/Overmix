@@ -18,39 +18,77 @@
 #ifndef COLOR_MANAGER_H
 #define COLOR_MANAGER_H
 
-#include <QString>
-#include <vector>
 #include <lcms2.h>
+#include <QString>
+#include <memory>
+#include <vector>
 
-class QImage;
+
+//TODO: see if we can safely use std::unique_ptr to handle it, or make our own class
+class ColorTransform{
+	private:
+		cmsHTRANSFORM transform{ nullptr };
+		
+	public:
+		ColorTransform() { }
+		ColorTransform( cmsHTRANSFORM transform ) : transform(transform) { }
+		ColorTransform( const ColorTransform& copy ) = delete;
+		ColorTransform( ColorTransform&& other ){
+			transform = other.transform;
+			other.transform = nullptr;
+		}
+		~ColorTransform(){ cmsDeleteTransform( transform ); }
+		operator bool() const{ return transform; }
+		
+		void execute( const void* input_buffer, void* output_buffer, unsigned size )
+			{ cmsDoTransform( transform, input_buffer, output_buffer, size ); }
+};
+
+class ColorProfile{
+	private:
+		cmsHPROFILE profile{ nullptr };
+		ColorProfile( cmsHPROFILE profile ) : profile(profile) { }
+		
+	public:
+		ColorProfile() { }
+		ColorProfile( const ColorProfile& copy ) = delete;
+		ColorProfile( ColorProfile&& other ){
+			profile = other.profile;
+			other.profile = nullptr;
+		}
+		ColorProfile& operator=( ColorProfile&& other ){
+			cmsCloseProfile( profile );
+			profile = other.profile;
+			other.profile = nullptr;
+			return *this;
+		}
+		~ColorProfile(){ cmsCloseProfile( profile ); }
+		
+		operator bool() const{ return profile; }
+		
+		static ColorProfile fromMem( const void* data, unsigned len )
+			{ return { cmsOpenProfileFromMem( data, len ) }; }
+		
+		static ColorProfile fromFile( const char* path, const char* options )
+			{ return { cmsOpenProfileFromFile( path, options ) }; }
+		
+		static ColorProfile sRgb(){ return { cmsCreate_sRGBProfile() }; }
+		
+		ColorTransform transformTo( const ColorProfile& to, unsigned in_format, unsigned out_format, unsigned intent, unsigned flags=0 ) const
+			{ return ColorTransform( cmsCreateTransform( profile, in_format, to.profile, out_format, intent, flags ) ); }
+};
 
 class colorManager{
 	public:
-		struct MonitorIcc{
-			cmsHPROFILE profile;
-			cmsHTRANSFORM transform_srgb;
-			
-			MonitorIcc( cmsHPROFILE profile ) : profile( profile ) { }
-		};
-		std::vector<MonitorIcc> monitors;
+		std::vector<ColorProfile> monitors;
 		
-		cmsHPROFILE p_srgb;
+		ColorProfile p_srgb{ ColorProfile::sRgb() };
 		
 		
 	public:
 		colorManager();
-		~colorManager();
 		
-		void do_transform( QImage *img, unsigned monitor, cmsHTRANSFORM transform ) const;
-		
-		cmsHPROFILE get_profile( unsigned char *data, unsigned len ) const{
-			return cmsOpenProfileFromMem( (const void*)data, len );
-		}
-		cmsHTRANSFORM get_transform( cmsHPROFILE in, unsigned monitor ) const;
-		void delete_transform( cmsHTRANSFORM transform ) const{
-			if( transform )
-				cmsDeleteTransform( transform );
-		}
+		void doTransform( class QImage& img, const ColorProfile& in, unsigned monitor ) const;
 };
 
 

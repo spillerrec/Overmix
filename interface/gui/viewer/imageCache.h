@@ -18,11 +18,13 @@
 #ifndef IMAGECACHE_H
 #define IMAGECACHE_H
 
+#include "colorManager.h"
+
 #include <QObject>
 #include <QImage>
 #include <QStringList>
+#include <QUrl>
 #include <vector>
-#include <lcms2.h>
 
 class colorManager;
 
@@ -35,17 +37,17 @@ class imageCache: public QObject{
 		
 	private:
 	//Variables containing info about the image(s)
-		cmsHPROFILE profile;
+		ColorProfile profile;
 		
-		int frame_amount;
+		int frame_amount{ 0 };
 		std::vector<QImage> frames;
-		int frames_loaded;
+		int frames_loaded{ 0 };
 		
-		bool animate;
+		bool animate{ false };
 		std::vector<int> frame_delays;
-		int loop_amount;	//Amount of times the loop should continue looping
+		int loop_amount{ 0 };	//Amount of times the loop should continue looping
 		
-		long memory_size;
+		long memory_size{ 0 };
 		
 	//Info about loading
 	public:
@@ -56,8 +58,9 @@ class imageCache: public QObject{
 			FRAMES_READY,	//Some frames have been loaded
 			LOADED	//All frames have been loaded
 		};
+		QUrl url;
 	private:
-		status current_status;
+		status current_status{ EMPTY };
 	public:
 		void set_status( status new_status ){
 			current_status = new_status;
@@ -76,21 +79,17 @@ class imageCache: public QObject{
 		}
 		explicit imageCache( QImage img ){
 			init();
-			set_info( 1, false, -1 );
+			set_info( 1, false );
 			add_frame( img, 0 );
 			set_fully_loaded();
 		}
-		~imageCache(){
-			if( profile )
-				cmsCloseProfile( profile );
-		}
 		
-		void set_profile( cmsHPROFILE profile );
+		void set_profile( ColorProfile&& profile );
 		void set_info( unsigned total_frames, bool is_animated=false, int loops=0 );
 		void add_frame( QImage frame, unsigned delay );
 		void set_fully_loaded();
 		
-		cmsHPROFILE get_profile() const{ return profile; }
+		const ColorProfile& get_profile() const{ return profile; }
 		colorManager* get_manager() const{ return manager; }
 		long get_memory_size() const{ return memory_size; }	//Notice, this is a rough number, not accurate!
 		

@@ -18,55 +18,28 @@
 #include "qrect_extras.h"
 
 QRect constrain( QRect outer, QRect inner, bool keep_aspect ){
-	QRect result( inner );
-	
 	//Constrain size
-	if( result.width() > outer.width() )
-		result.setWidth( outer.width() );
-	if( result.height() > outer.height() )
-		result.setHeight( outer.height() );
+	QSize newSize = inner.size().boundedTo( outer.size() );
 	
-	//Fix aspect
+	//Fix aspect ratio
 	if( keep_aspect ){
-		double old_aspect = (double)inner.width() / (double)inner.height();
-		double new_aspect = (double)result.width() / (double)result.height();
+		double old_aspect = (double)  inner.width() / (double)  inner.height();
+		double new_aspect = (double)newSize.width() / (double)newSize.height();
 		
-		//Calculate new height/width so that result becomes smaller
+		//Calculate new height/width so that newSize becomes smaller
 		if( old_aspect < new_aspect )
-			result.setWidth( result.height() * old_aspect + 0.5 );
+			newSize.setWidth( newSize.height() * old_aspect + 0.5 );
 		else
-			result.setHeight( result.width() / old_aspect + 0.5 );
+			newSize.setHeight( newSize.width() / old_aspect + 0.5 );
 	}
 	
-	//Check if there is room for it in outer / constrain position
-	if( !outer.contains( result ) ){
-		//If inner is to the upper left of outer, move to corner of outer
-		if( result.x() < outer.x() )
-			result.setX( outer.x() );
-		if( result.y() < outer.y() )
-			result.setY( outer.y() );
-		
-		//If inner sticks out of outer, move towards center
-		int outer_right = outer.x() + outer.width();
-		int outer_bottom = outer.y() + outer.height();
-		if( result.x() + result.width() > outer_right )
-			result.moveLeft( outer_right - result.width() );
-		if( result.y() + result.height() > outer_bottom )
-			result.moveTop( outer_bottom - result.height() );
-	}
-	
-	return result;
+	//Constrain position, by using that: pos+size < o.pos+o.size, thus pos < o.pos+o.size - size
+	return { contrain_point( { outer.topLeft(), outer.size()-newSize }, inner.topLeft() ) , newSize };
 }
 
 QPoint contrain_point( QRect outer, QPoint inner ){
-	if( outer.x() > inner.x() )
-		inner.setX( outer.x() );
-	else if( outer.x() + outer.width() < inner.x() )
-		inner.setX( outer.x() + outer.width() );
-	
-	if( outer.y() > inner.y() )
-		inner.setY( outer.y() );
-	else if( outer.y() + outer.height() < inner.y() )
-		inner.setY( outer.y() + outer.height() );
-	return inner;
+	auto bottom = outer.topLeft() + toQPoint( outer.size() );
+	//     |     constrain if above outer      |       constrain if below outer       | already inside
+	return { outer.x() > inner.x() ? outer.x() : (bottom.x() < inner.x() ? bottom.x() : inner.x())
+	       , outer.y() > inner.y() ? outer.y() : (bottom.y() < inner.y() ? bottom.y() : inner.y()) };
 }
