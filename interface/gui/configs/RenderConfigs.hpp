@@ -23,10 +23,12 @@
 class QSpinBox;
 class QLineEdit;
 class QComboBox;
+class QCheckBox;
 
 namespace Overmix{
 
 class ARender;
+class Spinbox2D;
 
 class ARenderConfig : public AConfig{
 	Q_OBJECT
@@ -57,8 +59,13 @@ class RenderConfigChooser : public ConfigChooser<ARenderConfig>{
 };
 
 class AverageRenderConfig : public ARenderConfig{
+	private:
+		Spinbox2D* skip;
+		Spinbox2D* offset;
+		QCheckBox* upscale_chroma;
+	
 	public:
-		AverageRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
+		AverageRenderConfig( QWidget* parent );
 		std::unique_ptr<ARender> getRender() const override;
 		
 		QString name() const override { return "Average"; }

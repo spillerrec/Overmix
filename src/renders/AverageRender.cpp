@@ -56,12 +56,12 @@ void SumPlane::resizeToFit( Point<>& pos, Size<> size ){
 void SumPlane::addPlane( const Plane& p, Point<> pos ){
 	resizeToFit( pos, p.getSize() );
 	//TODO: make multi-threaded //NOTE: haven't been working out too well...
-	for( unsigned iy=0; iy<p.get_height(); iy++ ){
+	for( unsigned iy=offset.y; iy<p.get_height(); iy += spacing.y ){
 		//Add to sum
 		auto in  = p     .scan_line(  iy         );
 		auto out = sum   .scan_line(  iy + pos.y );
 		auto a   = amount.scan_line( iy + pos.y );
-		for( unsigned ix=0; ix<p.get_width(); ix++ ){
+		for( unsigned ix=offset.x; ix<p.get_width(); ix += spacing.x ){
 			out[ix+pos.x] += in[ix];
 			  a[ix+pos.x] += color::WHITE;
 		}
@@ -186,6 +186,8 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 		
 		//TODO: something is wrong with the rounding, chroma-channels are slightly off
 		SumPlane sum( (scale * full).ceil() );
+		sum.spacing = spacing;
+		sum.offset  = offset;
 		
 		for( unsigned j=0; j<aligner.count(); j++ ){
 			auto& image = aligner.image( j );

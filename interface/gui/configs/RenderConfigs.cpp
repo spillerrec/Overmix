@@ -28,7 +28,10 @@
 #include "renders/EstimatorRender.hpp"
 #include "renders/JpegRender.hpp"
 
+#include "../Spinbox2D.hpp"
+
 #include <QComboBox>
+#include <QCheckBox>
 #include <QVBoxLayout>
 #include <QSpinBox>
 #include <QLineEdit>
@@ -59,12 +62,23 @@ std::unique_ptr<ARender> RenderConfigChooser::getRender() const
 
 
 std::unique_ptr<ARender> AverageRenderConfig::getRender() const{
-	//TODO: chroma upscale, add more as well
-	return std::make_unique<AverageRender>( false );
+	auto render = std::make_unique<AverageRender>( upscale_chroma->isChecked() );
+	render->setSpacing( skip  ->getValue() + Point<unsigned>( 1, 1 ) );
+	render->setOffset(  offset->getValue() );
+	//TODO: skip and offset
+	return std::move( render );
 }
 
 std::unique_ptr<ARender> DiffRenderConfig::getRender() const
 	{ return std::make_unique<DiffRender>(); }
+
+AverageRenderConfig::AverageRenderConfig( QWidget* parent )
+	: ARenderConfig( parent ) {
+		setLayout( new QVBoxLayout( this ) );
+		skip   = addWidget<Spinbox2D>( "Skip" );
+		offset = addWidget<Spinbox2D>( "Offset" );
+		upscale_chroma = addWidget<QCheckBox>( "Scale chroma" );
+	}
 
 std::unique_ptr<ARender> FloatRenderConfig::getRender() const
 //TODO: doublespinbox for scale
