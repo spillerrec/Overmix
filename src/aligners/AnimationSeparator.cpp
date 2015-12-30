@@ -65,7 +65,7 @@ double AnimationSeparator::find_threshold( const AContainer& container, Point<do
 	ProgressWrapper progress( watcher );
 	vector<color_type> errors;
 	
-	for( unsigned i=0; i<container.count()-1; ++i ){
+	for( unsigned i=0; i<container.count()-1 && !progress.shouldCancel(); ++i ){
 		errors.push_back( AImageAligner::findOffset( container, movement, i, i+1 ).error );
 		progress.add();
 	}
@@ -77,7 +77,7 @@ double AnimationSeparator::find_threshold( const AContainer& container, Point<do
 	double threshold = 0; //TODO: high value?
 	
 	//Try each threshold and pick the one which crosses the most
-	for( unsigned i=1; i<errors.size(); i++ ){
+	for( unsigned i=1; i<errors.size() && !progress.shouldCancel(); i++ ){
 		double error = (errors[i] - errors[i-1]) / 2 + errors[i-1];
 		unsigned amount = 0;
 		bool below = false;
@@ -124,7 +124,7 @@ void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher 
 	for( unsigned i=0; i<container.count(); i++ )
 		backlog.push_back( i );
 	
-	for( int iteration=0; true; iteration++ ){
+	for( int iteration=0; !progress.shouldCancel(); iteration++ ){
 		AnimFrame frame( modified );
 		
 		for( int& index : backlog )
@@ -137,8 +137,10 @@ void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher 
 				}
 		
 		//Stop if no images
-		if( frame.size() == 0 )
+		if( frame.size() == 0 || progress.shouldCancel() )
 			break;
+		
+		qDebug() << "Frame" << iteration+1 << "contains" << frame.size() << "images";
 	}
 }
 
