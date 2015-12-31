@@ -46,27 +46,12 @@ class ModifiedContainer : public ConstDelegatedContainer {
 		virtual const Plane& alpha(   unsigned index ) const override{ return image( index ).alpha_plane(); }
 };
 
-
-class AnimFrame{
-	public:
-		AContainer& aligner;
-		std::vector<unsigned> indexes;
-		
-	public:
-		AnimFrame( AContainer& aligner ) : aligner(aligner) { }
-		void add_index( unsigned index, int frame ){ indexes.push_back( index ); }
-		unsigned size() const{ return indexes.size(); }
-		
-		double find_error( Point<double> movement, unsigned index )
-			{ return AImageAligner::findOffset( aligner, movement, indexes.back(), index ).error; }
-};
-
-double AnimationSeparator::find_threshold( const AContainer& container, Point<double> movement, AProcessWatcher* watcher ){
+double AnimationSeparator::find_threshold( const AContainer& container, Point<double> movement, AProcessWatcher* watcher ) const{
 	ProgressWrapper progress( watcher );
 	vector<color_type> errors;
 	
 	for( unsigned i=0; i<container.count()-1 && !progress.shouldCancel(); ++i ){
-		errors.push_back( AImageAligner::findOffset( container, movement, i, i+1 ).error );
+		errors.push_back( findError( container, i, i+1, movement ) );
 		progress.add();
 	}
 	
@@ -106,6 +91,11 @@ double AnimationSeparator::find_threshold( const AContainer& container, Point<do
 	return threshold;
 }
 
+double AnimationSeparator::findError( const AContainer& container, unsigned img1, unsigned img2, Point<double> movement ) const{
+	//TODO: option to use existing motion information instead
+	return AImageAligner::findOffset( container, movement, img1, img2 ).error;
+}
+
 void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher ) const{
 	ProgressWrapper progress( watcher );
 	progress.setTotal( container.count() * 2 );
@@ -114,7 +104,7 @@ void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher 
 	
 	ModifiedContainer modified( container, process );
 	
-	auto movement = process.filter({0.75,0.75});
+	auto movement = process.filter({0.75,0.75}); //TODO: modify
 	double factor = 1.0;//QInputDialog::getDouble( nullptr, "Specify threshold", "Threshold", 1.0, 0.01, 9.99, 2 );
 	double threshold = find_threshold( modified, movement, watcher ) * factor;
 	
@@ -125,22 +115,22 @@ void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher 
 		backlog.push_back( i );
 	
 	for( int iteration=0; !progress.shouldCancel(); iteration++ ){
-		AnimFrame frame( modified );
+		std::vector<unsigned> indexes;
 		
 		for( int& index : backlog )
 			if( index >= 0 )
-				if( frame.size() == 0 || frame.find_error( movement, index ) < threshold ){
-					frame.add_index( index, iteration );
+				if( indexes.size() == 0 || findError( modified, indexes.back(), index, movement ) < threshold ){
+					indexes.push_back( index );
 					container.setFrame( index, iteration );
 					index = -1;
 					progress.add();
 				}
 		
 		//Stop if no images
-		if( frame.size() == 0 || progress.shouldCancel() )
+		if( indexes.size() == 0 || progress.shouldCancel() )
 			break;
 		
-		qDebug() << "Frame" << iteration+1 << "contains" << frame.size() << "images";
+		qDebug() << "Frame" << iteration+1 << "contains" << indexes.size() << "images";
 	}
 }
 
