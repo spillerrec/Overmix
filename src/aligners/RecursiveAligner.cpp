@@ -144,5 +144,8 @@ void RecursiveAligner::align( AContainer& container, AProcessWatcher* watcher ) 
 	
 	ProgressWrapper( watcher ).setTotal( container.count() );
 	align( container, watcher, 0, container.count() );
+	
+	for( unsigned i=0; i<container.count(); i++ )
+		container.setPos( i, container.pos( i ) / process.scale() );
 }
 
