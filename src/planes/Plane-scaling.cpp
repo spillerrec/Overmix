@@ -195,7 +195,7 @@ static Plane scale2x( const Plane& p, int window, Plane::Filter f ){
 
 Plane Plane::scale_generic( Point<unsigned> wanted, double window, Plane::Filter f, Point<double> offset ) const{
 	Timer t( "scale_generic" );
-	if( wanted == getSize() )
+	if( !*this || wanted == getSize() )
 		return *this;
 	
 	Plane scaled( wanted );
