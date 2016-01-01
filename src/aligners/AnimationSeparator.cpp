@@ -92,8 +92,14 @@ double AnimationSeparator::find_threshold( const AContainer& container, Point<do
 }
 
 double AnimationSeparator::findError( const AContainer& container, unsigned img1, unsigned img2, Point<double> movement ) const{
-	//TODO: option to use existing motion information instead
-	return AImageAligner::findOffset( container, movement, img1, img2 ).error;
+	if( skip_align ){
+		//Use existing align information instead
+		auto offset = (container.pos( img2 ) - container.pos( img1 )).round();
+		offset = (offset * process.scale()).round();
+		return container.image( img1 )[0].diff( container.image( img2 )[0], offset.x, offset.y );
+	}
+	else
+		return AImageAligner::findOffset( container, movement, img1, img2 ).error;
 }
 
 void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher ) const{
@@ -105,8 +111,7 @@ void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher 
 	ModifiedContainer modified( container, process );
 	
 	auto movement = process.filter({0.75,0.75}); //TODO: modify
-	double factor = 1.0;//QInputDialog::getDouble( nullptr, "Specify threshold", "Threshold", 1.0, 0.01, 9.99, 2 );
-	double threshold = find_threshold( modified, movement, watcher ) * factor;
+	double threshold = find_threshold( modified, movement, watcher ) * threshold_factor;
 	
 	
 	//Init

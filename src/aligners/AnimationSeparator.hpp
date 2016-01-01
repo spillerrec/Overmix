@@ -25,13 +25,18 @@ namespace Overmix{
 class AnimationSeparator : public AAligner{
 	private:
 		AlignerProcessor process;
+		bool skip_align;
+		double threshold_factor{ 1.0 };
+		
 		double find_threshold( const AContainer& container, Point<double> movement, AProcessWatcher* watcher ) const;
 		
 		double findError( const AContainer& container, unsigned img1, unsigned img2, Point<double> movement ) const;
 	public:
-		AnimationSeparator( AlignMethod method, double scale=1.0 )
-			:	process( method, scale ){ /*TODO: fast_diffing = false;*/ }
+		AnimationSeparator( AlignMethod method, double scale=1.0, bool skip_align=false )
+			:	process( method, scale ), skip_align(skip_align) { /*TODO: fast_diffing = false;*/ }
 		virtual void align( AContainer& container, AProcessWatcher* watcher=nullptr ) const override;
+		
+		void setThresholdFactor( double val ){ threshold_factor = val; }
 };
 
 }
