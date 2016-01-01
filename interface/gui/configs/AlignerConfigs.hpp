@@ -25,6 +25,8 @@
 
 #include "ui_imagealigner.h"
 
+class QCheckBox;
+class QDoubleSpinBox;
 
 namespace Overmix{
 
@@ -104,8 +106,12 @@ class LinearAlignerConfig : public AAlignerConfig{
 };
 
 class SeperateAlignerConfig : public AAlignerConfig{
+	private:
+		QDoubleSpinBox* threshold;
+		QCheckBox* use_existing;
+	
 	public:
-		SeperateAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, ENABLE_ALL ) { }
+		SeperateAlignerConfig( QWidget* parent );
 		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Seperate Frames"; }

@@ -28,6 +28,9 @@
 
 #include <QGridLayout>
 
+#include <QCheckBox>
+#include <QDoubleSpinBox>
+
 using namespace Overmix;
 
 AlignerConfigChooser::AlignerConfigChooser( QWidget* parent, bool expand )
@@ -101,6 +104,16 @@ double AAlignerConfig::getScale() const{
 	return merge_scale->value();
 }
 
+SeperateAlignerConfig::SeperateAlignerConfig( QWidget* parent )
+	: AAlignerConfig( parent, ENABLE_ALL ) {
+	threshold    = addWidget<QDoubleSpinBox>( "Reduce" );
+	use_existing = addWidget<QCheckBox     >( "Reuse align" );
+	
+	threshold->setValue( 1.0 );
+	threshold->setRange( 0.01, 9.99 );
+	threshold->setSingleStep( 0.01 );
+}
+
 
 std::unique_ptr<AAligner> AverageAlignerConfig::getAligner() const
 	{ return std::make_unique<AverageAligner>( getMethod(), getScale() ); }
@@ -117,8 +130,13 @@ std::unique_ptr<AAligner> FakeAlignerConfig::getAligner() const
 std::unique_ptr<AAligner> LinearAlignerConfig::getAligner() const
 	{ return std::make_unique<LinearAligner>( getMethod() ); }
 
-std::unique_ptr<AAligner> SeperateAlignerConfig::getAligner() const
-	{ return std::make_unique<AnimationSeparator>( getMethod(), getScale() ); }
+std::unique_ptr<AAligner> SeperateAlignerConfig::getAligner() const {
+	auto aligner = std::make_unique<AnimationSeparator>(
+			getMethod(), getScale(), use_existing->isChecked()
+		);
+	aligner->setThresholdFactor( threshold->value() );
+	return std::move( aligner );
+}
 
 std::unique_ptr<AAligner> AlignFrameAlignerConfig::getAligner() const
 	{ return std::make_unique<FrameAligner>( getMethod() ); }
