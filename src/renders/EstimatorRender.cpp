@@ -140,6 +140,8 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 	auto beta = color::WHITE * this->beta / group.count();
 	for( unsigned c=0; c<planes_amount; ++c ){
 		for( int i=0; i<iterations; i++ ){
+			if( ProgressWrapper(watcher).shouldCancel() )
+				return {};
 			auto output_copy = est[c];
 			
 			//Improve estimate
