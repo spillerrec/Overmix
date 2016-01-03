@@ -24,10 +24,10 @@ namespace Overmix{
 
 class FrameAligner : public AAligner{
 	private:
-		AlignMethod method;
+		AlignSettings settings;
 	
 	public:
-		FrameAligner( AlignMethod method ) : method(method) { }
+		FrameAligner( AlignSettings settings ) : settings(settings) { }
 		virtual void align( class AContainer& container, class AProcessWatcher* watcher=nullptr ) const override;
 };
 

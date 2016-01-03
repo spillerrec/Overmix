@@ -110,8 +110,7 @@ void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher 
 	
 	ModifiedContainer modified( container, process );
 	
-	auto movement = process.filter({0.75,0.75}); //TODO: modify
-	double threshold = find_threshold( modified, movement, watcher ) * threshold_factor;
+	double threshold = find_threshold( modified, process.movement(), watcher ) * threshold_factor;
 	
 	
 	//Init
@@ -124,7 +123,7 @@ void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher 
 		
 		for( int& index : backlog )
 			if( index >= 0 )
-				if( indexes.size() == 0 || findError( modified, indexes.back(), index, movement ) < threshold ){
+				if( indexes.size() == 0 || findError( modified, indexes.back(), index, process.movement() ) < threshold ){
 					indexes.push_back( index );
 					container.setFrame( index, iteration );
 					index = -1;

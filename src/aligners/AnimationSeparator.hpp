@@ -32,7 +32,7 @@ class AnimationSeparator : public AAligner{
 		
 		double findError( const AContainer& container, unsigned img1, unsigned img2, Point<double> movement ) const;
 	public:
-		AnimationSeparator( AlignMethod method, double scale=1.0, bool skip_align=false )
+		AnimationSeparator( AlignSettings method, double scale=1.0, bool skip_align=false )
 			:	process( method, scale ), skip_align(skip_align) { /*TODO: fast_diffing = false;*/ }
 		virtual void align( AContainer& container, AProcessWatcher* watcher=nullptr ) const override;
 		

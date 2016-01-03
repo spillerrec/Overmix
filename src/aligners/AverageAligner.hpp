@@ -27,7 +27,7 @@ class AverageAligner : public AAligner{
 		AlignerProcessor process;
 	
 	public:
-		AverageAligner( AlignMethod method, double scale=1.0 )
+		AverageAligner( AlignSettings method, double scale=1.0 )
 			:	process( method, scale ) { }
 		virtual void align( class AContainer& container, class AProcessWatcher* watcher=nullptr ) const override;
 };

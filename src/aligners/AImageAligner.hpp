@@ -37,6 +37,14 @@ enum class AlignMethod{
 	,	ALIGN_HOR
 };
 
+struct AlignSettings{
+	AlignMethod method;
+	double movement;
+	
+	AlignSettings( AlignMethod method, double movement )
+		: method(method), movement(movement) { }
+};
+
 class AImageAligner{
 	public:
 		struct ImageOffset{
@@ -56,16 +64,19 @@ class AImageAligner{
 
 class AlignerProcessor{
 	private:
-		AlignMethod method;
+		AlignSettings settings;
 		double scale_amount{ 1.0 };
 		bool edges{ false };
 		
 	public:
-		AlignerProcessor( AlignMethod method, double scale, bool edges=false )
-			: method(method), scale_amount(scale), edges(edges) { }
+		AlignerProcessor( AlignSettings settings, double scale, bool edges=false )
+			: settings(settings), scale_amount(scale), edges(edges) { }
+		
+		Point<double> filter( Point<double> value ) const;
 		
 		Point<double> scale() const;
-		Point<double> filter( Point<double> value ) const;
+		Point<double> movement() const
+			{ return filter( {settings.movement, settings.movement} ); }
 		
 		ModifiedPlane operator()( const Plane& ) const;
 		Modified<ImageEx> image( const ImageEx& ) const;

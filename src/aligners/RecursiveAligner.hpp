@@ -37,7 +37,7 @@ class RecursiveAligner : public AAligner{
 		ImageGetter getGetter( const AContainer& container, unsigned index ) const;
 		
 	public:
-		RecursiveAligner( AlignMethod method, double scale=1.0 )
+		RecursiveAligner( AlignSettings method, double scale=1.0 )
 			: process( method, scale ) { }
 		virtual void align( AContainer& container, AProcessWatcher* watcher=nullptr ) const override;
 };

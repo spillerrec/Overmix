@@ -42,10 +42,11 @@ void Overmix::alignerParser( QString parameters, AContainer& container ){
 	Splitter split( parameters, ':' );
 	if( split.left == "average" ){
 		AlignMethod method;
+		double movement;
 		double scale;
-		convert( split.right, method, scale );
+		convert( split.right, method, movement, scale );
 		//TODO: parse parameters
-		aligner = make_unique<AverageAligner>(method, scale);
+		aligner = make_unique<AverageAligner>( AlignSettings{method, movement}, scale );
 	}
 	else
 		throw std::invalid_argument( fromQString( "No aligner found with the name: '" + split.left + "'" ) );

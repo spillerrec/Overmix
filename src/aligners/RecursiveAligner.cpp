@@ -80,7 +80,7 @@ ImageGetter RecursiveAligner::getGetter( const AContainer& container, unsigned i
 
 /** Aligns two ImageGetters, and renders the average. Returns the render and the offset betten the getters */
 pair<ImageGetter,Point<double>> RecursiveAligner::combine( const ImageGetter& first, const ImageGetter& second ) const{
-	auto offset = AImageAligner::findOffset( process.filter({0.75, 0.75}), first.plane(), second.plane(), first.alpha(), second.alpha() ).distance;
+	auto offset = AImageAligner::findOffset( process.movement(), first.plane(), second.plane(), first.alpha(), second.alpha() ).distance;
 	
 	if( offset.x == 0
 		&&	!first.alpha() && !second.alpha()

@@ -36,8 +36,8 @@ void AverageAligner::align( AContainer& container, AProcessWatcher* watcher ) co
 		auto img   = process( container.image( i )[0] );
 		auto alpha = process.scalePlane( container.alpha( i ) );
 		
-		//TODO: fix findOffset and movement constant
-		auto offset = AImageAligner::findOffset( process.filter({0.5,0.5}), render.average(), img(), render.alpha(), alpha() ).distance;
+		//TODO: fix findOffset
+		auto offset = AImageAligner::findOffset( process.movement(), render.average(), img(), render.alpha(), alpha() ).distance;
 		container.setPos( i, container.minPoint() + offset/process.scale() );
 		render.addAlphaPlane( img(), alpha(), offset );
 	}

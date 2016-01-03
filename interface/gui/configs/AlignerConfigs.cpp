@@ -100,6 +100,10 @@ AlignMethod AAlignerConfig::getMethod() const{
 	return AlignMethod::ALIGN_VER;
 }
 
+AlignSettings AAlignerConfig::getSettings() const{
+	return { getMethod(), merge_movement->value() / 100.0 };
+}
+
 double AAlignerConfig::getScale() const{
 	return merge_scale->value();
 }
@@ -116,11 +120,11 @@ SeperateAlignerConfig::SeperateAlignerConfig( QWidget* parent )
 
 
 std::unique_ptr<AAligner> AverageAlignerConfig::getAligner() const
-	{ return std::make_unique<AverageAligner>( getMethod(), getScale() ); }
+	{ return std::make_unique<AverageAligner>( getSettings(), getScale() ); }
 
 
 std::unique_ptr<AAligner> RecursiveAlignerConfig::getAligner() const
-	{ return std::make_unique<RecursiveAligner>( getMethod(), getScale() ); }
+	{ return std::make_unique<RecursiveAligner>( getSettings(), getScale() ); }
 
 
 std::unique_ptr<AAligner> FakeAlignerConfig::getAligner() const
@@ -132,14 +136,14 @@ std::unique_ptr<AAligner> LinearAlignerConfig::getAligner() const
 
 std::unique_ptr<AAligner> SeperateAlignerConfig::getAligner() const {
 	auto aligner = std::make_unique<AnimationSeparator>(
-			getMethod(), getScale(), use_existing->isChecked()
+			getSettings(), getScale(), use_existing->isChecked()
 		);
 	aligner->setThresholdFactor( threshold->value() );
 	return std::move( aligner );
 }
 
 std::unique_ptr<AAligner> AlignFrameAlignerConfig::getAligner() const
-	{ return std::make_unique<FrameAligner>( getMethod() ); }
+	{ return std::make_unique<FrameAligner>( getSettings() ); }
 
 std::unique_ptr<AAligner> SuperResAlignerConfig::getAligner() const
 	{ return std::make_unique<SuperResAligner>( getMethod(), getScale() ); }
