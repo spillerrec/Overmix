@@ -23,6 +23,7 @@
 #include "../color.hpp"
 #include "../planes/ImageEx.hpp"
 
+#include <set>
 #include <vector>
 using namespace std;
 using namespace Overmix;
@@ -82,13 +83,16 @@ class FakeMask : public ConstDelegatedContainer{
 
 void FakeMask::setMask( const Plane& fakemask ){
 	masks.clear();
-	auto amount = ConstDelegatedContainer::maskCount();
 	
-	if( amount == 0 )
+	//Combine with the fake mask
+	auto amount = ConstDelegatedContainer::maskCount();
+	for( unsigned i=0; i<amount; i++ )
+		masks.push_back( fakemask.minPlane( ConstDelegatedContainer::mask(i)) );
+		
+	//Make sure we have at least one mask
+	//TODO: why?
+	if( masks.size() == 0 )
 		masks.push_back( fakemask );
-	else
-		for( unsigned i=0; i<amount; i++ )
-			masks.push_back( fakemask.minPlane( ConstDelegatedContainer::mask(i)) );
 }
 
 Plane DiffRender::iteration( const AContainer& aligner, const AContainer& real, Size<unsigned> size ) const{
@@ -116,6 +120,14 @@ Plane DiffRender::iteration( const AContainer& aligner, const AContainer& real, 
 	return output.normalize();
 }
 
+static std::set<int> usedMasks( const AContainer& container ){
+	std::set<int> ids;
+	for( unsigned i=0; i<container.count(); i++ )
+		if( container.imageMask(i) >= 0 )
+			ids.insert( container.imageMask(i) );
+	return ids;
+}
+
 ImageEx DiffRender::render( const AContainer& aligner, AProcessWatcher* watcher ) const{
 	//Find the smallest shared size
 	auto size = aligner.size().size; //No image is larger than the final result
@@ -136,7 +148,7 @@ ImageEx DiffRender::render( const AContainer& aligner, AProcessWatcher* watcher 
 	
 	//Combine masks
 	//TODO: we need some way of returning them all individually!
-	for( unsigned i=0; i<aligner.maskCount(); ++i )
+	for( auto i : usedMasks(aligner) )
 		init = init.minPlane( aligner.mask( i ) );
 	
 	//Create output image
