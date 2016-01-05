@@ -674,6 +674,7 @@ void main_widget::updateSelection(){
 	}
 	
 	clear_cache();
+	refresh_text();
 }
 
 void main_widget::crop_all(){
