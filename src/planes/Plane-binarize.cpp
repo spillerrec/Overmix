@@ -62,12 +62,14 @@ void Plane::binarize_dither(){
 }
 
 Plane Plane::dilate( int size ) const{
-	Plane blurred = blur_box( size, size );
-	Plane copy(blurred);
-	blurred.for_each_pixel( copy, [](color_type row1, color_type row2, void*){
-			return ( row2 > color::WHITE*0.5 && row1 >= color::WHITE )
+	Plane output( *this );
+	if( size <= 0 )
+		return output;
+	
+	output.for_each_pixel( blur_box( size, size ), [](color_type row1, color_type row2, void*){
+			return ( row1 > color::WHITE*0.5 && row2 >= color::WHITE )
 				?	color::WHITE : color::BLACK;
 		} );
-	return blurred;
+	return output;
 }
 
