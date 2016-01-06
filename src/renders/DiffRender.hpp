@@ -29,7 +29,15 @@ class Plane;
 class DiffRender : public ARender{
 	private:
 		Plane iteration( const AContainer& aligner, const AContainer& real, Size<unsigned> size ) const;
+		
+		int iteration_count{ 2 };
+		double threshold{ 0.5 }; //For binarization
+		unsigned dilate_size{ 10 };
+		
 	public:
+		DiffRender( int iteration_count, double threshold, unsigned dilate_size )
+			: iteration_count(iteration_count), threshold(threshold), dilate_size(dilate_size) { }
+		
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
 

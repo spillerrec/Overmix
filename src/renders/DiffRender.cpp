@@ -138,9 +138,9 @@ ImageEx DiffRender::render( const AContainer& aligner, AProcessWatcher* watcher 
 	init.fill( color::WHITE );
 	FakeMask fake( aligner, init );
 	
-	for( int i=0; i<2; i++ ){
-		init.binarize_threshold( color::WHITE / 2 );
-		init = init.dilate( 10 );
+	for( int i=0; i<iteration_count; i++ ){
+		init.binarize_threshold( color::WHITE * threshold );
+		init = init.dilate( dilate_size );
 		fake.setMask( init );
 		init = iteration( fake, aligner, size );
 		//ImageEx( init ).to_qimage( ImageEx::SYSTEM_KEEP, ImageEx::SETTING_NONE ).save( "staticdiff" + QString::number( i ) + ".png" );

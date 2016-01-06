@@ -34,6 +34,7 @@
 #include <QCheckBox>
 #include <QVBoxLayout>
 #include <QSpinBox>
+#include <QDoubleSpinBox>
 #include <QLineEdit>
 
 using namespace Overmix;
@@ -69,8 +70,32 @@ std::unique_ptr<ARender> AverageRenderConfig::getRender() const{
 	return std::move( render );
 }
 
-std::unique_ptr<ARender> DiffRenderConfig::getRender() const
-	{ return std::make_unique<DiffRender>(); }
+DiffRenderConfig::DiffRenderConfig( QWidget* parent )
+	: ARenderConfig( parent ) {
+		setLayout( new QVBoxLayout( this ) );
+		iterations  = addWidget<QSpinBox>( "Iterations" );
+		threshold   = addWidget<QDoubleSpinBox>( "Threshold" );
+		dilate_size = addWidget<QSpinBox>( "Dilate amount" );
+		
+		iterations ->setValue( 2 );
+		threshold  ->setValue( 0.5 );
+		dilate_size->setValue( 10 );
+		
+		iterations->setRange( 1, 99 );
+		threshold->setRange( 0.0, 1.0 );
+		
+		threshold->setSingleStep( 0.05 );
+		
+		connect( iterations,  SIGNAL(valueChanged(int)   ), this, SIGNAL(changed()) );
+		connect( threshold,   SIGNAL(valueChanged(double)), this, SIGNAL(changed()) );
+		connect( dilate_size, SIGNAL(valueChanged(int)   ), this, SIGNAL(changed()) );
+	}
+
+std::unique_ptr<ARender> DiffRenderConfig::getRender() const {
+	return std::make_unique<DiffRender>(
+			iterations->value(), threshold->value(), dilate_size->value()
+		);
+}
 
 AverageRenderConfig::AverageRenderConfig( QWidget* parent )
 	: ARenderConfig( parent ) {

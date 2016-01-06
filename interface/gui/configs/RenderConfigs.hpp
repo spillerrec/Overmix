@@ -21,6 +21,7 @@
 #include "ConfigChooser.hpp"
 
 class QSpinBox;
+class QDoubleSpinBox;
 class QLineEdit;
 class QComboBox;
 class QCheckBox;
@@ -73,8 +74,13 @@ class AverageRenderConfig : public ARenderConfig{
 };
 
 class DiffRenderConfig : public ARenderConfig{
+	private:
+		QSpinBox* iterations;
+		QDoubleSpinBox* threshold;
+		QSpinBox* dilate_size;
+		
 	public:
-		DiffRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
+		DiffRenderConfig( QWidget* parent );
 		std::unique_ptr<ARender> getRender() const override;
 		
 		QString name() const override { return "Static Difference"; }
