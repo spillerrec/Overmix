@@ -18,10 +18,6 @@
 #include "Plane.hpp"
 #include "../color.hpp"
 
-#include <QtConcurrent>
-#include <QDebug>
-
-using namespace std;
 using namespace Overmix;
 
 static color_type apply_threshold( color_type in, void* data ){
@@ -29,13 +25,12 @@ static color_type apply_threshold( color_type in, void* data ){
 	return in > threshold ? color::WHITE : color::BLACK;
 }
 
-void Plane::binarize_threshold( color_type threshold ){
-	for_each_pixel( &apply_threshold, &threshold );
-}
+void Plane::binarize_threshold( color_type threshold )
+	{ for_each_pixel( &apply_threshold, &threshold ); }
 
 static color_type adaptive_threshold( color_type row1, color_type row2, void* data ){
 	color_type c = *(color_type*)data;
-	color_type threshold = row2 - c;
+	color_type threshold = row2 - c; //TODO: This could be an issue if color_type is unsigned!
 	return row1 > threshold ? color::WHITE : color::BLACK;
 }
 void Plane::binarize_adaptive( unsigned amount, color_type threshold ){
@@ -46,7 +41,7 @@ void Plane::binarize_adaptive( unsigned amount, color_type threshold ){
 void Plane::binarize_dither(){
 	color_type threshold = (color::WHITE - color::BLACK) / 2 + color::BLACK;
 	
-	vector<double> errors( size.width()+1, 0 );
+	std::vector<double> errors( size.width()+1, 0 );
 	for( auto row : *this )
 		for( unsigned ix=0; ix<get_width(); ++ix ){
 			double wanted = row[ix] + errors[ix];
