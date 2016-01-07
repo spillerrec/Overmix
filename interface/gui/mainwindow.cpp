@@ -582,10 +582,10 @@ void main_widget::showFullscreen(){
 	if( ui->tab_pages->currentIndex() != 0 ){
 		auto img = fromSelection( img_model, ui->files_view->selectionModel()->selectedIndexes() );
 		if( !img.isNull() )
-			FullscreenViewer::show( settings, img );
+			FullscreenViewer::show( settings, img, this );
 	}
 	else if( renders.size() > 0 )
-		FullscreenViewer::show( settings, createViewerCache() );
+		FullscreenViewer::show( settings, createViewerCache(), this );
 }
 
 

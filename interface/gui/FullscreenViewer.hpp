@@ -29,14 +29,14 @@ class FullscreenViewer : public imageViewer{
 	Q_OBJECT
 	
 	private:
-		FullscreenViewer( QSettings& settings, imageCache* cache );
-		FullscreenViewer( QSettings& settings, QImage img );
+		FullscreenViewer( QSettings& settings, imageCache* cache, QWidget* parent );
+		FullscreenViewer( QSettings& settings, QImage img, QWidget* parent );
 		~FullscreenViewer() { change_image( nullptr ); }
 		
 	public:
 		template<typename T>
-		static void show( QSettings& settings, T img )
-			{ new FullscreenViewer( settings, img ); }
+		static void show( QSettings& settings, T img, QWidget* parent )
+			{ new FullscreenViewer( settings, img, parent ); }
 		
 	protected:
 		virtual void focusOutEvent( QFocusEvent* ) override{ close(); }
