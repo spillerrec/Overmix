@@ -26,6 +26,7 @@
 #include "ui_imagealigner.h"
 
 class QCheckBox;
+class QSpinBox;
 class QDoubleSpinBox;
 
 namespace Overmix{
@@ -126,6 +127,20 @@ class AlignFrameAlignerConfig : public AAlignerConfig{
 		
 		QString name() const override { return "Align Frames"; }
 		QString discription() const override{ return "Aligns animation frames"; }
+};
+
+class FrameCalculatorAlignerConfig : public AAlignerConfig{
+	private:
+		QSpinBox* offset;
+		QSpinBox* amount;
+		QSpinBox* repeats;
+		
+	public:
+		FrameCalculatorAlignerConfig( QWidget* parent );
+		std::unique_ptr<AAligner> getAligner() const override;
+		
+		QString name() const override { return "Frame calculator"; }
+		QString discription() const override{ return "Calculates the frame number based on its index"; }
 };
 
 class SuperResAlignerConfig : public AAlignerConfig{

@@ -22,6 +22,7 @@
 #include "aligners/AverageAligner.hpp"
 #include "aligners/FakeAligner.hpp"
 #include "aligners/FrameAligner.hpp"
+#include "aligners/FrameCalculatorAligner.hpp"
 #include "aligners/RecursiveAligner.hpp"
 #include "aligners/LinearAligner.hpp"
 #include "aligners/SuperResAligner.hpp"
@@ -43,6 +44,7 @@ void AlignerConfigChooser::p_initialize(){
 	addConfig<LinearAlignerConfig>();
 	addConfig<SeperateAlignerConfig>();
 	addConfig<AlignFrameAlignerConfig>();
+	addConfig<FrameCalculatorAlignerConfig>();
 	addConfig<SuperResAlignerConfig>();
 }
 
@@ -56,7 +58,7 @@ AAlignerConfig::AAlignerConfig( QWidget* parent, int edits ) : AConfig( parent )
 		cbx_merge_v->hide();
 	}
 	else{
-		connect( cbx_merge_v,   &QCheckBox::toggled, this, &AAlignerConfig::toggled_ver );
+		connect( cbx_merge_v, &QCheckBox::toggled, this, &AAlignerConfig::toggled_ver );
 		connect( cbx_merge_h, &QCheckBox::toggled, this, &AAlignerConfig::toggled_hor );
 	}
 	
@@ -108,6 +110,13 @@ double AAlignerConfig::getScale() const{
 	return merge_scale->value();
 }
 
+FrameCalculatorAlignerConfig::FrameCalculatorAlignerConfig( QWidget* parent )
+	:	AAlignerConfig( parent, DISABLE_ALL ) {
+	offset  = addWidget<QSpinBox>( "Offset" );
+	amount  = addWidget<QSpinBox>( "Frame amount" );
+	repeats = addWidget<QSpinBox>( "Frame repeatitions" );
+}
+
 SeperateAlignerConfig::SeperateAlignerConfig( QWidget* parent )
 	: AAlignerConfig( parent, ENABLE_ALL ) {
 	threshold    = addWidget<QDoubleSpinBox>( "Reduce" );
@@ -144,6 +153,14 @@ std::unique_ptr<AAligner> SeperateAlignerConfig::getAligner() const {
 
 std::unique_ptr<AAligner> AlignFrameAlignerConfig::getAligner() const
 	{ return std::make_unique<FrameAligner>( getSettings() ); }
+
+std::unique_ptr<AAligner> FrameCalculatorAlignerConfig::getAligner() const{
+	return std::make_unique<FrameCalculatorAligner>(
+			offset ->value()
+		,	amount ->value()
+		,	repeats->value()
+		);
+}
 
 std::unique_ptr<AAligner> SuperResAlignerConfig::getAligner() const
 	{ return std::make_unique<SuperResAligner>( getMethod(), getScale() ); }
