@@ -252,13 +252,20 @@ void main_widget::process_urls( QStringList files ){
 
 
 void main_widget::refresh_text(){
-	auto s = getAlignedImages().size().size;
-	ui->lbl_info->setText(
-			tr( "Size: " )
-		+	QString::number(s.width()) + "x"
-		+	QString::number(s.height()) + " ("
-		+	QString::number( getAlignedImages().count() ) + ")"
-	);
+	auto& aligner = getAlignedImages();
+	auto size       = aligner.size().size;
+	auto imageCount = aligner.count();
+	
+	if( imageCount == 0 )
+		ui->lbl_info->setText( tr( "No images" ) );
+	else
+		ui->lbl_info->setText(
+				tr( "Size: " )
+			+	QString::number( size.width() ) + "x"
+			+	QString::number( size.height()) + " ("
+			+	tr( "%n image(s) in ", nullptr, imageCount )
+			+	tr( "%n frame(s))",    nullptr, aligner.getFrames().size() )
+		);
 }
 
 static color_type color_from_spinbox( QSpinBox* spinbox ){
