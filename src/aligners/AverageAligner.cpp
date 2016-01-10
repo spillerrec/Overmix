@@ -29,11 +29,11 @@ void AverageAligner::align( AContainer& container, AProcessWatcher* watcher ) co
 	ProgressWrapper( watcher ).setTotal( container.count() );
 	
 	SumPlane render;
-	render.addAlphaPlane( process( container.image( 0 )[0] )(), process( container.alpha( 0 ) )(), {0,0} );
+	render.addAlphaPlane( process( container.plane( 0 ) )(), process( container.alpha( 0 ) )(), {0,0} );
 	
 	for( unsigned i=1; i<container.count(); i++ ){
 		ProgressWrapper( watcher ).setCurrent( i );
-		auto img   = process( container.image( i )[0] );
+		auto img   = process( container.plane( i ) );
 		auto alpha = process.scalePlane( container.alpha( i ) );
 		
 		//TODO: fix findOffset

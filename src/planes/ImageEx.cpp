@@ -96,7 +96,7 @@ bool ImageEx::read_file( QString path ){
 ImageEx ImageEx::fromFile( QString path ){
 	ImageEx temp;
 	if( !temp.read_file( path ) )
-		temp.planes.clear();
+		return {};
 	return temp;
 }
 

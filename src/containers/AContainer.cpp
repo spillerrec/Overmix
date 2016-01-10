@@ -20,6 +20,8 @@
 
 #include "../planes/ImageEx.hpp"
 
+#include <stdexcept>
+
 using namespace Overmix;
 
 
@@ -27,8 +29,16 @@ const Plane& AContainer::alpha( unsigned index ) const{
 	return image( index ).alpha_plane();
 }
 
-//NOTE: this makes no sense, throw something instead?
-const Plane& AContainer::mask( unsigned index ) const{ return alpha( index ); }
+const Plane& AContainer::mask( unsigned index ) const
+	{ throw std::logic_error( "AContainer::mask not defined for this container type!" ); }
+
+const Plane& AContainer::plane( unsigned index ) const{
+	auto& img = image( index );
+	if( img.size() < 1 )
+		throw std::out_of_range( "No planes in ImageEx!" );
+	//TODO: with RGB we should use the Green channel instead of Red
+	return img[0];
+}
 
 void AContainer::cropImage( unsigned index, unsigned left, unsigned top, unsigned right, unsigned bottom ){
 	auto& img = imageRef( index );
@@ -67,7 +77,7 @@ Rectangle<double> AContainer::size() const{
 	auto min = minPoint();
 	auto max = min;
 	for( unsigned i=0; i<count(); ++i )
-		max = max.max( image(i)[0].getSize().to<double>() + pos(i) );
+		max = max.max( image(i).getSize().to<double>() + pos(i) );
 	return { min, max-min };
 }
 
