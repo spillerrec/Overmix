@@ -60,8 +60,11 @@ ImageEx PlaneRender::render( const AContainer& aligner, AProcessWatcher* watcher
 	//Render all planes
 	auto color_space = aligner.image(0).getColorSpace();
 	ImageEx img( (planes_amount==1) ? color_space.changed( Transform::GRAY ) : color_space );
-	for( unsigned c=0; c<planes_amount; ++c )
+	for( unsigned c=0; c<planes_amount; ++c ){
+		if( ProgressWrapper(watcher).shouldCancel() )
+			return {};
 		img.addPlane( renderPlane( aligner, c, watcher ) );
+	}
 	return img;
 }
 

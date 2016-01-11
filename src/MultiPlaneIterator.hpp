@@ -216,6 +216,8 @@ class MultiPlaneIterator{
 				while( future.isRunning() ){
 					watcher->setCurrent( offset + (future.progressValue() * count / future.progressMaximum()) );
 					//TODO: wait
+					if( watcher->shouldCancel() )
+						future.cancel();
 				}
 			else
 				future.waitForFinished();

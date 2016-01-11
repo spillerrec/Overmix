@@ -26,13 +26,14 @@ void AverageAligner::align( AContainer& container, AProcessWatcher* watcher ) co
 	if( container.count() <= 1 ) //If there is nothing to align
 		return;
 	
-	ProgressWrapper( watcher ).setTotal( container.count() );
+	ProgressWrapper progress( watcher );
+	progress.setTotal( container.count() );
 	
 	SumPlane render;
 	render.addAlphaPlane( process( container.plane( 0 ) )(), process( container.alpha( 0 ) )(), {0,0} );
 	
-	for( unsigned i=1; i<container.count(); i++ ){
-		ProgressWrapper( watcher ).setCurrent( i );
+	for( unsigned i=1; i<container.count() && !progress.shouldCancel(); i++ ){
+		progress.setCurrent( i );
 		auto img   = process( container.plane( i ) );
 		auto alpha = process.scalePlane( container.alpha( i ) );
 		
