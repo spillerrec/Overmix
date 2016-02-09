@@ -40,6 +40,7 @@ bool ImageEx::from_qimage( QIODevice& dev, QString ext ){
 	if( img.hasAlphaChannel() )
 		alpha = Plane( size );
 	
+#if QT_VERSION >= 0x050500
 	if( img.format() == QImage::Format_Grayscale8 ){
 		color_space = { Transform::GRAY, Transfer::SRGB };
 		planes.emplace_back( size );
@@ -53,6 +54,7 @@ bool ImageEx::from_qimage( QIODevice& dev, QString ext ){
 		}
 	}
 	else{
+#endif
 		color_space = { Transform::RGB, Transfer::SRGB };
 		img = img.convertToFormat( QImage::Format_ARGB32 );
 		
@@ -75,7 +77,9 @@ bool ImageEx::from_qimage( QIODevice& dev, QString ext ){
 					*(a++) = color::from8bit( qAlpha( *in ) );
 			}
 		}
+#if QT_VERSION >= 0x050500
 	}
+#endif
 	
 	return true;
 }
