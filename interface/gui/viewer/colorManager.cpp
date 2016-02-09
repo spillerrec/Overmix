@@ -111,7 +111,7 @@ colorManager::colorManager(){
 		char path_ancii[size*2];
 		
 		//Get profile
-		HDC hdc = CreateDC( nullptr, disp.DeviceName, icc_path, nullptr ); //TODO: what is icc_path used here for?
+		HDC hdc = CreateDC( nullptr, disp.DeviceName, nullptr, nullptr );
 		GetICMProfile( hdc, &size, icc_path );
 		DeleteDC( hdc );
 		

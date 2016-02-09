@@ -16,6 +16,11 @@ set(SOURCE_GUI_VIEWER
 	ZoomBox.cpp
 	)
 
+# Make sure Windows is set to use the unicode API's
+if( WIN32 )
+	add_definitions(-DUNICODE -D_UNICODE)
+endif( WIN32 )
+
 # Set-up libraries
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
