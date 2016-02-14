@@ -41,7 +41,7 @@ struct AlignSettings{
 	AlignMethod method;
 	double movement;
 	
-	AlignSettings( AlignMethod method, double movement )
+	AlignSettings( AlignMethod method=AlignMethod::ALIGN_BOTH, double movement=1.0 )
 		: method(method), movement(movement) { }
 };
 

@@ -19,7 +19,14 @@
 #include "Parsers.hpp"
 #include "Parsing.hpp"
 
+#include "aligners/AnimationSeparator.hpp"
 #include "aligners/AverageAligner.hpp"
+#include "aligners/FakeAligner.hpp"
+#include "aligners/FrameAligner.hpp"
+#include "aligners/FrameCalculatorAligner.hpp"
+#include "aligners/LinearAligner.hpp"
+#include "aligners/RecursiveAligner.hpp"
+#include "aligners/SuperResAligner.hpp"
 #include "planes/ImageEx.hpp"
 
 #include <QString>
@@ -35,21 +42,34 @@ static void convert( QString str, AlignMethod& func ){
 		} );
 }
 
+static void convert( QString str, AlignSettings& settings ){
+	Splitter split( str, ';' );
+	convert( split.left,  settings.method );
+	convert( split.right, settings.movement );
+}
+
+static unique_ptr<AAligner> makeAligner( QString name, QString parameters ){
+	if( name == "AnimationSeparator" )
+		return convertUnique<AnimationSeparator,AlignSettings,double,bool>( parameters );
+	else if( name == "Average" )
+		return convertUnique<AverageAligner,AlignSettings,double>( parameters );
+	else if( name == "Fake" )
+		return make_unique<FakeAligner>();
+	else if( name == "Frame" )
+		return convertUnique<FrameAligner, AlignMethod>( parameters );
+	else if( name == "FrameCalculator" )
+		return convertUnique<FrameCalculatorAligner, int, int, int>( parameters );
+	else if( name == "Linear" )
+		return convertUnique<LinearAligner, AlignMethod>( parameters );
+	else if( name == "Recursive" )
+		return convertUnique<RecursiveAligner,AlignSettings,double>( parameters );
+	else if( name == "SuperRes" )
+		return convertUnique<SuperResAligner,AlignMethod,double>( parameters );
+	else
+		throw std::invalid_argument( fromQString( "No aligner found with the name: '" + name + "'" ) );
+}
 
 void Overmix::alignerParser( QString parameters, AContainer& container ){
-	unique_ptr<AAligner> aligner;
-	
 	Splitter split( parameters, ':' );
-	if( split.left == "average" ){
-		AlignMethod method;
-		double movement;
-		double scale;
-		convert( split.right, method, movement, scale );
-		//TODO: parse parameters
-		aligner = make_unique<AverageAligner>( AlignSettings{method, movement}, scale );
-	}
-	else
-		throw std::invalid_argument( fromQString( "No aligner found with the name: '" + split.left + "'" ) );
-	
-	aligner->align( container );
+	makeAligner( split.left, split.right )->align( container );
 }
