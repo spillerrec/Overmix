@@ -31,10 +31,16 @@ static const double DOUBLE_MAX = numeric_limits<double>::max();
 
 using DiffAmount = pair<precision_color_type, double>;
 struct Sum{
-	DiffAmount total;
-	Sum() : total( 0, 0.0 ) { }
-	void reduce( const DiffAmount add ){ total.first += add.first; total.second += add.second; }
-	double average() const{ return total.first / total.second; }
+	double sum{ 0.0 };
+	unsigned count{ 0 };
+	double total{ 0.0 };
+	
+	void reduce( const DiffAmount add ){
+		sum += add.first / add.second;
+		total += add.second;
+		count++;
+	}
+	double average() const{ return sum / count; }
 };
 struct Para{
 	const color_type *c1;
@@ -128,7 +134,7 @@ double Plane::diffAlpha( const Plane& p, const Plane& alpha, const Plane& alpha_
 	Sum sum = QtConcurrent::blockingMappedReduced( lines, diff_func, &Sum::reduce );
 //	Sum sum; for( auto& p : lines ) sum.reduce( diff_alpha_line( p ) );
 	auto full_area = height * width / (stride*stride);
-	return  ( full_area * 0.1 > sum.total.second ) ? std::numeric_limits<double>::max() : sum.average();
+	return  ( full_area * 0.1 > sum.total ) ? std::numeric_limits<double>::max() : sum.average();
 }
 
 
