@@ -58,6 +58,7 @@ class MainWindow: public QWidget{
 		void saveSlide();
 		void evaluateInterlaze();
 		void newSlide();
+		void createErrorMatrix();
 };
 
 }

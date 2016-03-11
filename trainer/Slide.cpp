@@ -22,6 +22,8 @@
 #include <QObject>
 
 #include <planes/ImageEx.hpp>
+#include <utils/ImageLoader.hpp>
+#include <debug.hpp>
 
 #include <pugixml.hpp>
 using namespace pugi;
@@ -103,5 +105,22 @@ ConfusionMatrix Slide::evaluateInterlaze(){
 	}
 	
 	return matrix;
+}
+
+void Slide::createErrorMatrix( QString filepath ) const{
+	QStringList names;
+	for( auto& image : images )
+		names << image.filename;
+	auto images = ImageLoader::loadImages( names );
+	
+	debug::CsvFile output( filepath.toLocal8Bit().constData() );
+	
+	for( auto& img1 : images ){
+		for( auto& img2 : images ){
+			auto result = img1.best_vertical( img2, 3, 0.75 );
+			output.add( result.second );
+		}
+		output.stop();
+	}
 }
 

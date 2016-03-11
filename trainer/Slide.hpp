@@ -47,6 +47,8 @@ class Slide{
 		QString loadXml( QString filename );
 		
 		ConfusionMatrix evaluateInterlaze();
+		
+		void createErrorMatrix( QString filepath ) const;
 };
 
 }

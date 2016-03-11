@@ -80,6 +80,7 @@ void MainWindow::keyPressEvent( QKeyEvent* event ) {
 		case Qt::Key_S: saveSlide(); break;
 		case Qt::Key_E: evaluateInterlaze(); break;
 		case Qt::Key_N: newSlide(); break;
+		case Qt::Key_D: createErrorMatrix(); break;
 	}
 }
 
@@ -118,4 +119,10 @@ void MainWindow::evaluateInterlaze() {
 void MainWindow::newSlide(){
 	s.images.clear();
 	view.reset();
+}
+
+void MainWindow::createErrorMatrix(){
+	auto filename = QFileDialog::getSaveFileName( this, "Error matrix output file", QString(), "Comma-seperated-values (*.csv)" );
+	if( !filename.isNull() )
+		s.createErrorMatrix( filename );
 }
