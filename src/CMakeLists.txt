@@ -17,6 +17,7 @@ set(SOURCES_CONTAINERS
 
 set(SOURCES_PLANES
 	planes/ColorSpace.cpp
+	planes/DistanceMatrix.cpp
 	planes/ImageEx.cpp
 	planes/ImageEx-dump.cpp
 	planes/ImageEx-jpeg.cpp

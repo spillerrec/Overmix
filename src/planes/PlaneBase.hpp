@@ -229,6 +229,9 @@ class PlaneBase{
 				RowIt<T2> operator*() { return p->scan_line( iy ); }
 		};
 		
+		const T* allPixelsBegin() const{ return data.get(); }
+		const T* allPixelsEnd  () const{ return data.get() + realsize.width()*realsize.height(); }
+		
 	public:
 		LineIt<      PlaneBase<T>,       T> begin()       { return { this, 0             }; }
 		LineIt<const PlaneBase<T>, const T> begin() const { return { this, 0             }; }

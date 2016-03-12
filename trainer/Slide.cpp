@@ -20,8 +20,10 @@
 
 #include <memory>
 #include <QObject>
+#include <QImage>
 
 #include <planes/ImageEx.hpp>
+#include <planes/DistanceMatrix.hpp>
 #include <utils/ImageLoader.hpp>
 #include <debug.hpp>
 
@@ -113,14 +115,18 @@ void Slide::createErrorMatrix( QString filepath ) const{
 		names << image.filename;
 	auto images = ImageLoader::loadImages( names );
 	
-	debug::CsvFile output( filepath.toLocal8Bit().constData() );
+	DistanceMatrix matrix( images.size() );
+	debug::CsvFile output( (filepath + ".csv").toLocal8Bit().constData() );
 	
-	for( auto& img1 : images ){
-		for( auto& img2 : images ){
-			auto result = img1.best_vertical( img2, 3, 0.75 );
-			output.add( result.second );
+	for( unsigned i=0; i<images.size(); i++ ){
+		auto row = matrix.matrix.scan_line( i );
+		for( unsigned j=0; j<images.size(); j++ ){
+			row[j] = images[i].best_vertical( images[j], 3, 0.75 );
+			output.add( row[j].second );
 		}
 		output.stop();
 	}
+	
+	matrix.toQImage().save( filepath + ".png" );
 }
 
