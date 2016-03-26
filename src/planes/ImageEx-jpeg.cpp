@@ -50,8 +50,10 @@ struct JpegComponent{
 	
 	Size<JDIMENSION> size() const
 		{ return { info->downsampled_width, info->downsampled_height }; }
-	Size<JDIMENSION> sizePadded() const
-		{ return (size() + DCTSIZE-1) / DCTSIZE * DCTSIZE; }
+	Size<JDIMENSION> sizePadded() const {
+		Size<JDIMENSION> dctsize( info->h_samp_factor*DCTSIZE, info->v_samp_factor*DCTSIZE );
+		return (size() + dctsize-1) / dctsize * dctsize;
+	}
 	
 	Size<int> sampling() const
 		{ return { info->h_samp_factor, info->v_samp_factor }; }
@@ -77,6 +79,13 @@ class JpegDecompress{
 		
 		int components() const{ return cinfo.output_components; }
 		JpegComponent operator[](int i){ return { cinfo.comp_info[i] }; }
+		
+		Size<JDIMENSION> size() const{ return { cinfo.image_width, cinfo.image_height }; }
+		
+		Size<JDIMENSION> sizePadded() const{
+			Size<JDIMENSION> mcu_size( cinfo.max_h_samp_factor*DCTSIZE, cinfo.max_v_samp_factor*DCTSIZE );
+			return (size() + mcu_size-1) / mcu_size * mcu_size;
+		}
 };
 
 
@@ -121,12 +130,11 @@ class RawReader{
 		
 		//Read a set of lines
 		void readLine(){
-			auto maxSize = jpeg[0].sizePadded();
-			for( int i=1; i<jpeg.components(); i++ )
-				maxSize = maxSize.max( jpeg[i].sizePadded() );
+			auto maxSize = jpeg.sizePadded();
 			
 			prepare_buffer( jpeg.cinfo.output_scanline );
 			auto remaining = maxSize.height() - jpeg.cinfo.output_scanline;
+			assert( remaining >= max_v_samp_factor*DCTSIZE );
 			jpeg_read_raw_data( &jpeg.cinfo, buf_access.data(), remaining );
 			//TODO: chroma is offset of some reason...
 		}
