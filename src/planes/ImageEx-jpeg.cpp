@@ -165,20 +165,6 @@ bool ImageEx::from_jpeg( QIODevice& dev, JpegDegrader* deg ){
 	jpeg.readHeader();
 	
 	jpeg.cinfo.raw_data_out = true;
-	
-	
-	/*
-	auto v_ptr = jpeg_read_coefficients( &jpeg.cinfo );
-	auto blockarr = jpeg.cinfo.mem->access_virt_barray( (j_common_ptr)&jpeg.cinfo, v_ptr[0], 0, 1, false );
-	for( unsigned j=0; j<1; j++ ){
-		auto block = blockarr[0][j];
-		QString out;
-		for( unsigned i=0; i<64; i++ )
-			out += QString::number( block[i] ) + " ";
-		qDebug() << out;
-	}
-	return false;
-	/*/
 	jpeg_start_decompress( &jpeg.cinfo );
 	
 	//TODO: use the correct color space info
@@ -195,22 +181,14 @@ bool ImageEx::from_jpeg( QIODevice& dev, JpegDegrader* deg ){
 		*deg = JpegDegrader();
 		//TODO: set color type
 		
-		//Find the maximum sampling factor
-		//TODO: we can access it directly from cinfo
-		int max_h = 1, max_v = 1;
-		for( int i=0; i<jpeg.cinfo.output_components; i++ ){
-			max_h = std::max( max_h, jpeg.cinfo.comp_info[i].h_samp_factor );
-			max_v = std::max( max_v, jpeg.cinfo.comp_info[i].v_samp_factor );
-		}
-		
 		for( int i=0; i<jpeg.cinfo.output_components; i++ )
 			deg->addPlane( { {jpeg.cinfo.comp_info[i].quant_table->quantval}
-					,	max_h / double(jpeg.cinfo.comp_info[i].h_samp_factor)
-					,	max_v / double(jpeg.cinfo.comp_info[i].v_samp_factor)
+					,	jpeg.cinfo.max_h_samp_factor / double(jpeg.cinfo.comp_info[i].h_samp_factor)
+					,	jpeg.cinfo.max_v_samp_factor / double(jpeg.cinfo.comp_info[i].v_samp_factor)
 				} );
 	}
 	
-	jpeg_finish_decompress( &jpeg.cinfo );//*/
+	jpeg_finish_decompress( &jpeg.cinfo );
 	
 	return true;
 }
