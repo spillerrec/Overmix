@@ -134,7 +134,7 @@ class RawReader{
 			
 			prepare_buffer( jpeg.cinfo.output_scanline );
 			auto remaining = maxSize.height() - jpeg.cinfo.output_scanline;
-			assert( remaining >= max_v_samp_factor*DCTSIZE );
+ 			assert( remaining >= jpeg.cinfo.max_v_samp_factor*DCTSIZE );
 			jpeg_read_raw_data( &jpeg.cinfo, buf_access.data(), remaining );
 			//TODO: chroma is offset of some reason...
 		}
