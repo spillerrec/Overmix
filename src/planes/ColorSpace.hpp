@@ -34,7 +34,7 @@ enum class Transfer{ //i.e. gamma function
 	,	REC709  //As specified in Rec. 601 and 709
 	,	UNKNOWN
 };
-class color;
+struct color;
 
 class ColorSpace{
 	private:

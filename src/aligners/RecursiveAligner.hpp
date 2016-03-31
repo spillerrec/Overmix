@@ -23,7 +23,7 @@
 
 namespace Overmix{
 
-class ImageGetter;
+struct ImageGetter;
 
 /** Aligns the container using a divide and conquer algorithm. Assumes that each image
   * overlaps the images right next to it. */

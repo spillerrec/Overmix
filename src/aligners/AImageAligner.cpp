@@ -91,7 +91,7 @@ static ImageEx applyFunc( ImageEx img, Func f ){
 
 static Modified<ImageEx> getScaled2( const ImageEx& img, Size<unsigned> size ){
 	if( img && img.getSize() != size )
-		return { std::move( applyFunc( img, [=]( auto& p ){ return p.scale_cubic( size ); } ) ) };
+		return { applyFunc( img, [=]( auto& p ){ return p.scale_cubic( size ); } ) };
 	else
 		return { img };
 }

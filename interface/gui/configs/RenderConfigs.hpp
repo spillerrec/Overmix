@@ -29,7 +29,7 @@ class QCheckBox;
 namespace Overmix{
 
 class ARender;
-class Spinbox2D;
+struct Spinbox2D;
 
 class ARenderConfig : public AConfig{
 	Q_OBJECT
@@ -48,7 +48,7 @@ class RenderConfigChooser : public ConfigChooser<ARenderConfig>{
 	
 	public:
 		RenderConfigChooser( QWidget* parent, bool expand=false );
-		virtual void p_initialize();
+		virtual void p_initialize() override;
 		
 		std::unique_ptr<ARender> getRender() const;
 		
