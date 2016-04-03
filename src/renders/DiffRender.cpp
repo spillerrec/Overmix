@@ -68,9 +68,9 @@ class FakeMask : public ConstDelegatedContainer{
 		vector<Plane> masks;
 		
 	public:
-		void setMask( const Plane& fakemask );
+		void setFakeMask( const Plane& fakemask );
 		FakeMask( const AContainer& con, const Plane& mask ) : ConstDelegatedContainer(con)
-			{ setMask( mask ); }
+			{ setFakeMask( mask ); }
 		
 		virtual const Plane& mask( unsigned index ) const override{ return masks[index]; }
 		virtual const Plane& alpha( unsigned index ) const override{ return masks[imageMask(index)]; }
@@ -81,7 +81,7 @@ class FakeMask : public ConstDelegatedContainer{
 		virtual unsigned maskCount() const override{ return masks.size(); }
 };
 
-void FakeMask::setMask( const Plane& fakemask ){
+void FakeMask::setFakeMask( const Plane& fakemask ){
 	masks.clear();
 	
 	//Combine with the fake mask
@@ -141,7 +141,7 @@ ImageEx DiffRender::render( const AContainer& aligner, AProcessWatcher* watcher 
 	for( int i=0; i<iteration_count; i++ ){
 		init.binarize_threshold( color::WHITE * threshold );
 		init = init.dilate( dilate_size );
-		fake.setMask( init );
+		fake.setFakeMask( init );
 		init = iteration( fake, aligner, size );
 		//ImageEx( init ).to_qimage( ImageEx::SYSTEM_KEEP, ImageEx::SETTING_NONE ).save( "staticdiff" + QString::number( i ) + ".png" );
 	}
