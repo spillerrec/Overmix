@@ -21,10 +21,13 @@
 #include "containers/FrameContainer.hpp"
 #include "containers/ImageContainer.hpp"
 
-#include "QCustomPlot/qcustomplot.h"
+#include <QChart>
+#include <QChartView>
+#include <QLineSeries>
 #include <QHBoxLayout>
 
 using namespace Overmix;
+using namespace QtCharts;
 
 static Point<bool> imagesMoves( const AContainer& container ){
 	if( container.count() == 0 )
@@ -41,42 +44,14 @@ static Point<bool> imagesMoves( const AContainer& container ){
 	return moves;
 }
 
-class Line{
-	private:
-		QVector<double> x, y;
-		
-	public:
-		void add( double x_pos, double y_pos ){
-			x << x_pos;
-			y << y_pos;
-		}
-		void addToPlot( QCustomPlot& plot, QColor color ){
-			auto curve = new QCPCurve( plot.xAxis, plot.yAxis );
-			curve->setData( x, y );
-			curve->setPen( { color } );
-			plot.addPlottable( curve );
-		}
-};
-
-static void addPoint( Line& line, FrameContainer& container, int index, Point<bool> moves ){
+static void addPoint( QLineSeries& line, FrameContainer& container, int index, Point<bool> moves ){
 	auto pos = container.pos( index );
 	auto real_index = container.realIndex( index );
 	
-	line.add(
+	line.append(
 			moves.x ? pos.x : real_index
 		,	moves.y ? pos.y : real_index
 		);
-}
-
-static void setLimit( QCustomPlot& plot, const AContainer& images, Point<bool> moves ){
-	auto min_point = images.minPoint();
-	auto max_point = images.maxPoint();
-	
-	plot.xAxis->setRange( moves.x ? min_point.x : 0, moves.x ? max_point.x : images.count() );
-	plot.yAxis->setRange( moves.y ? min_point.y : 0, moves.y ? max_point.y : images.count() );
-	
-	plot.yAxis->setLabel( moves.y ? QObject::tr("Y") : QObject::tr("Id") );
-	plot.xAxis->setLabel( moves.y ? QObject::tr("X") : QObject::tr("Id") );
 }
 
 static QColor getColor( int frame ){
@@ -92,23 +67,33 @@ static QColor getColor( int frame ){
 }
 
 MovementGraph::MovementGraph( ImageContainer& images ) : QWidget(nullptr), images(images) {
-	auto plot = new QCustomPlot( this );
+	//Create and add chart to widget
+	auto plot = new QChart();
+	auto view = new QChartView( plot );
+	view->setRenderHint( QPainter::Antialiasing );
 	setLayout( new QHBoxLayout( this ) );
-	layout()->addWidget( plot );
+	layout()->addWidget( view );
 	layout()->setContentsMargins( 0, 0, 0, 0 );
 	
+	//Start adding lines
 	auto moves = imagesMoves( images );
-	
 	for( auto frame : images.getFrames() ){
-		Line line;
+		auto line = new QLineSeries(); //TODO: is needed to be on the heap?
+		
 		FrameContainer container( images, frame );
 		for( unsigned i=0; i<container.count(); ++i )
-			addPoint( line, container, i, moves );
-		line.addToPlot( *plot, getColor( frame ) );
+			addPoint( *line, container, i, moves );
+		
+		line->setColor( getColor( frame ) );
+		plot->addSeries( line );
 	}
 	
-	setLimit( *plot, images, moves );
-	plot->setInteractions( QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables );
+	//Custimize chart visuals
+	plot->setTitle( "Position of images" );
+	plot->legend()->hide();
+	plot->createDefaultAxes();
+	//plot->setInteractions( QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables );
+	//TOOD: replace this functionality?
 	
 	resize( 640, 480 );
 	show();
