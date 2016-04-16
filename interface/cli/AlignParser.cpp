@@ -36,9 +36,9 @@ using namespace Overmix;
 
 static void convert( QString str, AlignMethod& func ){
 	func = getEnum<AlignMethod>( str,
-		{	{ "both", AlignMethod::ALIGN_BOTH }
-		,	{ "ver",  AlignMethod::ALIGN_VER  }
-		,	{ "hor",  AlignMethod::ALIGN_HOR  }
+		{	{ "both", AlignMethod::BOTH }
+		,	{ "ver",  AlignMethod::VER  }
+		,	{ "hor",  AlignMethod::HOR  }
 		} );
 }
 

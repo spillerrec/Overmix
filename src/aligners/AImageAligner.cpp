@@ -61,16 +61,16 @@ AImageAligner::ImageOffset AImageAligner::findOffset( Point<double> movement, co
 
 Point<double> AlignerProcessor::scale() const{
 	switch( settings.method ){
-		case AlignMethod::ALIGN_VER: return { 1.0, scale_amount };
-		case AlignMethod::ALIGN_HOR: return { scale_amount, 1.0 };
+		case AlignMethod::VER: return { 1.0, scale_amount };
+		case AlignMethod::HOR: return { scale_amount, 1.0 };
 		default: return { scale_amount, scale_amount };
 	}
 }
 
 Point<double> AlignerProcessor::filter( Point<double> value ) const{
 	switch( settings.method ){
-		case AlignMethod::ALIGN_VER: return { 0.0, value.x };
-		case AlignMethod::ALIGN_HOR: return { value.y, 0.0 };
+		case AlignMethod::VER: return { 0.0, value.x };
+		case AlignMethod::HOR: return { value.y, 0.0 };
 		default: return value;
 	}
 }

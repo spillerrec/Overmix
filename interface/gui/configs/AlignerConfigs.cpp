@@ -94,12 +94,12 @@ void AAlignerConfig::toggled_ver(){
 AlignMethod AAlignerConfig::getMethod() const{
 	bool h = cbx_merge_h->isChecked(), v = cbx_merge_v->isChecked();
 	if( h && v )
-		return AlignMethod::ALIGN_BOTH;
+		return AlignMethod::BOTH;
 	if( h )
-		return AlignMethod::ALIGN_VER;
+		return AlignMethod::VER;
 	if( v )
-		return AlignMethod::ALIGN_HOR;
-	return AlignMethod::ALIGN_VER;
+		return AlignMethod::HOR;
+	return AlignMethod::VER;
 }
 
 AlignSettings AAlignerConfig::getSettings() const{

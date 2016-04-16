@@ -49,9 +49,9 @@ void LinearAligner::align( AContainer& container, AProcessWatcher* watcher ) con
 	
 	for( unsigned i=0; i<container.count(); i++ ){
 		switch( method ){
-			case AlignMethod::ALIGN_BOTH: container.setPos( i, { hor(i), ver(i) } ); break;
-			case AlignMethod::ALIGN_VER:  container.setPos( i, { 0, ver(i) } ); break;
-			case AlignMethod::ALIGN_HOR:  container.setPos( i, { hor(i), 0 } ); break;
+			case AlignMethod::BOTH: container.setPos( i, { hor(i), ver(i) } ); break;
+			case AlignMethod::VER:  container.setPos( i, { 0, ver(i) } ); break;
+			case AlignMethod::HOR:  container.setPos( i, { hor(i), 0 } ); break;
 		};
 	}
 }

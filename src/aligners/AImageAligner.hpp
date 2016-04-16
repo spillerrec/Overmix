@@ -32,16 +32,16 @@ class AProcessWatcher;
 class ImageContainer;
 
 enum class AlignMethod{
-		ALIGN_BOTH
-	,	ALIGN_VER
-	,	ALIGN_HOR
+		BOTH
+	,	VER
+	,	HOR
 };
 
 struct AlignSettings{
 	AlignMethod method;
 	double movement;
 	
-	AlignSettings( AlignMethod method=AlignMethod::ALIGN_BOTH, double movement=1.0 )
+	AlignSettings( AlignMethod method=AlignMethod::BOTH, double movement=1.0 )
 		: method(method), movement(movement) { }
 };
 
