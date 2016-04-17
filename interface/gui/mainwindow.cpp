@@ -633,24 +633,26 @@ void main_widget::applyModifications(){
 }
 
 void main_widget::updateSelection(){
-	//TODO: use make_unique
+	auto getIndex = [&]( QString title, QString label, int max_value, auto on_accept ){
+			bool ok = false;
+			auto result = QInputDialog::getInt( this, title, label, 1, 1, max_value, 1, &ok );
+			if( ok )
+				on_accept( result - 1 );
+		};
+	
 	switch( ui->selection_selector->currentIndex() ){
-		case 1: {
-				auto group_count = images.groupAmount();
-				bool ok;
-				auto group = QInputDialog::getInt( this, tr( "Select group" ), tr( "Select the group number" )
-					,	0, 0, group_count-1, 1, &ok );
-				if( ok )
-					selection = std::unique_ptr<AContainer>( new DelegatedContainer( images.getGroup( group ) ) );
-			} break;
+		case 1:
+				getIndex( tr( "Select group" ), tr( "Select the group number" ), images.groupAmount()
+					, [&]( int index ){
+						selection = std::make_unique<DelegatedContainer>( images.getGroup( index ) );
+					} );
+			break;
 		case 2: { //Select frame
 				auto frames = images.getFrames();
-				auto frame_count = frames.size();
-				bool ok;
-				auto frame = QInputDialog::getInt( this, tr( "Select frame" ), tr( "Select the frame number" )
-					,	0, 0, frame_count-1, 1, &ok );
-				if( ok )
-					selection = std::unique_ptr<AContainer>( new FrameContainer( images, frames[frame] ) );
+				getIndex( tr( "Select frame" ), tr( "Select the frame number" ), frames.size()
+					, [&]( int index ){
+						selection = std::make_unique<FrameContainer>( images, frames[index] );
+					} );
 			} break;
 			
 		case 3: QMessageBox::warning( this, tr("Not implemented"), tr("Custom selection not yet implemented") );
