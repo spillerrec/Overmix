@@ -21,7 +21,7 @@
 #include "AverageRender.hpp"
 #include "../planes/ImageEx.hpp"
 #include "../containers/AContainer.hpp"
-#include <QDebug>
+#include "../utils/AProcessWatcher.hpp"
 
 
 using namespace std;

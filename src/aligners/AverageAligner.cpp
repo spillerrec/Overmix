@@ -18,6 +18,7 @@
 
 #include "AverageAligner.hpp"
 #include "../renders/AverageRender.hpp"
+#include "../utils/AProcessWatcher.hpp"
 
 using namespace Overmix;
 

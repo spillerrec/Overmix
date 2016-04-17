@@ -21,6 +21,7 @@
 
 #include "../aligners/AImageAligner.hpp"
 #include "../planes/ImageEx.hpp"
+#include "../utils/AProcessWatcher.hpp"
 #include "../utils/PlaneUtils.hpp"
 
 #include <QTime>

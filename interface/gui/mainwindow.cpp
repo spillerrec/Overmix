@@ -19,6 +19,7 @@
 #include "ui_mainwindow.h"
 #include "mainwindow.hpp"
 
+#include "ProgressWatcher.hpp"
 #include "viewer/imageCache.h"
 
 #include "FullscreenViewer.hpp"
@@ -32,13 +33,12 @@
 #include "containers/ImageContainer.hpp"
 #include "containers/ImageContainerSaver.hpp"
 #include "utils/Animator.hpp"
+#include "utils/AProcessWatcher.hpp"
 #include "utils/ImageLoader.hpp"
 
 #include "savers/DumpSaver.hpp"
 #include "visualisations/MovementGraph.hpp"
 #include "Spinbox2D.hpp"
-
-#include "debug.hpp"
 
 #include <vector>
 #include <utility>
@@ -55,33 +55,12 @@
 #include <QImageReader>
 #include <QPainter>
 #include <QFileDialog>
-#include <QProgressDialog>
 #include <QTime>
 #include <QtConcurrent>
 #include <QSettings>
 
 using namespace Overmix;
 
-class DialogWatcher : public AProcessWatcher{
-	private:
-		QProgressDialog dialog;
-	public:
-		DialogWatcher( QWidget* parent, QString label ) : dialog( parent ) {
-			dialog.setLabelText( label );
-			dialog.setWindowModality( Qt::WindowModal );
-			dialog.setMinimum( 0 );
-			dialog.setValue( 0 );
-		}
-		virtual void setTotal( int total ) override{
-			dialog.setMaximum( total );
-		}
-		virtual void setCurrent( int current ) override{
-			dialog.setValue( current );
-		}
-		virtual int getCurrent() const override{ return dialog.value(); }
-		
-		virtual bool shouldCancel() const override{ return dialog.wasCanceled(); }
-};
 
 void foldableGroupBox( QWidget* widget, bool enabled, QGroupBox* box ){
 	auto update = [=]( bool checked )
@@ -240,7 +219,7 @@ void main_widget::closeEvent( QCloseEvent *event ){
 
 
 void main_widget::process_urls( QStringList files ){
-	DialogWatcher watcher( this, tr("Loading images") );
+	ProgressWatcher watcher( this, tr("Loading images") );
 	ImageLoader::loadImages( files, images, detelecine, alpha_mask, &watcher );
 	
 	clear_cache();
@@ -330,7 +309,7 @@ std::unique_ptr<ARender> main_widget::getRender() const
 	{ return render_config.getRender(); }
 
 ImageEx main_widget::renderImage( const AContainer& container ){
-	DialogWatcher watcher( this, "Rendering" );
+	ProgressWatcher watcher( this, "Rendering" );
 	
 	return getRender()->render( container, &watcher );
 }
@@ -501,7 +480,7 @@ void main_widget::clear_image(){
 void main_widget::alignImage(){
 	Timer t( "alignImage" );
 	clear_cache(); //Prevent any animation from running
-	DialogWatcher watcher( this, "Aligning" );
+	ProgressWatcher watcher( this, "Aligning" );
 	
 	auto aligner = aligner_config.getAligner();
 	if( ui->cbx_each_frame->isChecked() ){
@@ -637,7 +616,7 @@ void main_widget::applyModifications(){
 	Point<double> scale( ui->pre_scale_width->value(), ui->pre_scale_height->value() );
 	
 	auto& container = getAlignedImages();
-	DialogWatcher( this, "Applying modifications" ).loopAll( container.count(), [&]( int i ){
+	ProgressWatcher( this, "Applying modifications" ).loopAll( container.count(), [&]( int i ){
 			if( deviation > 0.0009 && dev_iterations > 0 )
 				container.imageRef( i ).apply( &Plane::deconvolve_rl, deviation_both, dev_iterations );
 			

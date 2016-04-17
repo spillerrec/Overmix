@@ -21,6 +21,7 @@
 #include "../renders/FloatRender.hpp"
 #include "../containers/ImageContainer.hpp"
 #include "../containers/FrameContainer.hpp"
+#include "../utils/AProcessWatcher.hpp"
 
 using namespace Overmix;
 

@@ -26,6 +26,7 @@
 #include "../renders/ARender.hpp"
 #include "../debug.hpp"
 #include "../containers/DelegatedContainer.hpp"
+#include "../utils/AProcessWatcher.hpp"
 
 using namespace std;
 using namespace Overmix;

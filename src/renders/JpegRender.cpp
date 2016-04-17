@@ -23,7 +23,7 @@
 #include "../planes/ImageEx.hpp"
 #include "../containers/AContainer.hpp"
 #include "../containers/ImageContainer.hpp"
-#include <QImage>
+#include "../utils/AProcessWatcher.hpp"
 
 
 using namespace std;

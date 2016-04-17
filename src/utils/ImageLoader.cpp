@@ -17,6 +17,7 @@
 
 #include "ImageLoader.hpp"
 
+#include "AProcessWatcher.hpp"
 #include "../Deteleciner.hpp"
 #include "../planes/ImageEx.hpp"
 #include "../renders/ARender.hpp"

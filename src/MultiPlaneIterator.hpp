@@ -26,6 +26,7 @@
 #include "planes/Plane.hpp"
 #include "color.hpp"
 #include "renders/ARender.hpp"
+#include "utils/AProcessWatcher.hpp"
 
 namespace Overmix{
 

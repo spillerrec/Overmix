@@ -19,6 +19,7 @@
 #include "RecursiveAligner.hpp"
 #include "../containers/ImageContainer.hpp"
 #include "../renders/AverageRender.hpp"
+#include "../utils/AProcessWatcher.hpp"
 #include "../utils/PlaneUtils.hpp"
 
 #include <limits>

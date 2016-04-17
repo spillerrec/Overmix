@@ -21,6 +21,7 @@
 #include "../containers/AContainer.hpp"
 #include "../planes/ImageEx.hpp"
 #include "../color.hpp"
+#include "../utils/AProcessWatcher.hpp"
 
 #include <QDebug>
 #include <QRectF>
