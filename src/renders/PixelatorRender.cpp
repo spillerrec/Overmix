@@ -62,7 +62,7 @@ struct Result{
 struct ResultsVector{
 	vector<Result> results;
 	
-	ResultsVector( const Histogram& h, unsigned io=8 ){
+	ResultsVector( const Histogram& h ){
 		//TODO: throw exception on h<=2
 		for( unsigned is=2; is<h.size()/4; is++ ) //Pixels at least 2 wide, up-scaling it with 2x to 4px
 			for( unsigned io=0; io<is; io++ )
@@ -112,8 +112,8 @@ ImageEx PixelatorRender::render( const AContainer& aligner, AProcessWatcher* wat
 	normalize( histo_v );
 	normalize( histo_h );
 	
-	auto v = ResultsVector( histo_v, 8 ).maximum();
-	auto h = ResultsVector( histo_h, 5 ).maximum();
+	auto v = ResultsVector( histo_v ).maximum();
+	auto h = ResultsVector( histo_h ).maximum();
 	
 	for( unsigned i=0; i<avg.size(); i++ ){
 		PlaneBase<precision_color_type> pixels( avg.getSize() );
