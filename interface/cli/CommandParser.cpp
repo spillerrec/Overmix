@@ -27,10 +27,26 @@
 #include <QFileInfo>
 #include <QImage>
 #include <QStringList>
+#include <QDebug>
 
 #include <vector>
 
 using namespace Overmix;
+
+static void printHelp(){
+	QTextStream std( stdout );
+	
+	std << "OvermixCli [files]... [--command=arguments]...\n\n";
+	
+	std << "Available commands:\n";
+	std << "\t" << "--pre-process\n";
+	std << "\t" << "--align\n";
+	std << "\t" << "--render\n";
+	std << "\t" << "--post-process\n";
+	std << "\t" << "--save\n";
+	std << "\t" << "--no-gui\n";
+	std << "\t" << "--help\n";
+}
 
 
 struct Command{
@@ -84,6 +100,11 @@ void CommandParser::parse( QStringList commands ){
 			Splitter args( cmd.arguments(), ':' );
 			auto id = requireBound( asInt( args.left ), 0, renders.size() );
 			renders[id].to_qimage().save( args.right );
+		}
+		else if( cmd.is( "help" ) )
+			printHelp();
+		else{
+			qWarning() << "Unknown command:" << cmd.parts.left;
 		}
 	}
 	
