@@ -62,6 +62,8 @@ void ImageContainer::addGroup( QString name, unsigned group, unsigned from, unsi
 	
 	//Resize first group
 	from_group.resize( from );
+	
+	rebuildIndexes();
 }
 
 bool ImageContainer::removeGroups( unsigned from, unsigned amount ){
