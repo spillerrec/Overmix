@@ -116,7 +116,7 @@ class SeperateAlignerConfig : public AAlignerConfig{
 		SeperateAlignerConfig( QWidget* parent );
 		std::unique_ptr<AAligner> getAligner() const override;
 		
-		QString name() const override { return "Seperate Frames"; }
+		QString name() const override { return "Separate Frames"; }
 		QString discription() const override{ return "Detects cyclic animation by assuming each animation-frame is repeated at least twice"; }
 };
 

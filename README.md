@@ -28,7 +28,6 @@ Development is now geared towards understanding the more theoretical parts about
 - Separation of foreground and background in slides where foreground and background moves with different speeds
 - MPEG2 decoder for minimizing MPEG2 compression artefacts, which should help especially with motion compensation.
 - Revamp GUI so it is more easy to add advanced settings for operations
-- Maybe including the de-mosaic censor technique in the GUI
 - Command line interface
 
 ### Future work
@@ -36,6 +35,15 @@ Development is now geared towards understanding the more theoretical parts about
 - Detection of zooming and rotation
 - Figuring out how features such as animation detection and separation of fore/back-ground can be combined
 - Support saving as 16-bit PNG (loading is supported)
+
+###How to contribute
+Even if you know nothing about programming, there are several ways to contribute:
+
+- If it currently does not solve all your needs, make a feature request on the [issue tracker](https://github.com/spillerrec/Overmix/issues), or comment on an existing one.
+- If you fail to stitch an image properly, create an issue and share a link to the input images. Either I can help find you the right settings, or identify a current limitation of Overmix.
+- If you can't figure out how to use some part of the program even after checking the wiki (or even it was just difficult), create an issue/bug report. This mean that either the interface is not intuitive enough, documentation is lacking, or the documentation is not clear enough.
+
+If you do not want to create a Github user, feel free to send me an email at spillerrec@gmail.com about anything.
 
 ### The Dump format
 
@@ -64,16 +72,17 @@ Several tools related to the format have been developed, most importantly an app
 - fftw3
 - pugixml
 - lcms2 (required for GUI)
+- QCharts (required for GUI, [open-sourced as of Qt 5.7](http://blog.qt.io/blog/2016/01/13/new-agreement-with-the-kde-free-qt-foundation/))
 - google/benchmark (required for unit-benchmarking)
 
 *Building*
 
-1. cmake -DCMAKE_BUILD_TYPE=release
-2. make
+1. `cmake -DCMAKE_BUILD_TYPE=release`
+2. `make`
 
 It is recormended to build in a seperate folder, as cmake polutes the all the directories otherwise. You can do it like this:
 
-1. mkdir release
-2. cd release
-3. cmake ../ -DCMAKE_BUILD_TYPE=release
-4. make
+1. `mkdir release`
+2. `cd release`
+3. `cmake ../ -DCMAKE_BUILD_TYPE=release`
+4. `make`
