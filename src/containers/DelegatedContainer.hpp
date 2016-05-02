@@ -45,6 +45,8 @@ class ConstDelegatedContainer : public AContainer{
 		virtual void setFrame( unsigned, int ) override{ throw const_exception(); }
 		virtual void setPos( unsigned, Point<double> ) override{ throw const_exception(); }
 		
+		virtual const AComparator* getComparator() const override{ return container.getComparator(); }
+		
 	public:
 		ConstDelegatedContainer( const AContainer& container ) : container(container) { }
 };

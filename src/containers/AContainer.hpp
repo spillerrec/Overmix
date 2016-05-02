@@ -25,6 +25,8 @@ namespace Overmix{
 
 class ImageEx;
 class Plane;
+class AComparator;
+struct ImageOffset;
 enum class ScalingFunction;
 
 class AContainer{
@@ -44,6 +46,10 @@ class AContainer{
 		virtual ~AContainer() { }
 		
 		virtual const Plane& plane( unsigned index ) const;
+		
+	public: //TODO: Add
+		virtual const AComparator* getComparator() const = 0;
+	//	virtual ImageOffset findOffset( unsigned, unsigned ) = 0;
 		
 	public:
 		void cropImage( unsigned index, unsigned left, unsigned top, unsigned right, unsigned bottom );

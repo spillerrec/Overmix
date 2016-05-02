@@ -23,6 +23,7 @@
 #include "../planes/Plane.hpp"
 #include "../planes/ImageEx.hpp"
 #include "../utils/PlaneUtils.hpp"
+#include "../comparators/GradientComparator.hpp" //TODO: remove the need of this
 
 #include <vector>
 
@@ -30,12 +31,6 @@ namespace Overmix{
 
 class AProcessWatcher;
 class ImageContainer;
-
-enum class AlignMethod{
-		BOTH
-	,	VER
-	,	HOR
-};
 
 struct AlignSettings{
 	AlignMethod method;

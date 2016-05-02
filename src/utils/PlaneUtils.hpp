@@ -18,7 +18,7 @@
 #ifndef PLANE_UTILS_HPP
 #define PLANE_UTILS_HPP
 
-#include "../planes/Plane.hpp"
+#include "../planes/ImageEx.hpp"
 #include "../color.hpp"
 
 namespace Overmix{

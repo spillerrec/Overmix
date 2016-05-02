@@ -44,6 +44,10 @@ set(SOURCES_ALIGNERS
 	aligners/SuperResAligner.cpp
 	)
 	
+set(SOURCES_COMPARATORS
+	comparators/GradientComparator.cpp
+	)
+	
 set(SOURCES_RENDERS
 	renders/AnimRender.cpp
 	renders/AverageRender.cpp
@@ -79,5 +83,5 @@ else( WIN32 )
 	set(PLATFORM_LIBRARIES ${PLATFORM_LIBRARIES} -lfftw3)
 endif( WIN32 )
 
-add_library(OvermixCore ${SOURCES_CONTAINERS} ${SOURCES_PLANES} ${SOURCES_ALIGNERS} ${SOURCES_RENDERS} ${SOURCES_DEGRADERS} ${SOURCES_OTHERS} )
+add_library(OvermixCore ${SOURCES_CONTAINERS} ${SOURCES_PLANES} ${SOURCES_ALIGNERS} ${SOURCES_COMPARATORS} ${SOURCES_RENDERS} ${SOURCES_DEGRADERS} ${SOURCES_OTHERS} )
 target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -lm -lpng -ljpeg -lz -llzma -lpugixml ${PLATFORM_LIBRARIES})

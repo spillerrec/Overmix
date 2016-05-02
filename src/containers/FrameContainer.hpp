@@ -44,6 +44,8 @@ class FrameContainer : public AContainer{
 		virtual void setFrame( unsigned index, int           newVal ) override{ container.setFrame( realIndex(index), newVal ); }
 		virtual void setMask(  unsigned index, int           id     ) override{ container.setMask( index, id ); }
 		
+		virtual const AComparator* getComparator() const override{ return container.getComparator(); }
+		
 	public:
 		FrameContainer( AContainer& container, int frame ) : container(container) {
 			for( unsigned i=0; i<container.count(); i++ )

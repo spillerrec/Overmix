@@ -61,12 +61,14 @@ class ImageItem{
 
 class ImageGroup : public AContainer{
 	public:
+		const AComparator* comparator{ nullptr };
 		QString name;
 		std::vector<ImageItem> items;
 		const std::vector<Plane>* masks;
 		
 		ImageGroup() : masks{nullptr} { } //NOTE: don't use this!
-		ImageGroup( QString name, const std::vector<Plane>& masks ) : name(name), masks(&masks) { }
+		ImageGroup( AComparator* comparator, QString name, const std::vector<Plane>& masks )
+			:	comparator(comparator), name(name), masks(&masks) { }
 		
 		std::vector<ImageItem>::iterator        begin()       { return items.begin(); }
 		std::vector<ImageItem>::const_iterator  begin()  const{ return items.begin(); }
@@ -87,6 +89,9 @@ class ImageGroup : public AContainer{
 		virtual void setPos( unsigned index, Point<double> newVal ) override{     items[index].offset = newVal; }
 		
 		virtual void setFrame( unsigned index, int newVal ) override{ items[index].frame = newVal; }
+		
+	public:
+		const AComparator* getComparator() const override{ return comparator; };
 };
 
 }
