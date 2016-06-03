@@ -50,7 +50,8 @@ class AContainer{
 		
 	public: //TODO: Add
 		virtual const AComparator* getComparator() const = 0;
-	//	virtual ImageOffset findOffset( unsigned, unsigned ) = 0;
+		virtual ImageOffset findOffset( unsigned, unsigned );
+		virtual bool hasCachedOffset( unsigned, unsigned ) { return false; }
 		
 	public:
 		void cropImage( unsigned index, unsigned left, unsigned top, unsigned right, unsigned bottom );

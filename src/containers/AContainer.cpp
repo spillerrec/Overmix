@@ -19,6 +19,7 @@
 #include "AContainer.hpp"
 
 #include "../planes/ImageEx.hpp"
+#include "../comparators/AComparator.hpp"
 
 #include <stdexcept>
 
@@ -138,4 +139,9 @@ std::vector<int> AContainer::getFrames() const{
 		frames.push_back( -1 );
 	
 	return frames;
+}
+
+ImageOffset AContainer::findOffset( unsigned index1, unsigned index2 ){
+	qDebug( "Slow, non-remembering AContainer::findOffset() used" );
+	return getComparator()->findOffset( plane(index1), plane(index2), alpha(index1), alpha(index2) );
 }

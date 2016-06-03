@@ -26,8 +26,8 @@ namespace Overmix{
 class ImageContainer : public AContainer{
 	public:
 		GradientComparator comparator; //TODO: Make virtual?
-	
-	public:
+		
+	private:
 		/** A index to an ImageItem */
 		struct ImagePosition{
 			unsigned group;
@@ -35,10 +35,43 @@ class ImageContainer : public AContainer{
 			ImagePosition( unsigned group, unsigned index ) : group(group), index(index) { }
 		};
 		
+		class IndexCache{
+			private:
+				/** A ImageOffset which might not contain a valid value */
+				struct CachedOffset : public ImageOffset{
+					CachedOffset() : ImageOffset( {0,0}, -1, -1 ) { }
+					CachedOffset( ImageOffset copy ) : ImageOffset( copy ) { }
+					
+					bool isCached() const{ return overlap >= 0.0; }
+				};
+				
+			private:
+				std::vector<ImagePosition> indexes;
+				std::vector<std::vector<CachedOffset>> offsets;
+				
+			public: //Modify
+				void reserve( unsigned amount );
+				void push_back( ImagePosition position );
+				void setOffset( unsigned, unsigned, ImageOffset );
+				void invalidate( const std::vector<ImageGroup>& groups );
+				void clear(){
+					indexes.clear();
+					offsets.clear();
+				}
+				
+			public: //Accessors
+				ImagePosition getImage( unsigned index ) const{ return indexes[index]; }
+				bool hasOffset( unsigned, unsigned ) const;
+				ImageOffset getOffset( unsigned, unsigned ) const;
+				auto size() const{ return indexes.size(); }
+		};
+		
+	private:
+		
 	private:
 		std::vector<ImageGroup> groups;
 		std::vector<Plane> masks;
-		std::vector<ImagePosition> indexes;
+		IndexCache index_cache;
 		
 		bool aligned{ false };
 		
@@ -50,7 +83,7 @@ class ImageContainer : public AContainer{
 		void clear(){
 			groups.clear();
 			masks.clear();
-			indexes.clear();
+			index_cache.clear();
 		}
 		void clearMasks(){
 			for( unsigned i=0; i<count(); i++ )
@@ -79,6 +112,7 @@ class ImageContainer : public AContainer{
 		
 	public: //AContainer comparators implementation
 		const AComparator* getComparator() const override{ return &comparator; }
+		ImageOffset findOffset( unsigned, unsigned ) override;
 		
 	public:
 		bool isAligned() const{ return aligned; }
@@ -104,7 +138,7 @@ class ImageContainer : public AContainer{
 		void removeImage( unsigned group, unsigned img );
 		
 		bool removeGroups( unsigned from, unsigned amount );
-		void rebuildIndexes();
+		void rebuildIndexes(){ index_cache.invalidate( groups ); } //TODO: This is used in JpegRender of some reason, it should not be needed!
 		
 		void onAllItems( void update( ImageItem& item ) );
 
