@@ -19,6 +19,7 @@
 #define COLOR_HPP
 
 #include <algorithm>
+#include <cstdint>
 #include <cmath>
 #include <limits>
 

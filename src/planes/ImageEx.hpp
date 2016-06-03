@@ -20,7 +20,7 @@
 
 #include "Plane.hpp"
 #include "ColorSpace.hpp"
-#include <algorithm>
+#include <numeric>
 #include <vector>
 
 class QImage;

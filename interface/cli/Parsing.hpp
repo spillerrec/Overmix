@@ -22,8 +22,9 @@
 
 #include <QString>
 
-#include <stdexcept>
 #include <memory>
+#include <stdexcept>
+#include <vector>
 
 namespace Overmix{
 

@@ -19,6 +19,7 @@
 #define A_CONTAINER_HPP
 
 #include "../Geometry.hpp"
+#include <vector>
 #include <utility>
 
 namespace Overmix{
