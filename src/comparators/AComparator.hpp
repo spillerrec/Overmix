@@ -34,8 +34,9 @@ struct ImageOffset{
 };
 
 class AComparator{
-	virtual ModifiedPlane process( const Plane& plane ){ return { plane }; }
-	virtual ImageOffset findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ) const = 0;
+	public:
+		virtual ModifiedPlane process( const Plane& plane ){ return { plane }; }
+		virtual ImageOffset findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ) const = 0;
 };
 
 }
