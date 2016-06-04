@@ -96,17 +96,18 @@ void ImageContainer::addGroup( QString name, unsigned group, unsigned from, unsi
 	index_cache.invalidate( groups );
 }
 
+bool ImageContainer::hasCachedOffset( unsigned index1, unsigned index2 ) const
+	{ return index_cache.hasOffset( index1, index2 ); }
+
 ImageOffset ImageContainer::getCachedOffset( unsigned index1, unsigned index2 ) const {
 	if( index_cache.hasOffset( index1, index2 ) )
 		return index_cache.getOffset( index1, index2 );
 	else
 		throw std::logic_error( "ImageContainer::getCachedOffset - cache not available" );
-	qDebug( "Stored offset" );
 }
 
-void ImageContainer::setCachedOffset( unsigned index1, unsigned index2, ImageOffset offset ) {
-	index_cache.setOffset( index1, index2, offset );
-}
+void ImageContainer::setCachedOffset( unsigned index1, unsigned index2, ImageOffset offset )
+	{ index_cache.setOffset( index1, index2, offset ); }
 
 bool ImageContainer::removeGroups( unsigned from, unsigned amount ){
 	if( !util::removeItems( groups, from, amount ) )
