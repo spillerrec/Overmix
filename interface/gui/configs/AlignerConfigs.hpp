@@ -152,6 +152,15 @@ class SuperResAlignerConfig : public AAlignerConfig{
 		QString discription() const override{ return "Aligns against the super-resolution image"; }
 };
 
+class ClusterAlignerConfig : public AAlignerConfig{
+	public:
+		ClusterAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
+		std::unique_ptr<AAligner> getAligner() const override;
+		
+		QString name() const override { return "Cluster animation"; }
+		QString discription() const override{ return "Tries to seperate frames through clustering"; }
+};
+
 }
 
 #endif

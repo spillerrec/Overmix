@@ -37,6 +37,7 @@ set(SOURCES_PLANES
 set(SOURCES_ALIGNERS
 	aligners/AImageAligner.cpp
 	aligners/AverageAligner.cpp
+	aligners/ClusterAligner.cpp
 	aligners/RecursiveAligner.cpp
 	aligners/AnimationSeparator.cpp
 	aligners/FrameAligner.cpp

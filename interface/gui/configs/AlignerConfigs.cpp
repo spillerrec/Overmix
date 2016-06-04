@@ -20,6 +20,7 @@
 
 #include "aligners/AnimationSeparator.hpp"
 #include "aligners/AverageAligner.hpp"
+#include "aligners/ClusterAligner.hpp"
 #include "aligners/FakeAligner.hpp"
 #include "aligners/FrameAligner.hpp"
 #include "aligners/FrameCalculatorAligner.hpp"
@@ -46,6 +47,7 @@ void AlignerConfigChooser::p_initialize(){
 	addConfig<AlignFrameAlignerConfig>();
 	addConfig<FrameCalculatorAlignerConfig>();
 	addConfig<SuperResAlignerConfig>();
+	addConfig<ClusterAlignerConfig>();
 }
 
 
@@ -164,4 +166,7 @@ std::unique_ptr<AAligner> FrameCalculatorAlignerConfig::getAligner() const{
 
 std::unique_ptr<AAligner> SuperResAlignerConfig::getAligner() const
 	{ return std::make_unique<SuperResAligner>( getMethod(), getScale() ); }
+
+std::unique_ptr<AAligner> ClusterAlignerConfig::getAligner() const
+	{ return std::make_unique<ClusterAligner>(); }
 
