@@ -53,6 +53,7 @@ set(SOURCES_RENDERS
 	renders/AverageRender.cpp
 	renders/FloatRender.cpp
 	renders/DiffRender.cpp
+	renders/DistanceMatrixRender.cpp
 	renders/PlaneRender.cpp
 	renders/StatisticsRender.cpp
 	renders/PixelatorRender.cpp

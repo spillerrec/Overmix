@@ -141,7 +141,22 @@ std::vector<int> AContainer::getFrames() const{
 	return frames;
 }
 
+void AContainer::setCachedOffset( unsigned, unsigned, ImageOffset ){
+	qDebug( "No caching of alignment offsets implemented in this container" );
+}
+
+ImageOffset AContainer::getCachedOffset( unsigned index1, unsigned index2 ) const{
+	if( hasCachedOffset( index1, index2 ) )
+		throw std::logic_error( "AContainer::getCachedOffset not implemented!" );
+	else
+		throw std::logic_error( "AContainer::getCachedOffset called when hasCachedOffset returned false" );
+}
+
 ImageOffset AContainer::findOffset( unsigned index1, unsigned index2 ){
-	qDebug( "Slow, non-remembering AContainer::findOffset() used" );
-	return getComparator()->findOffset( plane(index1), plane(index2), alpha(index1), alpha(index2) );
+	if( hasCachedOffset( index1, index2 ) )
+		return getCachedOffset( index1, index2 );
+	
+	auto offset = getComparator()->findOffset( plane(index1), plane(index2), alpha(index1), alpha(index2) );
+	setCachedOffset( index1, index2, offset );
+	return offset;
 }

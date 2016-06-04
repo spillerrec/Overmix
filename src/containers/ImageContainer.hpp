@@ -37,17 +37,8 @@ class ImageContainer : public AContainer{
 		
 		class IndexCache{
 			private:
-				/** A ImageOffset which might not contain a valid value */
-				struct CachedOffset : public ImageOffset{
-					CachedOffset() : ImageOffset( {0,0}, -1, -1 ) { }
-					CachedOffset( ImageOffset copy ) : ImageOffset( copy ) { }
-					
-					bool isCached() const{ return overlap >= 0.0; }
-				};
-				
-			private:
 				std::vector<ImagePosition> indexes;
-				std::vector<std::vector<CachedOffset>> offsets;
+				std::vector<std::vector<ImageOffset>> offsets;
 				
 			public: //Modify
 				void reserve( unsigned amount );
@@ -112,7 +103,8 @@ class ImageContainer : public AContainer{
 		
 	public: //AContainer comparators implementation
 		const AComparator* getComparator() const override{ return &comparator; }
-		ImageOffset findOffset( unsigned, unsigned ) override;
+		virtual ImageOffset getCachedOffset( unsigned, unsigned ) const override;
+		virtual void        setCachedOffset( unsigned, unsigned, ImageOffset ) override;
 		
 	public:
 		bool isAligned() const{ return aligned; }

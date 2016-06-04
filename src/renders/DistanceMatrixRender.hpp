@@ -15,30 +15,17 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef A_COMPARATOR_HPP
-#define A_COMPARATOR_HPP
+#ifndef DISTANCE_MATRIX_RENDER_HPP
+#define DISTANCE_MATRIX_RENDER_HPP
 
-#include "../Geometry.hpp"
-#include "../utils/PlaneUtils.hpp"
+#include "ARender.hpp"
+
 
 namespace Overmix{
 
-class Plane;
-
-struct ImageOffset{
-	Point<double> distance;
-	double error;
-	double overlap;
-	ImageOffset() : distance( 0,0 ), error( -1 ), overlap( -1 ) { }
-	ImageOffset( Point<double> distance, double error, double overlap )
-		: distance(distance), error(error), overlap(overlap) { }
-	bool isValid() const{ return overlap >= 0.0; }
-};
-
-class AComparator{
+class DistanceMatrixRender : public ARender{
 	public:
-		virtual ModifiedPlane process( const Plane& plane ){ return { plane }; }
-		virtual ImageOffset findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ) const = 0;
+		ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
 
 }

@@ -19,6 +19,7 @@
 #define DELEGATED_CONTAINER_HPP
 
 #include "AContainer.hpp"
+#include "../comparators/AComparator.hpp"
 
 #include <exception>
 
@@ -46,6 +47,11 @@ class ConstDelegatedContainer : public AContainer{
 		virtual void setPos( unsigned, Point<double> ) override{ throw const_exception(); }
 		
 		virtual const AComparator* getComparator() const override{ return container.getComparator(); }
+		virtual bool        hasCachedOffset( unsigned i, unsigned j ) const override
+			{ return container.hasCachedOffset( i, j ); }
+		virtual ImageOffset getCachedOffset( unsigned i, unsigned j ) const override
+			{ return container.getCachedOffset( i, j ); }
+		virtual void setCachedOffset( unsigned i, unsigned j, ImageOffset offset ){ throw const_exception(); }
 		
 	public:
 		ConstDelegatedContainer( const AContainer& container ) : container(container) { }
@@ -60,6 +66,7 @@ class DelegatedContainer : public ConstDelegatedContainer{
 		virtual void setPos( unsigned index, Point<double> pos ) override{ container.setPos( index, pos ); }
 		virtual void setFrame( unsigned index, int frame ) override{ container.setFrame( index, frame ); }
 		virtual void setMask( unsigned index, int id ) override { container.setMask( index, id ); }
+		virtual void setCachedOffset( unsigned i, unsigned j, ImageOffset offset ) override { container.setCachedOffset( i, j, offset ); }
 		
 	public:
 		DelegatedContainer( AContainer& container ) : ConstDelegatedContainer(container), container(container) { }

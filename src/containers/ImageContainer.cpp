@@ -46,7 +46,7 @@ void ImageContainer::IndexCache::setOffset( unsigned index1, unsigned index2, Im
 	{ offsets[index1][index2] = { offset }; }
 
 bool ImageContainer::IndexCache::hasOffset( unsigned index1, unsigned index2 ) const
-	{ return offsets[index1][index2].isCached(); }
+	{ return offsets[index1][index2].isValid(); }
 
 ImageOffset ImageContainer::IndexCache::getOffset( unsigned index1, unsigned index2 ) const
 	{ return offsets[index1][index2]; }
@@ -96,13 +96,16 @@ void ImageContainer::addGroup( QString name, unsigned group, unsigned from, unsi
 	index_cache.invalidate( groups );
 }
 
-ImageOffset ImageContainer::findOffset( unsigned index1, unsigned index2 ){
+ImageOffset ImageContainer::getCachedOffset( unsigned index1, unsigned index2 ) const {
 	if( index_cache.hasOffset( index1, index2 ) )
 		return index_cache.getOffset( index1, index2 );
-	
-	auto offset = AContainer::findOffset( index1, index2 );
+	else
+		throw std::logic_error( "ImageContainer::getCachedOffset - cache not available" );
+	qDebug( "Stored offset" );
+}
+
+void ImageContainer::setCachedOffset( unsigned index1, unsigned index2, ImageOffset offset ) {
 	index_cache.setOffset( index1, index2, offset );
-	return offset;
 }
 
 bool ImageContainer::removeGroups( unsigned from, unsigned amount ){

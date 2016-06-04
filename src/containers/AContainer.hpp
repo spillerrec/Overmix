@@ -48,10 +48,12 @@ class AContainer{
 		
 		virtual const Plane& plane( unsigned index ) const;
 		
-	public: //TODO: Add
+	public:
 		virtual const AComparator* getComparator() const = 0;
-		virtual ImageOffset findOffset( unsigned, unsigned );
-		virtual bool hasCachedOffset( unsigned, unsigned ) { return false; }
+		virtual bool        hasCachedOffset( unsigned, unsigned ) const{ return false; }
+		virtual ImageOffset getCachedOffset( unsigned, unsigned ) const;
+		virtual void        setCachedOffset( unsigned, unsigned, ImageOffset );
+		ImageOffset findOffset( unsigned, unsigned );
 		
 	public:
 		void cropImage( unsigned index, unsigned left, unsigned top, unsigned right, unsigned bottom );

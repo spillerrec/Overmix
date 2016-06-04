@@ -27,6 +27,7 @@
 #include "renders/RobustSrRender.hpp"
 #include "renders/EstimatorRender.hpp"
 #include "renders/JpegRender.hpp"
+#include "renders/DistanceMatrixRender.hpp"
 
 #include "../Spinbox2D.hpp"
 
@@ -56,6 +57,7 @@ void RenderConfigChooser::p_initialize(){
 	set( &addConfig<EstimatorRenderConfig>() );
 	set( &addConfig<PixelatorRenderConfig>() );
 	set( &addConfig<JpegRenderConfig>() );
+	set( &addConfig<DistanceMatrixRenderConfig>() );
 }
 
 std::unique_ptr<ARender> RenderConfigChooser::getRender() const
@@ -158,4 +160,8 @@ JpegRenderConfig::JpegRenderConfig( QWidget* parent ) : ARenderConfig( parent ) 
 
 std::unique_ptr<ARender> JpegRenderConfig::getRender() const
 	{ return std::make_unique<JpegRender>( path->text(), iterations->value() ); }
+
+
+std::unique_ptr<ARender> DistanceMatrixRenderConfig::getRender() const
+	{ return std::make_unique<DistanceMatrixRender>(); }
 

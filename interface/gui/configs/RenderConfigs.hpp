@@ -137,6 +137,15 @@ class JpegRenderConfig : public ARenderConfig{
 		QString discription() const override{ return "Estimates a JPEG degraded image"; }
 };
 
+class DistanceMatrixRenderConfig : public ARenderConfig{
+	public:
+		DistanceMatrixRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
+		std::unique_ptr<ARender> getRender() const override;
+		
+		QString name() const override { return "Alignment matrix"; }
+		QString discription() const override{ return "Shows which images have been compared, and their distance"; }
+};
+
 }
 
 #endif
