@@ -102,19 +102,19 @@ struct Cluster{
 		//Check if all clusters have images
 		for( unsigned id=0; id<amount; id++ )
 			assert( count( id ) > 0 );
-		
-		// Reorder the cluster ids so first occurance of an id is always higher than any seen before
-		//TODO:
-		
-		//NOTE: Debug
-		std::cout << "Results with " << amount << "clusters\n";
-		for( unsigned c=0; c<clusters.size(); c++ )
-			std::cout << c << " - " << clusters[c] << std::endl;
 	}
 	
 	void setFrames(){
+		std::vector<int> frame_ids( amount, -1 );
+		int found = 0;
+		
+		// Reorder the cluster ids so first occurance of an id is always higher than any seen before
+		for( auto& cluster : clusters )
+			if( frame_ids[cluster] == -1 )
+				frame_ids[cluster] = found++;
+			
 		for( unsigned i=0; i<container.count(); i++ )
-			container.setFrame( i, clusters[i] );
+			container.setFrame( i, frame_ids[clusters[i]] );
 	}
 };
 
