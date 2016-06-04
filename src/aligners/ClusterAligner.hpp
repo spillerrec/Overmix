@@ -28,6 +28,9 @@ class ClusterAligner : public AAligner{
 		unsigned max_groups{ 20 };
 	
 	public:
+		ClusterAligner() { }
+		ClusterAligner( unsigned min_groups, unsigned max_groups )
+			: min_groups(min_groups), max_groups(max_groups) { }
 		virtual void align( class AContainer& container, class AProcessWatcher* watcher=nullptr ) const override;
 };
 

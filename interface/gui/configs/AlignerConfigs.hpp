@@ -153,8 +153,12 @@ class SuperResAlignerConfig : public AAlignerConfig{
 };
 
 class ClusterAlignerConfig : public AAlignerConfig{
+	private:
+		QSpinBox* min_groups;
+		QSpinBox* max_groups;
+		
 	public:
-		ClusterAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
+		ClusterAlignerConfig( QWidget* parent );
 		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Cluster animation"; }

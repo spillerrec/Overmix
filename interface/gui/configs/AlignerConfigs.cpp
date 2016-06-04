@@ -129,6 +129,17 @@ SeperateAlignerConfig::SeperateAlignerConfig( QWidget* parent )
 	threshold->setSingleStep( 0.01 );
 }
 
+ClusterAlignerConfig::ClusterAlignerConfig( QWidget* parent )
+	:	AAlignerConfig( parent, DISABLE_ALL ) {
+	min_groups = addWidget<QSpinBox>( "Minimum frames" );
+	max_groups = addWidget<QSpinBox>( "Maximum frames" );
+	
+	min_groups->setRange( 1, 99 );
+	max_groups->setRange( 1, 99 );
+	min_groups->setValue(  1 );
+	max_groups->setValue( 20 );
+}
+
 
 std::unique_ptr<AAligner> AverageAlignerConfig::getAligner() const
 	{ return std::make_unique<AverageAligner>( getSettings(), getScale() ); }
@@ -168,5 +179,5 @@ std::unique_ptr<AAligner> SuperResAlignerConfig::getAligner() const
 	{ return std::make_unique<SuperResAligner>( getMethod(), getScale() ); }
 
 std::unique_ptr<AAligner> ClusterAlignerConfig::getAligner() const
-	{ return std::make_unique<ClusterAligner>(); }
+	{ return std::make_unique<ClusterAligner>( min_groups->value(), max_groups->value() ); }
 
