@@ -119,9 +119,12 @@ struct Cluster{
 };
 
 void ClusterAligner::align( AContainer& container, AProcessWatcher* watcher ) const {
+	ProgressWrapper( watcher ).setTotal( container.count() * container.count() );
 	for( unsigned i=0; i<container.count(); i++ )
-		for( unsigned j=0; j<container.count(); j++ )
+		for( unsigned j=0; j<container.count(); j++ ){
 			container.findOffset( i, j );
+			ProgressWrapper( watcher ).add( 1 );
+		}
 	
 	// Find the clustering which gives the best balance between amount of groups and distance
 	Cluster best( container, min_groups );
