@@ -78,7 +78,10 @@ struct Para{
 		return { sum, alpha };
 	}
 	
-	color_type abs(     unsigned i ) const{ return std::abs( c1[i] - c2[i] ); }
+	color_type abs(     unsigned i ) const{ 
+		auto val = color::asDouble( std::abs( c1[i] - c2[i] ) );
+		return color::fromDouble( val*val );
+	}
 	color_type checked( unsigned i ) const{ auto val = abs( i ); return val > epsilon ? val : 0; }
 	color_type alpha1(  unsigned i ) const{ return color::asDouble( a1[i] ); }
 	color_type alpha2(  unsigned i ) const{ return color::asDouble( a2[i] ); }
