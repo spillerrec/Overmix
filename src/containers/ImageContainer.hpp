@@ -24,8 +24,10 @@
 namespace Overmix{
 
 class ImageContainer : public AContainer{
-	public:
+	private:
 		GradientComparator comparator; //TODO: Make virtual?
+	public:
+		void setComparator( GradientComparator );
 		
 	private:
 		/** A index to an ImageItem */

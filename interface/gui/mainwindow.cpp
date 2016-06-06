@@ -28,6 +28,7 @@
 #include "debug.hpp"
 #include "renders/AnimRender.hpp"
 #include "Deteleciner.hpp"
+#include "comparators/GradientComparator.hpp"
 #include "containers/DelegatedContainer.hpp"
 #include "containers/FrameContainer.hpp"
 #include "containers/ImageContainer.hpp"
@@ -131,8 +132,14 @@ main_widget::main_widget( ImageContainer& images )
 	connect( ui->cbx_interlaced, SIGNAL( toggled(bool) ), this, SLOT( change_interlace() ) );
 	change_interlace();
 	
+	//Comparing changes
+	connect( ui->cbx_merge_h,    SIGNAL( toggled(bool)     ), this, SLOT( updateComparator() ) );
+	connect( ui->cbx_merge_v,    SIGNAL( toggled(bool)     ), this, SLOT( updateComparator() ) );
+	connect( ui->merge_movement, SIGNAL( valueChanged(int) ), this, SLOT( updateComparator() ) );
+	
 	//Groupboxes
 	foldableGroupBox( this, false, ui->preprocess_group  );
+	foldableGroupBox( this, false, ui->comparing_group   );
 	foldableGroupBox( this, true,  ui->merge_group       );
 	foldableGroupBox( this, false, ui->render_group      );
 	foldableGroupBox( this, false, ui->postprocess_group );
@@ -663,6 +670,21 @@ void main_widget::updateSelection(){
 	
 	clear_cache();
 	refresh_text();
+}
+
+void main_widget::updateComparator(){
+	GradientComparator g;
+	
+	auto ver = ui->cbx_merge_v->isChecked();
+	auto hor = ui->cbx_merge_h->isChecked();
+	if( hor && ver )
+		g.method = AlignMethod::BOTH;
+	else
+		g.method = ver ? AlignMethod::VER : AlignMethod::HOR;
+	
+	g.movement = ui->merge_movement->value() / 100.0;
+	
+	images.setComparator( g );
 }
 
 void main_widget::crop_all(){

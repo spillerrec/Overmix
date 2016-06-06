@@ -51,6 +51,11 @@ bool ImageContainer::IndexCache::hasOffset( unsigned index1, unsigned index2 ) c
 ImageOffset ImageContainer::IndexCache::getOffset( unsigned index1, unsigned index2 ) const
 	{ return offsets[index1][index2]; }
 
+void ImageContainer::setComparator( GradientComparator g ){
+	comparator = g;
+	index_cache.invalidate( groups );
+}
+
 
 void ImageContainer::prepareAdds( unsigned amount ){
 	if( groups.size() == 0 )

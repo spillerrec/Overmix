@@ -150,6 +150,8 @@ class main_widget: public QMainWindow{
 		void use_current_as_mask();
 		void updateSelection();
 		
+		void updateComparator();
+		
 	//Related to the Files tab
 		void addGroup();
 		void removeFiles();
