@@ -42,14 +42,25 @@ void ImageContainer::IndexCache::invalidate( const std::vector<ImageGroup>& grou
 		for( unsigned ii=0; ii<groups[ig].items.size(); ii++ )
 			push_back( {ig, ii} );
 }
-void ImageContainer::IndexCache::setOffset( unsigned index1, unsigned index2, ImageOffset offset )
-	{ offsets[index1][index2] = { offset }; }
+void ImageContainer::IndexCache::setOffset( unsigned index1, unsigned index2, ImageOffset offset ) {
+	if( index2 > index1 )
+		setOffset( index2, index1, offset.reverse() );
+	else
+		offsets[index1][index2] = offset;
+}
 
-bool ImageContainer::IndexCache::hasOffset( unsigned index1, unsigned index2 ) const
-	{ return offsets[index1][index2].isValid(); }
+bool ImageContainer::IndexCache::hasOffset( unsigned index1, unsigned index2 ) const{
+	if( index2 > index1 )
+		return offsets[index2][index1].isValid();
+	return offsets[index1][index2].isValid();
+}
 
-ImageOffset ImageContainer::IndexCache::getOffset( unsigned index1, unsigned index2 ) const
-	{ return offsets[index1][index2]; }
+ImageOffset ImageContainer::IndexCache::getOffset( unsigned index1, unsigned index2 ) const{
+	if( index2 > index1 )
+		return getOffset( index2, index1 ).reverse();
+	else
+		return offsets[index1][index2];
+}
 
 void ImageContainer::setComparator( GradientComparator g ){
 	comparator = g;

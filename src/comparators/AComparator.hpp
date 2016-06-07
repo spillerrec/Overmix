@@ -33,6 +33,8 @@ struct ImageOffset{
 	ImageOffset( Point<double> distance, double error, double overlap )
 		: distance(distance), error(error), overlap(overlap) { }
 	bool isValid() const{ return overlap >= 0.0; }
+	
+	ImageOffset reverse() const{ return { {-distance.x, -distance.y}, error, overlap }; }
 };
 
 class AComparator{
