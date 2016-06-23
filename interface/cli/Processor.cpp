@@ -20,6 +20,7 @@
 #include "Parsing.hpp"
 
 #include "planes/ImageEx.hpp"
+#include "planes/PatternRemove.hpp"
 #include "color.hpp"
 
 #include <QString>
@@ -155,6 +156,20 @@ struct LevelProcessor : public Processor {
 	}
 };
 
+struct PatternProcessor : public Processor {
+	Point<double> size;
+	
+	PatternProcessor( QString str )
+		{ convert( str, size ); }
+	
+	void process( ImageEx& img ) override {
+		img = patternRemove( img, size );
+		
+	//	for( unsigned i=0; i<img.size(); i++ )
+	//		img[i] = patternRemove( img[i], size );
+	}
+};
+
 
 std::unique_ptr<Processor> Overmix::processingParser( QString parameters ){
 	Splitter split( parameters, ':' );
@@ -176,6 +191,8 @@ std::unique_ptr<Processor> Overmix::processingParser( QString parameters ){
 		return std::make_unique<DeconvolveProcessor>( split.right );
 	if( split.left == "level" )
 		return std::make_unique<LevelProcessor>( split.right );
+	if( split.left == "pattern" )
+		return std::make_unique<PatternProcessor>( split.right );
 	
 	throw std::invalid_argument( fromQString( "No processor found with the name: '" + split.left + "'" ) );
 }

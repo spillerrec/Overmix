@@ -58,8 +58,8 @@ class ImageEx{
 		void addPlane( Plane&& p ){ if( p.valid() ) planes.emplace_back( std::move(p) ); }
 		
 		ImageEx() : color_space( Transform::UNKNOWN, Transfer::UNKNOWN ) { }
-		ImageEx( ColorSpace s ) : color_space(s) { planes.reserve(s.components()); }
-		ImageEx( Plane p ) : ImageEx( { Transform::GRAY, Transfer::UNKNOWN } )
+		explicit ImageEx( ColorSpace s ) : color_space(s) { planes.reserve(s.components()); }
+		explicit ImageEx( Plane p ) : ImageEx( { Transform::GRAY, Transfer::UNKNOWN } )
 			{ addPlane( std::move(p) ); } //TODO: transfer function!
 		ImageEx( Plane p, Plane a ) : ImageEx( p ) { alpha = a; }
 		

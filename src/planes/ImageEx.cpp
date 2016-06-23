@@ -121,7 +121,7 @@ ImageEx ImageEx::flatten() const{
 	if( alpha_plane() )
 		out.copy( alpha_plane(), {0,0}, alpha_plane().getSize(), {x_offset,0} );
 	
-	return out;
+	return ImageEx{ out };
 }
 
 
