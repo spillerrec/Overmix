@@ -53,3 +53,10 @@ target_link_libraries(Overmix OvermixCore ImgViewer Qt5::Widgets Qt5::Charts)
 
 install(TARGETS Overmix RUNTIME DESTINATION bin)
 install(TARGETS OvermixCli RUNTIME DESTINATION bin)
+
+
+# C++14
+set_property(TARGET Overmix    PROPERTY CXX_STANDARD 14)
+set_property(TARGET OvermixCli PROPERTY CXX_STANDARD 14)
+set_property(TARGET Overmix    PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET OvermixCli PROPERTY CXX_STANDARD_REQUIRED ON)

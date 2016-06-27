@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
 
-# C++14
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
 
@@ -88,3 +85,7 @@ endif( WIN32 )
 
 add_library(OvermixCore ${SOURCES_CONTAINERS} ${SOURCES_PLANES} ${SOURCES_ALIGNERS} ${SOURCES_COMPARATORS} ${SOURCES_RENDERS} ${SOURCES_DEGRADERS} ${SOURCES_OTHERS} )
 target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -lm -lpng -ljpeg -lz -llzma -lpugixml ${PLATFORM_LIBRARIES})
+
+# C++14
+set_property(TARGET OvermixCore PROPERTY CXX_STANDARD 14)
+set_property(TARGET OvermixCore PROPERTY CXX_STANDARD_REQUIRED ON)
