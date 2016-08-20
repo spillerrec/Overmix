@@ -55,7 +55,7 @@ Plane   Overmix::patternRemove( const Plane&   p  , Point<double> size ){
 	PlaneBase<Average<double>> pattern( size.ceil().to<unsigned>() );
 	pattern.fill( Average<double>() );
 	auto index = [&]( unsigned i, double size ){
-		return unsigned( std::round( std::fmod( i, size ) ) );
+		return unsigned( std::min( std::round( std::fmod( i, size ) ), std::floor(size) ) );
 	};
 	
 	for( unsigned iy=0; iy<p.get_height(); iy++ ){
@@ -67,6 +67,7 @@ Plane   Overmix::patternRemove( const Plane&   p  , Point<double> size ){
 		}
 	}
 	
+	/*
 	Plane out_pattern( pattern.getSize() );
 	for( unsigned iy=0; iy<out_pattern.get_height(); iy++ ){
 		auto row_out = out_pattern.scan_line( iy );
@@ -77,6 +78,19 @@ Plane   Overmix::patternRemove( const Plane&   p  , Point<double> size ){
 	}
 	
 	return out_pattern.normalize();
+	//*/
+	
+	Plane full_pattern( p.getSize() );
+	
+	for( unsigned iy=0; iy<full_pattern.get_height(); iy++ ){
+		auto row_out = full_pattern.scan_line(        iy           );
+		auto row_in  =      pattern.scan_line( index( iy, size.y ) );
+		
+		for( unsigned ix=0; ix<full_pattern.get_width(); ix++ )
+			row_out[ ix ] = color::fromDouble( row_in[ index( ix, size.x ) ]() );
+	}
+	
+	return full_pattern.normalize();
 }
 
 
