@@ -45,11 +45,10 @@ add_executable(Overmix WIN32 ${SOURCE_CLI} ${SOURCE_GUI} ${SOURCE_GUI_CONFIGS} $
 # Set-up libraries
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
-find_package(Qt5Charts REQUIRED)
 
 include_directories ("${PROJECT_SOURCE_DIR}/../src")
 target_link_libraries(OvermixCli OvermixCore Qt5::Widgets)
-target_link_libraries(Overmix OvermixCore ImgViewer Qt5::Widgets Qt5::Charts)
+target_link_libraries(Overmix OvermixCore ImgViewer Qt5::Widgets -lqcustomplot)
 
 install(TARGETS Overmix RUNTIME DESTINATION bin)
 install(TARGETS OvermixCli RUNTIME DESTINATION bin)

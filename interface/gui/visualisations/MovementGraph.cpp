@@ -1,16 +1,13 @@
 /*
 	This file is part of Overmix.
-
 	Overmix is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
-
 	Overmix is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
-
 	You should have received a copy of the GNU General Public License
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -21,13 +18,10 @@
 #include "containers/FrameContainer.hpp"
 #include "containers/ImageContainer.hpp"
 
-#include <QChart>
-#include <QChartView>
-#include <QLineSeries>
+#include <qcustomplot.h>
 #include <QHBoxLayout>
 
 using namespace Overmix;
-using namespace QtCharts;
 
 static Point<bool> imagesMoves( const AContainer& container ){
 	if( container.count() == 0 )
@@ -44,14 +38,42 @@ static Point<bool> imagesMoves( const AContainer& container ){
 	return moves;
 }
 
-static void addPoint( QLineSeries& line, FrameContainer& container, int index, Point<bool> moves ){
+class Line{
+	private:
+		QVector<double> x, y;
+		
+	public:
+		void add( double x_pos, double y_pos ){
+			x << x_pos;
+			y << y_pos;
+		}
+		void addToPlot( QCustomPlot& plot, QColor color ){
+			auto curve = new QCPCurve( plot.xAxis, plot.yAxis );
+			curve->setData( x, y );
+			curve->setPen( { color } );
+			plot.addPlottable( curve );
+		}
+};
+
+static void addPoint( Line& line, FrameContainer& container, int index, Point<bool> moves ){
 	auto pos = container.pos( index );
 	auto real_index = container.realIndex( index );
 	
-	line.append(
+	line.add(
 			moves.x ? pos.x : real_index
 		,	moves.y ? pos.y : real_index
 		);
+}
+
+static void setLimit( QCustomPlot& plot, const AContainer& images, Point<bool> moves ){
+	auto min_point = images.minPoint();
+	auto max_point = images.maxPoint();
+	
+	plot.xAxis->setRange( moves.x ? min_point.x : 0, moves.x ? max_point.x : images.count() );
+	plot.yAxis->setRange( moves.y ? min_point.y : 0, moves.y ? max_point.y : images.count() );
+	
+	plot.yAxis->setLabel( moves.y ? QObject::tr("Y") : QObject::tr("Id") );
+	plot.xAxis->setLabel( moves.y ? QObject::tr("X") : QObject::tr("Id") );
 }
 
 static QColor getColor( int frame ){
@@ -67,33 +89,23 @@ static QColor getColor( int frame ){
 }
 
 MovementGraph::MovementGraph( ImageContainer& images ) : QWidget(nullptr), images(images) {
-	//Create and add chart to widget
-	auto plot = new QChart();
-	auto view = new QChartView( plot );
-	view->setRenderHint( QPainter::Antialiasing );
+	auto plot = new QCustomPlot( this );
 	setLayout( new QHBoxLayout( this ) );
-	layout()->addWidget( view );
+	layout()->addWidget( plot );
 	layout()->setContentsMargins( 0, 0, 0, 0 );
 	
-	//Start adding lines
 	auto moves = imagesMoves( images );
+	
 	for( auto frame : images.getFrames() ){
-		auto line = new QLineSeries(); //TODO: is needed to be on the heap?
-		
+		Line line;
 		FrameContainer container( images, frame );
 		for( unsigned i=0; i<container.count(); ++i )
-			addPoint( *line, container, i, moves );
-		
-		line->setColor( getColor( frame ) );
-		plot->addSeries( line );
+			addPoint( line, container, i, moves );
+		line.addToPlot( *plot, getColor( frame ) );
 	}
 	
-	//Custimize chart visuals
-	plot->setTitle( "Position of images" );
-	plot->legend()->hide();
-	plot->createDefaultAxes();
-	//plot->setInteractions( QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables );
-	//TOOD: replace this functionality?
+	setLimit( *plot, images, moves );
+	plot->setInteractions( QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables );
 	
 	resize( 640, 480 );
 	show();
