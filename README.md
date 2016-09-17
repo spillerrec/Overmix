@@ -1,5 +1,7 @@
 Overmix
 =======
+
+[![Join the chat at https://gitter.im/spillerrec-Overmix/Lobby](https://badges.gitter.im/spillerrec-Overmix/Lobby.svg)](https://gitter.im/spillerrec-Overmix/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![GitHub license](https://img.shields.io/badge/license-GPLv3-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0.txt)
 [![GitHub release](https://img.shields.io/badge/release-v0.3.0-blue.svg?style=flat-square)](https://github.com/spillerrec/Overmix/releases/tag/v0.3.0)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/7062/badge.svg)](https://scan.coverity.com/projects/spillerrec-overmix)
