@@ -29,16 +29,12 @@ struct ImageGetter;
   * overlaps the images right next to it. */
 class RecursiveAligner : public AAligner{
 	protected:
-		AlignerProcessor process;
-		
-		std::pair<ImageGetter,Point<double>> combine( const ImageGetter& first, const ImageGetter& second ) const;
+		std::pair<ImageGetter,Point<double>> combine( const AContainer& container, const ImageGetter& first, const ImageGetter& second ) const;
 		ImageGetter align( AContainer& container, AProcessWatcher* watcher, unsigned begin, unsigned end ) const;
 		
 		ImageGetter getGetter( const AContainer& container, unsigned index ) const;
 		
 	public:
-		RecursiveAligner( AlignSettings method, double scale=1.0 )
-			: process( method, scale ) { }
 		virtual void align( AContainer& container, AProcessWatcher* watcher=nullptr ) const override;
 };
 

@@ -146,7 +146,7 @@ std::unique_ptr<AAligner> AverageAlignerConfig::getAligner() const
 
 
 std::unique_ptr<AAligner> RecursiveAlignerConfig::getAligner() const
-	{ return std::make_unique<RecursiveAligner>( getSettings(), getScale() ); }
+	{ return std::make_unique<RecursiveAligner>(); }
 
 
 std::unique_ptr<AAligner> FakeAlignerConfig::getAligner() const

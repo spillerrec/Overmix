@@ -76,12 +76,15 @@ struct Overmix::ImageGetter{
 };
 
 /** Creates a ImageGetter from this container with the specified index */
-ImageGetter RecursiveAligner::getGetter( const AContainer& container, unsigned index ) const
-	{ return { process( container.image(index)[0] ), process.scalePlane( container.alpha(index) ) }; }
+ImageGetter RecursiveAligner::getGetter( const AContainer& container, unsigned index ) const {
+	auto comparator = container.getComparator();
+	return { comparator->process( container.image(index)[0] ), comparator->processAlpha( container.alpha(index) ) };
+}
 
 /** Aligns two ImageGetters, and renders the average. Returns the render and the offset betten the getters */
-pair<ImageGetter,Point<double>> RecursiveAligner::combine( const ImageGetter& first, const ImageGetter& second ) const{
-	auto offset = AImageAligner::findOffset( process.movement(), first.plane(), second.plane(), first.alpha(), second.alpha() ).distance;
+pair<ImageGetter,Point<double>> RecursiveAligner::combine( const AContainer& container, const ImageGetter& first, const ImageGetter& second ) const{
+	auto comparator = container.getComparator();
+	auto offset = comparator->findOffset( first.plane(), second.plane(), first.alpha(), second.alpha() ).distance;
 	
 	if( offset.x == 0
 		&&	!first.alpha() && !second.alpha()
@@ -111,7 +114,7 @@ ImageGetter RecursiveAligner::align( AContainer& container, AProcessWatcher* wat
 		case 1: ProgressWrapper( watcher ).add( 1 );
 				return getGetter( container, begin ); //Just return this one
 		case 2: { //Optimization for two images
-				auto offset = combine( getGetter( container, begin ), getGetter( container, begin+1 ) );
+				auto offset = combine( container, getGetter( container, begin ), getGetter( container, begin+1 ) );
 				container.setPos( begin+1, container.pos(begin) + offset.second );
 				ProgressWrapper( watcher ).add( 2 );
 				return std::move( offset.first );
@@ -119,7 +122,7 @@ ImageGetter RecursiveAligner::align( AContainer& container, AProcessWatcher* wat
 		default: { //More than two images
 				//Solve sub-areas recursively
 				unsigned middle = amount / 2 + begin;
-				auto offset = combine( align( container, watcher, begin, middle ), align( container, watcher, middle, end ) );
+				auto offset = combine( container, align( container, watcher, begin, middle ), align( container, watcher, middle, end ) );
 				
 				//Find top-left corner of first
 				auto corner1 = Point<double>( numeric_limits<double>::max(), numeric_limits<double>::max() );
@@ -146,7 +149,8 @@ void RecursiveAligner::align( AContainer& container, AProcessWatcher* watcher ) 
 	ProgressWrapper( watcher ).setTotal( container.count() );
 	align( container, watcher, 0, container.count() );
 	
+	auto scale = container.getComparator()->scale();
 	for( unsigned i=0; i<container.count(); i++ )
-		container.setPos( i, container.pos( i ) / process.scale() );
+		container.setPos( i, container.pos( i ) / scale );
 }
 

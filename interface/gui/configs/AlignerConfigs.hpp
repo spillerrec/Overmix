@@ -82,7 +82,7 @@ class AverageAlignerConfig : public AAlignerConfig{
 
 class RecursiveAlignerConfig : public AAlignerConfig{
 	public:
-		RecursiveAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, ENABLE_ALL ) { }
+		RecursiveAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
 		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Recursive"; }

@@ -37,7 +37,7 @@ void FrameAligner::align( class AContainer& container, class AProcessWatcher* wa
 	}
 	
 	//TODO: also show progress for this!
-	RecursiveAligner( settings, 1.0 ).align( images ); //TODO: make configurable
+	RecursiveAligner().align( images ); //TODO: make configurable
 	
 	ProgressWrapper( watcher ).loopAll( frames.size(), [&](int i){
 			FrameContainer current( container, frames[i] );
