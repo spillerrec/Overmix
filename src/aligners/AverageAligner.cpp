@@ -23,6 +23,7 @@
 using namespace Overmix;
 
 void AverageAligner::align( AContainer& container, AProcessWatcher* watcher ) const {
+	auto comparator = container.getComparator();
 	container.resetPosition();
 	if( container.count() <= 1 ) //If there is nothing to align
 		return;
@@ -31,15 +32,14 @@ void AverageAligner::align( AContainer& container, AProcessWatcher* watcher ) co
 	progress.setTotal( container.count() );
 	
 	SumPlane render;
-	render.addAlphaPlane( process( container.plane( 0 ) )(), process( container.alpha( 0 ) )(), {0,0} );
+	render.addAlphaPlane( comparator->process( container.plane( 0 ) )(), comparator->processAlpha( container.alpha( 0 ) )(), {0,0} );
 	
 	for( unsigned i=1; i<container.count() && !progress.shouldCancel(); i++ ){
 		progress.setCurrent( i );
-		auto img   = process( container.plane( i ) );
-		auto alpha = process.scalePlane( container.alpha( i ) );
+		auto img   = comparator->process( container.plane( i ) );
+		auto alpha = comparator->processAlpha( container.alpha( i ) );
 		
 		//Find offset to base image
-		auto comparator = container.getComparator();
 		auto offset = comparator->findOffset( render.average(), img(), render.alpha(), alpha() ).distance;
 		container.setPos( i, container.minPoint() + offset/comparator->scale() );
 		render.addAlphaPlane( img(), alpha(), offset );

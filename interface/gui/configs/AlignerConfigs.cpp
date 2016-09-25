@@ -142,7 +142,7 @@ ClusterAlignerConfig::ClusterAlignerConfig( QWidget* parent )
 
 
 std::unique_ptr<AAligner> AverageAlignerConfig::getAligner() const
-	{ return std::make_unique<AverageAligner>( getSettings(), getScale() ); }
+	{ return std::make_unique<AverageAligner>(); }
 
 
 std::unique_ptr<AAligner> RecursiveAlignerConfig::getAligner() const

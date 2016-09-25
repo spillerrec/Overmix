@@ -23,12 +23,7 @@
 namespace Overmix{
 
 class AverageAligner : public AAligner{
-	private:
-		AlignerProcessor process;
-	
 	public:
-		AverageAligner( AlignSettings method, double scale=1.0 )
-			:	process( method, scale ) { }
 		virtual void align( class AContainer& container, class AProcessWatcher* watcher=nullptr ) const override;
 };
 

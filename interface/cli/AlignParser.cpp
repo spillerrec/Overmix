@@ -52,7 +52,7 @@ static unique_ptr<AAligner> makeAligner( QString name, QString parameters ){
 	if( name == "AnimationSeparator" )
 		return convertUnique<AnimationSeparator,AlignSettings,double,bool>( parameters );
 	else if( name == "Average" )
-		return convertUnique<AverageAligner,AlignSettings,double>( parameters );
+		return std::make_unique<AverageAligner>();
 	else if( name == "Fake" )
 		return make_unique<FakeAligner>();
 	else if( name == "Frame" )
