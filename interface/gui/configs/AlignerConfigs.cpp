@@ -120,9 +120,8 @@ FrameCalculatorAlignerConfig::FrameCalculatorAlignerConfig( QWidget* parent )
 }
 
 SeperateAlignerConfig::SeperateAlignerConfig( QWidget* parent )
-	: AAlignerConfig( parent, ENABLE_ALL ) {
+	: AAlignerConfig( parent, DISABLE_ALL ) {
 	threshold    = addWidget<QDoubleSpinBox>( "Reduce" );
-	use_existing = addWidget<QCheckBox     >( "Reuse align" );
 	
 	threshold->setValue( 1.0 );
 	threshold->setRange( 0.01, 9.99 );
@@ -157,9 +156,7 @@ std::unique_ptr<AAligner> LinearAlignerConfig::getAligner() const
 	{ return std::make_unique<LinearAligner>( getMethod() ); }
 
 std::unique_ptr<AAligner> SeperateAlignerConfig::getAligner() const {
-	auto aligner = std::make_unique<AnimationSeparator>(
-			getSettings(), getScale(), use_existing->isChecked()
-		);
+	auto aligner = std::make_unique<AnimationSeparator>();
 	aligner->setThresholdFactor( threshold->value() );
 	return std::move( aligner );
 }

@@ -31,28 +31,12 @@
 using namespace std;
 using namespace Overmix;
 
-class ModifiedContainer : public ConstDelegatedContainer {
-	private:
-		vector<Modified<ImageEx>> images;
-		
-	public:
-		ModifiedContainer( AContainer& container, AlignerProcessor f ) : ConstDelegatedContainer( container ) {
-			images.reserve( container.count() );
-			for( unsigned i=0; i<container.count(); i++ )
-				images.push_back( f.image( container.image( i ) ) );
-		}
-		
-		
-		virtual const ImageEx& image( unsigned index ) const override{ return images[index](); }
-		virtual const Plane& alpha(   unsigned index ) const override{ return image( index ).alpha_plane(); }
-};
-
-double AnimationSeparator::find_threshold( const AContainer& container, Point<double> movement, AProcessWatcher* watcher ) const{
+double AnimationSeparator::find_threshold( AContainer& container, AProcessWatcher* watcher ) const{
 	ProgressWrapper progress( watcher );
 	vector<color_type> errors;
 	
 	for( unsigned i=0; i<container.count()-1 && !progress.shouldCancel(); ++i ){
-		errors.push_back( findError( container, i, i+1, movement ) );
+		errors.push_back( container.findOffset( i, i+1 ).error );
 		progress.add();
 	}
 	
@@ -92,26 +76,13 @@ double AnimationSeparator::find_threshold( const AContainer& container, Point<do
 	return threshold;
 }
 
-double AnimationSeparator::findError( const AContainer& container, unsigned img1, unsigned img2, Point<double> movement ) const{
-	if( skip_align ){
-		//Use existing align information instead
-		auto offset = (container.pos( img2 ) - container.pos( img1 )).round();
-		offset = (offset * process.scale()).round();
-		return container.image( img1 )[0].diff( container.image( img2 )[0], offset.x, offset.y );
-	}
-	else
-		return AImageAligner::findOffset( container, movement, img1, img2 ).error;
-}
-
 void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher ) const{
 	ProgressWrapper progress( watcher );
 	progress.setTotal( container.count() * 2 );
 	if( container.count() == 0 )
 		return;
 	
-	ModifiedContainer modified( container, process );
-	
-	double threshold = find_threshold( modified, process.movement(), watcher ) * threshold_factor;
+	double threshold = find_threshold( container, watcher ) * threshold_factor;
 	
 	
 	//Init
@@ -124,7 +95,7 @@ void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher 
 		
 		for( int& index : backlog )
 			if( index >= 0 )
-				if( indexes.size() == 0 || findError( modified, indexes.back(), index, process.movement() ) < threshold ){
+				if( indexes.size() == 0 || container.findOffset( indexes.back(), index ).error < threshold ){
 					indexes.push_back( index );
 					container.setFrame( index, iteration );
 					index = -1;

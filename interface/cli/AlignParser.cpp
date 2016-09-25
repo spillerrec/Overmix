@@ -42,15 +42,9 @@ static void convert( QString str, AlignMethod& func ){
 		} );
 }
 
-static void convert( QString str, AlignSettings& settings ){
-	Splitter split( str, ';' );
-	convert( split.left,  settings.method );
-	convert( split.right, settings.movement );
-}
-
 static unique_ptr<AAligner> makeAligner( QString name, QString parameters ){
 	if( name == "AnimationSeparator" )
-		return convertUnique<AnimationSeparator,AlignSettings,double,bool>( parameters );
+		return std::make_unique<AnimationSeparator>();
 	else if( name == "Average" )
 		return std::make_unique<AverageAligner>();
 	else if( name == "Fake" )

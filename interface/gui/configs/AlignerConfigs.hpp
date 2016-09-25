@@ -110,7 +110,6 @@ class LinearAlignerConfig : public AAlignerConfig{
 class SeperateAlignerConfig : public AAlignerConfig{
 	private:
 		QDoubleSpinBox* threshold;
-		QCheckBox* use_existing;
 	
 	public:
 		SeperateAlignerConfig( QWidget* parent );
