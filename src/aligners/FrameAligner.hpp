@@ -23,11 +23,7 @@
 namespace Overmix{
 
 class FrameAligner : public AAligner{
-	private:
-		AlignSettings settings;
-	
 	public:
-		FrameAligner( AlignSettings settings ) : settings(settings) { }
 		virtual void align( class AContainer& container, class AProcessWatcher* watcher=nullptr ) const override;
 };
 

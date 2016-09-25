@@ -50,7 +50,7 @@ static unique_ptr<AAligner> makeAligner( QString name, QString parameters ){
 	else if( name == "Fake" )
 		return make_unique<FakeAligner>();
 	else if( name == "Frame" )
-		return convertUnique<FrameAligner, AlignMethod>( parameters );
+		return std::make_unique<FrameAligner>();
 	else if( name == "FrameCalculator" )
 		return convertUnique<FrameCalculatorAligner, int, int, int>( parameters );
 	else if( name == "Linear" )

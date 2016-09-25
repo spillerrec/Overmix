@@ -162,7 +162,7 @@ std::unique_ptr<AAligner> SeperateAlignerConfig::getAligner() const {
 }
 
 std::unique_ptr<AAligner> AlignFrameAlignerConfig::getAligner() const
-	{ return std::make_unique<FrameAligner>( getSettings() ); }
+	{ return std::make_unique<FrameAligner>(); }
 
 std::unique_ptr<AAligner> FrameCalculatorAlignerConfig::getAligner() const{
 	return std::make_unique<FrameCalculatorAligner>(

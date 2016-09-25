@@ -121,7 +121,7 @@ class SeperateAlignerConfig : public AAlignerConfig{
 
 class AlignFrameAlignerConfig : public AAlignerConfig{
 	public:
-		AlignFrameAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, ENABLE_ALL ) { }
+		AlignFrameAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
 		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Align Frames"; }
