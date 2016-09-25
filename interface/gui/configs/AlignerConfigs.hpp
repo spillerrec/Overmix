@@ -73,7 +73,7 @@ class AlignerConfigChooser : public ConfigChooser<AAlignerConfig>{
 
 class AverageAlignerConfig : public AAlignerConfig{
 	public:
-		AverageAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, ENABLE_ALL ) { }
+		AverageAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
 		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Ordered"; }
