@@ -20,6 +20,7 @@
 
 #include <memory>
 class QString;
+class QTextStream;
 
 namespace Overmix{
 
@@ -32,6 +33,7 @@ class Processor{
 };
 
 std::unique_ptr<Processor> processingParser( QString parameters );
+void processingHelpText( QTextStream& std );
 
 }
 

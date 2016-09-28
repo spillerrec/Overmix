@@ -30,6 +30,7 @@
 #include "planes/ImageEx.hpp"
 
 #include <QString>
+#include <QTextStream>
 
 using namespace std;
 using namespace Overmix;
@@ -67,3 +68,21 @@ void Overmix::alignerParser( QString parameters, AContainer& container ){
 	Splitter split( parameters, ':' );
 	makeAligner( split.left, split.right )->align( container );
 }
+
+void Overmix::alignerHelpText( QTextStream& std ){
+	std << "Aligns the images with the specified algorithm:\n";
+	std << "\n";
+	std << "Algorithms:\n";
+	std << "\t" << "Average\n";
+	std << "\t" << "Fake\n";
+	std << "\t" << "Frame\n";
+	std << "\t" << "FrameCalculator:<offset>:<frame amount>:<frame repeatitions>\n";
+	std << "\t" << "Linear:<AlignMethod>\n";
+	std << "\t" << "Recursive\n";
+	std << "\t" << "SuperRes:<AlignMethod>:<precision>\n";
+	std << "\n";
+	std << "AlignMethod: both, ver, hor\n";
+	std << "\n";
+	std << "See the wiki for details on the algorithms\n";
+}
+

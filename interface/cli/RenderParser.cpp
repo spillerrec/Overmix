@@ -24,6 +24,7 @@
 #include "planes/ImageEx.hpp"
 
 #include <QString>
+#include <QTextStream>
 
 using namespace Overmix;
 
@@ -45,4 +46,17 @@ ImageEx Overmix::renderParser( QString parameters, const AContainer& container )
 		return convertUnique<StatisticsRender, Statistics>( split.right )->render( container );
 	
 	throw std::invalid_argument( fromQString( "No render found with the name: '" + split.left + "'" ) );
+}
+
+void Overmix::renderHelpText( QTextStream& std ){
+	std << "Renders an image and puts it on the rendered images stack\n";
+	std << "\n";
+	std << "Available renders:\n";
+	std << "\taverage:<upscale_chroma>:<for_merging>\n";
+	std << "\t\tCombines each pixel using averaging, both parameters are boolean\n";
+	std << "\n";
+	std << "\tstatistics:<method>\n";
+	std << "\t\tCombines each pixel using one of the following statistics functions:\n";
+	std << "\t\tMethods: avg, min, max, median, difference\n";
+	std << "\n";
 }

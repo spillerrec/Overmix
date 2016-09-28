@@ -27,25 +27,57 @@
 #include <QFileInfo>
 #include <QImage>
 #include <QStringList>
+#include <QTextStream>
 #include <QDebug>
 
 #include <vector>
 
 using namespace Overmix;
 
-static void printHelp(){
+static void printHelp( QString type ){
 	QTextStream std( stdout );
 	
 	std << "OvermixCli [files]... [--command=arguments]...\n\n";
 	
-	std << "Available commands:\n";
-	std << "\t" << "--pre-process\n";
-	std << "\t" << "--align\n";
-	std << "\t" << "--render\n";
-	std << "\t" << "--post-process\n";
-	std << "\t" << "--save\n";
-	std << "\t" << "--no-gui\n";
-	std << "\t" << "--help\n";
+	
+	if( type.isEmpty() ){
+		std << "Available commands:\n";
+		std << "\t" << "--pre-process\n";
+		std << "\t" << "--align\n";
+		std << "\t" << "--render\n";
+		std << "\t" << "--post-process\n";
+		std << "\t" << "--save\n";
+		std << "\t" << "--no-gui\n";
+		std << "\t" << "--help\n";
+		std << "\n";
+		std << "Type '--help=render' to read more about the command '--render'.\n";
+		std << "Each command will be applied in order, so load the images before aligning, etc.\n";
+		std << "Usually you would have something like this:\n";
+		std << "OvermixCli *.png --align=... --render=... --save=0:output.png";
+	}
+	else{
+		if( type == "pre-process" ){
+			std << "Applies a processing step on all input images:\n\n";
+			processingHelpText( std );
+		}
+		else if( type == "post-process" ){
+			std << "Applies processing on the rendered image with id 'n':\n";
+			std << "--post-process=n:<processing options>\n\n";
+			processingHelpText( std );
+		}
+		else if( type == "align" )
+			alignerHelpText( std );
+		else if( type == "render" )
+			renderHelpText( std );
+		else if( type == "save" ){
+			std << "Saves the 'n' rendered image, for example:\n";
+			std << "--save=0:output.png\n";
+		}
+		else if( type == "no-gui" )
+			std << "Prevents the GUI from opening, only applies for 'Overmix' executable\n";
+		else
+			std << "Unknown command: " << type << "\n";
+	}
 }
 
 
@@ -102,7 +134,7 @@ void CommandParser::parse( QStringList commands ){
 			renders[id].to_qimage().save( args.right );
 		}
 		else if( cmd.is( "help" ) )
-			printHelp();
+			printHelp( cmd.arguments() );
 		else{
 			qWarning() << "Unknown command:" << cmd.parts.left;
 		}

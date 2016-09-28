@@ -24,6 +24,7 @@
 #include "color.hpp"
 
 #include <QString>
+#include <QTextStream>
 
 #include <algorithm>
 #include <vector>
@@ -195,4 +196,48 @@ std::unique_ptr<Processor> Overmix::processingParser( QString parameters ){
 		return std::make_unique<PatternProcessor>( split.right );
 	
 	throw std::invalid_argument( fromQString( "No processor found with the name: '" + split.left + "'" ) );
+}
+
+void Overmix::processingHelpText( QTextStream& std ){
+	std << "Available processors:\n";
+	std << "\tscale:<method>:<width>x<height>\n";
+	std << "\t\tScales the image by multiplying the size with the specified width and height\n";
+	std << "\t\tMethods: none, linear, mitchell, catrom, spline, lanczos3, lanczos5, lanczos7\n";
+	std << "\n";
+	std << "\tedge:<method>\n";
+	std << "\t\tApplies edge detection\n";
+	std << "\t\tMethods: robert, sobel, prewitt, laplacian, laplacian-large\n";
+	std << "\n";
+	std << "\tdilate:<size>\n";
+	std << "\t\tDilates the image with the specified size\n";
+	std << "\n";
+	std << "\tbinarize-threshold:<threshold>\n";
+	std << "\t\tBinarizes the image using a threshold, with 0.0 being black, and 1.0 being white\n";
+	std << "\n";
+	std << "\tbinarize-adaptive:<amount>:<threshold>\n";
+	std << "\t\tBinarizes the image using adaptive:\n";
+	std << "\t\tamount: pixels width of considered area\n";
+	std << "\t\tthreshold: -1.0 to 1.0\n";
+	std << "\n";
+	std << "\tbinarize-dither\n";
+	std << "\t\tBinarizes the image using dithering\n";
+	std << "\n";
+	std << "\tblur:<width>x<height>\n";
+	std << "\t\tBlurs the image using gaussian with deviation as specified\n";
+	std << "\n";
+	std << "\tdeconvolve:<width>x<height>:iterations\n";
+	std << "\t\tSharpens the image using deconvolution, using a gaussian blur with deviation as 'width'x'height' and repeated for 'iterations'\n";
+	std << "\n";
+	std << "\tlevel:<limit_min>:<limit_max>:<output_min>:<output_max>:<gamma>\n";
+	std << "\t\tChanges the color distribution, color values in 0.0 to 1.0:\n";
+	std << "\t\tlimit_min: Truncates values bellow this point\n";
+	std << "\t\tlimit_max: Truncates values above this point\n";
+	std << "\t\toutput_min: output value of black\n";
+	std << "\t\toutput_max: output value of white\n";
+	std << "\t\tgamma: Applies value^<gamma>\n";
+	std << "\n";
+	std << "\tpattern:<width>x<height>\n";
+	std << "\t\tDetects and removes patters which repeats every 'width'x'height'\n";
+	std << "\t\tWIP\n";
+	std << "\n";
 }

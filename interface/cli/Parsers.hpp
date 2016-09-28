@@ -19,6 +19,7 @@
 #define PARSERS_HPP
 
 class QString;
+class QTextStream;
 
 namespace Overmix{
 
@@ -27,6 +28,9 @@ class AContainer;
 
 ImageEx renderParser( QString parameters, const AContainer& container );
 void   alignerParser( QString parameters,       AContainer& container );
+
+void renderHelpText( QTextStream& std );
+void alignerHelpText( QTextStream& std );
 
 }
 
