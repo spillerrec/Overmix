@@ -116,7 +116,10 @@ FrameCalculatorAlignerConfig::FrameCalculatorAlignerConfig( QWidget* parent )
 	:	AAlignerConfig( parent, DISABLE_ALL ) {
 	offset  = addWidget<QSpinBox>( "Offset" );
 	amount  = addWidget<QSpinBox>( "Frame amount" );
-	repeats = addWidget<QSpinBox>( "Frame repeatitions" );
+	repeats = addWidget<QSpinBox>( "Frame repetitions" );
+	
+	amount ->setMinimum( 1 );
+	repeats->setMinimum( 1 );
 }
 
 SeperateAlignerConfig::SeperateAlignerConfig( QWidget* parent )

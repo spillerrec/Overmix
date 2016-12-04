@@ -20,6 +20,8 @@
 
 #include "AAligner.hpp"
 
+#include <stdexcept>
+
 namespace Overmix{
 
 class FrameCalculatorAligner : public AAligner{
@@ -33,8 +35,17 @@ class FrameCalculatorAligner : public AAligner{
 			:	offset(offset), amount(amount), repeats(repeats) { }
 		
 		virtual void align( AContainer& container, AProcessWatcher* ) const override{
+			//Validate input
+			auto max_frames = amount * repeats;
+			if( amount < 1 || repeats < 1 )
+				throw std::runtime_error( "Invalid arguments, no frames would be generated" );
+			if( max_frames < offset )
+				throw std::runtime_error( "Offset is bigger than frames per cycle" );
+			
+			//Calculate offsets
 			for( unsigned i=0; i<container.count(); i++ )
-				container.setFrame( i, (i-offset)/repeats % amount );
+				container.setFrame( i, ((i + max_frames - offset)/repeats) % amount );
+				//Adding max_frames to be sure it is positive before MOD
 		}
 };
 
