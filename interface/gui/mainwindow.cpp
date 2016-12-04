@@ -132,6 +132,10 @@ main_widget::main_widget( ImageContainer& images )
 	connect( ui->cbx_interlaced, SIGNAL( toggled(bool) ), this, SLOT( change_interlace() ) );
 	change_interlace();
 	
+	//Combo boxes
+	connect( ui->threshold_method, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &main_widget::updateUiBinarize );
+	updateUiBinarize( ui->threshold_method->currentIndex() );
+	
 	//Comparing changes
 	connect( ui->cbx_merge_h,    SIGNAL( toggled(bool)     ), this, SLOT( updateComparator() ) );
 	connect( ui->cbx_merge_v,    SIGNAL( toggled(bool)     ), this, SLOT( updateComparator() ) );
@@ -703,4 +707,35 @@ void main_widget::crop_all(){
 void main_widget::create_slide(){
 	Animator anim;
 	anim.render( renders[0].raw );
+}
+
+void main_widget::updateUiBinarize( int method ){
+	//Convenience setters for the labels and spinboxes
+	auto setRow = []( QLabel* label, QSpinBox* spinbox ){
+			return [=]( auto text, bool visible, int min_range, int max_range ){
+				label->setVisible( visible );
+				label->setText( text );
+				spinbox->setVisible( visible );
+				spinbox->setRange( min_range, max_range );
+			};
+		};
+	auto setThreshold = setRow( ui->label_15, ui->threshold_threshold );
+	auto setSize      = setRow( ui->label_17, ui->threshold_size      );
+	
+	//Set the specific values
+	switch( method ){
+		case 1:
+			setThreshold(  "Threshold", true,    0, 255 );
+			setSize(       "Dilate",    true,    0, 999 );
+			break;
+			
+		case 2:
+			setThreshold(  "Threshold", true, -255, 255 );
+			setSize(       "Size",      true,    0, 999 );
+			break;
+			
+		default:
+			setThreshold(  "Unused",   false, -999, 999 );
+			setSize(       "Unused",   false, -999, 999 );
+	}
 }

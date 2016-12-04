@@ -152,6 +152,8 @@ class main_widget: public QMainWindow{
 		
 		void updateComparator();
 		
+		void updateUiBinarize( int method );
+		
 	//Related to the Files tab
 		void addGroup();
 		void removeFiles();
