@@ -48,13 +48,10 @@ void Plane::binarize_dither(){
 			color_type binary = wanted > threshold ? color::WHITE : color::BLACK;
 			
 			double error = wanted - binary;
-			//Quick fix: prevent error from exploding
-			if( std::abs(error) > color::WHITE )
-				error = 0;
 			errors[ix] = error / 4;
 			errors[ix+1] += error / 2;
 			if( ix )
-				errors[ix-1] += error / 2;
+				errors[ix-1] += error / 4;
 			row[ix] = binary;
 		}
 }
