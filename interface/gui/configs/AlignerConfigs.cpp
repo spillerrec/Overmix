@@ -104,10 +104,6 @@ AlignMethod AAlignerConfig::getMethod() const{
 	return AlignMethod::VER;
 }
 
-AlignSettings AAlignerConfig::getSettings() const{
-	return { getMethod(), merge_movement->value() / 100.0 };
-}
-
 double AAlignerConfig::getScale() const{
 	return merge_scale->value();
 }

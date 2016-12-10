@@ -19,7 +19,7 @@
 #include "AverageRender.hpp"
 #include "../debug.hpp"
 
-#include "../aligners/AImageAligner.hpp"
+#include "../containers/AContainer.hpp"
 #include "../planes/ImageEx.hpp"
 #include "../utils/AProcessWatcher.hpp"
 #include "../utils/PlaneUtils.hpp"

@@ -27,6 +27,7 @@
 #include "aligners/LinearAligner.hpp"
 #include "aligners/RecursiveAligner.hpp"
 #include "aligners/SuperResAligner.hpp"
+#include "containers/AContainer.hpp"
 #include "planes/ImageEx.hpp"
 
 #include <QString>

@@ -21,7 +21,6 @@
 #include "../color.hpp"
 #include "../planes/PlaneBase.hpp"
 
-#include "../aligners/AImageAligner.hpp"
 #include "../planes/ImageEx.hpp"
 
 #include <QTime>

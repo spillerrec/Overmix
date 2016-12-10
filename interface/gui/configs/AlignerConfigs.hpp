@@ -20,7 +20,6 @@
 
 #include "ConfigChooser.hpp"
 #include "aligners/AAligner.hpp"
-#include "aligners/AImageAligner.hpp"
 
 
 #include "ui_imagealigner.h"
@@ -50,7 +49,6 @@ class AAlignerConfig : public AConfig, private Ui::ImageAligner{
 		virtual std::unique_ptr<AAligner> getAligner() const = 0;
 		
 		AlignMethod   getMethod()   const;
-		AlignSettings getSettings() const;
 		double getScale() const;
 	
 	private slots:
