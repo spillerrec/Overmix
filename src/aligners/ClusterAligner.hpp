@@ -18,7 +18,7 @@
 #ifndef CLUSTER_ALIGNER_HPP
 #define CLUSTER_ALIGNER_HPP
 
-#include "AImageAligner.hpp"
+#include "AAligner.hpp"
 
 namespace Overmix{
 

@@ -18,7 +18,7 @@
 #ifndef FRAME_ALIGNER_HPP
 #define FRAME_ALIGNER_HPP
 
-#include "AImageAligner.hpp"
+#include "AAligner.hpp"
 
 namespace Overmix{
 

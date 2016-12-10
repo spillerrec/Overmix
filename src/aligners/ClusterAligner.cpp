@@ -17,6 +17,8 @@
 
 
 #include "ClusterAligner.hpp"
+#include "../comparators/AComparator.hpp"
+#include "../containers/AContainer.hpp"
 #include "../utils/AProcessWatcher.hpp"
 
 #include <algorithm>

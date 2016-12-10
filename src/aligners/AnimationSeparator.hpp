@@ -18,7 +18,7 @@
 #ifndef ANIMATION_SEPARATOR_HPP
 #define ANIMATION_SEPARATOR_HPP
 
-#include "AImageAligner.hpp"
+#include "AAligner.hpp"
 
 namespace Overmix{
 

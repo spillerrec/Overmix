@@ -17,6 +17,7 @@
 
 
 #include "LinearAligner.hpp"
+#include "../containers/AContainer.hpp"
 
 using namespace Overmix;
 

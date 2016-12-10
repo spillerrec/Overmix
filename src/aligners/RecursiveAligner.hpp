@@ -18,7 +18,8 @@
 #ifndef RECURSIVE_ALIGNER_HPP
 #define RECURSIVE_ALIGNER_HPP
 
-#include "AImageAligner.hpp"
+#include "AAligner.hpp"
+#include "../Geometry.hpp"
 #include <utility>
 
 namespace Overmix{

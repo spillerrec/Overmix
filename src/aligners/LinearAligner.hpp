@@ -18,7 +18,7 @@
 #ifndef LINEAR_ALIGNER_HPP
 #define LINEAR_ALIGNER_HPP
 
-#include "AImageAligner.hpp"
+#include "AAligner.hpp"
 
 namespace Overmix{
 

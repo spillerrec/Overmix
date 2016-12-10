@@ -17,7 +17,10 @@
 
 
 #include "AverageAligner.hpp"
+#include "../containers/AContainer.hpp"
+#include "../comparators/AComparator.hpp"
 #include "../renders/AverageRender.hpp"
+#include "../planes/ImageEx.hpp"
 #include "../utils/AProcessWatcher.hpp"
 
 using namespace Overmix;

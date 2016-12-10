@@ -18,7 +18,7 @@
 #ifndef AVERAGE_ALIGNER_HPP
 #define AVERAGE_ALIGNER_HPP
 
-#include "AImageAligner.hpp"
+#include "AAligner.hpp"
 
 namespace Overmix{
 

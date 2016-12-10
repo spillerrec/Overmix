@@ -25,40 +25,6 @@
 
 using namespace Overmix;
 
-
-double AImageAligner::calculate_overlap( Point<> offset, const Plane& img1, const Plane& img2 ){
-	QRect first( 0,0, img1.get_width(), img1.get_height() );
-	QRect second( { offset.x, offset.y }, QSize(img2.get_width(), img2.get_height()) );
-	QRect common = first.intersected( second );
-	
-	double area = first.width() * first.height();
-	return (double)common.width() * common.height() / area;
-}
-
-AImageAligner::ImageOffset AImageAligner::findOffset( Point<double> movement, const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ){
-	//Keep repeating with higher levels until it drops
-	//below threshold
-	//TODO: magic settings which should be configurable
-	int level = 1;
-	int max_level = 6;
-	bool fast_diffing = true;
-	auto max_difference = 0.10*color::WHITE; //Difference must not be above this to match
-	
-	std::pair<Point<>,double> result;
-	DiffCache cache;
-	
-	do{
-		result = img1.best_round_sub( img2
-			,	a1, a2, level
-			,	((int)1 - (int)img2.get_width()) * movement.x, ((int)img1.get_width() - 1) * movement.x
-			,	((int)1 - (int)img2.get_height()) * movement.y, ((int)img1.get_height() - 1) * movement.y
-			,	&cache, fast_diffing
-			);
-	}while( result.second > max_difference && level++ < max_level );
-	
-	return { result.first, result.second, calculate_overlap( result.first, img1, img2 ) };
-}
-
 Point<double> AlignerProcessor::scale() const{
 	switch( settings.method ){
 		case AlignMethod::VER: return { 1.0, scale_amount };

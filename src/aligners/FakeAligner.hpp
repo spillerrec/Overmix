@@ -19,6 +19,7 @@
 #define FAKE_ALIGNER_HPP
 
 #include "AAligner.hpp"
+#include "../containers/AContainer.hpp"
 
 namespace Overmix{
 

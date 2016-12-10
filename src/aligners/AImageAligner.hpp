@@ -40,23 +40,6 @@ struct AlignSettings{
 		: method(method), movement(movement) { }
 };
 
-class AImageAligner{
-	public:
-		struct ImageOffset{
-			Point<double> distance;
-			double error;
-			double overlap;
-			ImageOffset( Point<double> distance, double error, double overlap )
-				: distance(distance), error(error), overlap(overlap) { }
-		};
-		static double calculate_overlap( Point<> offset, const Plane& img1, const Plane& img2 );
-		
-	public: //TODO:
-		static ImageOffset findOffset( Point<double> movement, const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 );
-		static ImageOffset findOffset( const AContainer& container, Point<double> movement, unsigned i1, unsigned i2 )
-			{ return findOffset( movement, container.image(i1)[0], container.image(i2)[0], container.alpha(i1), container.alpha(i2) ); }
-};
-
 class AlignerProcessor{
 	private:
 		AlignSettings settings;
