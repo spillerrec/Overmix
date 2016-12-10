@@ -18,7 +18,7 @@
 #ifndef SUPER_RES_ALIGNER_HPP
 #define SUPER_RES_ALIGNER_HPP
 
-#include "AImageAligner.hpp"
+#include "AAligner.hpp"
 
 namespace Overmix{
 

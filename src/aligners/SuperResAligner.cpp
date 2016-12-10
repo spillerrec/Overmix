@@ -17,18 +17,27 @@
 
 
 #include "SuperResAligner.hpp"
+#include "../containers/AContainer.hpp"
+#include "../comparators/AComparator.hpp"
+#include "../planes/ImageEx.hpp"
 #include "../renders/RobustSrRender.hpp"
+
+#include <stdexcept>
 
 using namespace Overmix;
 
 
 void SuperResAligner::align( class AContainer& container, class AProcessWatcher* watcher ) const {
+	auto comparator = container.getComparator();
+	if( !comparator )
+		throw std::runtime_error( "No comparator in container for SuperResAligner" );
+	
 	auto base = RobustSrRender( scale ).render( container, watcher );
 	for( unsigned i=0; i<container.count(); i++ ){
 		auto img = container.image( i );
 		img.scaleFactor( {scale, scale} );
 		//TODO: movement...
-		container.setPos( i, AImageAligner::findOffset( {0.25,0.25}, base[0], img[0], base.alpha_plane(), img.alpha_plane() ).distance / scale );
+		container.setPos( i, comparator->findOffset( base[0], img[0], base.alpha_plane(), img.alpha_plane() ).distance / scale );
 	}
 }
 

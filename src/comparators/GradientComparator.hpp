@@ -19,15 +19,10 @@
 #define GRADIENT_COMPARATOR_HPP
 
 #include "AComparator.hpp"
+#include "../aligners/AAligner.hpp"
 #include "../color.hpp"
 
 namespace Overmix{
-
-enum class AlignMethod{ //TODO: We have this twice
-		BOTH
-	,	VER
-	,	HOR
-};
 
 class GradientComparator : public AComparator{
 	public:

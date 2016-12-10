@@ -20,6 +20,13 @@
 
 namespace Overmix{
 
+enum class AlignMethod{ //TODO: We have this twice
+		BOTH
+	,	VER
+	,	HOR
+};
+
+
 class AAligner{
 	public:
 		virtual ~AAligner() { }
