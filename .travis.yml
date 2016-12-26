@@ -8,7 +8,9 @@ before_script:
   - mkdir release
   - cd release
   - cmake ..  -DCMAKE_BUILD_TYPE=release
-  
+
+dist: trusty
+sudo: required
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y qtbase5-dev libqcustomplot-dev liblcms2-dev libpugixml-dev libfftw3-dev libjpeg-dev libpng-dev liblzma-dev
