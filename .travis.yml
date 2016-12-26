@@ -1,18 +1,34 @@
-language: cpp
-
-compiler:
-  - gcc
-  - clang
-
-before_script:
-  - mkdir release
-  - cd release
-  - cmake ..  -DCMAKE_BUILD_TYPE=release
-
 dist: trusty
 sudo: required
+language: cpp
+
+matrix:
+  include:
+    - compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env: COMPILER=g++-5
+    - compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.7
+          packages:
+            - clang-3.7
+      env: COMPILER=clang++-3.7
+
+	
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y qtbase5-dev libqcustomplot-dev liblcms2-dev libpugixml-dev libfftw3-dev libjpeg-dev libpng-dev liblzma-dev libqt5x11extras5-dev
 
-script: make
+before_script:
+  - mkdir release
+  - cd release
+  - cmake ..  -DCMAKE_CXX_COMPILER=$COMPILER -DCMAKE_BUILD_TYPE=release
+script: make VERBOSE=1
