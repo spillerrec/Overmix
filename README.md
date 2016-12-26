@@ -74,7 +74,7 @@ Several tools related to the format have been developed, most importantly an app
 - fftw3
 - pugixml
 - lcms2 (required for GUI)
-- QCharts (required for GUI, [open-sourced as of Qt 5.7](http://blog.qt.io/blog/2016/01/13/new-agreement-with-the-kde-free-qt-foundation/))
+- [QCustomPlot](http://www.qcustomplot.com/) 1.x (required for GUI)
 - google/benchmark (required for unit-benchmarking)
 
 *Building*
