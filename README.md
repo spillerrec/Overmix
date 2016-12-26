@@ -74,6 +74,8 @@ Several tools related to the format have been developed, most importantly an app
 - fftw3
 - pugixml
 - lcms2 (required for GUI)
+- boost
+- eigen3
 - [QCustomPlot](http://www.qcustomplot.com/) 1.x (required for GUI)
 - google/benchmark (required for unit-benchmarking)
 
