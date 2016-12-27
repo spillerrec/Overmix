@@ -27,6 +27,10 @@
 
 using namespace Overmix;
 
+PlaneBase<double> Plane::toDouble() const{
+	return map( color::asDouble );
+}
+
 color_type Plane::min_value() const{
 	color_type min = color::MAX_VAL;
 	for( auto row : *this )

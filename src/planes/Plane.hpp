@@ -78,6 +78,9 @@ class Plane : public PlaneBase<color_type>{
 		
 	//Plane handling
 		
+	//Convert
+		PlaneBase<double> toDouble() const;
+		
 	//Queries
 		color_type min_value() const;
 		color_type max_value() const;

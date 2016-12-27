@@ -187,6 +187,18 @@ class PlaneBase{
 		}
 		
 	//Transformations
+		template<typename Function>
+		auto map( Function f ) const{
+			PlaneBase<decltype(f(T()))> output;
+			for( unsigned iy=0; iy<get_height(); iy++ ){
+				auto out = output [iy];
+				auto in  = (*this)[iy];
+				for( unsigned ix=0; ix<get_width(); ix++ )
+					out[ix] = f( in[ix] );
+			}
+			return output;
+		}
+		
 		void flipHor(){
 			for( auto row : *this )
 				for( unsigned ix=0; ix<row.width()/2; ix++ )
