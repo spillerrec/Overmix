@@ -79,6 +79,10 @@ Several tools related to the format have been developed, most importantly an app
 - [QCustomPlot](http://www.qcustomplot.com/) 1.x (required for GUI)
 - google/benchmark (required for unit-benchmarking)
 
+Linux only:
+- xcb
+- qt5x11extras
+
 *Building*
 
 1. `cmake -DCMAKE_BUILD_TYPE=release`
