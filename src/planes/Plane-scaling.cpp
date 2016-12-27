@@ -20,6 +20,7 @@
 #include "../debug.hpp"
 
 #include <QtConcurrent>
+#include <numeric>
 
 #include <boost/math/constants/constants.hpp>
 
