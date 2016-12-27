@@ -64,6 +64,7 @@ class ImageEx{
 		ImageEx( Plane p, Plane a ) : ImageEx( p ) { alpha = a; }
 		
 		unsigned size() const{ return planes.size(); }
+		Size<double> planeScale( unsigned c ) const{ return planes[c].p.getSize() / getSize(); }
 		void to_grayscale();
 		ImageEx toRgb() const;
 		ImageEx toColorSpace( ColorSpace to ) const;
@@ -129,6 +130,8 @@ class ImageEx{
 		bool is_interlaced( const ImageEx& previous ) const;
 		void replace_line( ImageEx& img, bool top );
 		void combine_line( ImageEx& img, bool top );
+		
+		void copyFrom( const ImageEx& source, Point<unsigned> source_pos, Size<unsigned> size, Point<unsigned> to_pos );
 		
 		void scale( Point<unsigned> size, ScalingFunction scaling=ScalingFunction::SCALE_MITCHELL ){
 			for( auto& info : planes )

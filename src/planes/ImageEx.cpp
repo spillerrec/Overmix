@@ -197,6 +197,21 @@ Rectangle<unsigned> ImageEx::getCrop() const{
 	return { cropped.getOffset(), cropped.getRealSize() - cropped.getSize() - cropped.getOffset() };
 }
 
+void ImageEx::copyFrom( const ImageEx& source, Point<unsigned> source_pos, Size<unsigned> source_size, Point<unsigned> to_pos ){
+	//Validate
+	if( size() != source.size() )
+		throw std::runtime_error( "ImageEx::copyFrom() - not the same number of image planes" );
+	for( unsigned c=0; c<size(); c++ )
+		if( planeScale(c) != source.planeScale(c) )
+			throw std::runtime_error( "ImageEx::copyFrom() - subplanes have different scales" );
+	
+	for( unsigned c=0; c<size(); c++ ){
+		auto scale = planeScale(c);
+		planes[c].p.copy( source.planes[c].p, (source_pos * scale).to<unsigned>(), (source_size * scale).to<unsigned>(), (to_pos * scale).to<unsigned>() );
+	}
+	
+}
+
 MergeResult ImageEx::best_round( const ImageEx& img, int level, double range_x, double range_y, DiffCache *cache ) const{
 	//Bail if invalid settings
 	if(	level < 1

@@ -156,6 +156,9 @@ class PlaneBase{
 		RowIt<const T> scan_line( unsigned y ) const{ return { data.get() + getOffset( 0, y ), get_width() }; }
 		RowIt<T>       scan_line( unsigned y )      { return { data.get() + getOffset( 0, y ), get_width() }; }
 		
+		auto operator[]( unsigned y ) const{ return scan_line( y ); }
+		auto operator[]( unsigned y )      { return scan_line( y ); }
+		
 	//Resizing
 		void crop( Point<unsigned> pos, Size<unsigned> newsize ){
 			offset += pos;

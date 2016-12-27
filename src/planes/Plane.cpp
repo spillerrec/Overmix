@@ -16,7 +16,8 @@
 */
 
 #include "Plane.hpp"
-#include <algorithm> //For min, max, and accumulate
+#include <algorithm> //For min, max
+#include <numeric> //accumulate
 #include <cstdlib> //For abs(int)
 #include <cassert>
 #include <utility>
@@ -146,5 +147,47 @@ Plane Plane::minPlane( const Plane& p ) const{
 		for( auto val : makeZipRowIt( out.scan_line(iy), p.scan_line( iy ) ) )
 			val.first = std::min( val.first, val.second );
 	return out;
+}
+
+void Plane::copyAlpha(
+		Plane& out_alpha
+	,	const Plane& source, const Plane& source_alpha
+	,	Point<unsigned> source_pos, Size<unsigned> source_size
+	,	Point<unsigned> to_pos
+	){
+	//Make sure all planes are equal size
+	assert( getSize() == source.getSize() );
+	assert( getSize() == out_alpha );
+	assert( getSize() == source_alpha.getSize() );
+	
+	//Source-over algorithm:
+	// value = a_src * src + a_dest * (1 - a_src) * dest
+	// alpha = a_src       + a_dest * (1 - a_src)
+
+	//End positions in source image
+	auto end_x = std::min( get_width() , to_pos.x + source_size.width()  );
+	auto end_y = std::min( get_height(), to_pos.y + source_size.height() );
+
+	//Iterate over each pixel
+	for( unsigned iy=to_pos.y; iy<end_y; iy++ ){
+		//Apply offsets
+		auto a_src  = out_alpha[ iy ];
+		auto   src  = (*this)  [ iy ];
+		auto a_dest = source      [ iy - to_pos.y ].begin() - to_pos.x;
+		auto   dest = source_alpha[ iy - to_pos.y ].begin() - to_pos.x;
+		//TODO: sub-rect iterator?
+		
+		for( unsigned ix=to_pos.y; ix<end_x; ix++ ){
+			// a_dest * (1 - a_src)
+			auto da = color::asDouble(a_dest[ix]) * (1 - color::asDouble(a_src[ix]) );
+			
+			src[ix] = color::fromDouble(
+					color::asDouble(src[ix]) * color::asDouble(a_src[ix])
+				+  da * color::asDouble(dest[ix])
+				);
+			
+			a_src[ix] = color::fromDouble( color::asDouble(a_src[ix]) + da );
+		}
+	}
 }
 

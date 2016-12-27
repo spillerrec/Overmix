@@ -111,6 +111,8 @@ class Plane : public PlaneBase<color_type>{
 		Plane minPlane( const Plane& p ) const;
 		Plane maxPlane( const Plane& p ) const;
 		
+		void copyAlpha( Plane& out_alpha, const Plane& source, const Plane& source_alpha, Point<unsigned> source_pos, Size<unsigned> source_size, Point<unsigned> to_pos );
+		
 	//Difference
 		double diff( const Plane& p, int x, int y, unsigned stride=1 ) const;
 		double diffAlpha( const Plane& p, const Plane& alpha, const Plane& alpha_p, int x, int y, unsigned stride=1, bool fast=true ) const;

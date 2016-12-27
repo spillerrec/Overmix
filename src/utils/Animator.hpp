@@ -25,7 +25,15 @@ namespace Overmix{
 class ImageEx;
 
 class Animator{
+	public:
+		struct ImageMovement{
+			const ImageEx& img;
+			Point<double> offset;
+			Point<double> movement;
+			Size<double> scale{ 1.0, 1.0 };
+		};
 	private:
+		;
 		Point<double> offset{ 0.0, 0.0 };
 		Point<double> movement{ 2.8, 3.6 };
 		Size<int> view{ 853, 480 };
