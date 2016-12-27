@@ -45,6 +45,7 @@ add_executable(Overmix WIN32 ${SOURCE_CLI} ${SOURCE_GUI} ${SOURCE_GUI_CONFIGS} $
 # Set-up libraries
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
+find_package(Qt5PrintSupport REQUIRED)
 
 include_directories ("${PROJECT_SOURCE_DIR}/../src")
 target_link_libraries(OvermixCli OvermixCore Qt5::Widgets)
