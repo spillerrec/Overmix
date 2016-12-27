@@ -189,7 +189,7 @@ class PlaneBase{
 	//Transformations
 		template<typename Function>
 		auto map( Function f ) const{
-			PlaneBase<decltype(f(T()))> output;
+			PlaneBase<decltype(f(T()))> output( getSize() );
 			for( unsigned iy=0; iy<get_height(); iy++ ){
 				auto out = output [iy];
 				auto in  = (*this)[iy];

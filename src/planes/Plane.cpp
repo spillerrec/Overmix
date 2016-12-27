@@ -161,7 +161,7 @@ void Plane::copyAlpha(
 	){
 	//Make sure all planes are equal size
 	assert( getSize() == source.getSize() );
-	assert( getSize() == out_alpha );
+	assert( getSize() == out_alpha.getSize() );
 	assert( getSize() == source_alpha.getSize() );
 	
 	//Source-over algorithm:
