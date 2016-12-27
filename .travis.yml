@@ -30,5 +30,5 @@ before_install:
 before_script:
   - mkdir release
   - cd release
-  - cmake ..  -DCMAKE_CXX_COMPILER=$COMPILER -DCMAKE_BUILD_TYPE=release
+  - CXXFLAGS=-isystem\ /usr/include/qt5/QtPrintSupport cmake ..  -DCMAKE_CXX_COMPILER=$COMPILER -DCMAKE_BUILD_TYPE=release
 script: make VERBOSE=1
