@@ -19,6 +19,7 @@
 
 #include "../debug.hpp"
 #include "../utils/PlaneUtils.hpp"
+#include "PorterDuff.hpp"
 
 #include <QFileInfo>
 #include <stdexcept>
@@ -205,11 +206,19 @@ void ImageEx::copyFrom( const ImageEx& source, Point<unsigned> source_pos, Size<
 		if( planeScale(c) != source.planeScale(c) )
 			throw std::runtime_error( "ImageEx::copyFrom() - subplanes have different scales" );
 	
-	for( unsigned c=0; c<size(); c++ ){
-		auto scale = planeScale(c);
-		planes[c].p.copy( source.planes[c].p, (source_pos * scale).to<unsigned>(), (source_size * scale).to<unsigned>(), (to_pos * scale).to<unsigned>() );
-	}
+	auto resize = [&](const Plane& p){
+			Plane out( getSize() );
+			out.fill( color::BLACK );
+			out.copy( p, source_pos, source_size, to_pos );
+			return out;
+		};
+	//TODO: Handle sub-sampling
 	
+	PorterDuff duffer( resize(source.alpha), alpha );
+	for( unsigned c=0; c<size(); c++ )
+		planes[c].p = duffer.over( resize( source.planes[c].p ), planes[c].p );
+	
+	alpha = duffer.overAlpha();
 }
 
 MergeResult ImageEx::best_round( const ImageEx& img, int level, double range_x, double range_y, DiffCache *cache ) const{
