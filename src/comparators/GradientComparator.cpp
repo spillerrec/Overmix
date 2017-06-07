@@ -16,6 +16,7 @@
 */
 
 #include "GradientComparator.hpp"
+#include "GradientPlane.hpp"
 
 #include <QRect>
 
@@ -37,17 +38,12 @@ ImageOffset GradientComparator::findOffset( const Plane& img1, const Plane& img2
 	                   };
 	
 	std::pair<Point<>,double> result;
-	DiffCache cache;
+	GradientPlane plane( img1, img2, a1, a2, fast_diffing );
 	int level = start_level;
 	
 	//Keep repeating with higher levels until it drops below threshold
 	do{
-		result = img1.best_round_sub( img2
-			,	a1, a2, level
-			,	((int)1 - (int)img2.get_width() ) * moves.x, ((int)img1.get_width()  - 1) * moves.x
-			,	((int)1 - (int)img2.get_height()) * moves.y, ((int)img1.get_height() - 1) * moves.y
-			,	&cache, fast_diffing
-			);
+		result = plane.findMinimum( { img1.getSize(), moves.x, moves.y, level } );
 	}while( result.second > max_difference && level++ < max_level );
 	
 	return { result.first, result.second, calculate_overlap( result.first, img1, img2 ) };

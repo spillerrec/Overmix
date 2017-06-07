@@ -19,6 +19,7 @@
 
 #include "../debug.hpp"
 #include "../utils/PlaneUtils.hpp"
+#include "../comparators/GradientPlane.hpp"
 #include "PorterDuff.hpp"
 
 #include <QFileInfo>
@@ -221,7 +222,7 @@ void ImageEx::copyFrom( const ImageEx& source, Point<unsigned> source_pos, Size<
 	alpha = duffer.overAlpha();
 }
 
-MergeResult ImageEx::best_round( const ImageEx& img, int level, double range_x, double range_y, DiffCache *cache ) const{
+MergeResult ImageEx::best_round( const ImageEx& img, int level, double range_x, double range_y ) const{
 	//Bail if invalid settings
 	if(	level < 1
 		||	( range_x < 0.0 || range_x > 1.0 )
@@ -231,17 +232,8 @@ MergeResult ImageEx::best_round( const ImageEx& img, int level, double range_x, 
 		)
 		return MergeResult({0,0}, DOUBLE_MAX);
 	
-	//Make sure cache exists
-	DiffCache temp;
-	if( !cache )
-		cache = &temp;
-	
-	return planes[0].p.best_round_sub(
-			img[0], alpha_plane(), img.alpha_plane(), level
-		,	((int)1 - (int)img.get_width()) * range_x, ((int)get_width() - 1) * range_x
-		,	((int)1 - (int)img.get_height()) * range_y, ((int)get_height() - 1) * range_y
-		,	cache, true
-		);
+	GradientPlane gradient( planes[0].p, img[0], alpha_plane(), img.alpha_plane(), true );
+	return gradient.findMinimum( {getSize(), range_x, range_y} );
 }
 
 ImageEx Overmix::deVlcImage( const ImageEx& img ){

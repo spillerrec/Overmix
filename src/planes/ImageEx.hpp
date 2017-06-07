@@ -148,13 +148,13 @@ class ImageEx{
 		Point<unsigned> crop( unsigned left, unsigned top, unsigned right, unsigned bottom );
 		void crop( Point<unsigned> offset, Size<unsigned> size );
 		
-		MergeResult best_vertical( const ImageEx& img, int level, double range, DiffCache *cache=nullptr ) const{
-			return best_round( img, level, 0, range, cache );
+		MergeResult best_vertical( const ImageEx& img, int level, double range ) const{
+			return best_round( img, level, 0, range );
 		}
-		MergeResult best_horizontal( const ImageEx& img, int level, double range, DiffCache *cache=nullptr ) const{
-			return best_round( img, level, range, 0, cache );
+		MergeResult best_horizontal( const ImageEx& img, int level, double range ) const{
+			return best_round( img, level, range, 0 );
 		}
-		MergeResult best_round( const ImageEx& img, int level, double range_x, double range_y, DiffCache *cache=nullptr ) const;
+		MergeResult best_round( const ImageEx& img, int level, double range_x, double range_y ) const;
 		
 		Plane& operator[]( unsigned index ){ return planes[index].p; }
 		const Plane& operator[]( unsigned index ) const{ return planes[index].p; }

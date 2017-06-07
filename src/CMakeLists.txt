@@ -45,6 +45,7 @@ set(SOURCES_ALIGNERS
 	
 set(SOURCES_COMPARATORS
 	comparators/GradientComparator.cpp
+	comparators/GradientPlane.cpp
 	)
 	
 set(SOURCES_RENDERS

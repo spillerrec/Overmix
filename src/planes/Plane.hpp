@@ -28,20 +28,6 @@ namespace Overmix{
 typedef short color_type;
 typedef std::pair<Point<>, double> MergeResult;
 
-class DiffCache{
-	private:
-		struct Cached{
-			int x;
-			int y;
-			double diff;
-			unsigned precision;
-		};
-		std::vector<Cached> cache;
-		
-	public:
-		double get_diff( int x, int y, unsigned precision ) const;
-		void add_diff( int x, int y, double diff, unsigned precision );
-};
 
 using Kernel = PlaneBase<double>;
 
@@ -117,7 +103,7 @@ class Plane : public PlaneBase<color_type>{
 	//Difference
 		double diff( const Plane& p, int x, int y, unsigned stride=1 ) const;
 		double diffAlpha( const Plane& p, const Plane& alpha, const Plane& alpha_p, int x, int y, unsigned stride=1, bool fast=true ) const;
-		MergeResult best_round_sub( const Plane& p, const Plane& a1, const Plane& a2, int level, int left, int right, int top, int bottom, DiffCache *cache, bool fast ) const;
+		MergeResult best_round_sub( const Plane& p, const Plane& a1, const Plane& a2, int level, int left, int right, int top, int bottom, bool fast ) const;
 		
 	//Binarization
 		//TODO: find threshold methods: average, otsu?

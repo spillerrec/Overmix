@@ -81,8 +81,7 @@ bool Plane::is_interlaced() const{
 	auto frame1 = everySecond( *this, true  );
 	auto frame2 = everySecond( *this, false );
 	
-	DiffCache cache;
-	auto offset = frame1.best_round_sub( frame2, {}, {}, 20, 0, 0, -10, 10, &cache, false ).first;
+	auto offset = frame1.best_round_sub( frame2, {}, {}, 20, 0, 0, -10, 10, false ).first;
 	
 	double diff_normal    = frame1.diff( frame2, 0, 0 );
 	double diff_interlace;
