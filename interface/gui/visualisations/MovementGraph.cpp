@@ -51,7 +51,6 @@ class Line{
 			auto curve = new QCPCurve( plot.xAxis, plot.yAxis );
 			curve->setData( x, y );
 			curve->setPen( { color } );
-			plot.addPlottable( curve );
 		}
 };
 
