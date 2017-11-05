@@ -44,6 +44,7 @@
 #include <vector>
 #include <utility>
 
+#include <QCoreApplication>
 #include <QDesktopServices>
 #include <QFileInfo>
 #include <QFile>
@@ -65,12 +66,12 @@ using namespace Overmix;
 
 void foldableGroupBox( QWidget* widget, bool enabled, QGroupBox* box ){
 	auto update = [=]( bool checked )
-		{ box->setMaximumHeight( checked ? QWIDGETSIZE_MAX : 20 ); };
-	//TODO: find proper size
+		{ box->setMaximumHeight( checked ? QWIDGETSIZE_MAX : box->layout()->geometry().top() ); };
 	
 	widget->connect( box, &QGroupBox::clicked, update );
 	box->setCheckable( true );
 	box->setChecked( enabled );
+    QCoreApplication::processEvents(); //Update layout
 	update( enabled );
 }
 
@@ -141,17 +142,6 @@ main_widget::main_widget( ImageContainer& images )
 	connect( ui->cbx_merge_v,    SIGNAL( toggled(bool)     ), this, SLOT( updateComparator() ) );
 	connect( ui->merge_movement, SIGNAL( valueChanged(int) ), this, SLOT( updateComparator() ) );
 	
-	//Groupboxes
-	foldableGroupBox( this, false, ui->preprocess_group  );
-	foldableGroupBox( this, false, ui->comparing_group   );
-	foldableGroupBox( this, true,  ui->merge_group       );
-	foldableGroupBox( this, false, ui->render_group      );
-	foldableGroupBox( this, false, ui->postprocess_group );
-	foldableGroupBox( this, false, ui->color_group       );
-	//foldableGroupBox( this, true,  ui->images_group      );
-	foldableGroupBox( this, false, ui->masks_group       );
-	foldableGroupBox( this, false, ui->selection_group   );
-	
 	//Reset aligner cache
 	connect( &render_config, SIGNAL( changed() ), this, SLOT( resetImage() ) );
 	connect( &img_model, SIGNAL( dataChanged(const QModelIndex&, const QModelIndex&) ), this, SLOT( resetImage() ) );
@@ -198,6 +188,18 @@ main_widget::main_widget( ImageContainer& images )
 	save_dir = settings.value( "save_directory", "." ).toString();
 	if( settings.value( "remember_position", true ).toBool() )
 		restoreGeometry( settings.value( "window_position" ).toByteArray() );
+	
+	//Groupboxes
+    show(); //It needs to be showed so we know how large the Text is for resizing it
+	foldableGroupBox( this, false, ui->preprocess_group  );
+	foldableGroupBox( this, false, ui->comparing_group   );
+	foldableGroupBox( this, true,  ui->merge_group       );
+	foldableGroupBox( this, false, ui->render_group      );
+	foldableGroupBox( this, false, ui->postprocess_group );
+	foldableGroupBox( this, false, ui->color_group       );
+	//foldableGroupBox( this, true,  ui->images_group      );
+	foldableGroupBox( this, false, ui->masks_group       );
+	foldableGroupBox( this, false, ui->selection_group   );
 }
 
 main_widget::~main_widget(){

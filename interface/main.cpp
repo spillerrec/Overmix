@@ -42,7 +42,7 @@ int main( int argc, char *argv[] ){
 		
 		//Start GUI
 		Overmix::main_widget w( images );
-		w.show();
+		//w.show();
 		return a.exec();
 	}
 	catch( std::exception& e ){
