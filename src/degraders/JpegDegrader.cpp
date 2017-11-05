@@ -21,6 +21,7 @@
 #include "../color.hpp"
 #include "../planes/FourierPlane.hpp"
 #include "../planes/ImageEx.hpp"
+#include "../planes/JpegImage.hpp"
 
 using namespace Overmix;
 
@@ -31,7 +32,7 @@ QuantTable::QuantTable( uint16_t* input ) : table( DCTSIZE, DCTSIZE ) {
 	for( unsigned iy=0; iy<DCTSIZE; iy++ ){
 		auto row = table.scan_line( iy );
 		for( unsigned ix=0; ix<DCTSIZE; ix++ )
-			row[ix] = 1.0 / (input[iy*DCTSIZE + ix] * scale(ix,iy));
+			row[ix] = 1.0 * (input[iy*DCTSIZE + ix] * scale(ix,iy));
 	}
 }
 
@@ -45,14 +46,51 @@ unsigned QuantTable::degrade8x8Comp( DctPlane& f1, DctPlane& f2, const Plane& p1
 		auto row2  = f2   .scan_line( iy );
 		auto quant = table.scan_line( iy );
 		for( unsigned ix=0; ix<f1.get_width(); ix++ ){
-			auto deg1 = quantize( row1[ix], quant[ix] );
-			auto deg2 = quantize( row2[ix], quant[ix] );
-			if( deg1 == deg2 )
+			//qDebug() << (row2[ix]/quant[ix]) << double(quant[ix]);
+			auto deg1 = quantize( row1[ix], quant[ix] ); //Estimation
+			auto deg2 = quantize( row2[ix], quant[ix] ); //Low res
+			if( deg1 == deg2 ) //Estimation is within tolerances
 				row2[ix] = row1[ix];
 			else{
-				auto shift = ( row1[ix] > row2[ix] ) ? +0.45 : -0.45;
-				row2[ix] = (deg2 + shift)/quant[ix];
-					
+				//We need to move our estimation to fit inside the allowed range
+				qDebug() << (row1[ix]/quant[ix]) << (row2[ix]/quant[ix]) << double(quant[ix]) << ix << iy;
+				auto shift = ( row1[ix] > row2[ix] ) ? +0.5 : -0.5;
+				row2[ix] = (deg2 + shift)*quant[ix];
+				
+				change++;
+			}
+		}
+	}
+	
+	return change;
+}
+
+unsigned QuantTable::degradeFromBlock( class JpegBlock coeffs, DctPlane& image ) const{
+	unsigned change = 0;
+	if( image.get_height() < 8 || image.get_width() < 8 )
+		throw std::runtime_error( "QuantTable::degradeFromBlock: 'image' is smaller than 8x8" );
+	
+	//Iterate over each coeff (and ignore anything over 8x8)
+	for( unsigned iy=0; iy<8; iy++ ){
+		auto r_coeff  = coeffs[ iy ];
+		auto r_img    = image .scan_line( iy );
+		auto r_quant  = table .scan_line( iy );
+		
+		for( unsigned ix=0; ix<8; ix++ ){
+			//Scale coeff
+			auto img_coeff = r_img[ix] / r_quant[ix];
+			
+			//Limit lower bound
+			if( img_coeff < r_coeff[ix]-0.5 ){
+				r_img[ix] = (r_coeff[ix]-0.5) * r_quant[ix];
+				//r_img[ix] = r_coeff[ix] * r_quant[ix];
+				change++;
+			}
+			
+			//Limit upper bound
+			if( img_coeff > r_coeff[ix]+0.5 ){
+				r_img[ix] = (r_coeff[ix]+0.5) * r_quant[ix];
+				//r_img[ix] = r_coeff[ix] * r_quant[ix];
 				change++;
 			}
 		}
@@ -94,7 +132,30 @@ Plane QuantTable::degradeComp( const Plane& mask, const Plane& p1, const Plane& 
 	return out;
 }
 
-Plane JpegPlane::degradeComp( const Plane& mask, const Plane& p1, const Plane& p2, unsigned& change ) const{
+Plane JpegDegraderPlane::degradeComp( const Plane& mask, const Plane& p1, const Plane& p2, unsigned& change ) const{
 	//auto out = p.scale_cubic( p.getSize() * sampling );
 	return quant.degradeComp( mask, p1, p2, change );
+}
+
+Plane JpegDegraderPlane::degradeFromJpegPlane( const Plane& p, const class JpegPlane& blocks, unsigned& change ) const{
+	Plane out( p );
+	
+	DctPlane img_block( {8,8} );
+	//TODO: Check if sizes match
+	//NOTE: We need to handle sub-sampling in some manner, we want the increased precision if possible
+
+	//iterate over blocks
+	for( unsigned iy=0; iy<blocks.get_height(); iy++ ){
+		for( unsigned ix=0; ix<blocks.get_width(); ix++ ){
+			auto pos = Point<int>( ix*8, iy*8 );
+			//Run DCT on 8x8 section of img
+			img_block.initialize( out, pos, 255 );
+			change += quant.degradeFromBlock( blocks.scan_line(iy)[ix], img_block );
+			
+			//Apply changes
+			img_block.toPlane( out, pos, 255 );
+		}
+	}
+		
+	return out;
 }

@@ -137,6 +137,17 @@ class JpegRenderConfig : public ARenderConfig{
 		QString discription() const override{ return "Estimates a JPEG degraded image"; }
 };
 
+class JpegConstrainerRenderConfig : public ARenderConfig{
+	private:
+		QLineEdit* path;
+	public:
+		JpegConstrainerRenderConfig( QWidget* parent );
+		std::unique_ptr<ARender> getRender() const override;
+		
+		QString name() const override { return "Jpeg constrainer"; }
+		QString discription() const override{ return "Constrains an image to a set of JPEG coeffs"; }
+};
+
 class DistanceMatrixRenderConfig : public ARenderConfig{
 	public:
 		DistanceMatrixRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }

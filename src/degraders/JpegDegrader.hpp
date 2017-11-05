@@ -37,10 +37,10 @@ class QuantTable{
 			//NOTE: 4 is defined by JPEG, 2 is from FFTW, last 2???
 		
 		int quantize( double coeff, double quant ) const
-			{ return std::round( coeff * quant ); }
+			{ return std::round( coeff / quant ); }
 		
 		double degradeCoeff( double coeff, double quant ) const{
-			return std::round( coeff * quant ) / quant;
+			return std::round( coeff / quant ) * quant;
 		}
 		
 	public:
@@ -48,28 +48,30 @@ class QuantTable{
 		QuantTable( uint16_t* input );
 		
 		unsigned degrade8x8Comp( DctPlane& f1, DctPlane& f2, const Plane& p1, const Plane& p2, Point<unsigned> pos ) const;
+        unsigned degradeFromBlock( class JpegBlock coeffs, DctPlane& image ) const;
 		
 		Plane degradeComp( const Plane& mask, const Plane& p1, const Plane& p2, unsigned& change ) const;
 };
 
-class JpegPlane{
+class JpegDegraderPlane{
 	private:
 		QuantTable quant;
 		Size<double> sampling;
 		
 	public:
-		JpegPlane( QuantTable quant, double sub_h, double sub_v )
+		JpegDegraderPlane( QuantTable quant, double sub_h, double sub_v )
 			:	quant(quant), sampling(sub_h, sub_v) { }
 		
 		Plane degradeComp( const Plane& mask, const Plane& p1, const Plane& p2, unsigned& change ) const;
+        Plane degradeFromJpegPlane( const Plane& p, const class JpegPlane& blocks, unsigned& change ) const;
 };
 
 class JpegDegrader{
 	public:
-		std::vector<JpegPlane> planes;
+		std::vector<JpegDegraderPlane> planes;
 		
 	public:
-		void addPlane( JpegPlane plane ){ planes.emplace_back( plane ); }
+		void addPlane( JpegDegraderPlane plane ){ planes.emplace_back( plane ); }
 };
 
 }

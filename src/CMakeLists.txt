@@ -21,6 +21,7 @@ set(SOURCES_PLANES
 	planes/ImageEx-png.cpp
 	planes/ImageEx-qimage.cpp
 	planes/FourierPlane.cpp
+	planes/JpegImage.cpp
 	planes/Plane.cpp
 	planes/Plane-scaling.cpp
 	planes/Plane-edgedetection.cpp
@@ -60,6 +61,7 @@ set(SOURCES_RENDERS
 	renders/RobustSrRender.cpp
 	renders/EstimatorRender.cpp
 	renders/JpegRender.cpp
+	renders/JpegConstrainerRender.cpp
 	)
 	
 set(SOURCES_DEGRADERS

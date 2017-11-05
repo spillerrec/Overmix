@@ -27,6 +27,7 @@
 #include "renders/RobustSrRender.hpp"
 #include "renders/EstimatorRender.hpp"
 #include "renders/JpegRender.hpp"
+#include "renders/JpegConstrainerRender.hpp"
 #include "renders/DistanceMatrixRender.hpp"
 
 #include "../Spinbox2D.hpp"
@@ -57,6 +58,7 @@ void RenderConfigChooser::p_initialize(){
 	set( &addConfig<EstimatorRenderConfig>() );
 	set( &addConfig<PixelatorRenderConfig>() );
 	set( &addConfig<JpegRenderConfig>() );
+	set( &addConfig<JpegConstrainerRenderConfig>() );
 	set( &addConfig<DistanceMatrixRenderConfig>() );
 }
 
@@ -160,6 +162,17 @@ JpegRenderConfig::JpegRenderConfig( QWidget* parent ) : ARenderConfig( parent ) 
 
 std::unique_ptr<ARender> JpegRenderConfig::getRender() const
 	{ return std::make_unique<JpegRender>( path->text(), iterations->value() ); }
+
+JpegConstrainerRenderConfig::JpegConstrainerRenderConfig( QWidget* parent ) : ARenderConfig( parent ) {
+	setLayout( new QVBoxLayout( this ) );
+	path = addWidget<QLineEdit>( "Jpeg sample" );
+	path->setSizePolicy( QSizePolicy::Fixed, QSizePolicy::Minimum );
+	
+	connect( path, SIGNAL(textChanged(QString)), this, SIGNAL(changed()) );
+}
+
+std::unique_ptr<ARender> JpegConstrainerRenderConfig::getRender() const
+	{ return std::make_unique<JpegConstrainerRender>( path->text() ); }
 
 
 std::unique_ptr<ARender> DistanceMatrixRenderConfig::getRender() const

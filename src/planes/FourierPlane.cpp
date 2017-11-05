@@ -50,7 +50,7 @@ FourierPlane::FourierPlane( const Plane& p, double range )
 
 DctPlane::DctPlane( Size<unsigned> size ) :	PlaneBase( size ){
 	plan_dct  = fftw_plan_r2r_2d( size.height(), size.width(), scan_line(0).begin(), scan_line(0).begin(), FFTW_REDFT10, FFTW_REDFT10, FFTW_MEASURE );
-	plan_idct = fftw_plan_r2r_2d( get_height(), get_width(), scan_line(0).begin(), scan_line(0).begin(), FFTW_REDFT01, FFTW_REDFT01, FFTW_MEASURE );
+	plan_idct = fftw_plan_r2r_2d( get_height(),  get_width(),  scan_line(0).begin(), scan_line(0).begin(), FFTW_REDFT01, FFTW_REDFT01, FFTW_MEASURE );
 }
 DctPlane::~DctPlane(){
 	fftw_destroy_plan( plan_dct );
