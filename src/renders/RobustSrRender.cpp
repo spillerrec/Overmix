@@ -131,8 +131,8 @@ ImageEx RobustSrRender::render(const AContainer &group, AProcessWatcher *watcher
 		auto output = imageToMatrix( est[c].scale_cubic( group.image(0).getSize()*upscale_factor ) ); //TODO: support real upscale
 		qDebug() << "Output size: " << output.size();
 		vector<MatrixImg> lowres;
-		for( unsigned i=0; i<group.count(); i++ )
-			lowres.emplace_back( group.image(i)[c], group.pos(i)-min_point, group.image(0).getSize()*upscale_factor, upscale_factor );
+		for( auto g : group )
+			lowres.emplace_back( g.image()[c], g.pos()-min_point, g.image().getSize()*upscale_factor, upscale_factor );
 
 		for( int i=0; i<iterations; i++ ){
 			qDebug() << "Starting iteration " << i;

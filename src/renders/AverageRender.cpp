@@ -190,12 +190,11 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 		sum.spacing = spacing;
 		sum.offset  = offset;
 		
-		for( unsigned j=0; j<aligner.count(); j++ ){
-			auto& image = aligner.image( j );
-			auto pos = (scale * (aligner.pos(j) - min_point)).round();
-			auto plane = getScaled( image[c], (scale * image[0].getSize()).round() );
+		for( auto align : aligner ){
+			auto pos = (scale * (align.pos() - min_point)).round();
+			auto plane = getScaled( align.image()[c], (scale * align.image()[0].getSize()).round() );
 			
-			const Plane& alpha_plane = masks.getAlpha( c, aligner.imageMask( j ), aligner.alpha( j ) );
+			const Plane& alpha_plane = masks.getAlpha( c, align.imageMask(), align.alpha() );
 			if( use_plane_alpha && alpha_plane.valid() )
 				sum.addAlphaPlane( plane(), alpha_plane, pos );
 			else

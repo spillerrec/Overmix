@@ -28,34 +28,33 @@
 using namespace std;
 using namespace Overmix;
 
+
 class StaticDiff{
 	private:
-		const AContainer& aligner;
 		const ImageEx& reference;
 		
 		double amount{ 0.0 };
 		precision_color_type sum{ color::BLACK };
 		
-		Point<double> offset;
+		Point<unsigned> offset;
 		Point<double> absolute;
 		
 	public:
-		StaticDiff( const AContainer& aligner, Point<double> absolute, const ImageEx& ref, unsigned x, unsigned y )
-			: aligner(aligner), reference(ref), offset( x, y ), absolute(absolute) { }
+		StaticDiff( Point<double> absolute, const ImageEx& ref, unsigned x, unsigned y )
+			: reference(ref), offset( x, y ), absolute(absolute) { }
 		
-		void add_image( unsigned index ){
+		void add_image( AContainer::ConstRef img ){
 			//Get the actual color
-			color_type actual = aligner.image( index )[0].pixel( offset );
-			auto& alpha = aligner.alpha( index );
-			auto a = alpha ? color::fromDouble( alpha.pixel( offset ) ) : 1.0;
+			color_type actual = img.image()[0].pixel( offset );
+			auto alpha = img.alpha() ? color::fromDouble( img.alpha().pixel( offset ) ) : 1.0;
 			
 			//Find the expected color
-			auto pos = (aligner.pos( index ) + offset - absolute).round();
+			auto pos = (img.pos() + offset - absolute).round();
 			color_type expected = reference[0].pixel( pos );
 			
 			//Add it to the sum
-			sum += abs( actual - expected ) * a;
-			amount += a;
+			sum += abs( actual - expected ) * alpha;
+			amount += alpha;
 		}
 		
 		color_type result() const{
@@ -108,10 +107,10 @@ Plane DiffRender::iteration( const AContainer& aligner, const AContainer& real, 
 		auto out = output.scan_line( iy );
 		for( unsigned ix=0; ix<output.get_width(); ix++ ){
 			//Set the pixel to the static difference of all the images
-			StaticDiff diff( real, real_size, avg, ix, iy );
+			StaticDiff diff( real_size, avg, ix, iy );
 			
-			for( unsigned j=0; j<aligner.count(); j++ )
-				diff.add_image( j );
+			for( auto image : real )
+				diff.add_image( image );
 			
 			out[ix] = diff.result();
 		}

@@ -39,8 +39,8 @@ Plane PlaneRender::renderPlane( const AContainer& aligner, int plane, AProcessWa
 	vector<PlaneItInfo> info;
 	info.emplace_back( out, (aligner.size().pos * scale).round() );
 	
-	for( unsigned i=0; i<aligner.count(); i++ )
-		info.emplace_back( const_cast<Plane&>( aligner.image( i )[plane] ), (aligner.pos(i) * scale).round() );
+	for( auto align : aligner )
+		info.emplace_back( const_cast<Plane&>( align.image()[plane] ), (align.pos() * scale).round() );
 		//TODO: FIX!!!
 	
 	//Execute
