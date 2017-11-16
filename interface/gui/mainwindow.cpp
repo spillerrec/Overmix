@@ -86,15 +86,18 @@ main_widget::main_widget( ImageContainer& images )
 	,	viewer( settings, (QWidget*)this )
 	,	browser( settings, (QWidget*)this )
 	,	images( images )
-	,	aligner_config( this, true )
-	,	 render_config( this, true )
+	,	   aligner_config( this, true )
+	,	comparator_config( this, true )
+	,	    render_config( this, true )
 	,	img_model( images )
 {
 	ui->setupUi(this);
-	aligner_config.initialize();
-	 render_config.initialize();
-	ui->align_layout ->insertWidget( 0, &aligner_config );
-	ui->render_layout->insertWidget( 0, & render_config );
+	   aligner_config.initialize();
+	comparator_config.initialize();
+	    render_config.initialize();
+	ui->align_layout     ->insertWidget( 0, &   aligner_config );
+	ui->comparing_layout ->insertWidget( 0, &comparator_config );
+	ui->render_layout    ->insertWidget( 0, &    render_config );
 	
 	//Add 2D spinboxes
 	scale_spinbox      = new DoubleSpinbox2D( this );
@@ -138,9 +141,7 @@ main_widget::main_widget( ImageContainer& images )
 	updateUiBinarize( ui->threshold_method->currentIndex() );
 	
 	//Comparing changes
-	connect( ui->cbx_merge_h,    SIGNAL( toggled(bool)     ), this, SLOT( updateComparator() ) );
-	connect( ui->cbx_merge_v,    SIGNAL( toggled(bool)     ), this, SLOT( updateComparator() ) );
-	connect( ui->merge_movement, SIGNAL( valueChanged(int) ), this, SLOT( updateComparator() ) );
+	connect( &comparator_config, SIGNAL( changed() ), this, SLOT( updateComparator() ) );
 	
 	//Reset aligner cache
 	connect( &render_config, SIGNAL( changed() ), this, SLOT( resetImage() ) );
@@ -679,18 +680,7 @@ void main_widget::updateSelection(){
 }
 
 void main_widget::updateComparator(){
-	GradientComparator g;
-	
-	auto ver = ui->cbx_merge_v->isChecked();
-	auto hor = ui->cbx_merge_h->isChecked();
-	if( hor && ver )
-		g.method = AlignMethod::BOTH;
-	else
-		g.method = ver ? AlignMethod::VER : AlignMethod::HOR;
-	
-	g.movement = ui->merge_movement->value() / 100.0;
-	
-	images.setComparator( g );
+	images.setComparator( comparator_config.getComparator() );
 }
 
 void main_widget::crop_all(){

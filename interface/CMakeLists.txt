@@ -24,6 +24,7 @@ set(SOURCE_GUI
 
 set(SOURCE_GUI_CONFIGS
 	gui/configs/AlignerConfigs.cpp
+	gui/configs/ComparatorConfigs.cpp
 	gui/configs/RenderConfigs.cpp
 	)
 

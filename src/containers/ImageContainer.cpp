@@ -62,8 +62,8 @@ ImageOffset ImageContainer::IndexCache::getOffset( unsigned index1, unsigned ind
 		return offsets[index1][index2];
 }
 
-void ImageContainer::setComparator( GradientComparator g ){
-	comparator = g;
+void ImageContainer::setComparator( std::unique_ptr<AComparator> g ){
+	comparator = std::move( g );
 	index_cache.invalidate( groups );
 }
 

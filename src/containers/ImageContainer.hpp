@@ -19,15 +19,15 @@
 #define IMAGE_CONTAINER_HPP
 
 #include "ImageGroup.hpp"
-#include "../comparators/GradientComparator.hpp"
+#include "../comparators/AComparator.hpp"
 
 namespace Overmix{
 
 class ImageContainer : public AContainer{
 	private:
-		GradientComparator comparator; //TODO: Make virtual?
+		std::unique_ptr<AComparator> comparator;
 	public:
-		void setComparator( GradientComparator );
+		void setComparator( std::unique_ptr<AComparator> );
 		
 	private:
 		/** A index to an ImageItem */
@@ -104,7 +104,7 @@ class ImageContainer : public AContainer{
 		virtual       void      setFrame( unsigned index, int newVal ) override;
 		
 	public: //AContainer comparators implementation
-		const AComparator* getComparator() const override{ return &comparator; }
+		const AComparator* getComparator() const override{ return comparator.get(); }
 		virtual bool        hasCachedOffset( unsigned, unsigned ) const override;
 		virtual ImageOffset getCachedOffset( unsigned, unsigned ) const override;
 		virtual void        setCachedOffset( unsigned, unsigned, ImageOffset ) override;
@@ -123,7 +123,7 @@ class ImageContainer : public AContainer{
 		}
 		const std::vector<Plane>& getMasks() const{ return masks; }	
 		
-		void addGroup( QString name ){ groups.emplace_back( &comparator, name, masks ); }
+		void addGroup( QString name ){ groups.emplace_back( comparator.get(), name, masks ); }
 		void addGroup( QString name, unsigned group, unsigned from, unsigned to );
 		
 		void moveImage( unsigned from_group, unsigned from_img

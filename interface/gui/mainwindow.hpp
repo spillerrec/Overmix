@@ -36,6 +36,7 @@
 #include "RenderOperations.hpp"
 
 #include "configs/AlignerConfigs.hpp"
+#include "configs/ComparatorConfigs.hpp"
 #include "configs/RenderConfigs.hpp"
 
 class QGroupBox;
@@ -63,8 +64,9 @@ class main_widget: public QMainWindow{
 		ImageContainer& images;
 		std::unique_ptr<AContainer> selection;
 		
-		AlignerConfigChooser aligner_config;
-		RenderConfigChooser   render_config;
+		AlignerConfigChooser       aligner_config;
+		ComparatorConfigChooser comparator_config;
+		RenderConfigChooser         render_config;
 		
 		struct RenderCache{
 			ImageEx raw;
