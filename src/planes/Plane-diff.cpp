@@ -76,11 +76,27 @@ struct Para{
 		return { sum, alpha };
 	}
 	
-	color_type abs(     unsigned i ) const{ 
-		auto val = color::asDouble( std::abs( c1[i] - c2[i] ) );
-		return color::fromDouble( val*val );
+	color_type distance_L1( unsigned i ) const{ 
+		return std::abs( c1[i] - c2[i] );
 	}
-	color_type checked( unsigned i ) const{ auto val = abs( i ); return val > epsilon ? val : 0; }
+	color_type distance_L1_checked( unsigned i ) const{
+		//Ignore small differences
+		auto val = distance_L1( i );
+		return val > epsilon ? val-epsilon : 0;
+	}
+	
+	color_type distance_L2( unsigned i ) const{
+		auto val = color::asDouble( distance_L1( i ) );
+		return color::fromDouble( val * val );
+	}
+	
+	color_type distance_L2_checked( unsigned i ) const{
+		auto val = color::asDouble( distance_L1( i ) );
+		//Ignore small differences
+		val = val > epsilon ? val-epsilon : 0;
+		return color::fromDouble( val * val );
+	}
+	
 	color_type alpha1(  unsigned i ) const{ return color::asDouble( a1[i] ); }
 	color_type alpha2(  unsigned i ) const{ return color::asDouble( a2[i] ); }
 	color_type alpha(   unsigned i ) const{ return alpha1(i) * alpha2(i); }
@@ -95,8 +111,8 @@ struct Para{
 			return sum( func, a1 ? &Para::alpha1 : &Para::alpha2 );
 	}
 };
-static DiffAmount diff_alpha_line(      Para p ){ return p.diff_line( &Para::checked ); }
-static DiffAmount fast_diff_alpha_line( Para p ){ return p.diff_line( &Para::abs ); }
+static DiffAmount diff_alpha_line(      Para p ){ return p.diff_line( &Para::distance_L2_checked ); }
+static DiffAmount fast_diff_alpha_line( Para p ){ return p.diff_line( &Para::distance_L2 ); }
 
 double Plane::diff( const Plane& p, int x, int y, unsigned stride ) const{
 	Plane empty;
