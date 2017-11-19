@@ -50,8 +50,11 @@ GradientCheck::GradientCheck( Size<unsigned> size, double width_scale, double he
 	level = lvl;
 }
 
-double GradientPlane::getDifference( int x, int y, double precision ) const
-	{ return p1.diffAlpha( p2, a1, a2, x, y, precision, fast ); }
+double GradientPlane::getDifference( int x, int y, double precision ) const{
+	auto local = settings;
+	local.stride = precision; //TODO: double?
+	return Difference::simpleAlpha( p1, p2, a1, a2, {x, y}, local );
+}
 
 
 struct img_comp{

@@ -19,6 +19,7 @@
 #define GRADIENT_PLANE_HPP
 
 #include "../Geometry.hpp"
+#include "../planes/basic/difference.hpp"
 #include <vector>
 
 namespace Overmix{
@@ -63,6 +64,7 @@ class GradientPlane{
 	private:
 		DiffCache cache;
 		bool fast{ false };
+		Difference::SimpleSettings settings; //TODO: configure
 		
 	public:
 		GradientPlane( const Plane& p1, const Plane& p2, const Plane& a1, const Plane& a2, bool fast_diffing=true )

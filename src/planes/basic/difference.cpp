@@ -15,14 +15,14 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Plane.hpp"
+#include "difference.hpp"
 
 #include <QtConcurrent>
 #include <QDebug>
 #include <algorithm>
 
-#include "../color.hpp"
-#include "../comparators/GradientPlane.hpp"
+#include "../Plane.hpp"
+
 
 using namespace std;
 using namespace Overmix;
@@ -47,11 +47,11 @@ struct Para{
 	const color_type *a2;
 	unsigned width;
 	unsigned stride;
-	static constexpr color_type epsilon = 10 / 255.0 * color::WHITE; //TODO: Ad-hoc constant, and perhaps a little high...
+	color_type epsilon;
 	
-	Para( const color_type* c1, const color_type *c2, unsigned width, unsigned stride
+	Para( const color_type* c1, const color_type *c2, unsigned width, unsigned stride, color_type epsilon
 		,	const color_type* a1=nullptr, const color_type *a2=nullptr )
-		:	c1( c1 ), c2( c2 ), a1( a1 ), a2( a2 ), width( width ), stride( stride ) { }
+		:	c1( c1 ), c2( c2 ), a1( a1 ), a2( a2 ), width( width ), stride( stride ), epsilon(epsilon) { }
 	
 	template<typename T>
 	DiffAmount sum( T func ) const{
@@ -114,48 +114,51 @@ struct Para{
 static DiffAmount diff_alpha_line(      Para p ){ return p.diff_line( &Para::distance_L2_checked ); }
 static DiffAmount fast_diff_alpha_line( Para p ){ return p.diff_line( &Para::distance_L2 ); }
 
-double Plane::diff( const Plane& p, int x, int y, unsigned stride ) const{
+
+double Difference::simple( const Plane& p1, const Plane& p2, Point<int> offset, SimpleSettings s ){
 	Plane empty;
-	return diffAlpha( p, empty, empty, x, y, stride );
+	return simpleAlpha( p1, p2, empty, empty, offset, s );
 }
 
-double Plane::diffAlpha( const Plane& p, const Plane& alpha, const Plane& alpha_p, int x, int y, unsigned stride, bool fast ) const{
+
+double Difference::simpleAlpha( const Plane& p1, const Plane& p2, const Plane& alpha1, const Plane& alpha2, Point<int> offset, SimpleSettings s ){
 	//Find edges
-	int p1_top = y < 0 ? 0 : y;
-	int p2_top = y > 0 ? 0 : -y;
-	int p1_left = x < 0 ? 0 : x;
-	int p2_left = x > 0 ? 0 : -x;
-	unsigned width = min( get_width() - p1_left, p.get_width() - p2_left );
-	unsigned height = min( get_height() - p1_top, p.get_height() - p2_top );
+	int p1_top  = offset.y < 0 ? 0 :  offset.y;
+	int p2_top  = offset.y > 0 ? 0 : -offset.y;
+	int p1_left = offset.x < 0 ? 0 :  offset.x;
+	int p2_left = offset.x > 0 ? 0 : -offset.x;
+	unsigned width  = min( p1.get_width()  - p1_left, p2.get_width()  - p2_left );
+	unsigned height = min( p1.get_height() - p1_top,  p2.get_height() - p2_top  );
 	
 	//Initial offsets on the two planes
 	//TODO: avoid using pointer math
-	auto c1 =   scan_line( p1_top ).begin() + p1_left;
-	auto c2 = p.scan_line( p2_top ).begin() + p2_left;
-	auto a1 = alpha   ? alpha  .scan_line( p1_top ).begin() + p1_left : nullptr;
-	auto a2 = alpha_p ? alpha_p.scan_line( p2_top ).begin() + p2_left : nullptr;
+	auto c1 = p1.scan_line( p1_top ).begin() + p1_left;
+	auto c2 = p2.scan_line( p2_top ).begin() + p2_left;
+	auto a1 = alpha1 ? alpha1.scan_line( p1_top ).begin() + p1_left : nullptr;
+	auto a2 = alpha2 ? alpha2.scan_line( p2_top ).begin() + p2_left : nullptr;
 	
 	
 	//Calculate all the offsets for QtConcurrent::mappedReduced
 	vector<Para> lines;
 	lines.reserve( height );
-	for( unsigned i=0; i<height; i+=stride ){
-		lines.push_back( Para( c1+i%stride, c2+i%stride, width, stride, a1, a2 ) );
-		c1 += line_width * stride;
-		c2 += p.line_width * stride;
-		a1 += a1 ? alpha  .line_width * stride : 0;
-		a2 += a2 ? alpha_p.line_width * stride : 0;
+	for( unsigned i=0; i<height; i+=s.stride ){
+		//Use i%s.stride to offset each line so we don't start the same place every time
+		lines.push_back( Para( c1+i%s.stride, c2+i%s.stride, width, s.stride, s.epsilon, a1, a2 ) );
+		c1 += p1.get_line_width() * s.stride;
+		c2 += p2.get_line_width() * s.stride;
+		a1 += a1 ? alpha1.get_line_width() * s.stride : 0;
+		a2 += a2 ? alpha2.get_line_width() * s.stride : 0;
+		//TODO: Avoid get_line_width?
 	}
 	
-	auto diff_func = fast ? &fast_diff_alpha_line : &diff_alpha_line;
+	auto diff_func = s.fast ? &fast_diff_alpha_line : &diff_alpha_line;
 	Sum sum = QtConcurrent::blockingMappedReduced( lines, diff_func, &Sum::reduce );
 //	Sum sum; for( auto& p : lines ) sum.reduce( diff_alpha_line( p ) );
-	auto full_area = height * width / (stride*stride);
+	
+	//If our stride causes too much reducin
+	//NOTE: This seems risky, as it might cause us to disregard results? Maybe we should return NAN?
+	auto full_area = height * width / (s.stride*s.stride);
+	//TODO: configure this
 	return  ( full_area * 0.1 > sum.total ) ? std::numeric_limits<double>::max() : sum.average();
-}
-
-MergeResult Plane::best_round_sub( const Plane& p, const Plane& a1, const Plane& a2, int level, int left, int right, int top, int bottom, bool fast ) const{
-	GradientPlane gradient( *this, p, a1, a2, fast );
-	return gradient.findMinimum( { left, right, top, bottom } );
 }
 

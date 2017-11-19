@@ -13,6 +13,7 @@ set(SOURCES_CONTAINERS
 	)
 
 set(SOURCES_PLANES
+	planes/basic/difference.cpp
 	planes/ColorSpace.cpp
 	planes/DistanceMatrix.cpp
 	planes/ImageEx.cpp
@@ -26,7 +27,6 @@ set(SOURCES_PLANES
 	planes/Plane-scaling.cpp
 	planes/Plane-edgedetection.cpp
 	planes/Plane-blurring.cpp
-	planes/Plane-diff.cpp
 	planes/Plane-pixel.cpp
 	planes/Plane-binarize.cpp
 	planes/PorterDuff.cpp

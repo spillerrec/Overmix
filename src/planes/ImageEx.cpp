@@ -20,6 +20,7 @@
 #include "../debug.hpp"
 #include "../utils/PlaneUtils.hpp"
 #include "../comparators/GradientPlane.hpp"
+#include "basic/difference.hpp"
 #include "PorterDuff.hpp"
 
 #include <QFileInfo>
@@ -132,7 +133,8 @@ double ImageEx::diff( const ImageEx& img, int x, int y ) const{
 	if( !is_valid() || !img.is_valid() )
 		return DOUBLE_MAX;
 	
-	return planes[0].p.diff( img[0], x, y );
+	//TODO: Why no alpha?
+	return Difference::simple( planes[0].p, img[0], {x, y} );
 }
 
 bool ImageEx::is_interlaced() const{

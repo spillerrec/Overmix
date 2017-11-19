@@ -24,6 +24,7 @@
 #include <QDebug>
 
 #include "../color.hpp"
+#include "basic/difference.hpp"
 
 using namespace Overmix;
 
@@ -78,22 +79,24 @@ static Plane everySecond( const Plane& p, bool even=true ){
 }
 
 bool Plane::is_interlaced() const{
+	Difference::SimpleSettings settings; //TODO: configure?
 	auto frame1 = everySecond( *this, true  );
 	auto frame2 = everySecond( *this, false );
 	
 	auto offset = frame1.best_round_sub( frame2, {}, {}, 20, 0, 0, -10, 10, false ).first;
 	
-	double diff_normal    = frame1.diff( frame2, 0, 0 );
+	double diff_normal    = Difference::simple( frame1, frame2, {0, 0}, settings );
 	double diff_interlace;
 	if( offset.y == 0 || offset.y == 1 )
-		diff_interlace = frame1.diff( frame1, 0, 1 )/2 + frame2.diff( frame2, 0, 1 )/2;
+		diff_interlace = Difference::simple( frame1, frame1, {0, 1}, settings )/2 + Difference::simple( frame2, frame2, {0, 1}, settings )/2;
 	else
-		diff_interlace = frame1.diff( frame2, offset.x, offset.y );
+		diff_interlace = Difference::simple( frame1, frame2, offset, settings );
 		
 	return diff_interlace < diff_normal*0.95;
 }
 
 bool Plane::is_interlaced( const Plane& previous ) const{
+	Difference::SimpleSettings settings; //TODO: configure?
 	if( !previous )
 		return is_interlaced();
 	
@@ -102,8 +105,8 @@ bool Plane::is_interlaced( const Plane& previous ) const{
 	auto frame1 = everySecond( *this, true  );
 	auto frame2 = everySecond( *this, false );
 	
-	auto diff_previous = frame1.diff( frame_old, 0, 0 );
-	auto diff_normal   = frame1.diff( frame2,    0, 0 );
+	auto diff_previous = Difference::simple( frame1, frame_old, {0, 0} );
+	auto diff_normal   = Difference::simple( frame1, frame2,    {0, 0} );
 	
 	return diff_previous < diff_normal*0.95;
 }
@@ -150,5 +153,13 @@ Plane Plane::minPlane( const Plane& p ) const{
 		for( auto val : makeZipRowIt( out.scan_line(iy), p.scan_line( iy ) ) )
 			val.first = std::min( val.first, val.second );
 	return out;
+}
+
+
+//TODO: Avoid using this?
+#include "../comparators/GradientPlane.hpp"
+MergeResult Plane::best_round_sub( const Plane& p, const Plane& a1, const Plane& a2, int level, int left, int right, int top, int bottom, bool fast ) const{
+	GradientPlane gradient( *this, p, a1, a2, fast );
+	return gradient.findMinimum( { left, right, top, bottom } );
 }
 
