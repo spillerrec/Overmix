@@ -142,6 +142,7 @@ main_widget::main_widget( ImageContainer& images )
 	
 	//Comparing changes
 	connect( &comparator_config, SIGNAL( changed() ), this, SLOT( updateComparator() ) );
+	updateComparator();
 	
 	//Reset aligner cache
 	connect( &render_config, SIGNAL( changed() ), this, SLOT( resetImage() ) );
