@@ -26,10 +26,10 @@ using namespace Overmix;
 
 
 QImage DistanceMatrix::toQImage() const{
-	auto comp = [](MergeResult a, MergeResult b){ return a.second < b.second; };
-	auto min = std::min_element( matrix.allPixelsBegin(), matrix.allPixelsEnd(), comp )->second;
-	auto max = std::max_element( matrix.allPixelsBegin(), matrix.allPixelsEnd(), comp )->second;
-	auto color = [=](MergeResult a){ return (a.second-min) / (max-min); };
+	auto comp = [](ImageOffset a, ImageOffset b){ return a.error < b.error; };
+	auto min = std::min_element( matrix.allPixelsBegin(), matrix.allPixelsEnd(), comp )->error;
+	auto max = std::max_element( matrix.allPixelsBegin(), matrix.allPixelsEnd(), comp )->error;
+	auto color = [=](ImageOffset a){ return (a.error-min) / (max-min); };
 	
 	QImage img( matrix.get_width(), matrix.get_height(), QImage::Format_Indexed8 );
 	QVector<QRgb> palette;

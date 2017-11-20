@@ -30,6 +30,28 @@
 using namespace std;
 using namespace Overmix;
 
+
+class ColorRow{
+	private:
+		RowIt<color_type> r, g, b;
+		
+	public:
+		ColorRow( ImageEx& img, int iy )
+			:	r(img[0].scan_line(iy))
+			,	g(img[1].scan_line(iy))
+			,	b(img[2].scan_line(iy))
+			{ }
+		
+		color operator[]( int i ) const
+			{ return { r[i], g[i], b[i] }; }
+		
+		void set( int ix, color rgb ){
+			r[ix] = rgb.r;
+			g[ix] = rgb.g;
+			b[ix] = rgb.b;
+		}
+};
+
 static const double DOUBLE_MAX = std::numeric_limits<double>::max();
 
 void ImageEx::to_grayscale(){
@@ -222,20 +244,6 @@ void ImageEx::copyFrom( const ImageEx& source, Point<unsigned> source_pos, Size<
 		planes[c].p = duffer.over( resize( source.planes[c].p ), planes[c].p );
 	
 	alpha = duffer.overAlpha();
-}
-
-MergeResult ImageEx::best_round( const ImageEx& img, int level, double range_x, double range_y ) const{
-	//Bail if invalid settings
-	if(	level < 1
-		||	( range_x < 0.0 || range_x > 1.0 )
-		||	( range_y < 0.0 || range_y > 1.0 )
-		||	!is_valid()
-		||	!img.is_valid()
-		)
-		return MergeResult({0,0}, DOUBLE_MAX);
-	
-	GradientPlane gradient( planes[0].p, img[0], alpha_plane(), img.alpha_plane(), true );
-	return gradient.findMinimum( {getSize(), range_x, range_y} );
 }
 
 ImageEx Overmix::deVlcImage( const ImageEx& img ){

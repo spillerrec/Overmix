@@ -19,7 +19,8 @@
 #define GRADIENT_COMPARATOR_HPP
 
 #include "AComparator.hpp"
-#include "../aligners/AAligner.hpp"
+#include "../aligners/AAligner.hpp" //For AlignMethod
+#include "../planes/basic/difference.hpp" //For SimpleSettings
 #include "../color.hpp"
 
 namespace Overmix{
@@ -30,7 +31,7 @@ class GradientComparator : public AComparator{
 		double movement{ 0.75 };
 		int start_level{ 1 };
 		int max_level{ 6 };
-		bool fast_diffing{ true };
+		Difference::SimpleSettings settings;
 		color_type max_difference = 0.10*color::WHITE; //Difference must not be above this to match
 		
 	public:

@@ -22,6 +22,7 @@
 #include <QtConcurrent>
 
 #include "../planes/Plane.hpp"
+#include "AComparator.hpp" //For ImageOffset
 
 using namespace Overmix;
 
@@ -82,11 +83,11 @@ struct img_comp{
 			diff_set = true;
 	}
 	
-	MergeResult result() const{
+	ImageOffset result() const{
 		if( area.level > 0 )
 			return plane.findMinimum( area );
 		else
-			return MergeResult( {h_middle, v_middle}, diff);
+			return ImageOffset( {h_middle, v_middle}, diff, 1 ); //TODO: calculate overlap
 	}
 	
 	double checkedPercentage(){
@@ -108,7 +109,7 @@ struct img_comp{
 };
 
 
-MergeResult GradientPlane::findMinimum( GradientCheck area ){
+ImageOffset GradientPlane::findMinimum( GradientCheck area ){
 //	qDebug( "Round %d: %d,%d x %d,%d", area.level, area.left, area.right, area.top, area.bottom );
 	std::vector<img_comp> comps;
 	//TODO: Move to GradientCheck, and document
@@ -189,7 +190,7 @@ MergeResult GradientPlane::findMinimum( GradientCheck area ){
 	
 	if( !best ){
 		qDebug( "ERROR! no result to continue on!!" );
-		return MergeResult( {0,0}, DOUBLE_MAX );
+		return {};
 	}
 	
 	return best->result();

@@ -28,7 +28,6 @@
 #include "debug.hpp"
 #include "renders/AnimRender.hpp"
 #include "Deteleciner.hpp"
-#include "comparators/GradientComparator.hpp"
 #include "containers/DelegatedContainer.hpp"
 #include "containers/FrameContainer.hpp"
 #include "containers/ImageContainer.hpp"

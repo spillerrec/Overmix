@@ -25,6 +25,7 @@
 
 #include "../color.hpp"
 #include "basic/difference.hpp"
+#include "../comparators/GradientPlane.hpp"
 
 using namespace Overmix;
 
@@ -83,7 +84,8 @@ bool Plane::is_interlaced() const{
 	auto frame1 = everySecond( *this, true  );
 	auto frame2 = everySecond( *this, false );
 	
-	auto offset = frame1.best_round_sub( frame2, {}, {}, 20, 0, 0, -10, 10, false ).first;
+	GradientPlane gradient( frame1, frame2, {}, {}, settings );
+	auto offset = gradient.findMinimum( { 0, 0, -10, 10, 20 } ).distance; //TODO: configure
 	
 	double diff_normal    = Difference::simple( frame1, frame2, {0, 0}, settings );
 	double diff_interlace;
@@ -153,13 +155,5 @@ Plane Plane::minPlane( const Plane& p ) const{
 		for( auto val : makeZipRowIt( out.scan_line(iy), p.scan_line( iy ) ) )
 			val.first = std::min( val.first, val.second );
 	return out;
-}
-
-
-//TODO: Avoid using this?
-#include "../comparators/GradientPlane.hpp"
-MergeResult Plane::best_round_sub( const Plane& p, const Plane& a1, const Plane& a2, int level, int left, int right, int top, int bottom, bool fast ) const{
-	GradientPlane gradient( *this, p, a1, a2, fast );
-	return gradient.findMinimum( { left, right, top, bottom } );
 }
 

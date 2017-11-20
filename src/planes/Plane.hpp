@@ -26,7 +26,6 @@
 namespace Overmix{
 
 typedef short color_type;
-typedef std::pair<Point<>, double> MergeResult;
 
 
 using Kernel = PlaneBase<double>;
@@ -99,9 +98,6 @@ class Plane : public PlaneBase<color_type>{
 		
 		Plane minPlane( const Plane& p ) const;
 		Plane maxPlane( const Plane& p ) const;
-		
-	//Difference
-		MergeResult best_round_sub( const Plane& p, const Plane& a1, const Plane& a2, int level, int left, int right, int top, int bottom, bool fast ) const;
 		
 	//Binarization
 		//TODO: find threshold methods: average, otsu?

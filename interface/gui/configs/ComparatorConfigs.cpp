@@ -56,33 +56,37 @@ GradientComparatorConfig::GradientComparatorConfig( QWidget* parent ) : ACompara
 	start_level    = addWidget<QSpinBox>(       "Start level" );
 	max_level      = addWidget<QSpinBox>(       "Maximum level" );
 	fast_diffing   = addWidget<QCheckBox>(      "Use fast diffing" );
+	epsilon        = addWidget<QSpinBox>(       "Ignore threshold" );
 	max_difference = addWidget<QSpinBox>(       "Maximum difference" );
 	
 	//Limits on spinboxes
 	movement      ->setRange( 0.0, 1.0          );
 	start_level   ->setRange( 1,   100          );
 	max_level     ->setRange( 1,   100          );
+	epsilon       ->setRange( 0,   color::WHITE );
 	max_difference->setRange( 0,   color::WHITE );
 	
 	//Set default values
 	GradientComparator defaults;
 	//TODO: Method
-	movement      ->setValue( defaults.movement       );
-	start_level   ->setValue( defaults.start_level    );
-	max_level     ->setValue( defaults.max_level      );
-	fast_diffing  ->setChecked( defaults.fast_diffing );
-	max_difference->setValue( defaults.max_difference );
+	movement      ->setValue(   defaults.movement       );
+	start_level   ->setValue(   defaults.start_level    );
+	max_level     ->setValue(   defaults.max_level      );
+	fast_diffing  ->setChecked( defaults.settings.fast  );
+	epsilon       ->setValue(   color::WHITE * 0.1      ); //NOTE: We don't want the default '0' value
+	max_difference->setValue(   defaults.max_difference );
 }
 
 std::unique_ptr<AComparator> GradientComparatorConfig::getComparator() const{
 	auto comperator = std::make_unique<GradientComparator>();
 	
 	//TODO: Method
-	comperator->movement       = movement       ->value();
-	comperator->start_level    = start_level    ->value();
-	comperator->max_level      = max_level      ->value();
-	comperator->fast_diffing   = fast_diffing   ->isChecked();
-	comperator->max_difference = max_difference ->value();
+	comperator->movement         = movement       ->value();
+	comperator->start_level      = start_level    ->value();
+	comperator->max_level        = max_level      ->value();
+	comperator->settings.fast    = fast_diffing   ->isChecked();
+	comperator->settings.epsilon = epsilon        ->value();
+	comperator->max_difference   = max_difference ->value();
 	
 	return std::move( comperator );
 }

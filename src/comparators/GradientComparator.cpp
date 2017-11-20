@@ -23,7 +23,7 @@
 using namespace Overmix;
 
 
-static double calculate_overlap( Point<> offset, const Plane& img1, const Plane& img2 ){
+static double calculate_overlap( Point<> offset, const Plane& img1, const Plane& img2 ){ //TODO: this is supposed to be in ImageOffset
 	QRect first( 0,0, img1.get_width(), img1.get_height() );
 	QRect second( { offset.x, offset.y }, QSize(img2.get_width(), img2.get_height()) );
 	QRect common = first.intersected( second );
@@ -37,15 +37,15 @@ ImageOffset GradientComparator::findOffset( const Plane& img1, const Plane& img2
 	                   , method == AlignMethod::HOR ? 0.0 : movement
 	                   };
 	
-	std::pair<Point<>,double> result;
-	GradientPlane plane( img1, img2, a1, a2, fast_diffing );
+	ImageOffset result;
+	GradientPlane plane( img1, img2, a1, a2, settings );
 	int level = start_level;
 	
 	//Keep repeating with higher levels until it drops below threshold
 	do{
 		result = plane.findMinimum( { img1.getSize(), moves.x, moves.y, level } );
-	}while( result.second > max_difference && level++ < max_level );
+	}while( result.error > max_difference && level++ < max_level );
 	
-	return { result.first, result.second, calculate_overlap( result.first, img1, img2 ) };
+	return { result.distance, result.error, calculate_overlap( result.distance, img1, img2 ) };
 }
 

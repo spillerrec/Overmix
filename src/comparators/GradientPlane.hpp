@@ -18,6 +18,7 @@
 #ifndef GRADIENT_PLANE_HPP
 #define GRADIENT_PLANE_HPP
 
+#include "AComparator.hpp"
 #include "../Geometry.hpp"
 #include "../planes/basic/difference.hpp"
 #include <vector>
@@ -63,17 +64,15 @@ class GradientPlane{
 		const Plane& a2;
 	private:
 		DiffCache cache;
-		bool fast{ false };
-		Difference::SimpleSettings settings; //TODO: configure
+		Difference::SimpleSettings settings;
 		
 	public:
-		GradientPlane( const Plane& p1, const Plane& p2, const Plane& a1, const Plane& a2, bool fast_diffing=true )
-			: p1(p1), p2(p2), a1(a1), a2(a2), fast(fast_diffing) { }
+		GradientPlane( const Plane& p1, const Plane& p2, const Plane& a1, const Plane& a2, Difference::SimpleSettings settings={} )
+			: p1(p1), p2(p2), a1(a1), a2(a2), settings(settings) { }
 		
 		double getDifference( int x, int y, double precision ) const;
 		
-		//TODO: MergeResult
-		std::pair<Point<>, double> findMinimum( GradientCheck area );
+		class ImageOffset findMinimum( GradientCheck area );
 };
 
 

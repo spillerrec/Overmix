@@ -22,6 +22,7 @@
 #include <QObject>
 #include <QImage>
 
+#include <comparators/GradientComparator.hpp>
 #include <planes/ImageEx.hpp>
 #include <planes/DistanceMatrix.hpp>
 #include <utils/ImageLoader.hpp>
@@ -121,8 +122,9 @@ void Slide::createErrorMatrix( QString filepath ) const{
 	for( unsigned i=0; i<images.size(); i++ ){
 		auto row = matrix.matrix.scan_line( i );
 		for( unsigned j=0; j<images.size(); j++ ){
-			row[j] = images[i].best_vertical( images[j], 3, 0.75 );
-			output.add( row[j].second );
+			GradientComparator gradient; //TODO: configure
+			row[j] = gradient.findOffset( images[i][0], images[j][0], images[i].alpha_plane(), images[j].alpha_plane() );
+			output.add( row[j].error );
 		}
 		output.stop();
 	}

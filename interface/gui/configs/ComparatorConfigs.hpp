@@ -65,6 +65,7 @@ class GradientComparatorConfig : public AComparatorConfig{
 		QSpinBox*       start_level;
 		QSpinBox*       max_level;
 		QCheckBox*      fast_diffing;
+		QSpinBox*       epsilon;
 		QSpinBox*       max_difference;
 	
 	public:

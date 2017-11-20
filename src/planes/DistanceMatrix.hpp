@@ -18,7 +18,7 @@
 #ifndef DISTANCE_MATRIX_HPP
 #define DISTANCE_MATRIX_HPP
 
-#include "Plane.hpp"
+#include "../comparators/AComparator.hpp" //For ImageOffset
 
 class QImage;
 
@@ -26,7 +26,7 @@ namespace Overmix{
 
 class DistanceMatrix{
 	public:
-		PlaneBase<MergeResult> matrix;
+		PlaneBase<ImageOffset> matrix;
 		
 	public:
 		DistanceMatrix( unsigned amount ) : matrix( amount,amount ) { }

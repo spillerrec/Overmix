@@ -18,8 +18,8 @@
 #ifndef PLANE_UTILS_HPP
 #define PLANE_UTILS_HPP
 
-#include "../planes/ImageEx.hpp"
 #include "../color.hpp"
+#include "../planes/Plane.hpp"
 
 namespace Overmix{
 
@@ -50,28 +50,6 @@ inline ModifiedPlane getScaled( const Plane& p, Size<unsigned> size ){
 	else
 		return { p };
 }
-
-
-class ColorRow{
-	private:
-		RowIt<color_type> r, g, b;
-		
-	public:
-		ColorRow( ImageEx& img, int iy )
-			:	r(img[0].scan_line(iy))
-			,	g(img[1].scan_line(iy))
-			,	b(img[2].scan_line(iy))
-			{ }
-		
-		color operator[]( int i ) const
-			{ return { r[i], g[i], b[i] }; }
-		
-		void set( int ix, color rgb ){
-			r[ix] = rgb.r;
-			g[ix] = rgb.g;
-			b[ix] = rgb.b;
-		}
-};
 
 }
 
