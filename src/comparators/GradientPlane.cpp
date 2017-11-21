@@ -87,7 +87,7 @@ struct img_comp{
 		if( area.level > 0 )
 			return plane.findMinimum( area );
 		else
-			return ImageOffset( {h_middle, v_middle}, diff, 1 ); //TODO: calculate overlap
+			return ImageOffset( {double(h_middle), double(v_middle)}, diff, 1 ); //TODO: calculate overlap
 	}
 	
 	double checkedPercentage(){

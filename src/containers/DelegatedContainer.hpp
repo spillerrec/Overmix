@@ -51,7 +51,7 @@ class ConstDelegatedContainer : public AContainer{
 			{ return container.hasCachedOffset( i, j ); }
 		virtual ImageOffset getCachedOffset( unsigned i, unsigned j ) const override
 			{ return container.getCachedOffset( i, j ); }
-		virtual void setCachedOffset( unsigned i, unsigned j, ImageOffset offset ){ throw const_exception(); }
+		virtual void setCachedOffset( unsigned i, unsigned j, ImageOffset offset ) override{ throw const_exception(); }
 		
 	public:
 		ConstDelegatedContainer( const AContainer& container ) : container(container) { }

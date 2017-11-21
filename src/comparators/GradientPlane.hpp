@@ -72,7 +72,7 @@ class GradientPlane{
 		
 		double getDifference( int x, int y, double precision ) const;
 		
-		class ImageOffset findMinimum( GradientCheck area );
+		struct ImageOffset findMinimum( GradientCheck area );
 };
 
 
