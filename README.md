@@ -39,7 +39,8 @@ Development is now geared towards understanding the more theoretical parts about
 - Figuring out how features such as animation detection and separation of fore/back-ground can be combined
 - Support saving as 16-bit PNG (loading is supported)
 
-###How to contribute
+### How to contribute
+
 Even if you know nothing about programming, there are several ways to contribute:
 
 - If it currently does not solve all your needs, make a feature request on the [issue tracker](https://github.com/spillerrec/Overmix/issues), or comment on an existing one.
@@ -77,7 +78,7 @@ Several tools related to the format have been developed, most importantly an app
 - lcms2 (required for GUI)
 - boost
 - eigen3
-- [QCustomPlot](http://www.qcustomplot.com/) 1.x (required for GUI)
+- [QCustomPlot](http://www.qcustomplot.com/) 2.x (required for GUI)
 - google/benchmark (required for unit-benchmarking)
 
 Linux only:
