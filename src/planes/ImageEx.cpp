@@ -287,3 +287,15 @@ ImageEx Overmix::deVlcImage( const ImageEx& img ){
 	return out;
 }
 
+ImageEx ImageEx::deconvolve_rl( Point<double> amount, unsigned iterations ) const{
+	auto creep = ImageEx::fromFile( "creep.png" ); //TODO: Get as input
+	auto get_creep = [&]( int c ){ return creep.is_valid() ? &creep.planes[0].p : nullptr; };
+	
+	auto out( *this );
+	if( color_space.isYCbCr() )
+		out.planes[0].p = out.planes[0].p.deconvolve_rl( amount, iterations, get_creep( 0 ), 0.5 );
+	else
+		for( unsigned c=0; c<size(); c++ )
+			out.planes[c].p = out.planes[c].p.deconvolve_rl( amount, iterations, get_creep( c ), 0.5 );
+	return out;
+}

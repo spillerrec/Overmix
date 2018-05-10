@@ -56,7 +56,8 @@ class RenderPipeDeconvolve : public ARenderPipe{
 		virtual bool renderNeeded() const override
 			{ return deviation.x > 0.0009 && deviation.y > 0.0009 && iterations > 0; }
 		virtual ImageEx render( const ImageEx& img ) const override{
-			return img.copyApply( &Plane::deconvolve_rl, deviation, iterations );
+			return img.deconvolve_rl( deviation, iterations );
+		//	return img.copyApply( &Plane::deconvolve_rl, deviation, iterations );
 		}
 		
 	public:
