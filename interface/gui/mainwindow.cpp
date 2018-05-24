@@ -632,7 +632,7 @@ void main_widget::applyModifications(){
 	auto& container = getAlignedImages();
 	ProgressWatcher( this, "Applying modifications" ).loopAll( container.count(), [&]( int i ){
 			if( deviation > 0.0009 && dev_iterations > 0 )
-				container.imageRef( i ).apply( &Plane::deconvolve_rl, deviation_both, dev_iterations );
+				container.imageRef( i ) = container.imageRef( i ).deconvolve_rl( deviation_both, dev_iterations );
 			
 			container.cropImage( i, left, top, right, bottom );
 			container.scaleImage( i, scale, scale_method );

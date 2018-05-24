@@ -150,6 +150,8 @@ class ImageEx{
 		
 		Plane& operator[]( unsigned index ){ return planes[index].p; }
 		const Plane& operator[]( unsigned index ) const{ return planes[index].p; }
+		
+		ImageEx deconvolve_rl( Point<double> amount, unsigned iterations ) const;
 };
 
 QImage setQImageAlpha( QImage img, const Plane& alpha );

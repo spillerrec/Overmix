@@ -252,9 +252,21 @@ static double change( const DPlane& left, const DPlane& right ){
 	}
 	return amount;
 }
+static DPlane creep_towards( const DPlane& input, const DPlane& destination, double amount ){
+	auto copy = input;
+	auto rl=begin(copy);
+	auto rr=begin(destination);
+	for( ; rl!=end(copy); ++rl, ++rr ){
+		auto pl=begin(*rl);
+		auto pr=begin(*rr);
+		for( ; pl!=end(*rl); ++pl, ++pr )
+			*pl += (*pr - *pl) * amount;
+	}
+	return copy;
+}
 
 
-Plane Plane::deconvolve_rl( Point<double> amount, unsigned iterations ) const{
+Plane Plane::deconvolve_rl( Point<double> amount, unsigned iterations, Plane* creep_plane, double creep_amount ) const{
 	//TODO: fail on uneven kernels
 	//TODO: take input in both directions, perhaps even custom PSFs
 	Timer t( "deconvolve_rl" );
@@ -278,9 +290,14 @@ Plane Plane::deconvolve_rl( Point<double> amount, unsigned iterations ) const{
 		//Don't allow imaginary colors!
 		new_estimate.truncate( color::BLACK, color::WHITE );
 		
+		
+		if( creep_plane && (i+1)!=iterations && creep_amount > 0.0 ){
+			new_estimate = creep_towards( new_estimate, creep_plane->to<double>(), creep_amount );
+			new_estimate.truncate( color::BLACK, color::WHITE );
+		}
+		
 		qCDebug(LogDelta) << "Deconvolve change: " << i+1 << " - " << change(new_estimate, estimate) / color::WHITE;
 		estimate = new_estimate;
-		
 	}
 	
 	return estimate.to<color_type>();
