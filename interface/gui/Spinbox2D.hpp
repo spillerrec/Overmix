@@ -90,6 +90,8 @@ class AbstractSpinbox2D : public QWidget {
 			(spin_x.*func)( args... );
 			(spin_y.*func)( args... );
 		}
+		
+		void setSingleStep( T step ){ call( SpinBox::setSingleStep, step ); }
 };
 
 struct Spinbox2D : public AbstractSpinbox2D<QSpinBox,int>{

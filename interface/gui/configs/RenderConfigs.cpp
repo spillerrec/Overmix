@@ -68,8 +68,10 @@ std::unique_ptr<ARender> RenderConfigChooser::getRender() const
 
 std::unique_ptr<ARender> AverageRenderConfig::getRender() const{
 	auto render = std::make_unique<AverageRender>( upscale_chroma->isChecked() );
-	render->setSpacing( skip  ->getValue() + Point<unsigned>( 1, 1 ) );
+	render->setSpacing( skip  ->getValue() + Point<double>( 1, 1 ) );
 	render->setOffset(  offset->getValue() );
+	skip->setSingleStep( 0.1 );
+	offset->setSingleStep( 0.1 );
 	//TODO: skip and offset
 	return std::move( render );
 }
@@ -104,8 +106,8 @@ std::unique_ptr<ARender> DiffRenderConfig::getRender() const {
 AverageRenderConfig::AverageRenderConfig( QWidget* parent )
 	: ARenderConfig( parent ) {
 		setLayout( new QVBoxLayout( this ) );
-		skip   = addWidget<Spinbox2D>( "Skip" );
-		offset = addWidget<Spinbox2D>( "Offset" );
+		skip   = addWidget<DoubleSpinbox2D>( "Skip" );
+		offset = addWidget<DoubleSpinbox2D>( "Offset" );
 		upscale_chroma = addWidget<QCheckBox>( "Scale chroma" );
 	}
 

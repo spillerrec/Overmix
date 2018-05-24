@@ -32,7 +32,7 @@ class SumPlane {
 	private:
 		PlaneBase<precision_color_type> sum;
 		PlaneBase<precision_color_type> amount;
-		void resizeToFit( Point<>& pos, Size<> size );
+		void resizeToFit( Point<double>& pos, Size<> size );
 	
 	public:
 		SumPlane() { }
@@ -41,11 +41,11 @@ class SumPlane {
 			amount.fill( 0 );
 		}
 		
-		Point<unsigned> spacing{ 1, 1 };
-		Point<unsigned> offset{ 0, 0 };
+		Point<double> spacing{ 1, 1 };
+		Point<double> offset{ 0, 0 };
 		
-		void addPlane( const Plane& p, Point<> pos );
-		void addAlphaPlane( const Plane& p, const Plane& alpha, Point<> pos );
+		void addPlane( const Plane& p, Point<double> pos );
+		void addAlphaPlane( const Plane& p, const Plane& alpha, Point<double> pos );
 		
 		Plane average() const;
 		Plane alpha() const;
@@ -55,8 +55,8 @@ class AverageRender : public ARender{
 	protected:
 		bool upscale_chroma;
 		bool for_merging;
-		Point<unsigned> spacing{ 1, 1 };
-		Point<unsigned> offset{ 0, 0 };
+		Point<double> spacing{ 1, 1 };
+		Point<double> offset{ 0, 0 };
 		
 	public:
 		AverageRender( bool upscale_chroma=false, bool for_merging=false )
@@ -64,8 +64,8 @@ class AverageRender : public ARender{
 		
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 		
-		void setSpacing( Point<unsigned> val ){ spacing = val; }
-		void setOffset(  Point<unsigned> val ){ offset  = val; }
+		void setSpacing( Point<double> val ){ spacing = val; }
+		void setOffset(  Point<double> val ){ offset  = val; }
 };
 
 }

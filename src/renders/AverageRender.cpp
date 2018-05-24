@@ -37,7 +37,7 @@ PlaneBase<T> resizePlaneToFit( const PlaneBase<T>& input, Size<> size, Point<> p
 	return output;
 }
 
-void SumPlane::resizeToFit( Point<>& pos, Size<> size ){
+void SumPlane::resizeToFit( Point<double>& pos, Size<> size ){
 	auto current_size = sum.getSize();
 	auto offset = pos.min( Point<>( 0,0 ) ); //This will never be positive
 	auto new_size = current_size.max( current_size - offset );
@@ -54,22 +54,22 @@ void SumPlane::resizeToFit( Point<>& pos, Size<> size ){
 	amount = resizePlaneToFit( amount, new_size, Point<>(0,0)-offset );
 }
 
-void SumPlane::addPlane( const Plane& p, Point<> pos ){
+void SumPlane::addPlane( const Plane& p, Point<double> pos ){
 	resizeToFit( pos, p.getSize() );
 	//TODO: make multi-threaded //NOTE: haven't been working out too well...
-	for( unsigned iy=offset.y; iy<p.get_height(); iy += spacing.y ){
+	for( double iy=offset.y; iy<p.get_height(); iy += spacing.y ){
 		//Add to sum
 		auto in  = p     .scan_line(  iy         );
 		auto out = sum   .scan_line(  iy + pos.y );
 		auto a   = amount.scan_line( iy + pos.y );
-		for( unsigned ix=offset.x; ix<p.get_width(); ix += spacing.x ){
+		for( double ix=offset.x; ix<p.get_width(); ix += spacing.x ){
 			out[ix+pos.x] += in[ix];
 			  a[ix+pos.x] += color::WHITE;
 		}
 	}
 }
 
-void SumPlane::addAlphaPlane( const Plane& p, const Plane& alpha, Point<> pos ){
+void SumPlane::addAlphaPlane( const Plane& p, const Plane& alpha, Point<double> pos ){
 	//Fallback
 	if( !alpha.valid() ){
 		addPlane( p, pos );
@@ -80,14 +80,14 @@ void SumPlane::addAlphaPlane( const Plane& p, const Plane& alpha, Point<> pos ){
 	auto alpha_scaled = getScaled( alpha, p.getSize() );
 	
 	resizeToFit( pos, p.getSize() );
-	for( unsigned iy=0; iy<p.get_height(); iy++ ){
+	for( double iy=offset.y; iy<p.get_height(); iy += spacing.y ){
 		//Add to sum
 		auto in    = p             .scan_line( iy         );
 		auto a_in  = alpha_scaled().scan_line( iy         );
 		auto out   = sum           .scan_line( iy + pos.y );
 		auto a_out = amount        .scan_line( iy + pos.y );
 		
-		for( unsigned ix=0; ix<p.get_width(); ix++ ){
+		for( double ix=offset.x; ix<p.get_width(); ix += spacing.x ){
 			auto a_val = a_in[ix];
 			  out[ix+pos.x] += in[ix] * color::asDouble( a_val );
 			a_out[ix+pos.x] += a_val;
@@ -156,7 +156,7 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 	ProgressWrapper( watcher ).setTotal( aligner.count() * planes_amount );
 	
 	//Determine if we need to care about alpha per plane
-	bool use_plane_alpha = false;
+	bool use_plane_alpha = true;//false;
 	for( unsigned i=0; i<aligner.count(); ++i )
 		if( aligner.alpha( i ) || aligner.imageMask( i ) >= 0 ){
 			use_plane_alpha = true;
@@ -191,7 +191,7 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 		sum.offset  = offset;
 		
 		for( auto align : aligner ){
-			auto pos = (scale * (align.pos() - min_point)).round();
+			auto pos = scale * (align.pos() - min_point);
 			auto plane = getScaled( align.image()[c], (scale * align.image()[0].getSize()).round() );
 			
 			const Plane& alpha_plane = masks.getAlpha( c, align.imageMask(), align.alpha() );

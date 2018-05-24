@@ -30,6 +30,7 @@ namespace Overmix{
 
 class ARender;
 struct Spinbox2D;
+struct DoubleSpinbox2D;
 
 class ARenderConfig : public AConfig{
 	Q_OBJECT
@@ -61,8 +62,8 @@ class RenderConfigChooser : public ConfigChooser<ARenderConfig>{
 
 class AverageRenderConfig : public ARenderConfig{
 	private:
-		Spinbox2D* skip;
-		Spinbox2D* offset;
+		DoubleSpinbox2D* skip;
+		DoubleSpinbox2D* offset;
 		QCheckBox* upscale_chroma;
 	
 	public:
