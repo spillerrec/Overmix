@@ -21,6 +21,7 @@
 #include "comparators/GradientComparator.hpp"
 
 #include "../Spinbox2D.hpp"
+#include "../AlignMethodSelector.hpp"
 
 #include <QComboBox>
 #include <QCheckBox>
@@ -51,13 +52,25 @@ std::unique_ptr<AComparator> ComparatorConfigChooser::getComparator() const
 GradientComparatorConfig::GradientComparatorConfig( QWidget* parent ) : AComparatorConfig( parent ) {
 	setLayout( new QVBoxLayout( this ) );
 	
-	//TODO: Method
+	method         = addWidget<AlignMethodSelector>( "Movement directions" );
 	movement       = addWidget<QDoubleSpinBox>( "Allowed movement" );
 	start_level    = addWidget<QSpinBox>(       "Start level" );
 	max_level      = addWidget<QSpinBox>(       "Maximum level" );
 	fast_diffing   = addWidget<QCheckBox>(      "Use fast diffing" );
 	epsilon        = addWidget<QSpinBox>(       "Ignore threshold" );
 	max_difference = addWidget<QSpinBox>(       "Maximum difference" );
+	
+	//Propergate change
+	auto set = [&]( auto config ){
+		connect( config, SIGNAL(valueChanged(int)), this, SIGNAL(changed()) );
+	};
+	set( method );
+	set( start_level );
+	set( max_level );
+	set( epsilon );
+	set( max_difference );
+	connect( movement, SIGNAL(valueChanged(double)), this, SIGNAL(changed()) );
+	connect( fast_diffing, SIGNAL(toggled(bool)), this, SIGNAL(changed()) );
 	
 	//Limits on spinboxes
 	movement      ->setRange( 0.0, 1.0          );
@@ -66,9 +79,10 @@ GradientComparatorConfig::GradientComparatorConfig( QWidget* parent ) : ACompara
 	epsilon       ->setRange( 0,   color::WHITE );
 	max_difference->setRange( 0,   color::WHITE );
 	
+	movement->setSingleStep( 0.05 );
+	
 	//Set default values
 	GradientComparator defaults;
-	//TODO: Method
 	movement      ->setValue(   defaults.movement       );
 	start_level   ->setValue(   defaults.start_level    );
 	max_level     ->setValue(   defaults.max_level      );
@@ -80,7 +94,7 @@ GradientComparatorConfig::GradientComparatorConfig( QWidget* parent ) : ACompara
 std::unique_ptr<AComparator> GradientComparatorConfig::getComparator() const{
 	auto comperator = std::make_unique<GradientComparator>();
 	
-	//TODO: Method
+	comperator->method           = method         ->getValue();
 	comperator->movement         = movement       ->value();
 	comperator->start_level      = start_level    ->value();
 	comperator->max_level        = max_level      ->value();

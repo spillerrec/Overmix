@@ -30,6 +30,7 @@ namespace Overmix{
 
 class AComparator;
 struct Spinbox2D;
+struct AlignMethodSelector;
 
 class AComparatorConfig : public AConfig{
 	Q_OBJECT
@@ -61,6 +62,7 @@ class ComparatorConfigChooser : public ConfigChooser<AComparatorConfig>{
 
 class GradientComparatorConfig : public AComparatorConfig{
 	private:
+		AlignMethodSelector* method;
 		QDoubleSpinBox* movement;
 		QSpinBox*       start_level;
 		QSpinBox*       max_level;
