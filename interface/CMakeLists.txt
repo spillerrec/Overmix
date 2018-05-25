@@ -20,6 +20,7 @@ set(SOURCE_GUI
 	gui/mainwindow.cpp
 	gui/ImagesModel.cpp
 	gui/FullscreenViewer.cpp
+	gui/AlignMethodSelector.cpp
 	)
 
 set(SOURCE_GUI_CONFIGS
