@@ -144,7 +144,7 @@ main_widget::main_widget( ImageContainer& images )
 	updateComparator();
 	
 	//Reset aligner cache
-	connect( &render_config, SIGNAL( changed() ), this, SLOT( resetImage() ) );
+	connect( &render_config, SIGNAL( changed() ), this, SLOT( updateRender() ) );
 	connect( &img_model, SIGNAL( dataChanged(const QModelIndex&, const QModelIndex&) ), this, SLOT( resetImage() ) );
 	
 	//Menubar
@@ -681,6 +681,11 @@ void main_widget::updateSelection(){
 
 void main_widget::updateComparator(){
 	images.setComparator( comparator_config.getComparator() );
+}
+void main_widget::updateRender(){
+	resetImage();
+	if( ui->render_redraw->isChecked() )
+		refresh_image();
 }
 
 void main_widget::crop_all(){

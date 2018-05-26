@@ -109,6 +109,10 @@ AverageRenderConfig::AverageRenderConfig( QWidget* parent )
 		skip   = addWidget<DoubleSpinbox2D>( "Skip" );
 		offset = addWidget<DoubleSpinbox2D>( "Offset" );
 		upscale_chroma = addWidget<QCheckBox>( "Scale chroma" );
+		
+		skip->connectToChanges( this, SIGNAL(changed()) );
+		offset->connectToChanges( this, SIGNAL(changed()) );
+		connect( upscale_chroma, SIGNAL(toggled(bool)), this, SIGNAL(changed()) );
 	}
 
 std::unique_ptr<ARender> FloatRenderConfig::getRender() const

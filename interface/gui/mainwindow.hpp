@@ -153,6 +153,7 @@ class main_widget: public QMainWindow{
 		void updateSelection();
 		
 		void updateComparator();
+		void updateRender();
 		
 		void updateUiBinarize( int method );
 		
