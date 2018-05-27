@@ -23,6 +23,7 @@
 #include "aligners/ClusterAligner.hpp"
 #include "aligners/FakeAligner.hpp"
 #include "aligners/FrameAligner.hpp"
+#include "aligners/NearestFrameAligner.hpp"
 #include "aligners/FrameCalculatorAligner.hpp"
 #include "aligners/RecursiveAligner.hpp"
 #include "aligners/LinearAligner.hpp"
@@ -48,6 +49,7 @@ void AlignerConfigChooser::p_initialize(){
 	addConfig<FrameCalculatorAlignerConfig>();
 	addConfig<SuperResAlignerConfig>();
 	addConfig<ClusterAlignerConfig>();
+	addConfig<NearestFrameAlignerConfig>();
 }
 
 
@@ -176,4 +178,7 @@ std::unique_ptr<AAligner> SuperResAlignerConfig::getAligner() const
 
 std::unique_ptr<AAligner> ClusterAlignerConfig::getAligner() const
 	{ return std::make_unique<ClusterAligner>( min_groups->value(), max_groups->value() ); }
+
+std::unique_ptr<AAligner> NearestFrameAlignerConfig::getAligner() const
+	{ return std::make_unique<NearestFrameAligner>(); }
 

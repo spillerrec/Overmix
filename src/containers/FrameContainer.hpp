@@ -47,9 +47,10 @@ class FrameContainer : public AContainer{
 		virtual const AComparator* getComparator() const override{ return container.getComparator(); }
 		
 	public:
-		FrameContainer( AContainer& container, int frame ) : container(container) {
+		FrameContainer( AContainer& container, int frame, bool include_no_frame=true ) : container(container) {
+			//include_no_frame - Treat frame '-1' as being in all frames
 			for( unsigned i=0; i<container.count(); i++ )
-				if( container.frame( i ) == frame || container.frame( i ) < 0 )
+				if( container.frame( i ) == frame || (include_no_frame && container.frame( i ) < 0) )
 					indexes.push_back( i );
 		}
 		

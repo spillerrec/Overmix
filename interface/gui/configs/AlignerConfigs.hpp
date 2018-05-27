@@ -162,6 +162,15 @@ class ClusterAlignerConfig : public AAlignerConfig{
 		QString discription() const override{ return "Tries to seperate frames through clustering"; }
 };
 
+class NearestFrameAlignerConfig : public AAlignerConfig{
+	public:
+		NearestFrameAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
+		std::unique_ptr<AAligner> getAligner() const override;
+		
+		QString name() const override { return "Set unassigned frames"; }
+		QString discription() const override{ return "Finds the best match for unassigned frames"; }
+};
+
 }
 
 #endif

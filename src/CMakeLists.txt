@@ -40,6 +40,7 @@ set(SOURCES_ALIGNERS
 	aligners/RecursiveAligner.cpp
 	aligners/AnimationSeparator.cpp
 	aligners/FrameAligner.cpp
+	aligners/NearestFrameAligner.cpp
 	aligners/LinearAligner.cpp
 	aligners/SuperResAligner.cpp
 	)
