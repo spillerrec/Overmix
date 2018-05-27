@@ -97,7 +97,8 @@ class AbstractSpinbox2D : public QWidget {
 struct Spinbox2D : public AbstractSpinbox2D<QSpinBox,int>{
 	Spinbox2D( QWidget* parent ) : AbstractSpinbox2D( parent ) { }
 	
-	void connectToChanges( QObject* receiver, auto&& func ){
+	template<typename Func>
+	void connectToChanges( QObject* receiver, Func func ){
 		connect( &spin_x, SIGNAL(valueChanged(int)), receiver, func );
 		connect( &spin_y, SIGNAL(valueChanged(int)), receiver, func );
 	}
@@ -106,7 +107,8 @@ struct Spinbox2D : public AbstractSpinbox2D<QSpinBox,int>{
 struct DoubleSpinbox2D : public AbstractSpinbox2D<QDoubleSpinBox,double>{
 	DoubleSpinbox2D( QWidget* parent ) : AbstractSpinbox2D( parent ) { }
 	
-	void connectToChanges( QObject* receiver, auto&& func ){
+	template<typename Func>
+	void connectToChanges( QObject* receiver, Func func ){
 		connect( &spin_x, SIGNAL(valueChanged(double)), receiver, func );
 		connect( &spin_y, SIGNAL(valueChanged(double)), receiver, func );
 	}
