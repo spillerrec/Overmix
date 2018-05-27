@@ -153,6 +153,7 @@ main_widget::main_widget( ImageContainer& images )
 	connect( ui->action_exit,         SIGNAL( triggered() ), this, SLOT( close()          ) );
 	connect( ui->action_show_menubar, SIGNAL( triggered() ), this, SLOT( toggleMenubar()  ) );
 	connect( ui->action_fullscreen,   SIGNAL( triggered() ), this, SLOT( showFullscreen() ) );
+	connect( ui->action_make_black,   SIGNAL( triggered() ), this, SLOT( makeViewerBlack() ) );
 	connect( ui->action_online_wiki,  SIGNAL( triggered() ), this, SLOT( openOnlineHelp() ) );
 	connect( ui->action_crop_all,     SIGNAL( triggered() ), this, SLOT( crop_all() ) );
 	connect( ui->action_create_slide,     SIGNAL( triggered() ), this, SLOT( create_slide() ) );
@@ -586,6 +587,15 @@ void main_widget::showFullscreen(){
 	}
 	else if( renders.size() > 0 )
 		FullscreenViewer::show( settings, createViewerCache(), this );
+}
+
+void main_widget::makeViewerBlack(){
+	auto pal = viewer.palette();
+	auto color = ui->action_make_black->isChecked() ? Qt::black : Qt::transparent;
+	pal.setColor( QPalette::Background, color );
+	viewer.setAutoFillBackground(true);
+	viewer.setPalette( pal );
+	viewer.update();
 }
 
 

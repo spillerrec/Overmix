@@ -132,6 +132,7 @@ class main_widget: public QMainWindow{
 	public slots:
 		void process_urls( QStringList files );
 		void showFullscreen();
+		void makeViewerBlack();
 		void toggleMenubar();
 		void openOnlineHelp();
 		

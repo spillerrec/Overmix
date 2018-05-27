@@ -1311,6 +1311,7 @@
     <addaction name="action_show_menubar"/>
     <addaction name="action_fullscreen"/>
     <addaction name="action_movement_graph"/>
+    <addaction name="action_make_black"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -1400,6 +1401,14 @@
   <action name="action_create_slide">
    <property name="text">
     <string>Create &amp;slide</string>
+   </property>
+  </action>
+  <action name="action_make_black">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Black background</string>
    </property>
   </action>
  </widget>
