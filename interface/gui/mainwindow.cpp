@@ -89,6 +89,7 @@ main_widget::main_widget( ImageContainer& images )
 	,	comparator_config( this, true )
 	,	    render_config( this, true )
 	,	img_model( images )
+	,	mask_model( images )
 {
 	ui->setupUi(this);
 	   aligner_config.initialize();
@@ -146,6 +147,7 @@ main_widget::main_widget( ImageContainer& images )
 	//Reset aligner cache
 	connect( &render_config, SIGNAL( changed() ), this, SLOT( updateRender() ) );
 	connect( &img_model, SIGNAL( dataChanged(const QModelIndex&, const QModelIndex&) ), this, SLOT( resetImage() ) );
+	connect( &mask_model, SIGNAL( dataChanged(const QModelIndex&, const QModelIndex&) ), this, SLOT( resetImage() ) );
 	
 	//Menubar
 	connect( ui->action_add_files,    SIGNAL( triggered() ), this, SLOT( open_image()     ) );
@@ -177,6 +179,10 @@ main_widget::main_widget( ImageContainer& images )
 		,	this, &main_widget::browserChangeImage );
 	connect( ui->btn_add_group,    SIGNAL(clicked()), this, SLOT(addGroup()) );
 	connect( ui->btn_delete_files, SIGNAL(clicked()), this, SLOT(removeFiles()) );
+	
+	ui->mask_view->setModel( &mask_model );
+	connect( ui->mask_view->selectionModel(), &QItemSelectionModel::selectionChanged
+		,	this, &main_widget::browserChangeMask );
 	
 	connect( ui->selection_selector, SIGNAL(activated(int)), this, SLOT(updateSelection()) );
 	
@@ -242,6 +248,7 @@ void main_widget::process_urls( QStringList files ){
 	update_draw();
 	update();
 	ui->files_view->reset();
+	ui->mask_view->reset();
 }
 
 
@@ -529,6 +536,7 @@ void main_widget::set_alpha_mask(){
 void main_widget::clear_mask(){
 	alpha_mask = -1;
 	ui->pre_clear_mask->setEnabled( false );
+	ui->mask_view->reset();
 }
 
 void main_widget::use_current_as_mask(){
@@ -538,6 +546,7 @@ void main_widget::use_current_as_mask(){
 		auto& aligner = getAlignedImages();
 		for( unsigned i=0; i<aligner.count(); i++ )
 			aligner.setMask( i, alpha_mask );
+		ui->mask_view->reset();
 	}
 }
 
@@ -567,6 +576,12 @@ static QImage fromSelection( const ImagesModel& model, const QModelIndexList& in
 
 void main_widget::browserChangeImage( const QItemSelection& selected, const QItemSelection& ){
 	auto img = fromSelection( img_model, selected.indexes() );
+	if( !img.isNull() )
+		browser.change_image( new imageCache( img ), true );
+}
+
+void main_widget::browserChangeMask( const QItemSelection& selected, const QItemSelection& ){
+	auto img = mask_model.getImage( selected.indexes().front() );
 	if( !img.isNull() )
 		browser.change_image( new imageCache( img ), true );
 }

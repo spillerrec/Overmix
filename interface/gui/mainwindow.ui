@@ -1245,13 +1245,16 @@
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_11">
              <item>
-              <widget class="QListView" name="listView">
+              <widget class="QTreeView" name="mask_view">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
+               <attribute name="headerDefaultSectionSize">
+                <number>60</number>
+               </attribute>
               </widget>
              </item>
              <item>
@@ -1292,7 +1295,7 @@
      <x>0</x>
      <y>0</y>
      <width>998</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">

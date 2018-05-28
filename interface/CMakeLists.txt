@@ -19,6 +19,7 @@ set(SOURCE_CLI
 set(SOURCE_GUI
 	gui/mainwindow.cpp
 	gui/ImagesModel.cpp
+	gui/MaskModel.cpp
 	gui/FullscreenViewer.cpp
 	gui/AlignMethodSelector.cpp
 	)

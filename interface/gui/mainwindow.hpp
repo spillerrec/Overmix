@@ -31,6 +31,7 @@
 #include "viewer/imageViewer.h"
 
 #include "ImagesModel.hpp"
+#include "MaskModel.hpp"
 
 #include "Deteleciner.hpp"
 #include "RenderOperations.hpp"
@@ -83,6 +84,7 @@ class main_widget: public QMainWindow{
 		int alpha_mask{ -1 };
 		
 		ImagesModel img_model;
+		MaskModel mask_model;
 		
 		void clear_cache();
 		
@@ -162,6 +164,7 @@ class main_widget: public QMainWindow{
 		void addGroup();
 		void removeFiles();
 		void browserChangeImage( const QItemSelection& selected, const QItemSelection& deselected );
+		void browserChangeMask( const QItemSelection& selected, const QItemSelection& deselected );
 		
 	//Related to the Tools tab
 		void crop_all();
