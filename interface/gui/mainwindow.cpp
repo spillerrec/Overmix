@@ -65,12 +65,12 @@ using namespace Overmix;
 
 void foldableGroupBox( QWidget* widget, bool enabled, QGroupBox* box ){
 	auto update = [=]( bool checked )
-		{ box->setMaximumHeight( checked ? QWIDGETSIZE_MAX : box->layout()->geometry().top() ); };
+		{ box->setMaximumHeight( checked ? QWIDGETSIZE_MAX : std::max(box->layout()->geometry().top(), 20) ); };
 	
 	widget->connect( box, &QGroupBox::clicked, update );
 	box->setCheckable( true );
 	box->setChecked( enabled );
-    QCoreApplication::processEvents(); //Update layout
+	QCoreApplication::processEvents(); //Update layout
 	update( enabled );
 }
 
@@ -183,6 +183,8 @@ main_widget::main_widget( ImageContainer& images )
 	ui->mask_view->setModel( &mask_model );
 	connect( ui->mask_view->selectionModel(), &QItemSelectionModel::selectionChanged
 		,	this, &main_widget::browserChangeMask );
+	connect( ui->files_view, &QAbstractItemView::clicked, this, &main_widget::browserClickImage );
+	connect( ui->mask_view,  &QAbstractItemView::clicked, this, &main_widget::browserClickMask  );
 	
 	connect( ui->selection_selector, SIGNAL(activated(int)), this, SLOT(updateSelection()) );
 	
@@ -568,22 +570,32 @@ void main_widget::addGroup(){
 	}
 }
 
-static QImage fromSelection( const ImagesModel& model, const QModelIndexList& indexes ){
+void main_widget::browserClickImage( const QModelIndex &index ){
+	auto img = img_model.getImage( index );
+	if( !img.isNull() )
+		browser.change_image( new imageCache( img ), true );
+}
+
+void main_widget::browserClickMask( const QModelIndex &index ){
+	auto img = mask_model.getImage( index );
+	if( !img.isNull() )
+		browser.change_image( new imageCache( img ), true );
+}
+
+static QModelIndex fromSelection( const QItemSelection& selected, const QItemSelection& deselected ){
+	auto indexes = selected.indexes();
+	//TODO: Deselection does not work, see issue #117
 	if( indexes.size() > 0 )
-		return model.getImage( indexes.front() );
-	return QImage();
+		return indexes.front();
+	return {};
 }
 
-void main_widget::browserChangeImage( const QItemSelection& selected, const QItemSelection& ){
-	auto img = fromSelection( img_model, selected.indexes() );
-	if( !img.isNull() )
-		browser.change_image( new imageCache( img ), true );
+void main_widget::browserChangeImage( const QItemSelection& selected, const QItemSelection& deselected ){
+	browserClickImage( fromSelection( selected, deselected ) );
 }
 
-void main_widget::browserChangeMask( const QItemSelection& selected, const QItemSelection& ){
-	auto img = mask_model.getImage( selected.indexes().front() );
-	if( !img.isNull() )
-		browser.change_image( new imageCache( img ), true );
+void main_widget::browserChangeMask( const QItemSelection& selected, const QItemSelection& deselected ){
+	browserClickMask( fromSelection( selected, deselected ) );
 }
 
 void main_widget::removeFiles(){
@@ -596,11 +608,13 @@ void main_widget::removeFiles(){
 
 void main_widget::showFullscreen(){
 	if( ui->tab_pages->currentIndex() != 0 ){
-		auto img = fromSelection( img_model, ui->files_view->selectionModel()->selectedIndexes() );
+		//Show selected file
+		QItemSelection empty;
+		auto img = img_model.getImage( fromSelection( ui->files_view->selectionModel()->selection(), empty ) );
 		if( !img.isNull() )
 			FullscreenViewer::show( settings, img, this );
 	}
-	else if( renders.size() > 0 )
+	else if( renders.size() > 0 ) //Show current render
 		FullscreenViewer::show( settings, createViewerCache(), this );
 }
 

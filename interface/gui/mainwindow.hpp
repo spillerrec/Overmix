@@ -163,8 +163,10 @@ class main_widget: public QMainWindow{
 	//Related to the Files tab
 		void addGroup();
 		void removeFiles();
+		void browserClickImage( const QModelIndex &index );
+		void browserClickMask(   const QModelIndex &index );
 		void browserChangeImage( const QItemSelection& selected, const QItemSelection& deselected );
-		void browserChangeMask( const QItemSelection& selected, const QItemSelection& deselected );
+		void browserChangeMask(  const QItemSelection& selected, const QItemSelection& deselected );
 		
 	//Related to the Tools tab
 		void crop_all();
