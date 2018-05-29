@@ -64,6 +64,7 @@ using namespace Overmix;
 
 
 void foldableGroupBox( QWidget* widget, bool enabled, QGroupBox* box ){
+	//Does not work properly, see issue #118
 	auto update = [=]( bool checked )
 		{ box->setMaximumHeight( checked ? QWIDGETSIZE_MAX : std::max(box->layout()->geometry().top(), 20) ); };
 	
@@ -250,7 +251,7 @@ void main_widget::process_urls( QStringList files ){
 	update_draw();
 	update();
 	ui->files_view->reset();
-	ui->mask_view->reset();
+	updateMasks();
 }
 
 
@@ -531,14 +532,14 @@ void main_widget::set_alpha_mask(){
 	
 	if( !filename.isEmpty() ){
 		alpha_mask = images.addMask( std::move( ImageEx::fromFile( filename )[0] ) );
-		ui->pre_clear_mask->setEnabled( true );
+		updateMasks();
 	}
 }
 
 void main_widget::clear_mask(){
 	alpha_mask = -1;
-	ui->pre_clear_mask->setEnabled( false );
-	ui->mask_view->reset();
+	images.clearMasks();
+	updateMasks();
 }
 
 void main_widget::use_current_as_mask(){
@@ -548,7 +549,7 @@ void main_widget::use_current_as_mask(){
 		auto& aligner = getAlignedImages();
 		for( unsigned i=0; i<aligner.count(); i++ )
 			aligner.setMask( i, alpha_mask );
-		ui->mask_view->reset();
+		updateMasks();
 	}
 }
 
@@ -725,6 +726,10 @@ void main_widget::updateRender(){
 	resetImage();
 	if( ui->render_redraw->isChecked() )
 		refresh_image();
+}
+void main_widget::updateMasks(){
+	ui->mask_view->reset();
+	ui->pre_clear_mask->setEnabled( images.maskCount() > 0 );
 }
 
 void main_widget::crop_all(){

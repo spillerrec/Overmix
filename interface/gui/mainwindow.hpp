@@ -157,6 +157,7 @@ class main_widget: public QMainWindow{
 		
 		void updateComparator();
 		void updateRender();
+		void updateMasks();
 		
 		void updateUiBinarize( int method );
 		
