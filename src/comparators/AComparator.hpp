@@ -32,9 +32,12 @@ struct ImageOffset{
 	ImageOffset() : distance( 0,0 ), error( -1 ), overlap( -1 ) { }
 	ImageOffset( Point<double> distance, double error, double overlap )
 		: distance(distance), error(error), overlap(overlap) { }
+	ImageOffset( Point<double> distance, double error, const Plane& img1, const Plane& img2 );
 	bool isValid() const{ return overlap >= 0.0; }
 	
 	ImageOffset reverse() const{ return { {-distance.x, -distance.y}, error, overlap }; }
+	
+	static double calculate_overlap( Point<> offset, const Plane& img1, const Plane& img2 );
 };
 
 class AComparator{

@@ -15,28 +15,34 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "GradientComparator.hpp"
-#include "GradientPlane.hpp"
+#include "BruteForceComparator.hpp"
+#include "../planes/Plane.hpp"
 
 #include <QRect>
+#include <limits>
 
 using namespace Overmix;
 
 
-ImageOffset GradientComparator::findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ) const{
+ImageOffset BruteForceComparator::findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ) const{
 	Point<double> moves{ method == AlignMethod::VER ? 0.0 : movement
 	                   , method == AlignMethod::HOR ? 0.0 : movement
 	                   };
 	
+	//Calculate range
+	auto max = (moves * img1.getSize()).to<int>();
+	auto min = Point<>()-max; //TODO:
+	
+	//Find minimum error in range
 	ImageOffset result;
-	GradientPlane plane( img1, img2, a1, a2, settings );
-	int level = start_level;
+	result.error = std::numeric_limits<double>::max();
+	for( int x = min.x; x<max.x; x++ ) //TODO: Make Point<int> iterator
+		for( int y = min.y; y<max.y; y++ ){
+			auto error = Difference::simpleAlpha( img1, img2, a1, a2, {x, y}, settings );
+			if( error < result.error )
+				result = ImageOffset( Point<double>(x, y), error, img1, img2 );
+		}
 	
-	//Keep repeating with higher levels until it drops below threshold
-	do{
-		result = plane.findMinimum( { img1.getSize(), moves.x, moves.y, level } );
-	}while( result.error > max_difference && level++ < max_level );
-	
-	return { result.distance, result.error, img1, img2 };
+	return result;
 }
 

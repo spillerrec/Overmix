@@ -46,6 +46,8 @@ set(SOURCES_ALIGNERS
 	)
 	
 set(SOURCES_COMPARATORS
+	comparators/AComparator.cpp
+	comparators/BruteForceComparator.cpp
 	comparators/GradientComparator.cpp
 	comparators/GradientPlane.cpp
 	)
