@@ -18,6 +18,7 @@
 #include "BruteForceComparator.hpp"
 #include "../planes/Plane.hpp"
 
+#include <QDebug>
 #include <QRect>
 #include <limits>
 
@@ -32,13 +33,15 @@ ImageOffset BruteForceComparator::findOffset( const Plane& img1, const Plane& im
 	//Calculate range
 	auto max = (moves * img1.getSize()).to<int>();
 	auto min = Point<>()-max; //TODO:
+	qDebug() << "BruteForce: " << max.x << ", " << max.y;
 	
 	//Find minimum error in range
 	ImageOffset result;
 	result.error = std::numeric_limits<double>::max();
-	for( int x = min.x; x<max.x; x++ ) //TODO: Make Point<int> iterator
-		for( int y = min.y; y<max.y; y++ ){
+	for( int x = min.x; x<=max.x; x++ ) //TODO: Make Point<int> iterator
+		for( int y = min.y; y<=max.y; y++ ){
 			auto error = Difference::simpleAlpha( img1, img2, a1, a2, {x, y}, settings );
+			qDebug() << x << ", " << y << ", " << error;
 			if( error < result.error )
 				result = ImageOffset( Point<double>(x, y), error, img1, img2 );
 		}

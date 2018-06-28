@@ -78,6 +78,21 @@ class GradientComparatorConfig : public AComparatorConfig{
 		QString discription() const override{ return "Uses gradient decent"; }
 };
 
+class BruteForceComparatorConfig : public AComparatorConfig{
+	private:
+		AlignMethodSelector* method;
+		QDoubleSpinBox* movement;
+		QCheckBox*      fast_diffing;
+		QSpinBox*       epsilon;
+	
+	public:
+		BruteForceComparatorConfig( QWidget* parent );
+        std::unique_ptr<AComparator> getComparator() const;
+		
+		QString name() const override { return "Brute force"; }
+		QString discription() const override{ return "Tries EVERYTHING!"; }
+};
+
 
 }
 

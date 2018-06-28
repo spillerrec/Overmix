@@ -19,6 +19,7 @@
 #include "ComparatorConfigs.hpp"
 
 #include "comparators/GradientComparator.hpp"
+#include "comparators/BruteForceComparator.hpp"
 
 #include "../Spinbox2D.hpp"
 #include "../AlignMethodSelector.hpp"
@@ -43,6 +44,7 @@ void ComparatorConfigChooser::p_initialize(){
 	};
 	
 	set( &addConfig<GradientComparatorConfig>() );
+	set( &addConfig<BruteForceComparatorConfig>() );
 }
 
 std::unique_ptr<AComparator> ComparatorConfigChooser::getComparator() const
@@ -101,6 +103,47 @@ std::unique_ptr<AComparator> GradientComparatorConfig::getComparator() const{
 	comperator->settings.fast    = fast_diffing   ->isChecked();
 	comperator->settings.epsilon = epsilon        ->value();
 	comperator->max_difference   = max_difference ->value();
+	
+	return std::move( comperator );
+}
+
+BruteForceComparatorConfig::BruteForceComparatorConfig( QWidget* parent ) : AComparatorConfig( parent ) {
+	setLayout( new QVBoxLayout( this ) );
+	
+	method         = addWidget<AlignMethodSelector>( "Movement directions" );
+	movement       = addWidget<QDoubleSpinBox>( "Allowed movement" );
+	fast_diffing   = addWidget<QCheckBox>(      "Use fast diffing" );
+	epsilon        = addWidget<QSpinBox>(       "Ignore threshold" );
+	
+	//Propergate change
+	auto set = [&]( auto config ){
+		connect( config, SIGNAL(valueChanged(int)), this, SIGNAL(changed()) );
+	};
+	set( method );
+	set( epsilon );
+	connect( movement, SIGNAL(valueChanged(double)), this, SIGNAL(changed()) );
+	connect( fast_diffing, SIGNAL(toggled(bool)), this, SIGNAL(changed()) );
+	
+	//Limits on spinboxes
+	movement      ->setRange( 0.0, 1.0          );
+	epsilon       ->setRange( 0,   color::WHITE );
+	
+	movement->setSingleStep( 0.05 );
+	
+	//Set default values
+	movement      ->setValue( 0.75 );
+	Difference::SimpleSettings defaults;
+	fast_diffing  ->setChecked( defaults.fast      );
+	epsilon       ->setValue(   color::WHITE * 0.1 );
+}
+
+std::unique_ptr<AComparator> BruteForceComparatorConfig::getComparator() const{
+	auto comperator = std::make_unique<BruteForceComparator>();
+	
+	comperator->method           = method         ->getValue();
+	comperator->movement         = movement       ->value();
+	comperator->settings.fast    = fast_diffing   ->isChecked();
+	comperator->settings.epsilon = epsilon        ->value();
 	
 	return std::move( comperator );
 }
