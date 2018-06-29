@@ -91,9 +91,7 @@ struct Para{
 	}
 	
 	color_type distance_L2_checked( unsigned i ) const{
-		auto val = color::asDouble( distance_L1( i ) );
-		//Ignore small differences
-		val = val > epsilon ? val-epsilon : 0;
+		auto val = color::asDouble( distance_L1_checked( i ) );
 		return color::fromDouble( val * val );
 	}
 	
