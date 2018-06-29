@@ -17,6 +17,7 @@
 
 
 #include "AlignerConfigs.hpp"
+#include "AlignerConfigsInternal.hpp"
 
 #include "aligners/AnimationSeparator.hpp"
 #include "aligners/AverageAligner.hpp"

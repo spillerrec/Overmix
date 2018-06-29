@@ -17,6 +17,7 @@
 
 
 #include "RenderConfigs.hpp"
+#include "RenderConfigsInternal.hpp"
 
 #include "renders/AnimRender.hpp" //TODO: how to handle?
 #include "renders/AverageRender.hpp"
