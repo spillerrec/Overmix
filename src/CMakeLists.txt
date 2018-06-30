@@ -4,7 +4,7 @@ find_package(Qt5Gui REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
 
 # Turn on warnings
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fopenmp")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
 set(SOURCES_CONTAINERS
 	containers/AContainer.cpp
@@ -89,15 +89,8 @@ else( WIN32 )
 	set(PLATFORM_LIBRARIES ${PLATFORM_LIBRARIES} -lfftw3)
 endif( WIN32 )
 
-find_package(OpenMP)
-if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-endif()
-
 add_library(OvermixCore ${SOURCES_CONTAINERS} ${SOURCES_PLANES} ${SOURCES_ALIGNERS} ${SOURCES_COMPARATORS} ${SOURCES_RENDERS} ${SOURCES_DEGRADERS} ${SOURCES_OTHERS} )
-target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -fopenmp -lm -lpng -ljpeg -lz -llzma -lpugixml ${PLATFORM_LIBRARIES})
+target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -lm -lpng -ljpeg -lz -llzma -lpugixml ${PLATFORM_LIBRARIES})
 
 # C++14
 set_property(TARGET OvermixCore PROPERTY CXX_STANDARD 14)
