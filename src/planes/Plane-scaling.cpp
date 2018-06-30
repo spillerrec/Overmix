@@ -19,7 +19,6 @@
 #include "../color.hpp"
 #include "../debug.hpp"
 
-#include <QtConcurrent>
 #include <numeric>
 
 #include <boost/math/constants/constants.hpp>
@@ -102,48 +101,6 @@ struct ScalePoint{
 	}
 };
 
-struct ScaleLine{
-	const std::vector<ScalePoint>& points;
-	Plane& wanted;
-	const Plane& input;
-	
-	Plane::Filter f;
-	float offset;
-	float window;
-	
-	unsigned index;
-	
-	ScaleLine( const std::vector<ScalePoint>& points, Plane &wanted, unsigned index
-		,	const Plane& input, float offset, float window, Plane::Filter f )
-		:	points(points), wanted(wanted), input(input), f(f), offset(offset), window(window), index(index)
-		{ }
-		
-	void do_line() const;
-};
-
-void ScaleLine::do_line() const{
-	color_type *out = wanted.scan_line( index ).begin();
-	ScalePoint ver( index, input.get_height(), wanted.get_height(), offset, window, f );
-	
-	for( auto& x : points ){
-		double avg = 0;
-		auto row = input.scan_line( ver.start ).begin() + x.start;
-		
-		for( auto wy : ver.weights ){
-			auto row2 = row;
-			
-			double local_avg = 0;
-			for( auto wx : x.weights )
-				local_avg += *(row2++) * wx;
-			avg += local_avg * wy;
-			
-			row += input.get_line_width();
-		}
-		
-		*(out++) = color::truncate( avg + 0.5 );
-	}
-}
-
 
 static Plane scale2x( const Plane& p, int window, Plane::Filter f ){
 	Timer t( "scale2x" );
@@ -201,24 +158,37 @@ Plane Plane::scale_generic( Point<unsigned> wanted, double window, Plane::Filter
 	
 	Plane scaled( wanted );
 	
-	
 	//Calculate all x-weights
 	std::vector<ScalePoint> points;
 	points.reserve( wanted.width() );
 	for( unsigned ix=0; ix<wanted.width(); ++ix )
 		points.emplace_back( ix, size.width(), wanted.width(), offset.x, window, f );
 	
-	//Calculate all y-lines
-	std::vector<ScaleLine> lines;
-	lines.reserve( wanted.height() );
-	for( unsigned iy=0; iy<wanted.height(); ++iy )
-		lines.emplace_back( points, scaled, iy, *this, offset.y, window, f );
-	
-   QtConcurrent::blockingMap( lines, []( ScaleLine& t ){ t.do_line(); } );
-   //for( auto l : lines ) l.do_line();
+	#pragma omp parallel for
+	for( unsigned iy=0; iy<wanted.height(); ++iy ){
+		color_type *out = scaled.scan_line( iy ).begin();
+		ScalePoint ver( iy, get_height(), scaled.get_height(), offset.y, window, f );
+		
+		for( auto& x : points ){
+			double avg = 0;
+			auto row = scan_line( ver.start ).begin() + x.start;
+			
+			for( auto wy : ver.weights ){
+				auto row2 = row;
+				
+				double local_avg = 0;
+				for( auto wx : x.weights )
+					local_avg += *(row2++) * wx;
+				avg += local_avg * wy;
+				
+				row += get_line_width();
+			}
+			
+			*(out++) = color::truncate( avg + 0.5 );
+		}
+	}
 	
 	return scaled;
 }
-
 
 
