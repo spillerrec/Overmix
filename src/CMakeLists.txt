@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 3.0)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
 
-# Turn on warnings
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-
 set(SOURCES_CONTAINERS
 	containers/AContainer.cpp
 	containers/ImageContainer.cpp

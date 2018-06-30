@@ -30,7 +30,7 @@ namespace Overmix{
 
 class AComparator;
 struct Spinbox2D;
-struct AlignMethodSelector;
+class AlignMethodSelector;
 
 class AComparatorConfig : public AConfig{
 	Q_OBJECT
@@ -72,7 +72,7 @@ class GradientComparatorConfig : public AComparatorConfig{
 	
 	public:
 		GradientComparatorConfig( QWidget* parent );
-        std::unique_ptr<AComparator> getComparator() const;
+        std::unique_ptr<AComparator> getComparator() const override;
 		
 		QString name() const override { return "Gradient"; }
 		QString discription() const override{ return "Uses gradient decent"; }
@@ -87,7 +87,7 @@ class BruteForceComparatorConfig : public AComparatorConfig{
 	
 	public:
 		BruteForceComparatorConfig( QWidget* parent );
-        std::unique_ptr<AComparator> getComparator() const;
+        std::unique_ptr<AComparator> getComparator() const override;
 		
 		QString name() const override { return "Brute force"; }
 		QString discription() const override{ return "Tries EVERYTHING!"; }
