@@ -156,7 +156,7 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 	ProgressWrapper( watcher ).setTotal( aligner.count() * planes_amount );
 	
 	//Determine if we need to care about alpha per plane
-	bool use_plane_alpha = true;//false;
+	bool use_plane_alpha = false;
 	for( unsigned i=0; i<aligner.count(); ++i )
 		if( aligner.alpha( i ) || aligner.imageMask( i ) >= 0 ){
 			use_plane_alpha = true;

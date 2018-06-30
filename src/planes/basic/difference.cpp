@@ -17,8 +17,6 @@
 
 #include "difference.hpp"
 
-#include <QtConcurrent>
-#include <QDebug>
 #include <algorithm>
 
 #include "../Plane.hpp"
@@ -30,16 +28,28 @@ using namespace Overmix;
 using DiffAmount = pair<precision_color_type, double>;
 struct Sum{
 	double sum{ 0.0 };
+	double total{ 0 };
 	unsigned count{ 0 };
-	double total{ 0.0 };
 	
-	void reduce( const DiffAmount add ){
+	double average() const{ return sum / count; }
+	Sum& operator+=( DiffAmount add ){
 		sum += add.first / add.second;
 		total += add.second;
 		count++;
+		return *this;
 	}
-	double average() const{ return sum / count; }
+	
+	Sum& operator+=( const Sum& other ){
+		sum   += other.sum;
+		total += other.total;
+		count += other.count;
+		return *this;
+	}
 };
+
+#pragma omp declare reduction(SumAdd: Sum: \
+	omp_out += omp_in) 
+
 struct Para{
 	const color_type *c1;
 	const color_type *c2;
@@ -109,8 +119,6 @@ struct Para{
 			return sum( func, a1 ? &Para::alpha1 : &Para::alpha2 );
 	}
 };
-static DiffAmount diff_alpha_line(      Para p ){ return p.diff_line( &Para::distance_L2_checked ); }
-static DiffAmount fast_diff_alpha_line( Para p ){ return p.diff_line( &Para::distance_L2 ); }
 
 
 double Difference::simple( const Plane& p1, const Plane& p2, Point<int> offset, SimpleSettings s ){
@@ -149,9 +157,23 @@ double Difference::simpleAlpha( const Plane& p1, const Plane& p2, const Plane& a
 		//TODO: Avoid get_line_width?
 	}
 	
-	auto diff_func = s.fast ? &fast_diff_alpha_line : &diff_alpha_line;
-	Sum sum = QtConcurrent::blockingMappedReduced( lines, diff_func, &Sum::reduce );
-//	Sum sum; for( auto& p : lines ) sum.reduce( diff_alpha_line( p ) );
+	Sum sum;
+	if( s.epsilon == 0 ){
+		#pragma omp parallel for reduction(SumAdd:sum)
+		for( unsigned i=0; i<lines.size(); i++ )
+			if( s.use_l2 )
+				sum += lines[i].diff_line( &Para::distance_L2 );
+			else
+				sum += lines[i].diff_line( &Para::distance_L1 );
+	}
+	else{
+		#pragma omp parallel for reduction(SumAdd:sum)
+		for( unsigned i=0; i<lines.size(); i++ )
+			if( s.use_l2 )
+				sum += lines[i].diff_line( &Para::distance_L2_checked );
+			else
+				sum += lines[i].diff_line( &Para::distance_L1_checked );
+	}
 	
 	//If our stride causes too much reducin
 	//NOTE: This seems risky, as it might cause us to disregard results? Maybe we should return NAN?

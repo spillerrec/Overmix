@@ -58,7 +58,7 @@ GradientComparatorConfig::GradientComparatorConfig( QWidget* parent ) : ACompara
 	movement       = addWidget<QDoubleSpinBox>( "Allowed movement" );
 	start_level    = addWidget<QSpinBox>(       "Start level" );
 	max_level      = addWidget<QSpinBox>(       "Maximum level" );
-	fast_diffing   = addWidget<QCheckBox>(      "Use fast diffing" );
+	use_l2         = addWidget<QCheckBox>(      "Use L2 distance" );
 	epsilon        = addWidget<QSpinBox>(       "Ignore threshold" );
 	max_difference = addWidget<QSpinBox>(       "Maximum difference" );
 	
@@ -72,7 +72,7 @@ GradientComparatorConfig::GradientComparatorConfig( QWidget* parent ) : ACompara
 	set( epsilon );
 	set( max_difference );
 	connect( movement, SIGNAL(valueChanged(double)), this, SIGNAL(changed()) );
-	connect( fast_diffing, SIGNAL(toggled(bool)), this, SIGNAL(changed()) );
+	connect( use_l2, SIGNAL(toggled(bool)), this, SIGNAL(changed()) );
 	
 	//Limits on spinboxes
 	movement      ->setRange( 0.0, 1.0          );
@@ -85,12 +85,12 @@ GradientComparatorConfig::GradientComparatorConfig( QWidget* parent ) : ACompara
 	
 	//Set default values
 	GradientComparator defaults;
-	movement      ->setValue(   defaults.movement       );
-	start_level   ->setValue(   defaults.start_level    );
-	max_level     ->setValue(   defaults.max_level      );
-	fast_diffing  ->setChecked( defaults.settings.fast  );
-	epsilon       ->setValue(   color::WHITE * 0.1      ); //NOTE: We don't want the default '0' value
-	max_difference->setValue(   defaults.max_difference );
+	movement      ->setValue(   defaults.movement         );
+	start_level   ->setValue(   defaults.start_level      );
+	max_level     ->setValue(   defaults.max_level        );
+	use_l2        ->setChecked( defaults.settings.use_l2  );
+	epsilon       ->setValue(   defaults.settings.epsilon );
+	max_difference->setValue(   defaults.max_difference   );
 }
 
 std::unique_ptr<AComparator> GradientComparatorConfig::getComparator() const{
@@ -100,7 +100,7 @@ std::unique_ptr<AComparator> GradientComparatorConfig::getComparator() const{
 	comperator->movement         = movement       ->value();
 	comperator->start_level      = start_level    ->value();
 	comperator->max_level        = max_level      ->value();
-	comperator->settings.fast    = fast_diffing   ->isChecked();
+	comperator->settings.use_l2  = use_l2         ->isChecked();
 	comperator->settings.epsilon = epsilon        ->value();
 	comperator->max_difference   = max_difference ->value();
 	
@@ -112,7 +112,7 @@ BruteForceComparatorConfig::BruteForceComparatorConfig( QWidget* parent ) : ACom
 	
 	method         = addWidget<AlignMethodSelector>( "Movement directions" );
 	movement       = addWidget<QDoubleSpinBox>( "Allowed movement" );
-	fast_diffing   = addWidget<QCheckBox>(      "Use fast diffing" );
+	use_l2         = addWidget<QCheckBox>(      "Use L2 distance" );
 	epsilon        = addWidget<QSpinBox>(       "Ignore threshold" );
 	
 	//Propergate change
@@ -122,28 +122,28 @@ BruteForceComparatorConfig::BruteForceComparatorConfig( QWidget* parent ) : ACom
 	set( method );
 	set( epsilon );
 	connect( movement, SIGNAL(valueChanged(double)), this, SIGNAL(changed()) );
-	connect( fast_diffing, SIGNAL(toggled(bool)), this, SIGNAL(changed()) );
+	connect( use_l2, SIGNAL(toggled(bool)), this, SIGNAL(changed()) );
 	
 	//Limits on spinboxes
-	movement      ->setRange( 0.0, 1.0          );
-	epsilon       ->setRange( 0,   color::WHITE );
+	movement->setRange( 0.0, 1.0          );
+	epsilon ->setRange( 0,   color::WHITE );
 	
 	movement->setSingleStep( 0.05 );
 	
 	//Set default values
-	movement      ->setValue( 0.75 );
+	movement->setValue( 0.75 );
 	Difference::SimpleSettings defaults;
-	fast_diffing  ->setChecked( defaults.fast      );
-	epsilon       ->setValue(   color::WHITE * 0.1 );
+	use_l2  ->setChecked( defaults.use_l2  );
+	epsilon ->setValue(   defaults.epsilon );
 }
 
 std::unique_ptr<AComparator> BruteForceComparatorConfig::getComparator() const{
 	auto comperator = std::make_unique<BruteForceComparator>();
 	
-	comperator->method           = method         ->getValue();
-	comperator->movement         = movement       ->value();
-	comperator->settings.fast    = fast_diffing   ->isChecked();
-	comperator->settings.epsilon = epsilon        ->value();
+	comperator->method           = method  ->getValue();
+	comperator->movement         = movement->value();
+	comperator->settings.use_l2  = use_l2  ->isChecked();
+	comperator->settings.epsilon = epsilon ->value();
 	
 	return std::move( comperator );
 }

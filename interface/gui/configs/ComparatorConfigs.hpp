@@ -66,7 +66,7 @@ class GradientComparatorConfig : public AComparatorConfig{
 		QDoubleSpinBox* movement;
 		QSpinBox*       start_level;
 		QSpinBox*       max_level;
-		QCheckBox*      fast_diffing;
+		QCheckBox*      use_l2;
 		QSpinBox*       epsilon;
 		QSpinBox*       max_difference;
 	
@@ -82,7 +82,7 @@ class BruteForceComparatorConfig : public AComparatorConfig{
 	private:
 		AlignMethodSelector* method;
 		QDoubleSpinBox* movement;
-		QCheckBox*      fast_diffing;
+		QCheckBox*      use_l2;
 		QSpinBox*       epsilon;
 	
 	public:

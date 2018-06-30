@@ -28,11 +28,10 @@ namespace Overmix{
 namespace Overmix{ namespace Difference{
 	struct SimpleSettings{
 		unsigned   stride;
-		bool       fast;    ///Do not use epsilon
+		bool       use_l2;    ///Switch between L1 and L2
 		color_type epsilon; ///Ignore differences below this level
-		//TODO: Switch between L1 and L2
 		
-		SimpleSettings() : stride(1), fast(true), epsilon(0) { }
+		SimpleSettings() : stride(1), use_l2(false), epsilon(0) { }
 	};
 	
 	double simple(      const Plane& p1, const Plane& p2,                                           Point<int> offset, SimpleSettings s={} );
