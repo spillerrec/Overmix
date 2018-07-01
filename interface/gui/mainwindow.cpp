@@ -347,16 +347,9 @@ QImage main_widget::qrenderImage( const ImageEx& img ){
 	if( ui->cbx_nocolor->isChecked() )
 		image = image.flatten();
 	
-	//Set settings
-	unsigned setting = ImageEx::SETTING_NONE;
-	if( ui->cbx_dither->isChecked() )
-		setting = setting | ImageEx::SETTING_DITHER;
-	if( ui->cbx_gamma->isChecked() )
-		setting = setting | ImageEx::SETTING_GAMMA;
-	
 	//Render image
 	//TODO: fix postProcess
-	return image.to_qimage( setting );
+	return image.to_qimage( ui->cbx_dither->isChecked() );
 }
 
 void main_widget::refreshQImageCache(){

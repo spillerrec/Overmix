@@ -672,16 +672,6 @@
               </widget>
              </item>
              <item row="0" column="0">
-              <widget class="QCheckBox" name="cbx_gamma">
-               <property name="text">
-                <string>sRGB</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
               <widget class="QCheckBox" name="cbx_dither">
                <property name="text">
                 <string>Dither</string>
@@ -1295,7 +1285,7 @@
      <x>0</x>
      <y>0</y>
      <width>998</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">
@@ -1411,7 +1401,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Black background</string>
+    <string>&amp;Black background</string>
    </property>
   </action>
  </widget>

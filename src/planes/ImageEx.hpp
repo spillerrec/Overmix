@@ -37,12 +37,6 @@ class ImageEx{
 			PlaneInfo( Plane&& p, Size<int> sub={0,0} )
 				:	p(std::move(p)), subsampling(sub) {}
 		};
-		
-		enum Settings{
-			SETTING_NONE = 0x0,
-			SETTING_DITHER = 0x1,
-			SETTING_GAMMA = 0x2
-		};
 	
 	private:
 		std::vector<PlaneInfo> planes;
@@ -111,7 +105,7 @@ class ImageEx{
 		const Plane& alpha_plane() const{ return alpha; }
 		
 		ImageEx flatten() const; 
-		QImage to_qimage( unsigned setting=SETTING_NONE ) const;
+		QImage to_qimage( bool use_dither=false ) const;
 		
 		Point<unsigned> getSize() const{
 			return std::accumulate( planes.begin(), planes.end(), Point<unsigned>( 0, 0 )

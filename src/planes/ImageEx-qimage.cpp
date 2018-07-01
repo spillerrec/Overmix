@@ -85,7 +85,7 @@ bool ImageEx::from_qimage( QIODevice& dev, QString ext ){
 }
 
 
-QImage ImageEx::to_qimage( unsigned setting ) const{
+QImage ImageEx::to_qimage( bool use_dither ) const{
 	Timer t( "to_qimage" );
 	if( planes.size() == 0 || !planes[0].p )
 		return QImage();
@@ -94,8 +94,8 @@ QImage ImageEx::to_qimage( unsigned setting ) const{
 	//TODO: Support grayscale output?
 	ImageEx rgb = toColorSpace( { Transform::RGB, Transfer::SRGB } );
 	
-	auto to8bit = [setting]( Plane p )
-		{ return (setting & SETTING_DITHER) ? p.to8BitDither() : p.to8Bit(); };
+	auto to8bit = [use_dither]( Plane p )
+		{ return use_dither ? p.to8BitDither() : p.to8Bit(); };
 	
 	//Convert to 8-bit range
 	std::vector<PlaneBase<uint8_t>> planar( 4 );
