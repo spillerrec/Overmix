@@ -85,92 +85,46 @@ bool ImageEx::from_qimage( QIODevice& dev, QString ext ){
 }
 
 
-struct PlanesIt{
-	std::vector<ModifiedPlane> planes;
-	std::vector<const color_type*> rows; //TODO: see if we can replace it
-	
-	public:
-		void add( const Plane& p, Size<int> size )
-			{ planes.emplace_back( getScaled( p, size ) ); }
-		void next_x(){ for( auto& row : rows ) row++; }
-		void prepare_row( int iy ){
-			rows.clear();
-			for( auto& plane : planes )
-				rows.push_back( plane().scan_line( iy ).begin() );
-		}
-		
-		auto at( int c ) const{ return *(rows[c]); }
-		
-		color gray(){   return { at(0), at(0), at(0) }; }
-		color gray_a(){ return { at(0), at(0), at(0), at(1) }; }
-		color rgb(){    return { at(0), at(1), at(2) }; }
-		color rgb_a(){  return { at(0), at(1), at(2), at(3) }; }
-};
-
 QImage ImageEx::to_qimage( unsigned setting ) const{
 	Timer t( "to_qimage" );
 	if( planes.size() == 0 || !planes[0].p )
 		return QImage();
 	
-	//Settings
-	bool dither = setting & SETTING_DITHER;
-	bool gamma = setting & SETTING_GAMMA;
-	bool is_yuv = color_space.isYCbCr();
-	//TODO: be smarter now we have access to the color info!
+	//Convert colors
+	//TODO: Support grayscale output?
+	ImageEx rgb = toColorSpace( { Transform::RGB, Transfer::SRGB } );
 	
-	//Create iterator
-	auto img_size = getSize();
-	PlanesIt it;
-	for( auto& info : planes )
-		it.add( info.p, img_size );
-	if( alpha_plane() )
-		it.add( alpha_plane(), img_size );
+	auto to8bit = [setting]( Plane p )
+		{ return (setting & SETTING_DITHER) ? p.to8BitDither() : p.to8Bit(); };
 	
-	//Fetch with alpha
-	auto pixel = ( color_space.isGray() )
-		?	( alpha_plane() ? &PlanesIt::gray_a : &PlanesIt::gray )
-		:	( alpha_plane() ? &PlanesIt::rgb_a  : &PlanesIt::rgb  );
+	//Convert to 8-bit range
+	std::vector<PlaneBase<uint8_t>> planar( 4 );
+	#pragma omp parallel for
+	for( unsigned c=0; c<rgb.planes.size(); c++ )
+		planar[c] = to8bit( rgb.planes[c].p );
+	//Convert or add default alpha plane
+	if( rgb.alpha_plane() )
+		planar[3] = rgb.alpha_plane().to8Bit(); //NOTE: Dither on alpha is probably not a good idea
+	else{
+		planar[3] = { getSize() };
+		planar[3].fill( 0 );
+	}
 	
 	
 	//Create image
-	QImage img(	img_size.width(), img_size.height()
-		,	( alpha_plane() ) ? QImage::Format_ARGB32 : QImage::Format_RGB32
-		);
-	img.fill(0);
+	auto qimg_format = rgb.alpha_plane() ? QImage::Format_ARGB32 : QImage::Format_RGB32;
+	QImage img(	get_width(), get_height(), qimg_format );
 	
-	
-	vector<color> line( img_size.width()+1, color( 0,0,0,0 ) );
-	for( unsigned iy=0; iy<img_size.height(); iy++ ){
-		QRgb* row = (QRgb*)img.scanLine( iy );
-		it.prepare_row( iy );
-		for( unsigned ix=0; ix<img_size.width(); ix++, it.next_x() ){
-			color p = (it.*pixel)();
-			if( is_yuv ){
-				switch( color_space.transform() ){
-					case Transform::YCbCr_709: p = p.rec709ToRgb( gamma ); break;
-					case Transform::YCbCr_601: p = p.rec601ToRgb( gamma ); break;
-					case Transform::JPEG     : p = p.jpegToRgb(   false ); break;
-					default: break;
-				}
-			}
-			
-			if( dither )
-				p += line[ix];
-			
-			const double scale = color::WHITE / 255.0;
-			color rounded = p / scale;
-			
-			if( dither ){
-				color err = p - ( rounded * scale );
-				line[ix] = err / 4;
-				line[ix+1] += err / 2;
-				if( ix )
-					line[ix-1] += err / 4;
-			}
-			
-			rounded.trunc( 255 );
-			row[ix] = qRgba( rounded.r, rounded.g, rounded.b, rounded.a );
-		}
+	#pragma omp parallel for
+	for( unsigned iy=0; iy<get_height(); iy++ ){
+		auto out = (QRgb*)img.scanLine( iy );
+		auto r = planar[0].scan_line( iy );
+		auto g = planar[1].scan_line( iy );
+		auto b = planar[2].scan_line( iy );
+		auto a = planar[3].scan_line( iy ); //TODO: We can just use an empty row for this if no alpha
+		
+		for( unsigned ix=0; ix<get_width(); ix++ )
+			out[ix] = qRgba( r[ix], g[ix], b[ix], a[ix] );
 	}
 	
 	return img;

@@ -20,6 +20,7 @@
 #include <numeric> //accumulate
 #include <cstdlib> //For abs(int)
 #include <cassert>
+#include <vector>
 #include <utility>
 #include <QDebug>
 
@@ -31,6 +32,30 @@ using namespace Overmix;
 
 PlaneBase<double> Plane::toDouble() const{
 	return map( color::asDouble );
+}
+PlaneBase<uint8_t> Plane::to8Bit() const{
+	return map( color::as8bit );
+}
+PlaneBase<uint8_t> Plane::to8BitDither() const{
+	std::vector<color_type> line( get_width()+1, 0 );
+	
+	PlaneBase<uint8_t> out( getSize() );
+	for( unsigned iy=0; iy<get_height(); iy++ ){
+		auto row_out = out.scan_line( iy );
+		auto row_in  =     scan_line( iy );
+		for( unsigned ix=0; ix<get_width(); ix++ ){
+			auto p = color::truncate( row_in[ix] + line[ix] );
+			
+			row_out[ix] = color::as8bit( p );
+			
+			color_type err = p - color::from8bit( row_out[ix] );
+			line[ix] = err / 4;
+			line[ix+1] += err / 2;
+			if( ix )
+				line[ix-1] += err / 4;
+		}
+	}
+	return out;
 }
 
 color_type Plane::min_value() const{

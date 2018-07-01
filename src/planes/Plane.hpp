@@ -65,6 +65,8 @@ class Plane : public PlaneBase<color_type>{
 		
 	//Convert
 		PlaneBase<double> toDouble() const;
+		PlaneBase<uint8_t> to8Bit() const;
+		PlaneBase<uint8_t> to8BitDither() const;
 		
 	//Queries
 		color_type min_value() const;

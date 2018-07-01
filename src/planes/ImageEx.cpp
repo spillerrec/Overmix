@@ -80,11 +80,22 @@ ImageEx ImageEx::toRgb() const
 
 ImageEx ImageEx::toColorSpace( ColorSpace to ) const{
 	Timer t( "ImageEx::toColorSpace" );
-	if( color_space.components() != to.components() || to.components() != 3 )
-		throw std::runtime_error( "Unsupported color space conversion" );
-	
 	ImageEx out( *this );
 	out.color_space = to;
+	
+	//Special case for GRAY to RGB
+	if( color_space.isGray() && to.isRgb() ){
+		//TODO: Transfer function not converted
+		if( color_space.transfer() != to.transfer() )
+			std::runtime_error( "Gray to RGB does not yet implement transfer function conversion" );
+		
+ 		out.planes.push_back( out.planes[0] );
+ 		out.planes.push_back( out.planes[0] );
+		return out;
+	}
+	
+	if( color_space.components() != to.components() || to.components() != 3 )
+		throw std::runtime_error( "Unsupported color space conversion" );
 	
 	//Upscale planes
 	auto img_size = out.getSize();
@@ -92,6 +103,7 @@ ImageEx ImageEx::toColorSpace( ColorSpace to ) const{
 		if( info.p.getSize() != img_size )
 			info.p = info.p.scale_cubic( img_size );
 	
+	#pragma omp parallel for
 	for( unsigned iy=0; iy<img_size.height(); iy++ ){
 		ColorRow row( out, iy );
 		for( unsigned ix=0; ix<img_size.width(); ix++ )
