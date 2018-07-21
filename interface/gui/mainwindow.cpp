@@ -37,6 +37,7 @@
 #include "utils/ImageLoader.hpp"
 
 #include "savers/DumpSaver.hpp"
+#include "importers/VideoImporter.hpp"
 #include "visualisations/MovementGraph.hpp"
 #include "Spinbox2D.hpp"
 
@@ -243,8 +244,13 @@ void main_widget::closeEvent( QCloseEvent *event ){
 
 
 void main_widget::process_urls( QStringList files ){
-	ProgressWatcher watcher( this, tr("Loading images") );
-	ImageLoader::loadImages( files, images, detelecine, alpha_mask, &watcher );
+	if( files.count() == 1 && VideoImporter::supportedFile( files[0] ) ){
+		VideoImporter::loadFile( files[0], images );
+	}
+	else{
+		ProgressWatcher watcher( this, tr("Loading images") );
+		ImageLoader::loadImages( files, images, detelecine, alpha_mask, &watcher );
+	}
 	
 	clear_cache();
 	refresh_text();

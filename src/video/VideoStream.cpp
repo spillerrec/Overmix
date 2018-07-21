@@ -73,9 +73,11 @@ class VideoFile{
 };
 
 VideoStream::VideoStream( QString filepath ){
+	av_register_all();
 	if( avformat_open_input( &format_context
-		,	filepath.toLocal8Bit().constData(), nullptr, nullptr ) )
-		throw std::runtime_error( "Couldn't open file, either missing, unsupported or corrupted\n" );
+		,	filepath.toLocal8Bit().constData(), nullptr, nullptr ) < 0 ){
+			throw std::runtime_error( "Couldn't open video file, either missing, unsupported or corrupted\n" );
+		}
 	
 	if( avformat_find_stream_info( format_context, nullptr ) < 0 )
 		throw std::runtime_error( "Couldn't find stream\n" );

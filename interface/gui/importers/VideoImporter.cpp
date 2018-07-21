@@ -15,43 +15,30 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef VIDEO_FRAME_HPP
-#define VIDEO_FRAME_HPP
 
-#include <vector>
+#include "VideoImporter.hpp"
 
-struct AVFrame;
-struct AVCodecContext;
+#include "video/VideoStream.hpp"
+#include "video/VideoFrame.hpp"
+#include "containers/ImageContainer.hpp"
+#include <QFileInfo>
 
-namespace Overmix{
+using namespace Overmix;
 
-class Plane;
-class ImageEx;
 
-class VideoFrame{
-	private:
-		AVFrame *frame;
-		std::vector<Plane> planes;
-		
-		unsigned depth{ 8 };
-		bool planar{ true };
-		bool rgb = false;
-		
-	public:
-		VideoFrame( AVCodecContext &context );
-		VideoFrame( const VideoFrame& ) = delete;
-		VideoFrame( VideoFrame&& ) = default;
-		~VideoFrame();
-		
-		void prepare_planes();
-		ImageEx toImageEx();
-		
-		operator AVFrame*(){ return frame; }
-		
-		bool is_keyframe() const;
-		
-};
-
+bool VideoImporter::supportedFile( QString filename ){
+	auto extension = QFileInfo( filename ).suffix();
+	//TODO: multiple extesions
+	return extension.toLower() == "mkv";
 }
 
-#endif
+void VideoImporter::loadFile( QString filepath, ImageContainer &files ){
+	VideoStream video( filepath );
+	//TODO:
+	
+	for( int i=0; i<10; i++ ){
+		auto frame = video.getFrame();
+		files.addImage( frame.toImageEx() );
+	}
+}
+

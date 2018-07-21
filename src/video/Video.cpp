@@ -16,4 +16,3 @@
 */
 
 #include "Video.hpp"
-

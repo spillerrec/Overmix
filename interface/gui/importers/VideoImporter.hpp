@@ -15,43 +15,32 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef VIDEO_FRAME_HPP
-#define VIDEO_FRAME_HPP
+#ifndef VIDEO_IMPORTER_HPP
+#define VIDEO_IMPORTER_HPP
 
-#include <vector>
 
-struct AVFrame;
-struct AVCodecContext;
+#include <QAbstractItemModel>
+#include <QImage>
+
 
 namespace Overmix{
+	
+class ImageContainer;
 
-class Plane;
-class ImageEx;
-
-class VideoFrame{
+class VideoImporter /*: public QWidget*/{
+	/*Q_OBJECT*/
+	
 	private:
-		AVFrame *frame;
-		std::vector<Plane> planes;
 		
-		unsigned depth{ 8 };
-		bool planar{ true };
-		bool rgb = false;
 		
 	public:
-		VideoFrame( AVCodecContext &context );
-		VideoFrame( const VideoFrame& ) = delete;
-		VideoFrame( VideoFrame&& ) = default;
-		~VideoFrame();
 		
-		void prepare_planes();
-		ImageEx toImageEx();
 		
-		operator AVFrame*(){ return frame; }
-		
-		bool is_keyframe() const;
-		
+		static bool supportedFile( QString filename );
+		static void loadFile( QString filepath, ImageContainer &files );
 };
 
 }
 
 #endif
+

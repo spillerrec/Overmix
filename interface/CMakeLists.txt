@@ -22,6 +22,7 @@ set(SOURCE_GUI
 	gui/MaskModel.cpp
 	gui/FullscreenViewer.cpp
 	gui/AlignMethodSelector.cpp
+	gui/Importers/VideoImporter.cpp
 	)
 
 set(SOURCE_GUI_CONFIGS

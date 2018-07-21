@@ -18,6 +18,8 @@
 #include "VideoFrame.hpp"
 
 #include "../planes/Plane.hpp"
+#include "../planes/ImageEx.hpp"
+#include "../color.hpp"
 
 
 extern "C" {
@@ -31,7 +33,7 @@ using namespace Overmix;
 
 
 static unsigned read8( uint8_t *&data ){
-	return *(data++);
+	return color::from8bit( *(data++) );
 }
 static unsigned read16( uint8_t *&data ){
 	unsigned p1 = *(data++);
@@ -125,5 +127,13 @@ void VideoFrame::prepare_planes(){
 			}
 		}
 	}
+}
+
+ImageEx VideoFrame::toImageEx(){
+	//TODO: Detect actual color space
+	ImageEx out( { Transform::YCbCr_709, Transfer::REC709 } );
+	for( auto& p : planes )
+		out.addPlane( std::move( p ) );
+	return out;
 }
 

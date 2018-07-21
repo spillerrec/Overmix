@@ -18,6 +18,8 @@
 #ifndef VIDEO_HPP
 #define VIDEO_HPP
 
+#include "VideoStream.hpp"
+
 #include <memory>
 #include <vector>
 
