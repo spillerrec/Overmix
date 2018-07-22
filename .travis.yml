@@ -26,7 +26,7 @@ matrix:
 
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y libavcodec-dev libformat-dev libavutil-dev qtbase5-dev libqcustomplot-dev liblcms2-dev libpugixml-dev libfftw3-dev libjpeg-dev libpng-dev liblzma-dev libqt5x11extras5-dev libboost-dev libeigen3-dev libx11-xcb-dev libxcb-util0-dev
+  - sudo apt-get install -y libavcodec-dev libavformat-dev libavutil-dev qtbase5-dev libqcustomplot-dev liblcms2-dev libpugixml-dev libfftw3-dev libjpeg-dev libpng-dev liblzma-dev libqt5x11extras5-dev libboost-dev libeigen3-dev libx11-xcb-dev libxcb-util0-dev
 
 before_script:
   - mkdir release
