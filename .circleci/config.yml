@@ -5,23 +5,23 @@ jobs:
       - image: gcc:latest
     steps:
       - checkout
-      - run: sudo apt-get update
-      - run: sudo apt-get libavcodec-dev 
-      - run: sudo apt-get libavformat-dev 
-      - run: sudo apt-get libavutil-dev 
-      - run: sudo apt-get qtbase5-dev 
-      - run: sudo apt-get libqcustomplot-dev 
-      - run: sudo apt-get liblcms2-dev 
-      - run: sudo apt-get libpugixml-dev 
-      - run: sudo apt-get libfftw3-dev 
-      - run: sudo apt-get libjpeg-dev 
-      - run: sudo apt-get libpng-dev 
-      - run: sudo apt-get liblzma-dev 
-      - run: sudo apt-get libqt5x11extras5-dev 
-      - run: sudo apt-get libboost-dev 
-      - run: sudo apt-get libeigen3-dev 
-      - run: sudo apt-get libx11-xcb-dev 
-      - run: sudo apt-get libxcb-util0-dev
+      - run: apt-get update
+      - run: apt-get libavcodec-dev 
+      - run: apt-get libavformat-dev 
+      - run: apt-get libavutil-dev 
+      - run: apt-get qtbase5-dev 
+      - run: apt-get libqcustomplot-dev 
+      - run: apt-get liblcms2-dev 
+      - run: apt-get libpugixml-dev 
+      - run: apt-get libfftw3-dev 
+      - run: apt-get libjpeg-dev 
+      - run: apt-get libpng-dev 
+      - run: apt-get liblzma-dev 
+      - run: apt-get libqt5x11extras5-dev 
+      - run: apt-get libboost-dev 
+      - run: apt-get libeigen3-dev 
+      - run: apt-get libx11-xcb-dev 
+      - run: apt-get libxcb-util0-dev
       - run:
           name: Setup build folder
           command: mkdir -p build && cd build
