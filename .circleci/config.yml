@@ -8,7 +8,7 @@ jobs:
       - run: apt-get update
       - run:
           name: Install dependencies
-          command: apt-get install -y libavcodec-dev libavformat-dev libavutil-dev qtbase5-dev libqcustomplot-dev liblcms2-dev libpugixml-dev libfftw3-dev libjpeg-dev libpng-dev liblzma-dev libqt5x11extras5-dev libboost-dev libeigen3-dev libx11-xcb-dev libxcb-util0-dev
+          command: apt-get install -y cmake libavcodec-dev libavformat-dev libavutil-dev qtbase5-dev libqcustomplot-dev liblcms2-dev libpugixml-dev libfftw3-dev libjpeg-dev libpng-dev liblzma-dev libqt5x11extras5-dev libboost-dev libeigen3-dev libx11-xcb-dev libxcb-util0-dev
       - run:
           name: Setup build folder
           command: mkdir -p build && cd build
