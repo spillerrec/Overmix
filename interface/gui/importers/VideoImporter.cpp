@@ -17,6 +17,7 @@
 
 
 #include "VideoImporter.hpp"
+#include "ui_VideoImporter.h"
 
 #include "video/VideoStream.hpp"
 #include "video/VideoFrame.hpp"
@@ -25,6 +26,12 @@
 
 using namespace Overmix;
 
+VideoImporter::VideoImporter( QString filepath, QWidget* parent )
+	:	QDialog( parent ), ui( new Ui_Dialog ), filepath( filepath )
+	{
+	ui->setupUi( this );
+}
+
 
 bool VideoImporter::supportedFile( QString filename ){
 	auto extension = QFileInfo( filename ).suffix();
@@ -32,11 +39,11 @@ bool VideoImporter::supportedFile( QString filename ){
 	return extension.toLower() == "mkv";
 }
 
-void VideoImporter::loadFile( QString filepath, ImageContainer &files ){
+void VideoImporter::import( ImageContainer &files ){
 	VideoStream video( filepath );
-	//TODO:
+	video.seek( ui->offset_min->value()*60 + ui->offset_sec->value() );
 	
-	for( int i=0; i<10; i++ ){
+	for( int i=0; i<ui->frames_amount->value(); i++ ){
 		auto frame = video.getFrame();
 		files.addImage( frame.toImageEx() );
 	}

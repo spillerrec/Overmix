@@ -18,26 +18,27 @@
 #ifndef VIDEO_IMPORTER_HPP
 #define VIDEO_IMPORTER_HPP
 
+#include <QDialog>
 
-#include <QAbstractItemModel>
-#include <QImage>
-
+class Ui_Dialog;
 
 namespace Overmix{
 	
 class ImageContainer;
 
-class VideoImporter /*: public QWidget*/{
-	/*Q_OBJECT*/
+class VideoImporter : public QDialog{
+	Q_OBJECT
 	
 	private:
+		Ui_Dialog *ui;
+		QString filepath;
 		
 		
 	public:
-		
+		VideoImporter( QString filepath, QWidget* parent );
 		
 		static bool supportedFile( QString filename );
-		static void loadFile( QString filepath, ImageContainer &files );
+		void import( ImageContainer &files );
 };
 
 }

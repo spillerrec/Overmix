@@ -245,7 +245,11 @@ void main_widget::closeEvent( QCloseEvent *event ){
 
 void main_widget::process_urls( QStringList files ){
 	if( files.count() == 1 && VideoImporter::supportedFile( files[0] ) ){
-		VideoImporter::loadFile( files[0], images );
+		VideoImporter importer( files[0], this );
+		auto result = importer.exec();
+		if( result == QDialog::Accepted ){
+			importer.import( images );
+		}
 	}
 	else{
 		ProgressWatcher watcher( this, tr("Loading images") );
