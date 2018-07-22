@@ -69,6 +69,7 @@ Several tools related to the format have been developed, most importantly an app
 - Qt5
 - C++14 (generic lambdas, `std::make_unique<>`)
 - cmake (for compiling)
+- ffmpeg
 - zlib
 - lzma
 - libpng
