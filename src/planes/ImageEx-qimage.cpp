@@ -107,7 +107,7 @@ QImage ImageEx::to_qimage( bool use_dither ) const{
 		planar[3] = rgb.alpha_plane().to8Bit(); //NOTE: Dither on alpha is probably not a good idea
 	else{
 		planar[3] = { getSize() };
-		planar[3].fill( 0 );
+		planar[3].fill( 255 );
 	}
 	
 	
