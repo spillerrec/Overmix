@@ -53,7 +53,7 @@ find_package(Qt5PrintSupport REQUIRED)
 
 include_directories ("${PROJECT_SOURCE_DIR}/../src")
 target_link_libraries(OvermixCli OvermixCore Qt5::Widgets)
-target_link_libraries(Overmix OvermixCore ImgViewer Qt5::Widgets -lqcustomplot)
+target_link_libraries(Overmix OvermixCore ImgViewer Qt5::Widgets Qt5::PrintSupport -lqcustomplot)
 
 install(TARGETS Overmix RUNTIME DESTINATION bin)
 install(TARGETS OvermixCli RUNTIME DESTINATION bin)
