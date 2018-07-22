@@ -1,0 +1,33 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: gcc:latest
+    steps:
+      - checkout
+      - run: sudo apt-get update
+      - run: sudo apt-get libavcodec-dev 
+      - run: sudo apt-get libavformat-dev 
+      - run: sudo apt-get libavutil-dev 
+      - run: sudo apt-get qtbase5-dev 
+      - run: sudo apt-get libqcustomplot-dev 
+      - run: sudo apt-get liblcms2-dev 
+      - run: sudo apt-get libpugixml-dev 
+      - run: sudo apt-get libfftw3-dev 
+      - run: sudo apt-get libjpeg-dev 
+      - run: sudo apt-get libpng-dev 
+      - run: sudo apt-get liblzma-dev 
+      - run: sudo apt-get libqt5x11extras5-dev 
+      - run: sudo apt-get libboost-dev 
+      - run: sudo apt-get libeigen3-dev 
+      - run: sudo apt-get libx11-xcb-dev 
+      - run: sudo apt-get libxcb-util0-dev
+      - run:
+          name: Setup build folder
+          command: mkdir -p build && cd build
+      - run:
+          name: Configure project for Release
+          command: cmake .. -DCMAKE_BUILD_TYPE=RELEASE
+      - run:
+          name: Compile project
+          command: make
