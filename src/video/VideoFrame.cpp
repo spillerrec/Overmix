@@ -130,9 +130,35 @@ void VideoFrame::prepare_planes(){
 	}
 }
 
+static Transform getColorSpace( AVFrame& frame ){
+	switch( frame.colorspace ){
+		case AVCOL_SPC_BT709    : return Transform::YCbCr_709;
+		case AVCOL_SPC_SMPTE170M:
+		case AVCOL_SPC_SMPTE240M: return Transform::YCbCr_601;
+		case AVCOL_SPC_RGB      : return Transform::RGB;
+		default: {
+			//TODO: warning
+			return Transform::UNKNOWN;
+		}
+	}
+}
+
+static Transfer getColorTransfer( AVFrame& frame ){
+	switch( frame.color_range ){
+		case AVCOL_TRC_SMPTE170M   : return Transfer::REC709; //TODO: Correct?
+		case AVCOL_TRC_BT709       : return Transfer::REC709;
+		case AVCOL_TRC_LINEAR      : return Transfer::LINEAR;
+		case AVCOL_TRC_IEC61966_2_1: return Transfer::SRGB;
+		default: {
+			//TODO: warning
+			return Transfer::UNKNOWN;
+		}
+	}
+}
+
 ImageEx VideoFrame::toImageEx(){
 	//TODO: Detect actual color space
-	ImageEx out( { Transform::YCbCr_709, Transfer::REC709 } );
+	ImageEx out( { getColorSpace( *frame ), getColorTransfer( *frame ) } );
 	for( auto& p : planes )
 		out.addPlane( std::move( p ) );
 	return out;
