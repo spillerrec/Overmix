@@ -49,7 +49,12 @@ ProcessScale::ProcessScale( QWidget* parent ) : AProcessor( parent ){
 	for( auto func : scale_mapping )
 		method->addItem( func.name );
 	
-	//TODO: Configure
+	//Configure
+	method->setCurrentIndex( 3 );
+	scale->setValue( {1.0, 1.0} );
+	scale->setSingleStep( 0.001 );
+	scale->call( &QDoubleSpinBox::setDecimals, 3 );
+	scale->call( &QDoubleSpinBox::setRange, 0.001,  32.0 );
 }
 
 QString ProcessScale::name() const{ return "Scale"; }

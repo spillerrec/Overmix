@@ -33,6 +33,8 @@ set(SOURCE_GUI_CONFIGS
 	
 set(SOURCE_GUI_PROCESSORS
 	gui/processors/AProcessor.cpp
+	gui/processors/ProcessBlur.cpp
+	gui/processors/ProcessDeconvolve.cpp
 	gui/processors/ProcessScale.cpp
 	)
 
