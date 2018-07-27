@@ -30,6 +30,11 @@ set(SOURCE_GUI_CONFIGS
 	gui/configs/ComparatorConfigs.cpp
 	gui/configs/RenderConfigs.cpp
 	)
+	
+set(SOURCE_GUI_PROCESSORS
+	gui/processors/AProcessor.cpp
+	gui/processors/ProcessScale.cpp
+	)
 
 set(SOURCE_GUI_SAVERS
 	gui/savers/DumpSaver.cpp
@@ -44,7 +49,7 @@ if( WIN32 ) # Don't use registry on windows for saving options
 endif( WIN32 )
 
 add_executable(OvermixCli ${SOURCE_CLI} main-cli.cpp)
-add_executable(Overmix WIN32 ${SOURCE_CLI} ${SOURCE_GUI} ${SOURCE_GUI_CONFIGS} ${SOURCE_GUI_SAVERS} ${SOURCE_GUI_VISUALISATION} ${SOURCE_GUI_VIEWER} ${extra_moc} main.cpp)
+add_executable(Overmix WIN32 ${SOURCE_CLI} ${SOURCE_GUI} ${SOURCE_GUI_CONFIGS} ${SOURCE_GUI_PROCESSORS} ${SOURCE_GUI_SAVERS} ${SOURCE_GUI_VISUALISATION} ${SOURCE_GUI_VIEWER} ${extra_moc} main.cpp)
 
 # Set-up libraries
 find_package(Qt5Widgets REQUIRED)

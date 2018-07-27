@@ -22,6 +22,7 @@
 #include "ProgressWatcher.hpp"
 #include "viewer/imageCache.h"
 
+#include "processors/ProcessScale.hpp"
 #include "FullscreenViewer.hpp"
 
 #include "color.hpp"
@@ -121,6 +122,7 @@ main_widget::main_widget( ImageContainer& images )
 		 scale_spinbox->call( &QDoubleSpinBox::setRange, 0.001,  32.0 );
 	deconvolve_spinbox->call( &QDoubleSpinBox::setRange, 0.000, 128.0 );
 	
+	ui->processtest_layout->addWidget( new ProcessScale( this ) );
 	
 	//Buttons
 	connect( ui->btn_clear,      SIGNAL( clicked() ), this, SLOT( clear_image()          ) );
