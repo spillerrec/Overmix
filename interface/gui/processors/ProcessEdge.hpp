@@ -34,7 +34,6 @@ class ProcessEdge : public AProcessor{
 		ProcessEdge( QWidget* parent );
 		
 		QString name() const override;
-		bool modifiesImage() const override;
 		ImageEx process( const ImageEx& img ) const override;
 };
 

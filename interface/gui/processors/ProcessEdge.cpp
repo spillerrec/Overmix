@@ -23,33 +23,31 @@
 
 using namespace Overmix;
 
+struct EdgeFunc{
+	Plane (Plane::*func)() const;
+	const char* const name;
+};
+static const EdgeFunc edge_mapping[] = {
+		{ Plane::edge_robert         , "Robert"        }
+	,	{ Plane::edge_sobel          , "Sobel"         }
+	,	{ Plane::edge_prewitt        , "Prewitt"       }
+	,	{ Plane::edge_laplacian      , "Laplacian (3)" }
+	,	{ Plane::edge_laplacian_large, "Laplacian (5)" }
+};
+
+
 ProcessEdge::ProcessEdge( QWidget* parent ) : AProcessor( parent ){
 	method = newItem<QComboBox>( "Method" );
 	
-	method->addItem( "None"          ); //TODO: Remove
-	method->addItem( "Robert"        );
-	method->addItem( "Sobel"         );
-	method->addItem( "Prewitt"       );
-	method->addItem( "Laplacian (3)" );
-	method->addItem( "Laplacian (5)" );
+	for( auto edge : edge_mapping )
+		method->addItem( edge.name );
 }
 
 QString ProcessEdge::name() const{ return "Edge detection"; }
 
-bool ProcessEdge::modifiesImage() const{
-	return method->currentIndex() != 0; //TODO: Remove when "None" is removed
-}
-
 ImageEx ProcessEdge::process( const ImageEx& input ) const{
-	//TODO: Use array when "None" is removed
+	//TODO: assert size
 	ImageEx output( input );
-	switch( method->currentIndex() ){
-		case 1: output.apply( &Plane::edge_robert          ); break;
-		case 2: output.apply( &Plane::edge_sobel           ); break;
-		case 3: output.apply( &Plane::edge_prewitt         ); break;
-		case 4: output.apply( &Plane::edge_laplacian       ); break;
-		case 5: output.apply( &Plane::edge_laplacian_large ); break;
-		default: break;
-	};
+	output.apply( edge_mapping[method->currentIndex()].func );
 	return output;
 }
