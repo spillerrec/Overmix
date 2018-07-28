@@ -28,18 +28,18 @@ using namespace Overmix;
 
 struct ScalingFunc{
 	ScalingFunction func;
-	QString name;
+	const char* const name;
 };
 
 static const ScalingFunc scale_mapping[] = {
-		{ ScalingFunction::SCALE_NEAREST,   QString("Nearest") }
-	,	{ ScalingFunction::SCALE_LINEAR,    QString("Linear") }
-	,	{ ScalingFunction::SCALE_CATROM,    QString("Catmull-Rom (cubic)") }
-	,	{ ScalingFunction::SCALE_MITCHELL,  QString("Mitchell-Netravali (cubic)") }
-	,	{ ScalingFunction::SCALE_SPLINE,    QString("Spline (cubic)") }
-	,	{ ScalingFunction::SCALE_LANCZOS_3, QString("Lanczos 3-lopes (sinc)") }
-	,	{ ScalingFunction::SCALE_LANCZOS_5, QString("Lanczos 5-lopes (sinc)") }
-	,	{ ScalingFunction::SCALE_LANCZOS_7, QString("Lanczos 7-lopes (sinc)") }
+		{ ScalingFunction::SCALE_NEAREST  , "Nearest"                    }
+	,	{ ScalingFunction::SCALE_LINEAR   , "Linear"                     }
+	,	{ ScalingFunction::SCALE_CATROM   , "Catmull-Rom (cubic)"        }
+	,	{ ScalingFunction::SCALE_MITCHELL , "Mitchell-Netravali (cubic)" }
+	,	{ ScalingFunction::SCALE_SPLINE   , "Spline (cubic)"             }
+	,	{ ScalingFunction::SCALE_LANCZOS_3, "Lanczos 3-lopes (sinc)"     }
+	,	{ ScalingFunction::SCALE_LANCZOS_5, "Lanczos 5-lopes (sinc)"     }
+	,	{ ScalingFunction::SCALE_LANCZOS_7, "Lanczos 7-lopes (sinc)"     }
 };
 
 ProcessScale::ProcessScale( QWidget* parent ) : AProcessor( parent ){

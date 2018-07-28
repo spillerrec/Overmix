@@ -23,6 +23,10 @@
 #include "viewer/imageCache.h"
 
 #include "processors/ProcessScale.hpp"
+#include "processors/ProcessDeconvolve.hpp"
+#include "processors/ProcessBlur.hpp"
+#include "processors/ProcessEdge.hpp"
+#include "processors/ProcessLevels.hpp"
 #include "FullscreenViewer.hpp"
 
 #include "color.hpp"
@@ -123,6 +127,10 @@ main_widget::main_widget( ImageContainer& images )
 	deconvolve_spinbox->call( &QDoubleSpinBox::setRange, 0.000, 128.0 );
 	
 	ui->processtest_layout->addWidget( new ProcessScale( this ) );
+	ui->processtest_layout->addWidget( new ProcessBlur( this ) );
+	ui->processtest_layout->addWidget( new ProcessDeconvolve( this ) );
+	ui->processtest_layout->addWidget( new ProcessEdge( this ) );
+	ui->processtest_layout->addWidget( new ProcessLevels( this ) );
 	
 	//Buttons
 	connect( ui->btn_clear,      SIGNAL( clicked() ), this, SLOT( clear_image()          ) );

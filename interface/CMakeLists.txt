@@ -35,6 +35,8 @@ set(SOURCE_GUI_PROCESSORS
 	gui/processors/AProcessor.cpp
 	gui/processors/ProcessBlur.cpp
 	gui/processors/ProcessDeconvolve.cpp
+	gui/processors/ProcessEdge.cpp
+	gui/processors/ProcessLevels.cpp
 	gui/processors/ProcessScale.cpp
 	)
 
