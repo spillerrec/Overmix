@@ -21,6 +21,7 @@
 #include "AProcessor.hpp"
 #include "ProcessBinarize.hpp"
 #include "ProcessBlur.hpp"
+#include "ProcessColor.hpp"
 #include "ProcessDither.hpp"
 #include "ProcessDilate.hpp"
 #include "ProcessDeconvolve.hpp"
@@ -34,6 +35,7 @@ using namespace Overmix;
 AProcessorFactory::AProcessorFactory(){
 	addProcessor<ProcessBinarize  >( "Binarize"         );
 	addProcessor<ProcessBlur      >( "Bluring"          );
+	addProcessor<ProcessColor     >( "Color space"      );
 	addProcessor<ProcessDither    >( "Dither"           );
 	addProcessor<ProcessDilate    >( "Dilate"           );
 	addProcessor<ProcessDeconvolve>( "Deconvolve"       );

@@ -83,6 +83,12 @@ ImageEx ImageEx::toColorSpace( ColorSpace to ) const{
 	ImageEx out( *this );
 	out.color_space = to;
 	
+	//Special case for RGB to gray
+	if( to.isGray() ){
+		out.to_grayscale();
+		return out;
+	}
+	
 	//Special case for GRAY to RGB
 	if( color_space.isGray() && to.isRgb() ){
 		//TODO: Transfer function not converted
