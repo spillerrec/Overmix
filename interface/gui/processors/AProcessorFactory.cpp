@@ -19,7 +19,10 @@
 #include "AProcessorFactory.hpp"
 
 #include "AProcessor.hpp"
+#include "ProcessBinarize.hpp"
 #include "ProcessBlur.hpp"
+#include "ProcessDither.hpp"
+#include "ProcessDilate.hpp"
 #include "ProcessDeconvolve.hpp"
 #include "ProcessEdge.hpp"
 #include "ProcessLevels.hpp"
@@ -29,7 +32,10 @@
 using namespace Overmix;
 
 AProcessorFactory::AProcessorFactory(){
+	addProcessor<ProcessBinarize  >( "Binarize"         );
 	addProcessor<ProcessBlur      >( "Bluring"          );
+	addProcessor<ProcessDither    >( "Dither"           );
+	addProcessor<ProcessDilate    >( "Dilate"           );
 	addProcessor<ProcessDeconvolve>( "Deconvolve"       );
 	addProcessor<ProcessEdge      >( "Edge detection"   );
 	addProcessor<ProcessLevels    >( "Level adjustment" );

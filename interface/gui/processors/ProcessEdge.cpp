@@ -43,7 +43,6 @@ bool ProcessEdge::modifiesImage() const{
 ImageEx ProcessEdge::process( const ImageEx& input ) const{
 	//TODO: Use array when "None" is removed
 	ImageEx output( input );
-	output.to_grayscale();
 	switch( method->currentIndex() ){
 		case 1: output.apply( &Plane::edge_robert          ); break;
 		case 2: output.apply( &Plane::edge_sobel           ); break;

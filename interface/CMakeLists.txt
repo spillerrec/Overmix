@@ -35,7 +35,10 @@ set(SOURCE_GUI_PROCESSORS
 	gui/processors/AProcessor.cpp
 	gui/processors/AProcessorFactory.cpp
 	gui/processors/ProcessorList.cpp
+	gui/processors/ProcessBinarize.cpp
 	gui/processors/ProcessBlur.cpp
+	gui/processors/ProcessDilate.cpp
+	gui/processors/ProcessDither.cpp
 	gui/processors/ProcessDeconvolve.cpp
 	gui/processors/ProcessEdge.cpp
 	gui/processors/ProcessLevels.cpp

@@ -72,5 +72,6 @@ ImageEx ProcessScale::process( const ImageEx& input ) const{
 	//Scale image
 	ImageEx output( input );
 	output.scale( (output.getSize() * size ).round(), func );
+	//TODO: Only scale luma option?
 	return output;
 }
