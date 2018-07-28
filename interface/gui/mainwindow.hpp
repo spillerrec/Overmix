@@ -34,7 +34,6 @@
 #include "MaskModel.hpp"
 
 #include "Deteleciner.hpp"
-#include "RenderOperations.hpp"
 
 #include "configs/AlignerConfigs.hpp"
 #include "configs/ComparatorConfigs.hpp"
@@ -90,15 +89,8 @@ class main_widget: public QMainWindow{
 		
 		
 	private:
-		struct DoubleSpinbox2D* scale_spinbox;
-		struct DoubleSpinbox2D* deconvolve_spinbox;
-		struct       Spinbox2D* blur_spinbox;
-		RenderPipeScaling pipe_scaling;
-		RenderPipeDeconvolve pipe_deconvolve;
-		RenderPipeBlurring pipe_blurring;
-		RenderPipeEdgeDetection pipe_edge;
-		RenderPipeLevel pipe_level;
-		RenderPipeThreshold pipe_threshold;
+		ImageEx processor_cache;
+		class ProcessorList* processor_list;
 		
 		std::unique_ptr<ARender> getRender() const;
 		ImageEx renderImage( const AContainer& container );

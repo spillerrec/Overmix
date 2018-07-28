@@ -22,11 +22,7 @@
 #include "ProgressWatcher.hpp"
 #include "viewer/imageCache.h"
 
-#include "processors/ProcessScale.hpp"
-#include "processors/ProcessDeconvolve.hpp"
-#include "processors/ProcessBlur.hpp"
-#include "processors/ProcessEdge.hpp"
-#include "processors/ProcessLevels.hpp"
+#include "processors/ProcessorList.hpp"
 #include "FullscreenViewer.hpp"
 
 #include "color.hpp"
@@ -106,31 +102,8 @@ main_widget::main_widget( ImageContainer& images )
 	ui->comparing_layout ->insertWidget( 0, &comparator_config );
 	ui->render_layout    ->insertWidget( 0, &    render_config );
 	
-	//Add 2D spinboxes
-	scale_spinbox      = new DoubleSpinbox2D( this );
-	deconvolve_spinbox = new DoubleSpinbox2D( this );
-	blur_spinbox       = new       Spinbox2D( this );
-	
-	ui->scale_layout->addWidget( scale_spinbox );
-	ui->post_deconvolve_layout->insertRow( 0, "Deviation", deconvolve_spinbox );
-	ui->post_blur_layout->addWidget( blur_spinbox );
-	
-	scale_spinbox->setValue( {1.0, 1.0} );
-	deconvolve_spinbox->setValue( {0.0, 0.0} );
-	deconvolve_spinbox->setScale( 1.0 );
-	
-		 scale_spinbox->call( &QDoubleSpinBox::setSingleStep, 0.001 );
-	deconvolve_spinbox->call( &QDoubleSpinBox::setSingleStep, 0.001 );
-		 scale_spinbox->call( &QDoubleSpinBox::setDecimals, 3 );
-	deconvolve_spinbox->call( &QDoubleSpinBox::setDecimals, 3 );
-		 scale_spinbox->call( &QDoubleSpinBox::setRange, 0.001,  32.0 );
-	deconvolve_spinbox->call( &QDoubleSpinBox::setRange, 0.000, 128.0 );
-	
-	ui->processtest_layout->addWidget( new ProcessScale( this ) );
-	ui->processtest_layout->addWidget( new ProcessBlur( this ) );
-	ui->processtest_layout->addWidget( new ProcessDeconvolve( this ) );
-	ui->processtest_layout->addWidget( new ProcessEdge( this ) );
-	ui->processtest_layout->addWidget( new ProcessLevels( this ) );
+	processor_list = new ProcessorList( this );
+	ui->processtest_layout->addWidget( processor_list );
 	
 	//Buttons
 	connect( ui->btn_clear,      SIGNAL( clicked() ), this, SLOT( clear_image()          ) );
@@ -292,61 +265,9 @@ void main_widget::refresh_text(){
 		);
 }
 
-static color_type color_from_spinbox( QSpinBox* spinbox ){
-	return color::fromDouble( spinbox->value() / (double)spinbox->maximum() );
-}
-
-static ScalingFunction translateScaling( int id ){
-	switch( id ){
-		case 0:  return ScalingFunction::SCALE_NEAREST;
-		case 1:  return ScalingFunction::SCALE_LINEAR;
-		case 2:  return ScalingFunction::SCALE_CATROM;
-		case 3:  return ScalingFunction::SCALE_MITCHELL;
-		case 4:  return ScalingFunction::SCALE_SPLINE;
-		case 5:  return ScalingFunction::SCALE_LANCZOS_3;
-		case 6:  return ScalingFunction::SCALE_LANCZOS_5;
-		case 7:  return ScalingFunction::SCALE_LANCZOS_7;
-		default: return ScalingFunction::SCALE_NEAREST;
-	}
-}
-
 const ImageEx& main_widget::postProcess( const ImageEx& input, bool new_image ){
-	pipe_scaling.setWidth(  scale_spinbox->getValue().x );
-	pipe_scaling.setHeight( scale_spinbox->getValue().y );
-	pipe_scaling.setScaling( translateScaling( ui->post_scaling->currentIndex() ) );
-	
-	
-	pipe_deconvolve.setDeviation( deconvolve_spinbox->getValue() );
-	pipe_deconvolve.setIterations( ui->sbx_iterations->value() );
-	
-	pipe_blurring.setMethod( ui->cbx_blur->currentIndex() );
-	pipe_blurring.setWidth( blur_spinbox->getValue().x );
-	pipe_blurring.setHeight( blur_spinbox->getValue().x );
-	
-	pipe_edge.setMethod( ui->cbx_edge_filter->currentIndex() );
-	
-	pipe_level.setLimitMin( color_from_spinbox( ui->sbx_limit_min ) );
-	pipe_level.setLimitMax( color_from_spinbox( ui->sbx_limit_max ) );
-	pipe_level.setOutMin( color_from_spinbox( ui->sbx_out_min ) );
-	pipe_level.setOutMax( color_from_spinbox( ui->sbx_out_max ) );
-	pipe_level.setGamma( ui->dsbx_gamma->value() );
-	
-	//TODO: Sharpen
-//	if( ui->cbx_sharpen->isChecked() )
-//		edge->substract( *(*temp_ex)[0] );
-	
-	pipe_threshold.setThreshold( color_from_spinbox( ui->threshold_threshold ) );
-	pipe_threshold.setSize( ui->threshold_size->value() );
-	pipe_threshold.setMethod( ui->threshold_method->currentIndex() );
-	
-	return pipe_threshold.get( 
-			pipe_level.get( 
-			pipe_edge.get( 
-			pipe_blurring.get( 
-			pipe_deconvolve.get( 
-			pipe_scaling.get( 
-				{ input, new_image } ) ) ) ) ) ).first
-		;
+	processor_cache = processor_list->process( input );
+	return processor_cache;
 }
 
 
@@ -380,7 +301,7 @@ void main_widget::refreshQImageCache(){
 	//TODO: this is because the offset requires pipe_scaling to be updated, which is done by qrenderImage(). Improve?
 	for( auto& render : renders ){
 		render.qimg = qrenderImage( render.raw );
-		render.qoffset = render.offset * pipe_scaling.getSize();
+		render.qoffset = render.offset * Point<double>( 1.0, 1.0 ); //TODO: pipe_scaling.getSize();
 	}
 	
 	//Calculate full size, based on the qimage
@@ -496,13 +417,6 @@ void main_widget::clear_image(){
 	clear_cache();
 	clear_mask();
 	detelecine.clear();
-	
-	pipe_scaling.invalidate();
-	pipe_deconvolve.invalidate();
-	pipe_blurring.invalidate();
-	pipe_edge.invalidate();
-	pipe_level.invalidate();
-	pipe_threshold.invalidate();
 	
 	images.clear();
 	browser.change_image( nullptr );
@@ -679,7 +593,8 @@ void main_widget::applyModifications(){
 	unsigned dev_iterations = ui->pre_deconvolve_iterations->value();
 	
 	//Scale
-	auto scale_method = translateScaling( ui->pre_scale_method->currentIndex() );
+	//TODO:
+//	auto scale_method = translateScaling( ui->pre_scale_method->currentIndex() );
 	Point<double> scale( ui->pre_scale_width->value(), ui->pre_scale_height->value() );
 	
 	auto& container = getAlignedImages();
@@ -688,7 +603,7 @@ void main_widget::applyModifications(){
 				container.imageRef( i ) = container.imageRef( i ).deconvolve_rl( deviation_both, dev_iterations );
 			
 			container.cropImage( i, left, top, right, bottom );
-			container.scaleImage( i, scale, scale_method );
+//			container.scaleImage( i, scale, scale_method );
 			
 			if( ui->convert_rgb->isChecked() )
 				container.imageRef(i) = container.imageRef(i).toRgb();
