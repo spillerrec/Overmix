@@ -18,18 +18,20 @@
 #ifndef APROCESSOR_HPP
 #define APROCESSOR_HPP
 
-#include <QWidget>
+#include <QGroupBox>
 class QFormLayout;
+class QPushButton;
 
 namespace Overmix{
 
 class ImageEx;
 
-class AProcessor : public QWidget{
+class AProcessor : public QGroupBox{
 	Q_OBJECT
 	
 	private:
 		QFormLayout* form;
+		QPushButton* exit_btn;
 	
 	public:
 		AProcessor( QWidget* parent );
@@ -49,6 +51,11 @@ class AProcessor : public QWidget{
 		
 	signals:
 		void changed();
+		void closed();
+	
+	protected:
+		void showEvent( QShowEvent* ) override;
+		void resizeEvent( QResizeEvent* ) override;
 };
 
 }

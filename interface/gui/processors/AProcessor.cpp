@@ -18,13 +18,33 @@
 
 #include "AProcessor.hpp"
 
+#include <QPushButton>
 #include <QFormLayout>
+#include <QDebug>
 
 using namespace Overmix;
 
-AProcessor::AProcessor( QWidget* parent ) : QWidget(parent) {
+AProcessor::AProcessor( QWidget* parent ) : QGroupBox(parent) {
 	form = new QFormLayout;
 	setLayout( form );
+	
+	exit_btn = new QPushButton( "X", this );
+	connect( exit_btn, SIGNAL(clicked(bool)), this, SIGNAL(closed()) );
+	
+	//Resize button
+	exit_btn->setStyleSheet( "padding: 1px" ); //Avoid way too large padding
+	auto size_hint = exit_btn->minimumSizeHint();
+	exit_btn->resize( size_hint.height(), size_hint.height() );
+}
+
+void AProcessor::showEvent( QShowEvent* ){
+	setTitle( name() );
+}
+
+void AProcessor::resizeEvent( QResizeEvent* ){
+	//Move to the top-right corner
+	exit_btn->move( geometry().topRight().x() - exit_btn->width()-2, exit_btn->y() );
+	//TODO: It gets clipped without "-2", why?
 }
 
 void AProcessor::addItem( QString name, QWidget* item ){
