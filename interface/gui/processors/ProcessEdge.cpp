@@ -28,11 +28,11 @@ struct EdgeFunc{
 	const char* const name;
 };
 static const EdgeFunc edge_mapping[] = {
-		{ Plane::edge_robert         , "Robert"        }
-	,	{ Plane::edge_sobel          , "Sobel"         }
-	,	{ Plane::edge_prewitt        , "Prewitt"       }
-	,	{ Plane::edge_laplacian      , "Laplacian (3)" }
-	,	{ Plane::edge_laplacian_large, "Laplacian (5)" }
+		{ &Plane::edge_robert         , "Robert"        }
+	,	{ &Plane::edge_sobel          , "Sobel"         }
+	,	{ &Plane::edge_prewitt        , "Prewitt"       }
+	,	{ &Plane::edge_laplacian      , "Laplacian (3)" }
+	,	{ &Plane::edge_laplacian_large, "Laplacian (5)" }
 };
 
 
