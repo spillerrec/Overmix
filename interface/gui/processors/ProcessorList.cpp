@@ -29,7 +29,7 @@
 using namespace Overmix;
 
 ProcessorList::ProcessorList( QWidget* parent ) : QWidget( parent ){
-	auto main_layout = new QVBoxLayout;
+	main_layout = new QVBoxLayout;
 	main_layout->setContentsMargins( 0,0,0,0 );
 	setLayout( main_layout );
 	
@@ -62,17 +62,42 @@ ImageEx ProcessorList::process( const ImageEx& input ) const{
 	return output;
 }
 
+int ProcessorList::indexOf( AProcessor* p ) const{
+	auto it = std::find( processors.begin(), processors.end(), p );
+	if( it == processors.end() )
+		throw std::runtime_error( "AProcessor not in ProcessList" );
+	return it - processors.begin();
+}
+
 void ProcessorList::addProcessor(){
 	auto widget = factory.create( processor_selector->currentIndex(), this ).release();
 	processors.push_back( widget );
 	layout()->addWidget( widget );
-	connect( widget, SIGNAL(closed(AProcessor*)), this, SLOT(deleteProcessor(AProcessor*)) );
+	connect( widget, SIGNAL(closed(  AProcessor*)), this, SLOT(deleteProcessor(  AProcessor*)) );
+	connect( widget, SIGNAL(moveUp(  AProcessor*)), this, SLOT(moveProcessorUp(  AProcessor*)) );
+	connect( widget, SIGNAL(moveDown(AProcessor*)), this, SLOT(moveProcessorDown(AProcessor*)) );
+}
+
+void ProcessorList::moveProcessorUp( AProcessor* p ){
+	int index = indexOf( p );
+	if( index > 0 ){
+		std::swap( processors.at(index-1), processors.at(index) );
+		//NOTE: Layout is one off due to the button-layout is the first index
+		main_layout->insertItem( index+1, main_layout->takeAt( index-1+1 ) );
+	}
+}
+void ProcessorList::moveProcessorDown( AProcessor* p ){
+	int index = indexOf( p );
+	if( unsigned(index) < processors.size()-1 ){
+		std::swap( processors.at(index), processors.at(index+1) );
+		//NOTE: Layout is one off due to the button-layout is the first index
+		main_layout->insertItem( index+1, main_layout->takeAt( index+1+1 ) );
+	}
 }
 
 void ProcessorList::deleteProcessor( AProcessor* processor ){
 	//Remove from our pipeline
-	auto remover = [=](auto p){ return p == processor; };
-	auto new_end = std::remove_if( processors.begin(), processors.end(), remover );
+	auto new_end = std::remove( processors.begin(), processors.end(), processor );
 	processors.erase( new_end, processors.end() );
 	
 	//Remove the widget from the UI

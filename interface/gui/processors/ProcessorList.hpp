@@ -23,6 +23,7 @@
 
 class QComboBox;
 class QPushButton;
+class QVBoxLayout;
 
 namespace Overmix{
 
@@ -34,6 +35,9 @@ class ProcessorList : public QWidget{
 		QComboBox* processor_selector;
 		QPushButton* add_processor;
 		std::vector<AProcessor*> processors;
+		QVBoxLayout* main_layout;
+		
+		int indexOf( AProcessor* ) const;
 	
 	public:
 		ProcessorList( QWidget* parent );
@@ -42,6 +46,8 @@ class ProcessorList : public QWidget{
 		
 	private slots:
 		void addProcessor();
+		void moveProcessorUp( AProcessor* );
+		void moveProcessorDown( AProcessor* );
 		void deleteProcessor( AProcessor* );
 };
 
