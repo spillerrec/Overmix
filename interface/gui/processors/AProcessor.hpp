@@ -20,7 +20,8 @@
 
 #include <QGroupBox>
 class QFormLayout;
-class QPushButton;
+//class QPushButton;
+class QLayout;
 
 namespace Overmix{
 
@@ -31,7 +32,8 @@ class AProcessor : public QGroupBox{
 	
 	private:
 		QFormLayout* form;
-		QPushButton* exit_btn;
+	//	QPushButton* exit_btn;
+		QLayout* buttons;
 	
 	public:
 		AProcessor( QWidget* parent );

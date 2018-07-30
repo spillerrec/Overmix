@@ -30,6 +30,7 @@ using namespace Overmix;
 
 ProcessorList::ProcessorList( QWidget* parent ) : QWidget( parent ){
 	auto main_layout = new QVBoxLayout;
+	main_layout->setContentsMargins( 0,0,0,0 );
 	setLayout( main_layout );
 	
 	add_processor = new QPushButton( "Add", this );
@@ -42,6 +43,7 @@ ProcessorList::ProcessorList( QWidget* parent ) : QWidget( parent ){
 	
 	//Add widgets to layout
 	auto adder_layout = new QHBoxLayout( this );
+	adder_layout->setContentsMargins( 0,0,0,0 );
 	adder_layout->addWidget( processor_selector );
 	adder_layout->addWidget( add_processor );
 	

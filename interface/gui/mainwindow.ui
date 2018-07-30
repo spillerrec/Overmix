@@ -54,7 +54,23 @@
             <property name="title">
              <string>Comparing</string>
             </property>
-            <layout class="QVBoxLayout" name="comparing_layout"/>
+            <layout class="QVBoxLayout" name="comparing_layout">
+             <property name="spacing">
+              <number>3</number>
+             </property>
+             <property name="leftMargin">
+              <number>3</number>
+             </property>
+             <property name="topMargin">
+              <number>3</number>
+             </property>
+             <property name="rightMargin">
+              <number>3</number>
+             </property>
+             <property name="bottomMargin">
+              <number>3</number>
+             </property>
+            </layout>
            </widget>
           </item>
           <item>

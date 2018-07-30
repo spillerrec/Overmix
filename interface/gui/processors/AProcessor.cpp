@@ -20,6 +20,7 @@
 
 #include <QPushButton>
 #include <QFormLayout>
+#include <QHBoxLayout>
 #include <QDebug>
 
 using namespace Overmix;
@@ -27,14 +28,25 @@ using namespace Overmix;
 AProcessor::AProcessor( QWidget* parent ) : QGroupBox(parent) {
 	form = new QFormLayout;
 	setLayout( form );
+	buttons = new QHBoxLayout( this );
+	form   ->setContentsMargins( 3,3,3,3 );
+	buttons->setContentsMargins( 0,0,0,0 );
 	
-	exit_btn = new QPushButton( "X", this );
-	connect( exit_btn, &QPushButton::clicked, [=]( bool a ){ emit closed(this); } );
+	//Add a button to the layout at the top
+	auto addButton = [&]( QString text, auto signal ){
+		auto btn = new QPushButton( text, this );
+		connect( btn, &QPushButton::clicked, signal );
+		buttons->addWidget( btn );
+		
+		btn->setStyleSheet( "padding: 1px" ); //Avoid way too large padding
+		auto size_hint = btn->minimumSizeHint();
+		//TODO: Size hint is 0?
+		btn->resize( size_hint.height(), size_hint.height() );
+	};
 	
-	//Resize button
-	exit_btn->setStyleSheet( "padding: 1px" ); //Avoid way too large padding
-	auto size_hint = exit_btn->minimumSizeHint();
-	exit_btn->resize( size_hint.height(), size_hint.height() );
+	addButton( "▲", [=]( bool a ){ emit moveUp(  this); } );
+	addButton( "▼", [=]( bool a ){ emit moveDown(this); } );
+	addButton( "X", [=]( bool a ){ emit closed(  this); } );
 }
 
 void AProcessor::showEvent( QShowEvent* ){
@@ -43,8 +55,10 @@ void AProcessor::showEvent( QShowEvent* ){
 
 void AProcessor::resizeEvent( QResizeEvent* ){
 	//Move to the top-right corner
-	exit_btn->move( geometry().topRight().x() - exit_btn->width()-2, exit_btn->y() );
+	auto new_size = buttons->sizeHint();
+	auto new_pos = QPoint( geometry().topRight().x() - new_size.width()-2, buttons->geometry().y() );
 	//TODO: It gets clipped without "-2", why?
+	buttons->setGeometry( QRect( new_pos, new_size ) );
 }
 
 void AProcessor::addItem( QString name, QWidget* item ){
