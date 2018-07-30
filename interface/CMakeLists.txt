@@ -36,6 +36,7 @@ set(SOURCE_GUI_PROCESSORS
 	gui/processors/AProcessorFactory.cpp
 	gui/processors/ProcessorList.cpp
 	gui/processors/ProcessBinarize.cpp
+	gui/processors/ProcessBinarizeAdaptive.cpp
 	gui/processors/ProcessBlur.cpp
 	gui/processors/ProcessColor.cpp
 	gui/processors/ProcessDilate.cpp

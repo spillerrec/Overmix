@@ -20,6 +20,7 @@
 
 #include "AProcessor.hpp"
 #include "ProcessBinarize.hpp"
+#include "ProcessBinarizeAdaptive.hpp"
 #include "ProcessBlur.hpp"
 #include "ProcessColor.hpp"
 #include "ProcessDither.hpp"
@@ -34,6 +35,7 @@ using namespace Overmix;
 
 AProcessorFactory::AProcessorFactory(){
 	addProcessor<ProcessBinarize  >( "Binarize"         );
+	addProcessor<ProcessBinarizeAdaptive>( "BinarizeAdaptive" );
 	addProcessor<ProcessBlur      >( "Bluring"          );
 	addProcessor<ProcessColor     >( "Color space"      );
 	addProcessor<ProcessDither    >( "Dither"           );
