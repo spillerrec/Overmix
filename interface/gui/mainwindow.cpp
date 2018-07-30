@@ -93,6 +93,7 @@ main_widget::main_widget( ImageContainer& images )
 	,	    render_config( this, true )
 	,	img_model( images )
 	,	mask_model( images )
+	,	processor_list( new ProcessorList( this ) )
 {
 	ui->setupUi(this);
 	   aligner_config.initialize();
@@ -101,9 +102,7 @@ main_widget::main_widget( ImageContainer& images )
 	ui->align_layout     ->insertWidget( 0, &   aligner_config );
 	ui->comparing_layout ->insertWidget( 0, &comparator_config );
 	ui->render_layout    ->insertWidget( 0, &    render_config );
-	
-	processor_list = new ProcessorList( this );
-	ui->processtest_layout->addWidget( processor_list );
+	ui->postprocess_layout->addWidget( processor_list );
 	
 	//Buttons
 	connect( ui->btn_clear,      SIGNAL( clicked() ), this, SLOT( clear_image()          ) );
@@ -120,10 +119,6 @@ main_widget::main_widget( ImageContainer& images )
 	//Checkboxes
 	connect( ui->cbx_interlaced, SIGNAL( toggled(bool) ), this, SLOT( change_interlace() ) );
 	change_interlace();
-	
-	//Combo boxes
-	connect( ui->threshold_method, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &main_widget::updateUiBinarize );
-	updateUiBinarize( ui->threshold_method->currentIndex() );
 	
 	//Comparing changes
 	connect( &comparator_config, SIGNAL( changed() ), this, SLOT( updateComparator() ) );
@@ -678,33 +673,3 @@ void main_widget::create_slide(){
 	anim.render( renders[0].raw );
 }
 
-void main_widget::updateUiBinarize( int method ){
-	//Convenience setters for the labels and spinboxes
-	auto setRow = []( QLabel* label, QSpinBox* spinbox ){
-			return [=]( auto text, bool visible, int min_range, int max_range ){
-				label->setVisible( visible );
-				label->setText( text );
-				spinbox->setVisible( visible );
-				spinbox->setRange( min_range, max_range );
-			};
-		};
-	auto setThreshold = setRow( ui->label_15, ui->threshold_threshold );
-	auto setSize      = setRow( ui->label_17, ui->threshold_size      );
-	
-	//Set the specific values
-	switch( method ){
-		case 1:
-			setThreshold(  "Threshold", true,    0, 255 );
-			setSize(       "Dilate",    true,    0, 999 );
-			break;
-			
-		case 2:
-			setThreshold(  "Threshold", true, -255, 255 );
-			setSize(       "Size",      true,    0, 999 );
-			break;
-			
-		default:
-			setThreshold(  "Unused",   false, -999, 999 );
-			setSize(       "Unused",   false, -999, 999 );
-	}
-}
