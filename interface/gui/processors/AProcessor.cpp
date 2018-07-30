@@ -29,7 +29,7 @@ AProcessor::AProcessor( QWidget* parent ) : QGroupBox(parent) {
 	setLayout( form );
 	
 	exit_btn = new QPushButton( "X", this );
-	connect( exit_btn, SIGNAL(clicked(bool)), this, SIGNAL(closed()) );
+	connect( exit_btn, &QPushButton::clicked, [=]( bool a ){ emit closed(this); } );
 	
 	//Resize button
 	exit_btn->setStyleSheet( "padding: 1px" ); //Avoid way too large padding

@@ -51,7 +51,9 @@ class AProcessor : public QGroupBox{
 		
 	signals:
 		void changed();
-		void closed();
+		void closed(AProcessor*);
+		void moveUp(AProcessor*);
+		void moveDown(AProcessor*);
 	
 	protected:
 		void showEvent( QShowEvent* ) override;

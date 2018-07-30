@@ -17,12 +17,14 @@
 
 
 #include "ProcessorList.hpp"
+#include "planes/ImageEx.hpp"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QComboBox>
 #include <QPushButton>
-#include "planes/ImageEx.hpp"
+
+#include <algorithm>
 
 using namespace Overmix;
 
@@ -59,11 +61,18 @@ ImageEx ProcessorList::process( const ImageEx& input ) const{
 }
 
 void ProcessorList::addProcessor(){
-	auto widget = factory.create( processor_selector->currentIndex(), this );
-	processors.push_back( widget.release() );
-	layout()->addWidget( processors.back() );
+	auto widget = factory.create( processor_selector->currentIndex(), this ).release();
+	processors.push_back( widget );
+	layout()->addWidget( widget );
+	connect( widget, SIGNAL(closed(AProcessor*)), this, SLOT(deleteProcessor(AProcessor*)) );
 }
 
-void ProcessorList::deleteProcessor( AProcessor* ){
+void ProcessorList::deleteProcessor( AProcessor* processor ){
+	//Remove from our pipeline
+	auto remover = [=](auto p){ return p == processor; };
+	auto new_end = std::remove_if( processors.begin(), processors.end(), remover );
+	processors.erase( new_end, processors.end() );
 	
+	//Remove the widget from the UI
+	delete processor;
 }
