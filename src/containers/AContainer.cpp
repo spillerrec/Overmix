@@ -41,12 +41,6 @@ const Plane& AContainer::plane( unsigned index ) const{
 	return img[0];
 }
 
-void AContainer::cropImage( unsigned index, unsigned left, unsigned top, unsigned right, unsigned bottom ){
-	auto& img = imageRef( index );
-	auto offset = img.crop( left, top, right, bottom );
-	setPos( index, pos( index ) + offset );
-}
-
 void AContainer::cropImage( unsigned index, Rectangle<double> area ){
 	auto& img = imageRef( index );
 	if( area.intersects( { pos(index), img.getSize() }) ){
@@ -62,15 +56,6 @@ void AContainer::cropImage( unsigned index, Rectangle<double> area ){
 	else
 		img = ImageEx();
 	
-}
-
-void AContainer::scaleImage( unsigned index, Point<double> scale, ScalingFunction scaling ){
-	setPos( index, pos( index ) * scale );
-	
-	auto& img = imageRef( index );
-	if( img.getSize() == (img.getSize() * scale).round().to<unsigned>() )
-		return; //Don't attempt to scale, if it will not change the size
-	img.scaleFactor( scale, scaling );
 }
 
 /** @return The smallest rectangle which can contain all the images */

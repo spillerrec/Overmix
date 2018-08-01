@@ -82,9 +82,7 @@ class AContainer{
 		ImageOffset findOffset( unsigned, unsigned );
 		
 	public:
-		void cropImage( unsigned index, unsigned left, unsigned top, unsigned right, unsigned bottom );
 		void cropImage( unsigned index, Rectangle<double> area );
-		void scaleImage( unsigned index, Point<double> scale, ScalingFunction scaling );
 		
 	public:
 		Rectangle<double> size() const;
