@@ -33,8 +33,21 @@ using namespace Overmix;
 
 
 void debug::output_rectable( ImageContainer& imgs, Rectangle<> area ){
-	for( unsigned i=0; i<imgs.count(); i++ )
-		imgs.cropImage( i, {area.pos.to<double>(), area.size.to<double>()} );
+	for( unsigned index=0; index<imgs.count(); index++ ){
+		auto& img = imgs.imageRef( index );
+		if( area.intersects( { imgs.pos(index), img.getSize() }) ){
+			auto offset = area.pos - imgs.pos(index);
+			auto real = offset.max( {0,0} ).to<unsigned>();
+			auto size = (area.size - (real - offset)).min( img.getSize() );
+			img.crop( offset, size );
+			imgs.setPos( index, imgs.pos(index) + real );
+			
+			if( size.to<int>() != area.size )
+				img = ImageEx();
+		}
+		else
+			img = ImageEx();
+	}
 	
 	//TODO: remove empty images
 	for( unsigned i=0; i<imgs.groupAmount(); i++ )

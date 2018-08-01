@@ -41,23 +41,6 @@ const Plane& AContainer::plane( unsigned index ) const{
 	return img[0];
 }
 
-void AContainer::cropImage( unsigned index, Rectangle<double> area ){
-	auto& img = imageRef( index );
-	if( area.intersects( { pos(index), img.getSize() }) ){
-		auto offset = area.pos - pos(index);
-		auto real = offset.max( {0,0} ).to<unsigned>();
-		auto size = (area.size - (real - offset)).min( img.getSize() );
-		img.crop( offset, size );
-		setPos( index, pos(index) + real );
-		
-		if( size != area.size.to<unsigned>() )
-			img = ImageEx();
-	}
-	else
-		img = ImageEx();
-	
-}
-
 /** @return The smallest rectangle which can contain all the images */
 Rectangle<double> AContainer::size() const{
 	auto min = minPoint();
