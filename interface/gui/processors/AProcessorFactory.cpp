@@ -24,6 +24,7 @@
 #include "ProcessBlur.hpp"
 #include "ProcessColor.hpp"
 #include "ProcessCrop.hpp"
+#include "ProcessDeVlc.hpp"
 #include "ProcessDither.hpp"
 #include "ProcessDilate.hpp"
 #include "ProcessDeconvolve.hpp"
@@ -40,6 +41,7 @@ AProcessorFactory::AProcessorFactory(){
 	addProcessor<ProcessBlur      >( "Bluring"          );
 	addProcessor<ProcessColor     >( "Color space"      );
 	addProcessor<ProcessCrop      >( "Crop"             );
+	addProcessor<ProcessDeVlc     >( "De-VLC"           );
 	addProcessor<ProcessDither    >( "Dither"           );
 	addProcessor<ProcessDilate    >( "Dilate"           );
 	addProcessor<ProcessDeconvolve>( "Deconvolve"       );
