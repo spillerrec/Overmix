@@ -43,6 +43,7 @@ class ProcessorList : public QWidget{
 		ProcessorList( QWidget* parent );
 		
 		ImageEx process( const ImageEx& img ) const;
+		Point<double> modifyOffset( Point<double> ) const;
 		
 	private slots:
 		void addProcessor();

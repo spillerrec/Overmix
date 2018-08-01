@@ -91,6 +91,7 @@ class main_widget: public QMainWindow{
 	private:
 		ImageEx processor_cache;
 		class ProcessorList* processor_list;
+		class ProcessorList* preprocessor_list;
 		
 		std::unique_ptr<ARender> getRender() const;
 		ImageEx renderImage( const AContainer& container );

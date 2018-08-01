@@ -93,7 +93,8 @@ main_widget::main_widget( ImageContainer& images )
 	,	    render_config( this, true )
 	,	img_model( images )
 	,	mask_model( images )
-	,	processor_list( new ProcessorList( this ) )
+	,	   processor_list( new ProcessorList( this ) )
+	,	preprocessor_list( new ProcessorList( this ) )
 {
 	ui->setupUi(this);
 	   aligner_config.initialize();
@@ -102,7 +103,8 @@ main_widget::main_widget( ImageContainer& images )
 	ui->align_layout     ->insertWidget( 0, &   aligner_config );
 	ui->comparing_layout ->insertWidget( 0, &comparator_config );
 	ui->render_layout    ->insertWidget( 0, &    render_config );
-	ui->postprocess_layout->addWidget( processor_list );
+	ui->postprocess_layout->addWidget(    processor_list );
+	ui->preprocess_layout ->addWidget( preprocessor_list );
 	
 	//Buttons
 	connect( ui->btn_clear,      SIGNAL( clicked() ), this, SLOT( clear_image()          ) );
@@ -576,36 +578,11 @@ AContainer& main_widget::getAlignedImages(){
 }
 
 void main_widget::applyModifications(){
-	//Crop
-	auto left   = ui->crop_left  ->value();
-	auto top    = ui->crop_top   ->value();
-	auto right  = ui->crop_right ->value();
-	auto bottom = ui->crop_bottom->value();
-	
-	//Deconvolve
-	double   deviation      = ui->pre_deconvolve_deviation ->value();
-	Point<double> deviation_both( deviation, deviation ); //TODO: use spinbox
-	unsigned dev_iterations = ui->pre_deconvolve_iterations->value();
-	
-	//Scale
-	//TODO:
-//	auto scale_method = translateScaling( ui->pre_scale_method->currentIndex() );
-	Point<double> scale( ui->pre_scale_width->value(), ui->pre_scale_height->value() );
-	
 	auto& container = getAlignedImages();
 	ProgressWatcher( this, "Applying modifications" ).loopAll( container.count(), [&]( int i ){
-			if( deviation > 0.0009 && dev_iterations > 0 )
-				container.imageRef( i ) = container.imageRef( i ).deconvolve_rl( deviation_both, dev_iterations );
-			
-			container.cropImage( i, left, top, right, bottom );
-//			container.scaleImage( i, scale, scale_method );
-			
-			if( ui->convert_rgb->isChecked() )
-				container.imageRef(i) = container.imageRef(i).toRgb();
-			else if( ui->convert_devlc->isChecked() )
-				container.imageRef(i) = deVlcImage( container.imageRef(i) );
+			container.setPos( i, preprocessor_list->modifyOffset( container.pos(i) ) );
+			container.imageRef(i) = preprocessor_list->process( container.imageRef(i) );
 		} );
-	
 	clear_cache();
 }
 

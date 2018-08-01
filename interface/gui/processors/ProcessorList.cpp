@@ -62,6 +62,12 @@ ImageEx ProcessorList::process( const ImageEx& input ) const{
 	return output;
 }
 
+Point<double> ProcessorList::modifyOffset( Point<double> offset ) const{
+	for( auto processor : processors )
+		offset = processor->modifyOffset( offset );
+	return offset;
+}
+
 int ProcessorList::indexOf( AProcessor* p ) const{
 	auto it = std::find( processors.begin(), processors.end(), p );
 	if( it == processors.end() )

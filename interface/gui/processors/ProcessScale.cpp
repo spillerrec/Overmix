@@ -57,11 +57,13 @@ ProcessScale::ProcessScale( QWidget* parent ) : AProcessor( parent ){
 	scale->call( &QDoubleSpinBox::setRange, 0.001,  32.0 );
 }
 
+Point<double> ProcessScale::modifyOffset( Point<double> in ) const
+	{ return in * scale->getValue(); }
+
 QString ProcessScale::name() const{ return "Scale"; }
 
-bool ProcessScale::modifiesImage() const{
-	return scale->getValue() != Point<double>( 1.0, 1.0 );
-}
+bool ProcessScale::modifiesImage() const
+	{ return scale->getValue() != Point<double>( 1.0, 1.0 ); }
 
 ImageEx ProcessScale::process( const ImageEx& input ) const{
 	//Get settings

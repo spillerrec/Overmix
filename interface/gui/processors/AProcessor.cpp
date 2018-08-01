@@ -18,6 +18,8 @@
 
 #include "AProcessor.hpp"
 
+#include "Geometry.hpp"
+
 #include <QPushButton>
 #include <QFormLayout>
 #include <QHBoxLayout>
@@ -48,6 +50,9 @@ AProcessor::AProcessor( QWidget* parent ) : QGroupBox(parent) {
 	addButton( "▼", [=]( bool a ){ emit moveDown(this); } );
 	addButton( "X", [=]( bool a ){ emit closed(  this); } );
 }
+
+Point<double> AProcessor::modifyOffset( Point<double> in ) const
+	{ return in; }
 
 void AProcessor::showEvent( QShowEvent* ){
 	setTitle( name() );

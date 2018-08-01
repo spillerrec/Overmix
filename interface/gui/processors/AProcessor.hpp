@@ -26,6 +26,8 @@ class QLayout;
 namespace Overmix{
 
 class ImageEx;
+template<typename T>
+class Point;
 
 class AProcessor : public QGroupBox{
 	Q_OBJECT
@@ -42,6 +44,7 @@ class AProcessor : public QGroupBox{
 		virtual QString name() const = 0;
 		virtual bool modifiesImage() const { return true; }
 		virtual ImageEx process( const ImageEx& img ) const = 0;
+		virtual Point<double> modifyOffset( Point<double> ) const;
 		
 		void addItem( QString name, QWidget* item );
 		template<class widget>

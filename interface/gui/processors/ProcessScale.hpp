@@ -39,6 +39,7 @@ class ProcessScale : public AProcessor{
 		QString name() const override;
 		bool modifiesImage() const override;
 		ImageEx process( const ImageEx& img ) const override;
+		Point<double> modifyOffset( Point<double> ) const override;
 };
 
 }
