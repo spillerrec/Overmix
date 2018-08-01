@@ -23,6 +23,7 @@
 #include "ProcessBinarizeAdaptive.hpp"
 #include "ProcessBlur.hpp"
 #include "ProcessColor.hpp"
+#include "ProcessCrop.hpp"
 #include "ProcessDither.hpp"
 #include "ProcessDilate.hpp"
 #include "ProcessDeconvolve.hpp"
@@ -38,6 +39,7 @@ AProcessorFactory::AProcessorFactory(){
 	addProcessor<ProcessBinarizeAdaptive>( "BinarizeAdaptive" );
 	addProcessor<ProcessBlur      >( "Bluring"          );
 	addProcessor<ProcessColor     >( "Color space"      );
+	addProcessor<ProcessCrop      >( "Crop"             );
 	addProcessor<ProcessDither    >( "Dither"           );
 	addProcessor<ProcessDilate    >( "Dilate"           );
 	addProcessor<ProcessDeconvolve>( "Deconvolve"       );
