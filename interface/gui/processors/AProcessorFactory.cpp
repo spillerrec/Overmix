@@ -32,6 +32,10 @@
 #include "ProcessLevels.hpp"
 #include "ProcessScale.hpp"
 
+#ifdef WAIFU
+#include "ProcessWaifu.hpp"
+#endif
+
 
 using namespace Overmix;
 
@@ -48,6 +52,9 @@ AProcessorFactory::AProcessorFactory(){
 	addProcessor<ProcessEdge      >( "Edge detection"   );
 	addProcessor<ProcessLevels    >( "Level adjustment" );
 	addProcessor<ProcessScale     >( "Scaling"          );
+#ifdef WAIFU
+	addProcessor<ProcessWaifu     >( "Waifu2x"          );
+#endif
 }
 
 

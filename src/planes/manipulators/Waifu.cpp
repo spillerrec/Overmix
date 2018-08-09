@@ -21,6 +21,7 @@
 #include <w2xconv.h>
 #include "../ImageEx.hpp"
 #include "../../color.hpp"
+#include <stdexcept>
 
 using namespace Overmix;
 
@@ -83,7 +84,8 @@ Waifu::Waifu( double scale, int denoise, const char* model_dir )
 	:	scale(scale), denoise(denoise)
 {
 	auto conv = w2xconv_init( W2XCONV_GPU_AUTO, 0, false );
-	w2xconv_load_models( conv, "/usr/share/waifu2x-converter-cpp/" );
+	if( w2xconv_load_models( conv, model_dir ) < 0 )
+		throw std::runtime_error( "Could not load Waifu2x models" );
 	//TODO: Handle failures
 }
 
@@ -125,14 +127,14 @@ ImageEx Waifu::processYuv( const ImageEx& input ){
 	readPlane( in, 1, input[1] ); //TODO: Scale chroma as needed
 	readPlane( in, 2, input[2] );
 	
-	w2xconv_convert_yuv( conv
+/*	w2xconv_convert_yuv( conv
 		,	out.getData(), out.bytesPerLine()
 		,	in .getData(), in .bytesPerLine()
 		//,	input.get_width(), input.get_height() //TODO: How does this work without a size argument?
 		,	denoise, scale
 		,	0 //TODO: unknown 'blockSize' argument
 		);
-	
+	*/
 	//Read image from output buffer
 	ImageEx output( input.getColorSpace() );
 	for( int i=0; i<3; i++ )
