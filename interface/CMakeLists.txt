@@ -48,6 +48,9 @@ set(SOURCE_GUI_PROCESSORS
 	gui/processors/ProcessLevels.cpp
 	gui/processors/ProcessScale.cpp
 	)
+if(W2XC)
+	set(SOURCE_GUI_PROCESSORS ${SOURCE_GUI_PROCESSORS} gui/processors/ProcessWaifu.cpp)
+endif()
 
 set(SOURCE_GUI_SAVERS
 	gui/savers/DumpSaver.cpp

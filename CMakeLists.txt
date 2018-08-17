@@ -28,6 +28,18 @@ else()
 	message("Couldn't detect compiler")
 endif()
 
+
+find_library(W2XC NAMES w2xc libw2xc HINTS x86_64-w64-mingw32/lib)
+
+if(W2XC)
+	message( "Compiling with Waifu2x support" )
+	set(WAIFU_LIB ${W2XC})
+	set(WAIFU_SOURCES planes/manipulators/Waifu.cpp)
+	add_definitions( -DWAIFU )
+else()
+	message( "Waifu not found" )
+endif()
+
 add_subdirectory(src)
 add_subdirectory(interface/gui/viewer)
 add_subdirectory(interface)

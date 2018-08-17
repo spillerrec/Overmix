@@ -95,8 +95,18 @@ endif( WIN32 )
 # TODO: do something smarter?
 set(FFMPEG_LIBS -lavcodec -lavutil -lavformat)
 
-add_library(OvermixCore ${SOURCES_CONTAINERS} ${SOURCES_PLANES} ${SOURCES_ALIGNERS} ${SOURCES_COMPARATORS} ${SOURCES_RENDERS} ${SOURCES_DEGRADERS} ${SOURCES_VIDEO} ${SOURCES_OTHERS} )
-target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -lm -lpng -ljpeg -lz -llzma -lpugixml ${FFMPEG_LIBS} ${PLATFORM_LIBRARIES})
+add_library(OvermixCore 
+	${SOURCES_CONTAINERS} 
+	${SOURCES_PLANES} 
+	${SOURCES_ALIGNERS} 
+	${SOURCES_COMPARATORS} 
+	${SOURCES_RENDERS} 
+	${SOURCES_DEGRADERS} 
+	${SOURCES_VIDEO} 
+	${WAIFU_SOURCES} 
+	${SOURCES_OTHERS} 
+	)
+target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -lm -lpng -ljpeg -lz -llzma -lpugixml ${FFMPEG_LIBS} ${WAIFU_LIB} ${PLATFORM_LIBRARIES})
 
 # C++14
 set_property(TARGET OvermixCore PROPERTY CXX_STANDARD 14)
