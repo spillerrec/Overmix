@@ -20,6 +20,7 @@
 #include "../color.hpp"
 
 #include <stdexcept>
+#include <QDebug>
 
 using namespace Overmix;
 
@@ -34,7 +35,9 @@ color ColorSpace::convert( color from, ColorSpace to ) const{
 			case Transform::YCbCr_601: from = from.rec601ToRgb(); break;
 			case Transform::YCbCr_709: from = from.rec709ToRgb(); break;
 			case Transform::JPEG:      from = from.jpegToRgb(); break;
-			default: throw std::runtime_error( "ColorSpace::convert(): unsupported transform!" );
+			default:
+				qWarning() << "Unsupported transform: " << (int)_transform;
+				throw std::runtime_error( "ColorSpace::convert(): unsupported transform!" );
 		}
 		
 		if( _transfer != to._transfer ){
@@ -48,7 +51,9 @@ color ColorSpace::convert( color from, ColorSpace to ) const{
 			case Transform::YCbCr_601: from = from.rgbToYcbcr( 0.299,  0.587,  0.114,  gamma, true  ); break;
 			case Transform::YCbCr_709: from = from.rgbToYcbcr( 0.2126, 0.7152, 0.0722, gamma, true  ); break;
 			case Transform::JPEG:      from = from.rgbToYcbcr( 0.299,  0.587,  0.114,  gamma, false ); break;
-			default: throw std::runtime_error( "ColorSpace::convert(): unsupported transform!" );
+			default:
+				qWarning() << "Unsupported transform: " << (int)to._transform;
+				throw std::runtime_error( "ColorSpace::convert(): unsupported transform!" );
 		}
 	}
 	

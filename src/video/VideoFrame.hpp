@@ -18,32 +18,24 @@
 #ifndef VIDEO_FRAME_HPP
 #define VIDEO_FRAME_HPP
 
-#include <vector>
-
 struct AVFrame;
 struct AVCodecContext;
 
 namespace Overmix{
 
-class Plane;
 class ImageEx;
 
 class VideoFrame{
 	private:
 		AVFrame *frame;
-		std::vector<Plane> planes;
-		
-		unsigned depth{ 8 };
-		bool planar{ true };
-		bool rgb = false;
+		AVCodecContext& context;
 		
 	public:
 		VideoFrame( AVCodecContext &context );
 		VideoFrame( const VideoFrame& ) = delete;
-		VideoFrame( VideoFrame&& ) = default;
+		VideoFrame( VideoFrame&& );
 		~VideoFrame();
 		
-		void prepare_planes();
 		ImageEx toImageEx();
 		
 		operator AVFrame*(){ return frame; }

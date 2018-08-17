@@ -73,7 +73,7 @@ class VideoFile{
 };
 
 VideoStream::VideoStream( QString filepath ){
-	av_register_all();
+//	av_register_all();
 	if( avformat_open_input( &format_context
 		,	filepath.toLocal8Bit().constData(), nullptr, nullptr ) < 0 ){
 			throw std::runtime_error( "Couldn't open video file, either missing, unsupported or corrupted\n" );
@@ -83,20 +83,22 @@ VideoStream::VideoStream( QString filepath ){
 		throw std::runtime_error( "Couldn't find stream\n" );
 	
 	//Find the first video stream (and be happy)
-	for( unsigned i=0; i<format_context->nb_streams; i++ ){
-		if( format_context->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO ){
-			stream_index = i;
-			codec_context = format_context->streams[i]->codec;
-			break;
-		}
-	}
+	AVCodec *codec = nullptr;
+	stream_index = av_find_best_stream( format_context, AVMEDIA_TYPE_VIDEO, -1, -1, &codec, 0 );
+	if( stream_index < 0 )
+		std::runtime_error( "Could not find video stream" );
 	
-	if( !codec_context )
-		throw std::runtime_error( "Couldn't find a video stream!\n" );
-	
-	AVCodec *codec = avcodec_find_decoder( codec_context->codec_id );
+	auto st = format_context->streams[stream_index];
+	codec = avcodec_find_decoder(st->codecpar->codec_id);
 	if( !codec )
 		throw std::runtime_error( "Does not support this video codec :\\\n" );
+	
+	codec_context = avcodec_alloc_context3( codec );
+	if( !codec_context )
+		throw std::runtime_error( "Could not allocate context!\n" );
+	//TODO: free it again
+	
+	avcodec_parameters_to_context( codec_context, format_context->streams[stream_index]->codecpar );
 	
 	if( avcodec_open2( codec_context, codec, nullptr ) < 0 )
 		throw std::runtime_error( "Couldn't open codec\n" );
@@ -120,7 +122,7 @@ struct StreamPacket{
 	StreamPacket()
 		{ av_init_packet( &packet ); }
 	~StreamPacket()
-		{ av_free_packet( &packet ); }
+		{ av_packet_unref( &packet ); }
 		
 	operator AVPacket*(){ return &packet; }
 };
@@ -141,13 +143,13 @@ VideoFrame VideoStream::getFrame(){
 		}
 		
 		if( packet.packet.stream_index == stream_index || eof ){
-			int frame_done;
-			if( avcodec_decode_video2( codec_context, frame, &frame_done, packet ) < 0 )
-				throw std::runtime_error( "Error while decoding frame" );
-			if( frame_done ){
-				frame.prepare_planes();
+		avcodec_send_packet( codec_context, packet );
+		if( avcodec_receive_frame( codec_context, frame ) >= 0)
+		//	int frame_done;
+		//	if( avcodec_decode_video2( codec_context, frame, &frame_done, packet ) < 0 )
+		//		throw std::runtime_error( "Error while decoding frame" );
+		//	if( frame_done )
 				return std::move( frame );
-			}
 		}
 	}
 	
