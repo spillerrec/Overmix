@@ -97,7 +97,7 @@ static Transform getColorSpace( AVColorSpace colorspace ){
 		case AVCOL_SPC_UNSPECIFIED:
 		case AVCOL_SPC_BT709      : return Transform::YCbCr_709;
 		case AVCOL_SPC_SMPTE170M  :
-		case AVCOL_SPC_SMPTE240M  : return Transform::YCbCr_601;
+		case AVCOL_SPC_BT470BG    : return Transform::YCbCr_601;
 		case AVCOL_SPC_RGB        : return Transform::RGB;
 		default: {
 			qWarning() << "Unknown AVColorSpace: " << colorspace;

@@ -34,9 +34,9 @@ VideoImporter::VideoImporter( QString filepath, QWidget* parent )
 
 
 bool VideoImporter::supportedFile( QString filename ){
-	auto extension = QFileInfo( filename ).suffix();
+	auto ext = QFileInfo( filename ).suffix().toLower();
 	//TODO: multiple extesions
-	return extension.toLower() == "mkv";
+	return ext == "mkv" || ext == "mp4" || ext == "webm";
 }
 
 void VideoImporter::import( ImageContainer &files ){
