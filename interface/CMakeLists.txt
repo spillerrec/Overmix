@@ -58,6 +58,7 @@ set(SOURCE_GUI_SAVERS
 
 set(SOURCE_GUI_VISUALISATION
 	gui/visualisations/MovementGraph.cpp
+	gui/visualisations/SkipRenderPreview.cpp
 	)
 
 if( WIN32 ) # Don't use registry on windows for saving options

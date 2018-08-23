@@ -40,6 +40,7 @@
 #include "savers/DumpSaver.hpp"
 #include "importers/VideoImporter.hpp"
 #include "visualisations/MovementGraph.hpp"
+#include "visualisations/SkipRenderPreview.hpp"
 #include "Spinbox2D.hpp"
 
 #include <vector>
@@ -141,6 +142,7 @@ main_widget::main_widget( ImageContainer& images )
 	connect( ui->action_online_wiki,  SIGNAL( triggered() ), this, SLOT( openOnlineHelp() ) );
 	connect( ui->action_crop_all,     SIGNAL( triggered() ), this, SLOT( crop_all() ) );
 	connect( ui->action_create_slide,     SIGNAL( triggered() ), this, SLOT( create_slide() ) );
+	connect( ui->action_show_skip_preview,     SIGNAL( triggered() ), this, SLOT( show_skip_render_preview() ) );
 	ui->action_show_menubar->setChecked( settings.value( "show_menubar", true ).toBool() );
 	toggleMenubar();
 	
@@ -648,5 +650,9 @@ void main_widget::crop_all(){
 void main_widget::create_slide(){
 	Animator anim;
 	anim.render( renders[0].raw );
+}
+
+void main_widget::show_skip_render_preview(){
+	SkipRenderPreview( settings, images, this ).exec();
 }
 

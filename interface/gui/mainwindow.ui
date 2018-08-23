@@ -489,7 +489,7 @@
      <x>0</x>
      <y>0</y>
      <width>998</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">
@@ -522,6 +522,7 @@
     </property>
     <addaction name="action_crop_all"/>
     <addaction name="action_create_slide"/>
+    <addaction name="action_show_skip_preview"/>
    </widget>
    <addaction name="menuFiles"/>
    <addaction name="menuView"/>
@@ -606,6 +607,11 @@
    </property>
    <property name="text">
     <string>&amp;Black background</string>
+   </property>
+  </action>
+  <action name="action_show_skip_preview">
+   <property name="text">
+    <string>Show Skip Render Preview</string>
    </property>
   </action>
  </widget>

@@ -163,6 +163,7 @@ class main_widget: public QMainWindow{
 	//Related to the Tools tab
 		void crop_all();
 		void create_slide();
+		void show_skip_render_preview();
 };
 
 }
