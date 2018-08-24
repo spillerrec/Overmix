@@ -32,6 +32,8 @@ class AnimRender{
 	public:
 		AnimRender( const AContainer& aligner, ARender& render, AProcessWatcher* watcher=nullptr ); //TODO: watcher?
 		
+		int count() const{ return frames.count(); }
+		
 		ImageEx render( int frame, AProcessWatcher* watcher=nullptr );
 };
 

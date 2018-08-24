@@ -353,7 +353,7 @@ void main_widget::refresh_image(){
 		else{
 			//TODO: watcher
 			AnimRender anim( getAlignedImages(), *render );
-			for( auto& frame : frames ){
+			for( int frame=0; frame<anim.count(); frame++ ){
 				FrameContainer current( getAlignedImages(), frame ); //TODO: remove requirement of this!
 				auto img = anim.render( frame );
 				if( img.is_valid() )
