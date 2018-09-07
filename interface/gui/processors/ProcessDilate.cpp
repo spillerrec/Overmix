@@ -34,6 +34,6 @@ QString ProcessDilate::name() const{ return "Dilate"; }
 ImageEx ProcessDilate::process( const ImageEx& input ) const{
 	ImageEx temp( input );
 	for( unsigned c=0; c<temp.size(); c++ )
-		temp[c].dilate( size->value() );
+		temp[c] = temp[c].dilate( size->value() );
 	return temp;
 }
