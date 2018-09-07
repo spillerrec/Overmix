@@ -25,6 +25,7 @@ class Ui_Dialog;
 namespace Overmix{
 	
 class ImageContainer;
+class AProcessWatcher;
 
 class VideoImporter : public QDialog{
 	Q_OBJECT
@@ -38,7 +39,7 @@ class VideoImporter : public QDialog{
 		VideoImporter( QString filepath, QWidget* parent );
 		
 		static bool supportedFile( QString filename );
-		void import( ImageContainer &files );
+		void import( ImageContainer &files, AProcessWatcher* watcher=nullptr );
 };
 
 }

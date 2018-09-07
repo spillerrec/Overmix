@@ -19,6 +19,7 @@
 #include "VideoImporter.hpp"
 #include "ui_VideoImporter.h"
 
+#include "utils/AProcessWatcher.hpp"
 #include "video/VideoStream.hpp"
 #include "video/VideoFrame.hpp"
 #include "containers/ImageContainer.hpp"
@@ -39,13 +40,15 @@ bool VideoImporter::supportedFile( QString filename ){
 	return ext == "mkv" || ext == "mp4" || ext == "webm";
 }
 
-void VideoImporter::import( ImageContainer &files ){
+void VideoImporter::import( ImageContainer &files, AProcessWatcher* watcher ){
 	VideoStream video( filepath );
 	video.seek( ui->offset_min->value()*60 + ui->offset_sec->value() );
 	
+	ProgressWrapper(watcher).setTotal( ui->frames_amount->value() );
 	for( int i=0; i<ui->frames_amount->value(); i++ ){
 		auto frame = video.getFrame();
 		files.addImage( frame.toImageEx() );
+		ProgressWrapper(watcher).add();
 	}
 }
 

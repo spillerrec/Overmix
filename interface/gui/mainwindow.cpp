@@ -230,7 +230,8 @@ void main_widget::process_urls( QStringList files ){
 		VideoImporter importer( files[0], this );
 		auto result = importer.exec();
 		if( result == QDialog::Accepted ){
-			importer.import( images );
+			ProgressWatcher watcher( this, tr("Loading images") );
+			importer.import( images, &watcher );
 		}
 	}
 	else{
