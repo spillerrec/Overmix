@@ -89,25 +89,35 @@ ImageItem& ImageContainer::addImage( ImageEx&& img, int mask, int group, QString
 }
 
 void ImageContainer::addGroup( QString name, unsigned group, unsigned from, unsigned to ){
-	//Create group and put it after this
-	addGroup( name );
-	addGroup( groups[group].name ); //TODO: if to != groups.size()
-	auto& from_group  = groups[group].items;
-	auto& to_group    = groups[groups.size()-2].items;
-	auto& after_group = groups[groups.size()-1].items;
-	//TODO: move them to be behind this group
-	//TODO: initialize vector sizes for item
+	//Extract the group to split
+	auto original = std::move( groups[group] );
+	util::removeItems( groups, group, 1 );
 	
-	//Move items to new group
+	//Create new groups
+	ImageGroup before( comparator.get(), original.name, masks );
+	ImageGroup added(  comparator.get(), name,          masks );
+	ImageGroup after(  comparator.get(), original.name, masks );
+	
+	for( unsigned i=0; i<from; i++ )
+		before.items.emplace_back( std::move( original.items[i] ) );
+	
 	for( unsigned i=from; i<to; i++ )
-		to_group.emplace_back( std::move( from_group[i] ) );
+		added.items.emplace_back( std::move( original.items[i] ) );
 	
-	//Move rest to after group
-	for( unsigned i=to; i<from_group.size(); i++ )
-		after_group.emplace_back( std::move( from_group[i] ) );
+	for( unsigned i=to; i<original.items.size(); i++ )
+		after.items.emplace_back( std::move( original.items[i] ) );
 	
-	//Resize first group
-	from_group.resize( from );
+	
+	//Add the groups if the contain items
+	auto insert_it = groups.begin() + group;
+	auto insert = [&]( auto& group ){
+		if( group.items.size() > 0 )
+			insert_it = groups.insert( insert_it, std::move( group ) ) + 1;
+	};
+	
+	insert( before );
+	insert( added  );
+	insert( after  );
 	
 	index_cache.invalidate( groups );
 }
