@@ -47,6 +47,8 @@ class AComparator{
 		virtual ModifiedPlane processAlpha( const Plane& plane ) const { return { plane }; }
 		virtual ImageOffset findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ) const = 0;
 		virtual ~AComparator() = default;
+		
+		virtual double findError( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2, double x, double y ) const = 0;
 };
 
 }

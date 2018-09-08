@@ -31,12 +31,20 @@
 using namespace std;
 using namespace Overmix;
 
-double AnimationSeparator::find_threshold( AContainer& container, AProcessWatcher* watcher ) const{
+
+double AnimationSeparator::findError( AContainer& container, int index1, int index2 ) const{
+	if( skip_align ) //Assume container is already aligned
+		return container.findError( index1, index2 );
+	else
+		return container.findOffset( index1, index2+1 ).error;
+}
+
+double AnimationSeparator::findThreshold( AContainer& container, AProcessWatcher* watcher ) const{
 	ProgressWrapper progress( watcher );
 	vector<color_type> errors;
 	
 	for( unsigned i=0; i<container.count()-1 && !progress.shouldCancel(); ++i ){
-		errors.push_back( container.findOffset( i, i+1 ).error );
+		errors.push_back( findError( container, i, i+1 ) );
 		progress.add();
 	}
 	
@@ -82,7 +90,7 @@ void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher 
 	if( container.count() == 0 )
 		return;
 	
-	double threshold = find_threshold( container, watcher ) * threshold_factor;
+	double threshold = findThreshold( container, watcher ) * threshold_factor;
 	
 	
 	//Init
@@ -95,7 +103,7 @@ void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher 
 		
 		for( int& index : backlog )
 			if( index >= 0 )
-				if( indexes.size() == 0 || container.findOffset( indexes.back(), index ).error < threshold ){
+				if( indexes.size() == 0 || findError( container, indexes.back(), index ) < threshold ){
 					indexes.push_back( index );
 					container.setFrame( index, iteration );
 					index = -1;

@@ -18,17 +18,16 @@
 #ifndef BRUTE_FORCE_COMPARATOR_HPP
 #define BRUTE_FORCE_COMPARATOR_HPP
 
-#include "AComparator.hpp"
+#include "SimpleComparatorBase.hpp"
 #include "../aligners/AAligner.hpp" //For AlignMethod
 #include "../planes/basic/difference.hpp" //For SimpleSettings
 
 namespace Overmix{
 
-class BruteForceComparator : public AComparator{
+class BruteForceComparator : public SimpleComparatorBase{
 	public:
 		AlignMethod method{ AlignMethod::VER };
 		double movement{ 0.75 };
-		Difference::SimpleSettings settings;
 		
 	public:
 		ImageOffset findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ) const override;

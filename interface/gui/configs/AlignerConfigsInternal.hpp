@@ -64,6 +64,7 @@ class LinearAlignerConfig : public AAlignerConfig{
 
 class SeperateAlignerConfig : public AAlignerConfig{
 	private:
+		QCheckBox* skip_align;
 		QDoubleSpinBox* threshold;
 	
 	public:

@@ -24,14 +24,17 @@ namespace Overmix{
 
 class AnimationSeparator : public AAligner{
 	private:
+		bool skip_align { false };
 		double threshold_factor{ 1.0 };
 		
-		double find_threshold( AContainer& container, AProcessWatcher* watcher ) const;
-	public:
-		AnimationSeparator() { /*TODO: fast_diffing = false;*/ }
-		virtual void align( AContainer& container, AProcessWatcher* watcher=nullptr ) const override;
+		double findThreshold( AContainer& container, AProcessWatcher* watcher ) const;
+		double findError( AContainer& container, int index1, int index2 ) const;
 		
-		void setThresholdFactor( double val ){ threshold_factor = val; }
+	public:
+		AnimationSeparator( bool skip_align = false, double threshold_factor = 1.0 )
+			: skip_align(skip_align), threshold_factor(threshold_factor)
+			{ }
+		virtual void align( AContainer& container, AProcessWatcher* watcher=nullptr ) const override;
 };
 
 }

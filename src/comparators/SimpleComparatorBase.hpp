@@ -15,27 +15,30 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef GRADIENT_COMPARATOR_HPP
-#define GRADIENT_COMPARATOR_HPP
+#ifndef SIMPLE_COMPARATOR_BASE_HPP
+#define SIMPLE_COMPARATOR_BASE_HPP
 
-#include "SimpleComparatorBase.hpp"
-#include "../aligners/AAligner.hpp" //For AlignMethod
-#include "../planes/basic/difference.hpp" //For SimpleSettings
-#include "../color.hpp"
+#include "AComparator.hpp"
+#include "../planes/basic/difference.hpp"
 
 namespace Overmix{
+	
+class Plane;
 
-class GradientComparator : public SimpleComparatorBase{
+class SimpleComparatorBase : public AComparator{
 	public:
-		AlignMethod method{ AlignMethod::VER };
-		double movement{ 0.75 };
-		int start_level{ 1 };
-		int max_level{ 6 };
-		color_type max_difference = 0.10*color::WHITE; //Difference must not be above this to match
+		Difference::SimpleSettings settings;
 		
 	public:
-		ImageOffset findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ) const override;
+		SimpleComparatorBase( Difference::SimpleSettings settings = {} )
+			: settings(settings) { }
+		
+		double findError( const Plane& p1, const Plane& p2, const Plane& a1, const Plane& a2, double x, double y ) const override{
+			auto pos = Point<int>( x, y ).round();
+			return Difference::simpleAlpha( p1, p2, a1, a2, pos, settings );
+		}
 };
+
 
 }
 

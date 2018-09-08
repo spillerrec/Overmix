@@ -80,6 +80,7 @@ class AContainer{
 		virtual ImageOffset getCachedOffset( unsigned, unsigned ) const;
 		virtual void        setCachedOffset( unsigned, unsigned, ImageOffset );
 		ImageOffset findOffset( unsigned, unsigned );
+		double findError( unsigned, unsigned );
 		
 	public:
 		Rectangle<double> size() const;
