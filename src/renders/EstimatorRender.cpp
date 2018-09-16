@@ -72,7 +72,8 @@ Plane EstimatorRender::degrade( const Plane& original, const Parameters& para ) 
 		out = out.blur_gaussian( bluring*upscale_factor.x, bluring*upscale_factor.y );
 	
 	//Degrade - resolution
-	out = out.scale_select( out.getSize() / upscale_factor, scale_method/*, pos - pos.to<int>().to<double>()*/ ); //TODO: offset
+	out = out.scale_select( Plane(), out.getSize() / upscale_factor, scale_method/*, pos - pos.to<int>().to<double>()*/ ); //TODO: offset
+	//TODO: Alpha
 	
 	
 	return out;
@@ -90,7 +91,8 @@ void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, d
 			val.first = signFloat( val.first, val.second, beta );
 	
 	//Upscale delta to fit
-	delta = delta.scale_select( delta.getSize()*scale, ScalingFunction::SCALE_MITCHELL );
+	delta = delta.scale_select( Plane(), delta.getSize()*scale, ScalingFunction::SCALE_MITCHELL );
+	//TODO: Alpha
 	
 	for( unsigned iy=0; iy<delta.get_height(); iy++ ){
 		auto row_out = out  .scan_line( iy+pos.y );

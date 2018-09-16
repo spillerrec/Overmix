@@ -72,7 +72,7 @@ AnimRender::AnimRender( const AContainer& aligner, ARender& render, AProcessWatc
 		auto full_size = img.getSize();
 		for( unsigned i=0; i<img.size(); i++ )
 			if( img[i].getSize() != full_size )
-				img[i] = img[i].scale_cubic( full_size );
+				img[i] = img[i].scale_cubic( img.alpha_plane(), full_size );
 
 		frames.addImage( modify( img, size, pos, expand ) );
 		old.emplace_back( pos, img.getSize() );

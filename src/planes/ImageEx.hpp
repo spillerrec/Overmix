@@ -129,15 +129,15 @@ class ImageEx{
 		
 		void scale( Point<unsigned> size, ScalingFunction scaling=ScalingFunction::SCALE_MITCHELL ){
 			for( auto& info : planes )
-				info.p = info.p.scale_select( size, scaling );
+				info.p = info.p.scale_select( alpha_plane(), size, scaling );
 			if( alpha_plane() )
-				alpha_plane() = alpha_plane().scale_select( size, scaling );
+				alpha_plane() = alpha_plane().scale_select( {}, size, scaling );
 		}
 		void scaleFactor( Size<double> factor, ScalingFunction scaling=ScalingFunction::SCALE_MITCHELL ){
 			for( auto& info : planes )
-				info.p = info.p.scale_select( ( info.p.getSize() * factor ).round(), scaling );
+				info.p = info.p.scale_select( alpha_plane(), ( info.p.getSize() * factor ).round(), scaling );
 			if( alpha_plane() )
-				alpha_plane() = alpha_plane().scale_select( ( alpha_plane().getSize() * factor ).round(), scaling );
+				alpha_plane() = alpha_plane().scale_select( {}, ( alpha_plane().getSize() * factor ).round(), scaling );
 		}
 		Point<unsigned> crop( unsigned left, unsigned top, unsigned right, unsigned bottom );
 		void crop( Point<unsigned> offset, Size<unsigned> size );

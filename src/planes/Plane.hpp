@@ -122,31 +122,32 @@ class Plane : public PlaneBase<color_type>{
 		static double lancozs5( double x ){ return lancozs( x, 5 ); }
 		static double lancozs7( double x ){ return lancozs( x, 7 ); }
 		Plane scale_generic( Point<unsigned> size, double window, Filter f, Point<double> offset={0.0,0.0} ) const;
+		Plane scale_generic_alpha( const Plane& alpha, Point<unsigned> size, double window, Filter f, Point<double> offset={0.0,0.0} ) const;
 	public:
-		Plane scale_nearest( Point<unsigned> size ) const;
-		Plane scale_linear( Point<unsigned> size, Point<double> offset={0.0,0.0} ) const{
-			return scale_generic( size, 1.5, linear, offset );
+		Plane scale_nearest( const Plane& alpha, Point<unsigned> size ) const;
+		Plane scale_linear( const Plane& alpha, Point<unsigned> size, Point<double> offset={0.0,0.0} ) const{
+			return scale_generic_alpha( alpha, size, 1.5, linear, offset );
 		}
-		Plane scale_cubic( Point<unsigned> size, Point<double> offset={0.0,0.0} ) const{
-			return scale_generic( size, 2.5, mitchell, offset );
+		Plane scale_cubic( const Plane& alpha, Point<unsigned> size, Point<double> offset={0.0,0.0} ) const{
+			return scale_generic_alpha( alpha, size, 2.5, mitchell, offset );
 		}
-		Plane scale_lanczos3( Point<unsigned> size, Point<double> offset={0.0,0.0} ) const
-			{ return scale_generic( size, 3.5, lancozs3, offset ); }
-		Plane scale_lanczos5( Point<unsigned> size, Point<double> offset={0.0,0.0} ) const
-			{ return scale_generic( size, 5.5, lancozs5, offset ); }
-		Plane scale_lanczos7( Point<unsigned> size, Point<double> offset={0.0,0.0} ) const
-			{ return scale_generic( size, 7.5, lancozs7, offset ); }
+		Plane scale_lanczos3( const Plane& alpha, Point<unsigned> size, Point<double> offset={0.0,0.0} ) const
+			{ return scale_generic_alpha( alpha, size, 3.5, lancozs3, offset ); }
+		Plane scale_lanczos5( const Plane& alpha, Point<unsigned> size, Point<double> offset={0.0,0.0} ) const
+			{ return scale_generic_alpha( alpha, size, 5.5, lancozs5, offset ); }
+		Plane scale_lanczos7( const Plane& alpha, Point<unsigned> size, Point<double> offset={0.0,0.0} ) const
+			{ return scale_generic_alpha( alpha, size, 7.5, lancozs7, offset ); }
 		
-		Plane scale_select( Point<unsigned> size, ScalingFunction scaling, Point<double> offset={0.0,0.0} ) const{
+		Plane scale_select( const Plane& alpha, Point<unsigned> size, ScalingFunction scaling, Point<double> offset={0.0,0.0} ) const{
 			switch( scaling ){
-				case ScalingFunction::SCALE_NEAREST : return scale_nearest( size );
-				case ScalingFunction::SCALE_LINEAR  : return scale_linear(  size, offset );
-				case ScalingFunction::SCALE_MITCHELL: return scale_cubic(   size, offset );
-				case ScalingFunction::SCALE_CATROM  : return scale_generic( size, 2.5, catrom, offset );
-				case ScalingFunction::SCALE_SPLINE  : return scale_generic( size, 2.5, spline, offset );
-				case ScalingFunction::SCALE_LANCZOS_3 : return scale_lanczos3( size, offset );
-				case ScalingFunction::SCALE_LANCZOS_5 : return scale_lanczos5( size, offset );
-				case ScalingFunction::SCALE_LANCZOS_7 : return scale_lanczos7( size, offset );
+				case ScalingFunction::SCALE_NEAREST : return scale_nearest(       alpha, size );
+				case ScalingFunction::SCALE_LINEAR  : return scale_linear(        alpha, size, offset );
+				case ScalingFunction::SCALE_MITCHELL: return scale_cubic(         alpha, size, offset );
+				case ScalingFunction::SCALE_CATROM  : return scale_generic_alpha( alpha, size, 2.5, catrom, offset );
+				case ScalingFunction::SCALE_SPLINE  : return scale_generic_alpha( alpha, size, 2.5, spline, offset );
+				case ScalingFunction::SCALE_LANCZOS_3 : return scale_lanczos3(    alpha, size, offset );
+				case ScalingFunction::SCALE_LANCZOS_5 : return scale_lanczos5(    alpha, size, offset );
+				case ScalingFunction::SCALE_LANCZOS_7 : return scale_lanczos7(    alpha, size, offset );
 				default: return Plane();
 			}
 		}

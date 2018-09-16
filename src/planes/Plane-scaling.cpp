@@ -26,7 +26,8 @@
 using namespace std;
 using namespace Overmix;
 
-Plane Plane::scale_nearest( Point<unsigned> wanted ) const{
+Plane Plane::scale_nearest( const Plane& alpha, Point<unsigned> wanted ) const{
+	//TODO: Support alpha
 	Timer t( "scale_nearest" );
 	Plane scaled( wanted );
 	
@@ -180,6 +181,59 @@ Plane Plane::scale_generic( Point<unsigned> wanted, double window, Plane::Filter
 				for( auto wx : x.weights )
 					local_avg += *(row2++) * wx;
 				avg += local_avg * wy;
+				
+				row += get_line_width();
+			}
+			
+			*(out++) = color::truncate( avg + 0.5 );
+		}
+	}
+	
+	return scaled;
+}
+
+
+Plane Plane::scale_generic_alpha( const Plane& alpha, Point<unsigned> wanted, double window, Plane::Filter f, Point<double> offset ) const{
+	//Do non-alpha version if alpha is not valid
+	if( !alpha.valid() )
+		return scale_generic( wanted, window, f, offset );
+	//TODO: check alpha size
+	
+	Timer t( "scale_generic_alpha" );
+	if( !*this || wanted == getSize() )
+		return *this;
+	
+	Plane scaled( wanted );
+	
+	//Calculate all x-weights
+	std::vector<ScalePoint> points;
+	points.reserve( wanted.width() );
+	for( unsigned ix=0; ix<wanted.width(); ++ix )
+		points.emplace_back( ix, size.width(), wanted.width(), offset.x, window, f );
+	
+	#pragma omp parallel for
+	for( unsigned iy=0; iy<wanted.height(); ++iy ){
+		color_type *out   = scaled.scan_line( iy ).begin();
+		ScalePoint ver( iy, get_height(), scaled.get_height(), offset.y, window, f );
+		
+		for( auto& x : points ){
+			double avg = 0;
+			auto row   =       scan_line( ver.start ).begin() + x.start;
+			auto row_a = alpha.scan_line( ver.start ).begin() + x.start;
+			
+			for( auto wy : ver.weights ){
+				double alpha_avg = 0;
+				auto row2   = row  ;
+				auto row2_a = row_a;
+				
+				double local_avg = 0;
+				for( auto wx : x.weights ){
+					auto alpha = color::asDouble(*(row2_a++)) * wx;
+					local_avg += *(row2++) * alpha;
+					alpha_avg += alpha;
+				}
+				avg += local_avg / alpha_avg * wy;
+				//TODO: How is the total average affected by this
 				
 				row += get_line_width();
 			}

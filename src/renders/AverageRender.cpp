@@ -203,7 +203,8 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 			ProgressWrapper( watcher ).add();
 		}
 		
-		img.addPlane( sum.average() );
+		auto scaled_plane = sum.average().scale_select( sum.alpha(), full, ScalingFunction::SCALE_MITCHELL ); //TODO: make adjustable
+		img.addPlane( std::move( scaled_plane ) );
 		
 		if( c == 0 && use_plane_alpha )
 			img.alpha_plane() = sum.alpha();

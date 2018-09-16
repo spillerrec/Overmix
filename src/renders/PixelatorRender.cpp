@@ -95,7 +95,7 @@ ImageEx PixelatorRender::render( const AContainer& aligner, AProcessWatcher* wat
 	//Get edge detected image
 	ImageEx gray( avg );
 	gray.to_grayscale();
-	auto edges = gray[0].edge_sobel().scale_cubic( gray[0].getSize()*upscale );
+	auto edges = gray[0].edge_sobel().scale_cubic( gray.alpha_plane(), gray[0].getSize()*upscale );
 	edges.binarize_threshold( edges.mean_value() );
 	
 	Histogram histo_h( edges.get_width() , color::BLACK );

@@ -107,7 +107,7 @@ ImageEx ImageEx::toColorSpace( ColorSpace to ) const{
 	auto img_size = out.getSize();
 	for( auto& info : out.planes )
 		if( info.p.getSize() != img_size )
-			info.p = info.p.scale_cubic( img_size );
+			info.p = info.p.scale_cubic( alpha_plane(), img_size );
 	
 	#pragma omp parallel for
 	for( unsigned iy=0; iy<img_size.height(); iy++ ){

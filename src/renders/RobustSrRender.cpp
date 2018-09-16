@@ -128,7 +128,7 @@ ImageEx RobustSrRender::render(const AContainer &group, AProcessWatcher *watcher
 	
 	auto est = AverageRender().render(group); //Starting estimate
 	for( unsigned c=0; c<planes_amount; ++c ){
-		auto output = imageToMatrix( est[c].scale_cubic( group.image(0).getSize()*upscale_factor ) ); //TODO: support real upscale
+		auto output = imageToMatrix( est[c].scale_cubic( est.alpha_plane(), group.image(0).getSize()*upscale_factor ) ); //TODO: support real upscale
 		qDebug() << "Output size: " << output.size();
 		vector<MatrixImg> lowres;
 		for( auto g : group )
