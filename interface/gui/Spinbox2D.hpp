@@ -41,6 +41,20 @@ class AbstractSpinbox2D : public QWidget {
 			spin_y.setValue( value.y );
 		}
 		
+		void updatedX( T new_x ){
+			spin_y.blockSignals( true );
+			if( isLocked() )
+				spin_y.setValue( (scale > 0.0) ? new_x / scale : 0.0 );
+			spin_y.blockSignals( false );
+		}
+		
+		void updatedY( T new_y ){
+			spin_x.blockSignals( true );
+			if( isLocked() )
+				spin_x.setValue( new_y * scale );
+			spin_x.blockSignals( false );
+		}
+		
 	public:
 		AbstractSpinbox2D( QWidget* parent ) : QWidget( parent ), locker( "X" ) {
 			//Position widgets
@@ -57,8 +71,8 @@ class AbstractSpinbox2D : public QWidget {
 			
 			//Update
 			auto valueChanged = static_cast<void (SpinBox::*)(T)>(&SpinBox::valueChanged);
-			connect( &spin_x, valueChanged, [&](T val){ setX(val); } );
-			connect( &spin_y, valueChanged, [&](T val){ setY(val); } );
+			connect( &spin_x, valueChanged, [&](T val){ updatedX(val); } );
+			connect( &spin_y, valueChanged, [&](T val){ updatedY(val); } );
 			connect( &locker, &QPushButton::toggled, [&](){ setValue( getValue() ); } );
 		}
 		
@@ -69,20 +83,6 @@ class AbstractSpinbox2D : public QWidget {
 		void setValue( Point<T> value ){
 			setValueNoScale( value );
 			scale = (value.y > 0.0 ) ? (double)value.x / value.y : 0.0;
-		}
-		
-		void setX( T new_x ){
-			if( isLocked() )
-				setValueNoScale( { new_x, T((scale > 0.0) ? new_x / scale : 0.0) } );
-			else
-				setValueNoScale( { new_x, getValue().y } );
-		}
-		
-		void setY( T new_y ){
-			if( isLocked() )
-				setValueNoScale( { T(new_y * scale), new_y } );
-			else
-				setValueNoScale( { getValue().x, new_y } );
 		}
 		
 		template<typename Return, typename... Args>
