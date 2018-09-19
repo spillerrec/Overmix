@@ -27,6 +27,7 @@ set(SOURCES_PLANES
 	planes/Plane-pixel.cpp
 	planes/Plane-binarize.cpp
 	planes/PorterDuff.cpp
+	planes/PlaneExcept.cpp
 	planes/PatternRemove.cpp
 	planes/gwenview/iodevicejpegsourcemanager.cpp
 	)

@@ -20,6 +20,7 @@
 #include <algorithm>
 
 #include "../Plane.hpp"
+#include "../PlaneExcept.hpp"
 
 
 using namespace std;
@@ -128,6 +129,12 @@ double Difference::simple( const Plane& p1, const Plane& p2, Point<int> offset, 
 
 
 double Difference::simpleAlpha( const Plane& p1, const Plane& p2, const Plane& alpha1, const Plane& alpha2, Point<int> offset, SimpleSettings s ){
+	planeSizeEqual( "Difference::simpleAlpha", p1, p2 );
+	if( alpha1 )
+		planeSizeEqual( "Difference::simpleAlpha", p1, alpha1 );
+	if( alpha2 )
+		planeSizeEqual( "Difference::simpleAlpha", p2, alpha2 );
+	
 	//Find edges
 	int p1_top  = offset.y < 0 ? 0 :  offset.y;
 	int p2_top  = offset.y > 0 ? 0 : -offset.y;
