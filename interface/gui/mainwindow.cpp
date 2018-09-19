@@ -19,6 +19,7 @@
 #include "ui_mainwindow.h"
 #include "mainwindow.hpp"
 
+#include "ExceptionCatcher.hpp"
 #include "ProgressWatcher.hpp"
 #include "viewer/imageCache.h"
 
@@ -226,18 +227,20 @@ void main_widget::closeEvent( QCloseEvent *event ){
 
 
 void main_widget::process_urls( QStringList files ){
-	if( files.count() == 1 && VideoImporter::supportedFile( files[0] ) ){
-		VideoImporter importer( files[0], this );
-		auto result = importer.exec();
-		if( result == QDialog::Accepted ){
-			ProgressWatcher watcher( this, tr("Loading images") );
-			importer.import( images, &watcher );
+	ExceptionCatcher::Guard( this, [&](){
+		if( files.count() == 1 && VideoImporter::supportedFile( files[0] ) ){
+			VideoImporter importer( files[0], this );
+			auto result = importer.exec();
+			if( result == QDialog::Accepted ){
+				ProgressWatcher watcher( this, tr("Loading images") );
+				importer.import( images, &watcher );
+			}
 		}
-	}
-	else{
-		ProgressWatcher watcher( this, tr("Loading images") );
-		ImageLoader::loadImages( files, images, detelecine, alpha_mask, &watcher );
-	}
+		else{
+			ProgressWatcher watcher( this, tr("Loading images") );
+			ImageLoader::loadImages( files, images, detelecine, alpha_mask, &watcher );
+		}
+	} );
 	
 	clear_cache();
 	refresh_text();
@@ -249,48 +252,60 @@ void main_widget::process_urls( QStringList files ){
 
 
 void main_widget::refresh_text(){
-	auto& aligner = getAlignedImages();
-	auto size       = aligner.size().size;
-	auto imageCount = aligner.count();
-	
-	if( imageCount == 0 )
-		ui->lbl_info->setText( tr( "No images" ) );
-	else
-		ui->lbl_info->setText(
-				tr( "Size: " )
-			+	QString::number( size.width() ) + "x"
-			+	QString::number( size.height()) + " ("
-			+	tr( "%n image(s) in ", nullptr, imageCount )
-			+	tr( "%n frame(s))",    nullptr, aligner.getFrames().size() )
-		);
+	ExceptionCatcher::Guard( this, [&](){
+		auto& aligner = getAlignedImages();
+		auto size       = aligner.size().size;
+		auto imageCount = aligner.count();
+		
+		if( imageCount == 0 )
+			ui->lbl_info->setText( tr( "No images" ) );
+		else
+			ui->lbl_info->setText(
+					tr( "Size: " )
+				+	QString::number( size.width() ) + "x"
+				+	QString::number( size.height()) + " ("
+				+	tr( "%n image(s) in ", nullptr, imageCount )
+				+	tr( "%n frame(s))",    nullptr, aligner.getFrames().size() )
+			);
+	} );
 }
 
 const ImageEx& main_widget::postProcess( const ImageEx& input, bool new_image ){
-	processor_cache = processor_list->process( input );
+	ExceptionCatcher::Guard( this, [&](){
+		processor_cache = processor_list->process( input );
+	} );
 	return processor_cache;
 }
 
 
-std::unique_ptr<ARender> main_widget::getRender() const
-	{ return render_config.getRender(); }
+//NOTE: This method is not exception protected!
+std::unique_ptr<ARender> main_widget::getRender() const{
+	return render_config.getRender();
+}
 
 ImageEx main_widget::renderImage( const AContainer& container ){
-	ProgressWatcher watcher( this, "Rendering" );
-	
-	return getRender()->render( container, &watcher );
+	ExceptionCatcher::Guard( this, [&](){
+		ProgressWatcher watcher( this, "Rendering" );
+		
+		return getRender()->render( container, &watcher );
+	} );
+	return {};
 }
 
 QImage main_widget::qrenderImage( const ImageEx& img ){
 	if( !img.is_valid() )
 		return QImage();
 	
-	auto image = postProcess( img, true );
-	if( ui->cbx_nocolor->isChecked() )
-		image = image.flatten();
-	
-	//Render image
-	//TODO: fix postProcess
-	return image.to_qimage( ui->cbx_dither->isChecked() );
+	ExceptionCatcher::Guard( this, [&](){
+		auto image = postProcess( img, true );
+		if( ui->cbx_nocolor->isChecked() )
+			image = image.flatten();
+		
+		//Render image
+		//TODO: fix postProcess
+		return image.to_qimage( ui->cbx_dither->isChecked() );
+	} );
+	return {};
 }
 
 void main_widget::refreshQImageCache(){
@@ -341,27 +356,29 @@ void main_widget::refresh_image(){
 	if( !images.isAligned() )
 		alignImage();
 	
-	Timer t( "refresh_image" );
-	auto start = getAlignedImages().minPoint();
-	if( renders.size() == 0 ){
-		auto frames = getAlignedImages().getFrames();
-		renders.reserve( frames.size() );
-		
-		auto render = getRender();
-		
-		if( frames.size() == 1 )
-			renders.emplace_back( renderImage( getAlignedImages() ), Point<double>(0.0,0.0) );
-		else{
-			//TODO: watcher
-			AnimRender anim( getAlignedImages(), *render );
-			for( int frame=0; frame<anim.count(); frame++ ){
-				FrameContainer current( getAlignedImages(), frame ); //TODO: remove requirement of this!
-				auto img = anim.render( frame );
-				if( img.is_valid() )
-					renders.emplace_back( std::move(img), current.minPoint()-start );
+	ExceptionCatcher::Guard( this, [&](){
+		Timer t( "refresh_image" );
+		auto start = getAlignedImages().minPoint();
+		if( renders.size() == 0 ){
+			auto frames = getAlignedImages().getFrames();
+			renders.reserve( frames.size() );
+			
+			auto render = getRender();
+			
+			if( frames.size() == 1 )
+				renders.emplace_back( renderImage( getAlignedImages() ), Point<double>(0.0,0.0) );
+			else{
+				//TODO: watcher
+				AnimRender anim( getAlignedImages(), *render );
+				for( int frame=0; frame<anim.count(); frame++ ){
+					FrameContainer current( getAlignedImages(), frame ); //TODO: remove requirement of this!
+					auto img = anim.render( frame );
+					if( img.is_valid() )
+						renders.emplace_back( std::move(img), current.minPoint()-start );
+				}
 			}
 		}
-	}
+	} );
 	
 	refreshQImageCache();
 	
@@ -384,24 +401,28 @@ QString main_widget::getSavePath( QString title, QString file_types ){
 }
 
 void main_widget::save_image(){
-	for( auto& render : renders ){
-		QString filename = getSavePath( tr("Save image"), tr("PNG files (*.png);; dump files (*.dump)") );
-		if( !filename.isEmpty() ){
-			if( QFileInfo( filename ).suffix() == "dump" )
-				DumpSaver( postProcess( render.raw, true ), filename ).exec(); //TODO: fix postProcess
-			else
-				render.qimg.save( filename );
+	ExceptionCatcher::Guard( this, [&](){
+		for( auto& render : renders ){
+			QString filename = getSavePath( tr("Save image"), tr("PNG files (*.png);; dump files (*.dump)") );
+			if( !filename.isEmpty() ){
+				if( QFileInfo( filename ).suffix() == "dump" )
+					DumpSaver( postProcess( render.raw, true ), filename ).exec(); //TODO: fix postProcess
+				else
+					render.qimg.save( filename );
+			}
 		}
-	}
+	} );
 }
 
 void main_widget::save_files(){
-	auto filename = getSavePath( tr("Save alignment"), tr("XML (*.xml.overmix)") );
-	if( !filename.isEmpty() ){
-		auto error = ImageContainerSaver::save( images, filename );
-		if( !error.isEmpty() )
-			QMessageBox::warning( this, tr("Could not save alignment"), error );
-	}
+	ExceptionCatcher::Guard( this, [&](){
+		auto filename = getSavePath( tr("Save alignment"), tr("XML (*.xml.overmix)") );
+		if( !filename.isEmpty() ){
+			auto error = ImageContainerSaver::save( images, filename );
+			if( !error.isEmpty() )
+				QMessageBox::warning( this, tr("Could not save alignment"), error );
+		}
+	} );
 }
 
 void main_widget::clear_cache(){
@@ -430,20 +451,22 @@ void main_widget::clear_image(){
 }
 
 void main_widget::alignImage(){
-	Timer t( "alignImage" );
-	clear_cache(); //Prevent any animation from running
-	ProgressWatcher watcher( this, "Aligning" );
-	
-	auto aligner = aligner_config.getAligner();
-	if( ui->cbx_each_frame->isChecked() ){
-		//TODO: support displaying several frames in watcher
-		for( auto frame : getAlignedImages().getFrames() ){
-			FrameContainer container( getAlignedImages(), frame );
-			aligner->align( container, &watcher );
+	ExceptionCatcher::Guard( this, [&](){
+		Timer t( "alignImage" );
+		clear_cache(); //Prevent any animation from running
+		ProgressWatcher watcher( this, "Aligning" );
+		
+		auto aligner = aligner_config.getAligner();
+		if( ui->cbx_each_frame->isChecked() ){
+			//TODO: support displaying several frames in watcher
+			for( auto frame : getAlignedImages().getFrames() ){
+				FrameContainer container( getAlignedImages(), frame );
+				aligner->align( container, &watcher );
+			}
 		}
-	}
-	else
-		aligner->align( getAlignedImages(), &watcher );
+		else
+			aligner->align( getAlignedImages(), &watcher );
+	} );
 	
 	clear_cache();
 	refresh_text();
@@ -458,7 +481,9 @@ void main_widget::set_alpha_mask(){
 	QString filename = QFileDialog::getOpenFileName( this, tr("Open alpha mask"), save_dir, tr("PNG files (*.png)") );
 	
 	if( !filename.isEmpty() ){
-		alpha_mask = images.addMask( std::move( ImageEx::fromFile( filename )[0] ) );
+		ExceptionCatcher::Guard( this, [&](){
+			alpha_mask = images.addMask( std::move( ImageEx::fromFile( filename )[0] ) );
+		} );
 		updateMasks();
 	}
 }
@@ -470,14 +495,16 @@ void main_widget::clear_mask(){
 }
 
 void main_widget::use_current_as_mask(){
-	if( renders.size() == 1 ){
-		//TODO: postProcess cache no longer valid as we have several frames
-		alpha_mask = images.addMask( Plane( postProcess(renders[0].raw, false)[0] ) );
-		auto& aligner = getAlignedImages();
-		for( unsigned i=0; i<aligner.count(); i++ )
-			aligner.setMask( i, alpha_mask );
-		updateMasks();
-	}
+	ExceptionCatcher::Guard( this, [&](){
+		if( renders.size() == 1 ){
+			//TODO: postProcess cache no longer valid as we have several frames
+			alpha_mask = images.addMask( Plane( postProcess(renders[0].raw, false)[0] ) );
+			auto& aligner = getAlignedImages();
+			for( unsigned i=0; i<aligner.count(); i++ )
+				aligner.setMask( i, alpha_mask );
+			updateMasks();
+		}
+	} );
 }
 
 void main_widget::update_draw(){
@@ -489,11 +516,13 @@ void main_widget::update_draw(){
 void main_widget::addGroup(){
 	auto name = QInputDialog::getText( this, tr("New group"), tr("Enter group name") );
 	if( !name.isEmpty() ){
-		const auto& indexes = ui->files_view->selectionModel()->selectedIndexes();
-		if( indexes.size() > 0 )
-			img_model.addGroup( name, indexes.front(), indexes.back() );
-		else
-			images.addGroup( name );
+		ExceptionCatcher::Guard( this, [&](){
+			const auto& indexes = ui->files_view->selectionModel()->selectedIndexes();
+			if( indexes.size() > 0 )
+				img_model.addGroup( name, indexes.front(), indexes.back() );
+			else
+				images.addGroup( name );
+		} );
 		ui->files_view->reset();
 	}
 }
@@ -527,23 +556,27 @@ void main_widget::browserChangeMask( const QItemSelection& selected, const QItem
 }
 
 void main_widget::removeFiles(){
-	auto indexes = ui->files_view->selectionModel()->selectedRows();
-	if( indexes.size() > 0 )
-		img_model.removeRows( indexes.front().row(), indexes.size(), img_model.parent(indexes.front()) );
+	ExceptionCatcher::Guard( this, [&](){
+		auto indexes = ui->files_view->selectionModel()->selectedRows();
+		if( indexes.size() > 0 )
+			img_model.removeRows( indexes.front().row(), indexes.size(), img_model.parent(indexes.front()) );
+	} );
 	refresh_text();
 	resetImage();
 }
 
 void main_widget::showFullscreen(){
-	if( ui->tab_pages->currentIndex() != 0 ){
-		//Show selected file
-		QItemSelection empty;
-		auto img = img_model.getImage( fromSelection( ui->files_view->selectionModel()->selection(), empty ) );
-		if( !img.isNull() )
-			FullscreenViewer::show( settings, img, this );
-	}
-	else if( renders.size() > 0 ) //Show current render
-		FullscreenViewer::show( settings, createViewerCache(), this );
+	ExceptionCatcher::Guard( this, [&](){
+		if( ui->tab_pages->currentIndex() != 0 ){
+			//Show selected file
+			QItemSelection empty;
+			auto img = img_model.getImage( fromSelection( ui->files_view->selectionModel()->selection(), empty ) );
+			if( !img.isNull() )
+				FullscreenViewer::show( settings, img, this );
+		}
+		else if( renders.size() > 0 ) //Show current render
+			FullscreenViewer::show( settings, createViewerCache(), this );
+	} );
 }
 
 void main_widget::makeViewerBlack(){
@@ -581,11 +614,13 @@ AContainer& main_widget::getAlignedImages(){
 }
 
 void main_widget::applyModifications(){
-	auto& container = getAlignedImages();
-	ProgressWatcher( this, "Applying modifications" ).loopAll( container.count(), [&]( int i ){
-			container.setPos( i, preprocessor_list->modifyOffset( container.pos(i) ) );
-			container.imageRef(i) = preprocessor_list->process( container.imageRef(i) );
-		} );
+	ExceptionCatcher::Guard( this, [&](){
+		auto& container = getAlignedImages();
+		ProgressWatcher( this, "Applying modifications" ).loopAll( container.count(), [&]( int i ){
+				container.setPos( i, preprocessor_list->modifyOffset( container.pos(i) ) );
+				container.imageRef(i) = preprocessor_list->process( container.imageRef(i) );
+			} );
+	} );
 	clear_cache();
 }
 
@@ -597,26 +632,28 @@ void main_widget::updateSelection(){
 				on_accept( result - 1 );
 		};
 	
-	switch( ui->selection_selector->currentIndex() ){
-		case 1:
-				getIndex( tr( "Select group" ), tr( "Select the group number" ), images.groupAmount()
-					, [&]( int index ){
-						selection = std::make_unique<DelegatedContainer>( images.getGroup( index ) );
-					} );
-			break;
-		case 2: { //Select frame
-				auto frames = images.getFrames();
-				getIndex( tr( "Select frame" ), tr( "Select the frame number" ), frames.size()
-					, [&]( int index ){
-						selection = std::make_unique<FrameContainer>( images, frames[index] );
-					} );
-			} break;
-			
-		case 3: QMessageBox::warning( this, tr("Not implemented"), tr("Custom selection not yet implemented") );
-			//TODO: implement this obviously
-		case 0:
-		default: selection = nullptr; break;
-	}
+	ExceptionCatcher::Guard( this, [&](){
+		switch( ui->selection_selector->currentIndex() ){
+			case 1:
+					getIndex( tr( "Select group" ), tr( "Select the group number" ), images.groupAmount()
+						, [&]( int index ){
+							selection = std::make_unique<DelegatedContainer>( images.getGroup( index ) );
+						} );
+				break;
+			case 2: { //Select frame
+					auto frames = images.getFrames();
+					getIndex( tr( "Select frame" ), tr( "Select the frame number" ), frames.size()
+						, [&]( int index ){
+							selection = std::make_unique<FrameContainer>( images, frames[index] );
+						} );
+				} break;
+				
+			case 3: QMessageBox::warning( this, tr("Not implemented"), tr("Custom selection not yet implemented") );
+				//TODO: implement this obviously
+			case 0:
+			default: selection = nullptr; break;
+		}
+	} );
 	
 	clear_cache();
 	refresh_text();
@@ -636,21 +673,25 @@ void main_widget::updateMasks(){
 }
 
 void main_widget::crop_all(){
-	debug::output_rectable( images,
-		{{  QInputDialog::getInt( this, tr("Pick area"), tr("x") )
-		 ,  QInputDialog::getInt( this, tr("Pick area"), tr("y") )
-		 }
-		,{  QInputDialog::getInt( this, tr("Pick area"), tr("width") )
-		 ,  QInputDialog::getInt( this, tr("Pick area"), tr("height") )
-		 }
-	});
+	ExceptionCatcher::Guard( this, [&](){
+		debug::output_rectable( images,
+			{{  QInputDialog::getInt( this, tr("Pick area"), tr("x") )
+			 ,  QInputDialog::getInt( this, tr("Pick area"), tr("y") )
+			 }
+			,{  QInputDialog::getInt( this, tr("Pick area"), tr("width") )
+			 ,  QInputDialog::getInt( this, tr("Pick area"), tr("height") )
+			 }
+		});
+	} );
 	
 	clear_cache();
 }
 
 void main_widget::create_slide(){
-	Animator anim;
-	anim.render( renders[0].raw );
+	ExceptionCatcher::Guard( this, [&](){
+		Animator anim;
+		anim.render( renders[0].raw );
+	} );
 }
 
 void main_widget::show_skip_render_preview(){

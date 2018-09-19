@@ -17,6 +17,7 @@ set(SOURCE_CLI
 	)
 
 set(SOURCE_GUI
+	gui/ExceptionCatcher.cpp
 	gui/mainwindow.cpp
 	gui/ImagesModel.cpp
 	gui/MaskModel.cpp
