@@ -24,10 +24,6 @@ ExceptionCatcher::ExceptionCatcher( QWidget* parent )
 }
 
 
-ExceptionCatcher::ExceptionCatcher( const std::exception& e, QWidget* parent )
-	:	ExceptionCatcher( parent )
-	{ ui->exception_text->setPlainText( e.what() ); }
-
 ExceptionCatcher::ExceptionCatcher( QString what, QWidget* parent )
 	:	ExceptionCatcher( parent )
 	{ ui->exception_text->setPlainText( what ); }

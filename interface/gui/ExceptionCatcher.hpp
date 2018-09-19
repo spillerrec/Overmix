@@ -34,23 +34,23 @@ class ExceptionCatcher : public QDialog {
 		
 	public:
 		ExceptionCatcher( QWidget* parent = nullptr );
-		ExceptionCatcher( const std::exception&, QWidget* parent = nullptr );
 		ExceptionCatcher( QString what, QWidget* parent = nullptr );
 		~ExceptionCatcher();
 		
 		template<typename Function>
-		static void Guard( QWidget* parent, Function func ){
+		static auto Guard( QWidget* parent, Function func ) -> decltype( func() ){
 			try{
-				func();
+				return func();
 			}
 			catch( const std::exception& e ){
-				ExceptionCatcher catcher( e, parent );
+				ExceptionCatcher catcher( e.what(), parent );
 				catcher.exec();
 			}
 			catch( ... ){
 				ExceptionCatcher catcher( "Not a std::exception, no error message :\\", parent );
 				catcher.exec();
 			}
+			return decltype( func() )();
 		}
 
 	public slots:

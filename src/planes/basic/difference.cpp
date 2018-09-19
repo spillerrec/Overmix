@@ -129,7 +129,6 @@ double Difference::simple( const Plane& p1, const Plane& p2, Point<int> offset, 
 
 
 double Difference::simpleAlpha( const Plane& p1, const Plane& p2, const Plane& alpha1, const Plane& alpha2, Point<int> offset, SimpleSettings s ){
-	planeSizeEqual( "Difference::simpleAlpha", p1, p2 );
 	if( alpha1 )
 		planeSizeEqual( "Difference::simpleAlpha", p1, alpha1 );
 	if( alpha2 )

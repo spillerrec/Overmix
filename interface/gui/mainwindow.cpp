@@ -284,19 +284,18 @@ std::unique_ptr<ARender> main_widget::getRender() const{
 }
 
 ImageEx main_widget::renderImage( const AContainer& container ){
-	ExceptionCatcher::Guard( this, [&](){
+	return ExceptionCatcher::Guard( this, [&](){
 		ProgressWatcher watcher( this, "Rendering" );
 		
 		return getRender()->render( container, &watcher );
 	} );
-	return {};
 }
 
 QImage main_widget::qrenderImage( const ImageEx& img ){
 	if( !img.is_valid() )
 		return QImage();
 	
-	ExceptionCatcher::Guard( this, [&](){
+	return ExceptionCatcher::Guard( this, [&](){
 		auto image = postProcess( img, true );
 		if( ui->cbx_nocolor->isChecked() )
 			image = image.flatten();
@@ -305,7 +304,6 @@ QImage main_widget::qrenderImage( const ImageEx& img ){
 		//TODO: fix postProcess
 		return image.to_qimage( ui->cbx_dither->isChecked() );
 	} );
-	return {};
 }
 
 void main_widget::refreshQImageCache(){
