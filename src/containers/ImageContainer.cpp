@@ -147,23 +147,23 @@ unsigned ImageContainer::count() const{ return index_cache.size(); }
 
 const ImageEx& ImageContainer::image( unsigned index ) const{
 	auto pos = index_cache.getImage( index );
-	return groups[pos.group].image( pos.index );
+	return groups.at(pos.group).image( pos.index );
 }
 
 ImageEx& ImageContainer::imageRef( unsigned index ){
 	auto pos = index_cache.getImage( index );
-	return groups[pos.group].imageRef( pos.index );
+	return groups.at(pos.group).imageRef( pos.index );
 }
 
 
 int ImageContainer::imageMask( unsigned index ) const{
 	auto pos = index_cache.getImage( index );
-	return groups[pos.group].imageMask( pos.index );
+	return groups.at(pos.group).imageMask( pos.index );
 }
 
 void ImageContainer::setMask( unsigned index, int id ){
 	auto pos = index_cache.getImage( index );
-	groups[pos.group].setMask( pos.index, id );
+	groups.at(pos.group).setMask( pos.index, id );
 }
 
 void ImageContainer::removeMask( int mask ){
@@ -188,26 +188,26 @@ void ImageContainer::removeMask( int mask ){
 
 const Plane& ImageContainer::alpha( unsigned index ) const{
 	auto pos = index_cache.getImage( index );
-	return groups[pos.group].alpha( pos.index );
+	return groups.at(pos.group).alpha( pos.index );
 }
 
 Point<double> ImageContainer::pos( unsigned index ) const{
 	auto pos = index_cache.getImage( index );
-	return groups[pos.group].pos( pos.index );
+	return groups.at(pos.group).pos( pos.index );
 }
 
 void ImageContainer::setPos( unsigned index, Point<double> newVal ){
 	auto pos = index_cache.getImage( index );
-	groups[pos.group].setPos( pos.index, newVal );
+	groups.at(pos.group).setPos( pos.index, newVal );
 	aligned = true;
 }
 
 int ImageContainer::frame( unsigned index ) const{
 	auto pos = index_cache.getImage( index );
-	return groups[pos.group].frame( pos.index );
+	return groups.at(pos.group).frame( pos.index );
 }
 void ImageContainer::setFrame( unsigned index, int newVal ){
 	auto pos = index_cache.getImage( index );
-	groups[pos.group].setFrame( pos.index, newVal );
+	groups.at(pos.group).setFrame( pos.index, newVal );
 }
 

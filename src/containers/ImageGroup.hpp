@@ -45,7 +45,7 @@ class ImageItem{
 		ImageEx& imageRef(){ return img; }
 		int maskId() const{ return mask_id; }
 		const Plane& alpha( const std::vector<Plane>& masks ) const{
-			return ( mask_id >= 0 ) ? masks[mask_id] : (mask ? mask : img.alpha_plane());
+			return ( mask_id >= 0 ) ? masks.at(mask_id) : (mask ? mask : img.alpha_plane());
 		}
 		
 		void setMask( Plane&& mask ){
@@ -77,18 +77,18 @@ class ImageGroup : public AContainer{
 		
 	public: //AContainer implementation
 		virtual unsigned       count()                     const override{ return items.size(); }
-		virtual const ImageEx& image(     unsigned index ) const override{ return items[index].image(); }
-		virtual       ImageEx& imageRef(  unsigned index )       override{ return items[index].imageRef(); }
-		virtual int            imageMask( unsigned index ) const override{ return items[index].maskId(); }
-		virtual const Plane&   alpha(     unsigned index ) const override{ return items[index].alpha( *masks ); }
-		virtual const Plane&   mask(      unsigned index ) const override{ return (*masks)[index]; }
-		virtual void           setMask(   unsigned index, int id ) override{      items[index].setSharedMask( id ); }
-		virtual int            frame(     unsigned index ) const override{ return items[index].frame; }
+		virtual const ImageEx& image(     unsigned index ) const override{ return items.at(index).image(); }
+		virtual       ImageEx& imageRef(  unsigned index )       override{ return items.at(index).imageRef(); }
+		virtual int            imageMask( unsigned index ) const override{ return items.at(index).maskId(); }
+		virtual const Plane&   alpha(     unsigned index ) const override{ return items.at(index).alpha( *masks ); }
+		virtual const Plane&   mask(      unsigned index ) const override{ return masks->at(index); }
+		virtual void           setMask(   unsigned index, int id ) override{      items.at(index).setSharedMask( id ); }
+		virtual int            frame(     unsigned index ) const override{ return items.at(index).frame; }
 		virtual unsigned       maskCount()                 const override{ return masks->size(); }
-		virtual Point<double>  pos(       unsigned index ) const override{ return items[index].offset; }
-		virtual void setPos( unsigned index, Point<double> newVal ) override{     items[index].offset = newVal; }
+		virtual Point<double>  pos(       unsigned index ) const override{ return items.at(index).offset; }
+		virtual void setPos( unsigned index, Point<double> newVal ) override{     items.at(index).offset = newVal; }
 		
-		virtual void setFrame( unsigned index, int newVal ) override{ items[index].frame = newVal; }
+		virtual void setFrame( unsigned index, int newVal ) override{ items.at(index).frame = newVal; }
 		
 	public:
 		const AComparator* getComparator() const override{ return comparator; };

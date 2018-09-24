@@ -53,7 +53,7 @@ class ImageContainer : public AContainer{
 				}
 				
 			public: //Accessors
-				ImagePosition getImage( unsigned index ) const{ return indexes[index]; }
+				ImagePosition getImage( unsigned index ) const{ return indexes.at(index); }
 				bool hasOffset( unsigned, unsigned ) const;
 				ImageOffset getOffset( unsigned, unsigned ) const;
 				auto size() const{ return indexes.size(); }
