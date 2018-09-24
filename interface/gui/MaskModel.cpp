@@ -91,8 +91,11 @@ bool MaskModel::setData( const QModelIndex& model_index, const QVariant& value, 
 
 bool MaskModel::removeRows( int row, int count, const QModelIndex& model_parent ){
 	emit beginRemoveRows( model_parent, row, row+count );
-	//TODO: Implement in ImageContainer
-	return false;
+	
+	//Remove masks, note that the IDs decreases so we keep removing the same ID
+	for( int i=0; i<count; i++ )
+		images.removeMask( row );
+	
 	emit endRemoveRows();
 	
 	return true;

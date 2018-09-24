@@ -166,6 +166,26 @@ void ImageContainer::setMask( unsigned index, int id ){
 	groups[pos.group].setMask( pos.index, id );
 }
 
+void ImageContainer::removeMask( int mask ){
+	if( mask < 0 || unsigned(mask) >= masks.size() )
+		throw std::runtime_error( "ImageContainer::removeMask - invalid mask ID" );
+	
+	//Remove mask
+	util::removeItems( masks, mask, 1 );
+	
+	//Remove references to mask
+	for( auto& group : groups )
+		for( auto& item : group )
+			if( item.maskId() == mask )
+				item.setSharedMask( -1 );
+	
+	//Move all references above removed mask id
+	for( auto& group : groups )
+		for( auto& item : group )
+			if( item.maskId() > mask )
+				item.setSharedMask( item.maskId()-1 );
+}
+
 const Plane& ImageContainer::alpha( unsigned index ) const{
 	auto pos = index_cache.getImage( index );
 	return groups[pos.group].alpha( pos.index );

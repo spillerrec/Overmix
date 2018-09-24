@@ -109,15 +109,16 @@ main_widget::main_widget( ImageContainer& images )
 	ui->preprocess_layout ->addWidget( preprocessor_list );
 	
 	//Buttons
-	connect( ui->btn_clear,      SIGNAL( clicked() ), this, SLOT( clear_image()          ) );
-	connect( ui->btn_refresh,    SIGNAL( clicked() ), this, SLOT( refresh_image()        ) );
-	connect( ui->btn_save,       SIGNAL( clicked() ), this, SLOT( save_image()           ) );
-	connect( ui->btn_save_files, SIGNAL( clicked() ), this, SLOT( save_files()           ) );
-	connect( ui->btn_subpixel,   SIGNAL( clicked() ), this, SLOT( alignImage() ) );
-	connect( ui->pre_alpha_mask, SIGNAL( clicked() ), this, SLOT( set_alpha_mask()       ) );
-	connect( ui->pre_clear_mask, SIGNAL( clicked() ), this, SLOT( clear_mask()           ) );
-	connect( ui->btn_as_mask,    SIGNAL( clicked() ), this, SLOT( use_current_as_mask()  ) );
-	connect( ui->btn_apply_mods, SIGNAL( clicked() ), this, SLOT( applyModifications()  ) );
+	connect( ui->btn_clear,       SIGNAL( clicked() ), this, SLOT( clear_image()         ) );
+	connect( ui->btn_refresh,     SIGNAL( clicked() ), this, SLOT( refresh_image()       ) );
+	connect( ui->btn_save,        SIGNAL( clicked() ), this, SLOT( save_image()          ) );
+	connect( ui->btn_save_files,  SIGNAL( clicked() ), this, SLOT( save_files()          ) );
+	connect( ui->btn_subpixel,    SIGNAL( clicked() ), this, SLOT( alignImage()          ) );
+	connect( ui->pre_alpha_mask,  SIGNAL( clicked() ), this, SLOT( set_alpha_mask()      ) );
+	connect( ui->pre_clear_mask,  SIGNAL( clicked() ), this, SLOT( clear_mask()          ) );
+	connect( ui->pre_remove_mask, SIGNAL( clicked() ), this, SLOT( remove_mask()         ) );
+	connect( ui->btn_as_mask,     SIGNAL( clicked() ), this, SLOT( use_current_as_mask() ) );
+	connect( ui->btn_apply_mods,  SIGNAL( clicked() ), this, SLOT( applyModifications()  ) );
 	update_draw();
 	
 	//Checkboxes
@@ -558,6 +559,16 @@ void main_widget::removeFiles(){
 		auto indexes = ui->files_view->selectionModel()->selectedRows();
 		if( indexes.size() > 0 )
 			img_model.removeRows( indexes.front().row(), indexes.size(), img_model.parent(indexes.front()) );
+	} );
+	refresh_text();
+	resetImage();
+}
+
+void main_widget::remove_mask(){
+	ExceptionCatcher::Guard( this, [&](){
+		auto indexes = ui->mask_view->selectionModel()->selectedRows();
+		if( indexes.size() > 0 )
+			mask_model.removeRows( indexes.front().row(), indexes.size(), img_model.parent(indexes.front()) );
 	} );
 	refresh_text();
 	resetImage();

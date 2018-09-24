@@ -461,6 +461,13 @@
                 </widget>
                </item>
                <item>
+                <widget class="QPushButton" name="pre_remove_mask">
+                 <property name="text">
+                  <string>Remove</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <widget class="QPushButton" name="pre_clear_mask">
                  <property name="enabled">
                   <bool>false</bool>
@@ -469,6 +476,22 @@
                   <string>Clear mask</string>
                  </property>
                 </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Minimum</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
                </item>
               </layout>
              </item>
@@ -489,7 +512,7 @@
      <x>0</x>
      <y>0</y>
      <width>998</width>
-     <height>25</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">

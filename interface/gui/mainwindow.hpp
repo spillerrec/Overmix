@@ -144,6 +144,7 @@ class main_widget: public QMainWindow{
 		void change_interlace();
 		
 		void set_alpha_mask();
+		void remove_mask();
 		void clear_mask();
 		void use_current_as_mask();
 		void updateSelection();
