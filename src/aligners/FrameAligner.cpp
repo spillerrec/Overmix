@@ -29,17 +29,21 @@ void FrameAligner::align( class AContainer& container, class AProcessWatcher* wa
 	auto frames = container.getFrames();
 	auto base_point = container.minPoint();
 	
+	MultiProgress progress( "FrameAligner", 3, watcher );
+	auto progress_render = progress.makeProgress( "Render frames", frames.size() );
+	auto progress_align = progress.makeWatcher();
+	auto progress_offset = progress.makeProgress( "Offset frames", frames.size() );
+	
 	ImageContainer images;
 	for( auto& frame : frames ){
 		FrameContainer current( container, frame );
 		images.addImage( FloatRender( 1.0, 1.0 ).render( current ) );
-		//TODO: this should be a sub-pixel precision render!
+		progress_render.add();
 	}
 	
-	//TODO: also show progress for this!
-	RecursiveAligner().align( images ); //TODO: make configurable
+	RecursiveAligner().align( images, progress_align ); //TODO: make configurable
 	
-	ProgressWrapper( watcher ).loopAll( frames.size(), [&](int i){
+	progress_offset.loopAll( [&](int i){
 			FrameContainer current( container, frames[i] );
 			auto aligned_offset = base_point - current.minPoint();
 			current.offsetAll( aligned_offset + (images.pos(i) - images.minPoint()) );

@@ -47,16 +47,12 @@ ImageEx JpegConstrainerRender::render(const AContainer &group, AProcessWatcher *
 	//TODO: Check color types
 	
 	
-	ProgressWrapper( watcher ).setTotal( img.size() );
-	
-	
-	for( unsigned c=0; c<img.size(); ++c ){
-		//Constrain it to the Coeff
-		unsigned change=0;
-		img[c] = degrader.planes[c].degradeFromJpegPlane( img[c], jpeg.planes[c], change );
-		
-		ProgressWrapper( watcher ).add();
-	}
+	Progress progress( "JpegConstrainerRender", img.size(), watcher );
+	progress.loopAll( [&]( int c ){
+			//Constrain it to the Coeff
+			unsigned change=0;
+			img[c] = degrader.planes[c].degradeFromJpegPlane( img[c], jpeg.planes[c], change );
+		} );
 	
 	return img;
 }

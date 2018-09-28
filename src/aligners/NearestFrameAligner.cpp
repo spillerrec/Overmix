@@ -46,10 +46,9 @@ void NearestFrameAligner::align( class AContainer& container, class AProcessWatc
 	}
 	//TODO: If we make the comparator work with empty images, we wouldn't need this special case
 	
-	ProgressWrapper progress( watcher );
-	progress.setTotal( container.count() );
+	Progress progress( "NearestFrameAligner", container.count(), watcher );
 	for( unsigned i=0; i<container.count() && !progress.shouldCancel(); i++ ){
-		progress.setCurrent( i );
+		progress.add();
 		
 		//Skip already know frames
 		if( container.frame( i ) >= 0 )

@@ -44,11 +44,9 @@ void VideoImporter::import( ImageContainer &files, AProcessWatcher* watcher ){
 	VideoStream video( filepath );
 	video.seek( ui->offset_min->value()*60 + ui->offset_sec->value() );
 	
-	ProgressWrapper(watcher).setTotal( ui->frames_amount->value() );
-	for( int i=0; i<ui->frames_amount->value(); i++ ){
-		auto frame = video.getFrame();
-		files.addImage( frame.toImageEx() );
-		ProgressWrapper(watcher).add();
-	}
+	auto amount = ui->frames_amount->value();
+	Progress progress( "VideoImporter", amount, watcher, [&](int){
+			files.addImage( video.getFrame().toImageEx() );
+		});
 }
 

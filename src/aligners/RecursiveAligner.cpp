@@ -105,24 +105,24 @@ pair<ImageGetter,Point<double>> RecursiveAligner::combine( const AContainer& con
 }
 
 /** Internal implementation of align, supporting a recursive interface */
-ImageGetter RecursiveAligner::align( AContainer& container, AProcessWatcher* watcher, unsigned begin, unsigned end ) const{
+ImageGetter RecursiveAligner::align( AContainer& container, Progress& progress, unsigned begin, unsigned end ) const{
 	if( begin >= end )
 		throw invalid_argument( "Invalid image range" );
 	
 	auto amount = end - begin;
 	switch( amount ){
-		case 1: ProgressWrapper( watcher ).add( 1 );
+		case 1: progress.add( 1 );
 				return getGetter( container, begin ); //Just return this one
 		case 2: { //Optimization for two images
 				auto offset = combine( container, getGetter( container, begin ), getGetter( container, begin+1 ) );
 				container.setPos( begin+1, container.pos(begin) + offset.second );
-				ProgressWrapper( watcher ).add( 2 );
+				progress.add( 2 );
 				return std::move( offset.first );
 			}
 		default: { //More than two images
 				//Solve sub-areas recursively
 				unsigned middle = amount / 2 + begin;
-				auto offset = combine( container, align( container, watcher, begin, middle ), align( container, watcher, middle, end ) );
+				auto offset = combine( container, align( container, progress, begin, middle ), align( container, progress, middle, end ) );
 				
 				//Find top-left corner of first
 				auto corner1 = Point<double>( numeric_limits<double>::max(), numeric_limits<double>::max() );
@@ -146,8 +146,8 @@ void RecursiveAligner::align( AContainer& container, AProcessWatcher* watcher ) 
 	if( container.count() == 0 )
 		return;
 	
-	ProgressWrapper( watcher ).setTotal( container.count() );
-	align( container, watcher, 0, container.count() );
+	Progress progress( "RecursiveAligner", container.count(), watcher );
+	align( container, progress, 0, container.count() );
 	
 	auto scale = container.getComparator()->scale();
 	for( unsigned i=0; i<container.count(); i++ )

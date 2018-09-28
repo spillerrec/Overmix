@@ -45,8 +45,8 @@ class ProgressWatcher : public AProcessWatcher{
 		
 		virtual bool shouldCancel() const override{ return dialog.wasCanceled(); }
 		
-		std::unique_ptr<AProcessWatcher> makeSubtask( QString title ) override
-			{ return std::make_unique<ProgressWatcher>( dialog.parentWidget(), title ); } //TODO: Do something sensible
+		AProcessWatcher* makeSubtask( std::string title ) override
+			{ return this; } //TODO: Do something sensible
 };
 	
 }

@@ -25,13 +25,14 @@
 namespace Overmix{
 
 struct ImageGetter;
+class Progress;
 
 /** Aligns the container using a divide and conquer algorithm. Assumes that each image
   * overlaps the images right next to it. */
 class RecursiveAligner : public AAligner{
 	protected:
 		std::pair<ImageGetter,Point<double>> combine( const AContainer& container, const ImageGetter& first, const ImageGetter& second ) const;
-		ImageGetter align( AContainer& container, AProcessWatcher* watcher, unsigned begin, unsigned end ) const;
+		ImageGetter align( AContainer& container, Progress& progress, unsigned begin, unsigned end ) const;
 		
 		ImageGetter getGetter( const AContainer& container, unsigned index ) const;
 		

@@ -153,7 +153,7 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 		return ImageEx();
 	}
 	unsigned planes_amount = for_merging ? 1 : aligner.image(0).size();
-	ProgressWrapper( watcher ).setTotal( aligner.count() * planes_amount );
+	Progress progress( "AverageRender", aligner.count() * planes_amount, watcher );
 	
 	//Determine if we need to care about alpha per plane
 	bool use_plane_alpha = false;
@@ -180,6 +180,9 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 	auto min_point = aligner.minPoint();
 	auto full = aligner.size().size;
 	for( unsigned c=0; c<planes_amount; c++ ){
+		if( progress.shouldCancel() )
+			return {};
+		
 		//Determine local size
 		auto scale = upscale_chroma ? Point<double>(1,1)
 			: aligner.image( 0 )[c].getSize().to<double>() / aligner.image( 0 )[0].getSize().to<double>();
@@ -200,7 +203,7 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 			else
 				sum.addPlane( plane(), pos );
 			
-			ProgressWrapper( watcher ).add();
+			progress.add();
 		}
 		
 		auto scaled_plane = sum.average().scale_select( sum.alpha(), full, ScalingFunction::SCALE_MITCHELL ); //TODO: make adjustable

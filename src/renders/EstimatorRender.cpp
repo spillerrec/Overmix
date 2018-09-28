@@ -23,6 +23,7 @@
 #include "../containers/AContainer.hpp"
 #include "../utils/AProcessWatcher.hpp"
 
+#include <QString>
 
 using namespace std;
 using namespace Overmix;
@@ -135,19 +136,20 @@ void regularize( Plane& input, const Plane& copy, int p, double alpha, double be
 ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watcher) const {
 	auto planes_amount = group.image(0).size();
 	auto min_point = group.minPoint();
-	ProgressWrapper( watcher ).setTotal( planes_amount * iterations * group.count() );
+	auto progress_amount = planes_amount * iterations * group.count();
+	Progress progress( "EstimatorRender", progress_amount, watcher );
 	
 	auto est = AverageRender().render( group ); //Starting estimate
 	est.scaleFactor( upscale_factor );
 	auto beta = color::WHITE * this->beta / group.count();
 	for( unsigned c=0; c<planes_amount; ++c ){
 		for( int i=0; i<iterations; i++ ){
-			if( ProgressWrapper(watcher).shouldCancel() )
+			if( progress.shouldCancel() )
 				return {};
 			auto output_copy = est[c];
 			
 			//Improve estimate
-			for( unsigned j=0; j<group.count(); j++, ProgressWrapper( watcher ).add() )
+			for( unsigned j=0; j<group.count(); j++, progress.add() )
 				sign( output_copy, degrade( est[c], {group, j, c} ), group.image(j)[c], group.pos(j)-min_point
 					, beta, channelScale(group, j, c)*upscale_factor );
 			

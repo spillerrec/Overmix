@@ -59,7 +59,7 @@ JpegRender::JpegRender( QString path, int iterations ) : iterations(iterations)
 
 ImageEx JpegRender::render(const AContainer &group, AProcessWatcher *watcher) const {
 	auto planes_amount = 1u;//group.image(0).size();
-	ProgressWrapper( watcher ).setTotal( planes_amount * iterations * group.count() );
+	Progress progress( "JpegRender", planes_amount * iterations * group.count(), watcher );
 	
 	//Work on a copy of the images
 	ImageContainer imgs;
@@ -100,7 +100,7 @@ ImageEx JpegRender::render(const AContainer &group, AProcessWatcher *watcher) co
 		for( unsigned c=0; c<planes_amount; ++c ){
 			//Improve Jpeg image quality
 				unsigned change = 0;
-			for( unsigned j=0; j<imgs.count(); j++, ProgressWrapper( watcher ).add() ){
+			for( unsigned j=0; j<imgs.count(); j++, progress.add() ){
 				auto deg  = degrade(  est[c], {imgs, j, c} );
 				auto mask = degrade( diff[c], {imgs, j, c} );
 				auto lr = imgs.image(j)[c];

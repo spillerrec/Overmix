@@ -169,12 +169,10 @@ bool isSubpixel( const AContainer& aligner ){
 
 
 ImageEx FloatRender::render( const AContainer& aligner, AProcessWatcher* watcher ) const{
-	ProgressWrapper progress( watcher );
-	
 	//Fall back to AverageRender if no sub-pixel alignment
 	if( !isSubpixel( aligner ) ){
 		qDebug( "No subpixel, using AverageRender instead" );
-		ImageEx render = AverageRender().render( aligner );
+		ImageEx render = AverageRender().render( aligner, watcher );
 		if( scale != PointF( 1.0, 1.0 ) )
 			render.scale( (render.getSize() * scale).round() );
 		return render;
@@ -182,6 +180,8 @@ ImageEx FloatRender::render( const AContainer& aligner, AProcessWatcher* watcher
 	
 	//TODO: determine amount of planes!
 	unsigned planes_amount = 3; //TODO: alpha?
+	
+	MultiProgress progress( "FloatRender", planes_amount, watcher );
 	
 	//Do iterator
 	auto full = aligner.size();
@@ -193,11 +193,10 @@ ImageEx FloatRender::render( const AContainer& aligner, AProcessWatcher* watcher
 	alpha.fill( color::WHITE );
 	img.alpha_plane() = alpha;
 	
-	progress.setTotal( planes_amount*1000 );
-	
 	vector<PointRenderBase::ValuePos> points;
 	for( unsigned i=0; i<planes_amount; i++ ){
 		Plane out( full.size*scale );
+		auto plane_progress = progress.makeProgress( "Plane", out.get_height() );
 		
 		//Pre-calculate scales
 		vector<PointF> scales;
@@ -205,10 +204,6 @@ ImageEx FloatRender::render( const AContainer& aligner, AProcessWatcher* watcher
 			scales.emplace_back( aligner.image( j )[0].getSize().to<double>() / aligner.image( j )[i].getSize().to<double>() * scale );
 		
 		for( unsigned iy=0; iy<out.get_height(); ++iy ){
-			if( progress.shouldCancel() )
-				return ImageEx();
-			progress.setCurrent( i*1000 + (iy * 1000 / out.get_height() ) );
-			
 			auto row = out.scan_line( iy );
 			for( unsigned ix=0; ix<out.get_width(); ++ix ){
 				PointRender2 p( PointF( ix, iy ) + full.pos*scale/*, points*/ );
@@ -218,6 +213,10 @@ ImageEx FloatRender::render( const AContainer& aligner, AProcessWatcher* watcher
 				
 				row[ix] = p.value();
 			}
+			
+			plane_progress.add();
+			if( plane_progress.shouldCancel() )
+				return {};
 		}
 		
 		img.addPlane( std::move( out ) );

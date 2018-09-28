@@ -31,14 +31,12 @@ void AverageAligner::align( AContainer& container, AProcessWatcher* watcher ) co
 	if( container.count() <= 1 ) //If there is nothing to align
 		return;
 	
-	ProgressWrapper progress( watcher );
-	progress.setTotal( container.count() );
+	Progress progress( "AverageAligner", container.count()-1, watcher );
 	
 	SumPlane render;
 	render.addAlphaPlane( comparator->process( container.plane( 0 ) )(), comparator->processAlpha( container.alpha( 0 ) )(), {0,0} );
 	
 	for( unsigned i=1; i<container.count() && !progress.shouldCancel(); i++ ){
-		progress.setCurrent( i );
 		auto img   = comparator->process( container.plane( i ) );
 		auto alpha = comparator->processAlpha( container.alpha( i ) );
 		
@@ -46,6 +44,7 @@ void AverageAligner::align( AContainer& container, AProcessWatcher* watcher ) co
 		auto offset = comparator->findOffset( render.average(), img(), render.alpha(), alpha() ).distance;
 		container.setPos( i, container.minPoint() + offset/comparator->scale() );
 		render.addAlphaPlane( img(), alpha(), offset );
+		progress.add();
 	}
 }
 

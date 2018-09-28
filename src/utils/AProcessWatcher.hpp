@@ -18,9 +18,8 @@
 #ifndef A_PROCESS_WATCHER_HPP
 #define A_PROCESS_WATCHER_HPP
 
-#include <QString>
-
 #include <memory>
+#include <string>
 
 namespace Overmix{
 
@@ -32,7 +31,7 @@ class AProcessWatcher{
 		virtual int getCurrent() const = 0;
 		virtual bool shouldCancel() const = 0;
 		
- 		virtual std::unique_ptr<AProcessWatcher> makeSubtask( QString name ) = 0;
+ 		virtual AProcessWatcher* makeSubtask( std::string name ) = 0;
 		
 		void add( int amount=1 ){ setCurrent( getCurrent() + amount ); }
 		
@@ -46,19 +45,48 @@ class AProcessWatcher{
 		}
 };
 
-class ProgressWrapper : public AProcessWatcher{
+class Progress{
+	private:
+		AProcessWatcher* watcher;
+		int total;
+		
+	public:
+		template<typename Func>
+		void loopAll( Func f ){
+			for( int i=0; i<total && !shouldCancel(); i++, add() )
+				f( i );
+		}
+		
+		Progress( std::string title, int total, AProcessWatcher* watcher )
+			:	watcher(watcher), total(total)
+			{ if( watcher ) watcher->setTotal( total ); }
+		
+		template<typename Func>
+		Progress( std::string title, int total, AProcessWatcher* watcher, Func f )
+			:	Progress( title, total, watcher )
+			{ loopAll( f ); }
+		
+		void add( int amount=1 )      { if( watcher ) watcher->add( amount ); }
+		bool shouldCancel()     const { return watcher ? watcher->shouldCancel() : false; }
+		void setCurrent( int current ){ if( watcher ) watcher->setCurrent( current ); }
+		
+};
+
+class MultiProgress{
 	private:
 		AProcessWatcher* watcher;
 		
 	public:
-		ProgressWrapper( AProcessWatcher* watcher ) : watcher(watcher) { }
-		void setTotal  ( int total   ) override { if( watcher ) watcher->setTotal( total ); }
-		void setCurrent( int current ) override { if( watcher ) watcher->setCurrent( current ); }
-		int  getCurrent()       const  override { return watcher ? watcher->getCurrent() : 0; }
-		bool shouldCancel()     const  override { return watcher ? watcher->shouldCancel() : false; }
+		MultiProgress( std::string title, int progress_amount, AProcessWatcher* watcher )
+			:	watcher(watcher)
+			{
+			}
 		
-		std::unique_ptr<AProcessWatcher> makeSubtask( QString ) override
-			{ return std::make_unique<ProgressWrapper>( watcher ); }
+		AProcessWatcher* makeWatcher(){ return nullptr; };
+		Progress makeProgress( std::string title, int total )
+			{ return { title, total, makeWatcher() }; }
+			
+		bool shouldCancel() const { return watcher ? watcher->shouldCancel() : false; }
 };
 
 }

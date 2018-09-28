@@ -55,15 +55,15 @@ Plane PlaneRender::renderPlane( const AContainer& aligner, int plane, AProcessWa
 ImageEx PlaneRender::render( const AContainer& aligner, AProcessWatcher* watcher ) const{
 	unsigned planes_amount = aligner.image(0).size();
 	planes_amount = min( planes_amount, max_planes );
-	ProgressWrapper( watcher ).setTotal( 1000 * planes_amount );
+	MultiProgress progress( "PlaneRender", planes_amount, watcher );
 	
 	//Render all planes
 	auto color_space = aligner.image(0).getColorSpace();
 	ImageEx img( (planes_amount==1) ? color_space.changed( Transform::GRAY ) : color_space );
 	for( unsigned c=0; c<planes_amount; ++c ){
-		if( ProgressWrapper(watcher).shouldCancel() )
+		if( progress.shouldCancel() )
 			return {};
-		img.addPlane( renderPlane( aligner, c, watcher ) );
+		img.addPlane( renderPlane( aligner, c, progress.makeWatcher() ) );
 	}
 	return img;
 }

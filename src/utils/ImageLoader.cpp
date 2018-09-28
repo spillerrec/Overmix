@@ -34,10 +34,10 @@ using namespace Overmix;
 
 const vector<ImageLoader::Item>& ImageLoader::loadAll( AProcessWatcher* watcher ){
 	// Set-up watcher
-	ProgressWrapper(watcher).setTotal( images.size() );
+	Progress progress( "ImageLoader", images.size(), watcher );
 	QFutureWatcher<void> future_watcher;
 	QObject::connect( &future_watcher, &QFutureWatcher<void>::progressValueChanged
-		,	[&](int val){ ProgressWrapper(watcher).setCurrent( val ); } );
+		,	[&](int val){ progress.setCurrent( val ); } );
 	
 	// Start loading images
 	auto future = QtConcurrent::map( images, []( Item& item ){

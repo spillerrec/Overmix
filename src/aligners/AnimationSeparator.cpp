@@ -40,7 +40,7 @@ double AnimationSeparator::findError( AContainer& container, int index1, int ind
 }
 
 double AnimationSeparator::findThreshold( AContainer& container, AProcessWatcher* watcher ) const{
-	ProgressWrapper progress( watcher );
+	Progress progress( "Find threshold", container.count(), watcher );
 	vector<color_type> errors;
 	
 	for( unsigned i=0; i<container.count()-1 && !progress.shouldCancel(); ++i ){
@@ -85,12 +85,15 @@ double AnimationSeparator::findThreshold( AContainer& container, AProcessWatcher
 }
 
 void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher ) const{
-	ProgressWrapper progress( watcher );
-	progress.setTotal( container.count() * 2 );
 	if( container.count() == 0 )
 		return;
 	
-	double threshold = findThreshold( container, watcher ) * threshold_factor;
+	//TODO: Handle above return in AProcessWatcher?
+	MultiProgress progress( "AnimationSeparator", 2, watcher );
+	auto threshold_progress = progress.makeWatcher();
+	auto distribute_progress = progress.makeProgress( "Distribute frames", container.count() );
+	
+	double threshold = findThreshold( container, threshold_progress ) * threshold_factor;
 	
 	
 	//Init
@@ -98,7 +101,7 @@ void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher 
 	for( unsigned i=0; i<container.count(); i++ )
 		backlog.push_back( i );
 	
-	for( int iteration=0; !progress.shouldCancel(); iteration++ ){
+	for( int iteration=0; !distribute_progress.shouldCancel(); iteration++ ){
 		std::vector<unsigned> indexes;
 		
 		for( int& index : backlog )
@@ -107,11 +110,11 @@ void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher 
 					indexes.push_back( index );
 					container.setFrame( index, iteration );
 					index = -1;
-					progress.add();
+					distribute_progress.add();
 				}
 		
 		//Stop if no images
-		if( indexes.size() == 0 || progress.shouldCancel() )
+		if( indexes.size() == 0 )
 			break;
 		
 		qDebug() << "Frame" << iteration+1 << "contains" << indexes.size() << "images";
