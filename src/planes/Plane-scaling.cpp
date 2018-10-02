@@ -213,32 +213,30 @@ Plane Plane::scale_generic_alpha( const Plane& alpha, Point<unsigned> wanted, do
 	
 	#pragma omp parallel for
 	for( unsigned iy=0; iy<wanted.height(); ++iy ){
-		color_type *out   = scaled.scan_line( iy ).begin();
+		auto out = scaled[iy].begin();
 		ScalePoint ver( iy, get_height(), scaled.get_height(), offset.y, window, f );
 		
 		for( auto& x : points ){
-			double avg = 0;
-			auto row   =       scan_line( ver.start ).begin() + x.start;
-			auto row_a = alpha.scan_line( ver.start ).begin() + x.start;
+			double sum    = 0;
+			double amount = 0;
+			auto row   = (*this)[ver.start].begin() + x.start;
+			auto row_a = alpha  [ver.start].begin() + x.start;
 			
 			for( auto wy : ver.weights ){
-				double alpha_avg = 0;
 				auto row2   = row  ;
 				auto row2_a = row_a;
 				
-				double local_avg = 0;
 				for( auto wx : x.weights ){
-					auto alpha = color::asDouble(*(row2_a++)) * wx;
-					local_avg += *(row2++) * alpha;
-					alpha_avg += alpha;
+					auto alpha = color::asDouble(*(row2_a++)) * wx * wy;
+					sum    += *(row2++) * alpha;
+					amount += alpha;
 				}
-				avg += local_avg / alpha_avg * wy;
-				//TODO: How is the total average affected by this
 				
-				row += get_line_width();
+				row   +=       get_line_width();
+				row_a += alpha.get_line_width();
 			}
 			
-			*(out++) = color::truncate( avg + 0.5 );
+			*(out++) = color::truncate( sum / amount + 0.5 );
 		}
 	}
 	
