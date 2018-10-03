@@ -211,3 +211,9 @@ void ImageContainer::setFrame( unsigned index, int newVal ){
 	groups.at(pos.group).setFrame( pos.index, newVal );
 }
 
+const AComparator* ImageContainer::getComparator() const{
+	if( !comparator )
+		throw std::runtime_error( "ImageContainer::getComparator - No comparator!" );
+	return comparator.get();
+}
+

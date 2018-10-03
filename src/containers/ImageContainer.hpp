@@ -104,7 +104,7 @@ class ImageContainer : public AContainer{
 		virtual       void      setFrame( unsigned index, int newVal ) override;
 		
 	public: //AContainer comparators implementation
-		const AComparator* getComparator() const override{ return comparator.get(); }
+		const AComparator* getComparator() const override;
 		virtual bool        hasCachedOffset( unsigned, unsigned ) const override;
 		virtual ImageOffset getCachedOffset( unsigned, unsigned ) const override;
 		virtual void        setCachedOffset( unsigned, unsigned, ImageOffset ) override;
