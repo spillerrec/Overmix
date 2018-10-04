@@ -621,8 +621,8 @@ void main_widget::openOnlineHelp(){
 AContainer& main_widget::getAlignedImages(){
 	ExceptionCatcher::Guard( this, [&](){
 		switch( selection_type ){
-			case 1: selection = std::make_unique<DelegatedContainer>( images.getGroup( selection_value ) );
-			case 2: selection = std::make_unique<FrameContainer>( images, images.getFrames().at(selection_value) );
+			case 1: selection = std::make_unique<DelegatedContainer>( images.getGroup( selection_value ) ); break;
+			case 2: selection = std::make_unique<FrameContainer>( images, images.getFrames().at(selection_value) ); break;
 		}
 	} );
 	return selection ? *selection : images;
