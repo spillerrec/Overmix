@@ -17,7 +17,7 @@ ExceptionCatcher::ExceptionCatcher( QWidget* parent )
 	connect( ui->btn_report, SIGNAL(clicked(bool)), this, SLOT(report()) );
 	
 	auto sysinfo = QSysInfo::prettyProductName() + "\n";
-	//TODO: Overmix version
+	sysinfo += QString( OVERMIX_VERSION_STRING ) + "\n";
 	//TODO: Amount of RAM
 	
 	ui->system_text->setPlainText( sysinfo );

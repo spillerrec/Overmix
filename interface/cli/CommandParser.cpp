@@ -37,7 +37,8 @@ using namespace Overmix;
 static void printHelp( QString type ){
 	QTextStream std( stdout );
 	
-	std << "OvermixCli [files]... [--command=arguments]...\n\n";
+	std << "OvermixCli [files]... [--command=arguments]...\n";
+	std << "Version " << OVERMIX_VERSION_STRING << "\n\n";
 	
 	
 	if( type.isEmpty() ){
