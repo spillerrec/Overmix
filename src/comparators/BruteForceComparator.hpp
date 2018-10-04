@@ -30,6 +30,9 @@ class BruteForceComparator : public SimpleComparatorBase{
 		double movement{ 0.75 };
 		
 	public:
+		BruteForceComparator() {}
+		BruteForceComparator( Difference::SimpleSettings settings, AlignMethod method, double movement )
+			:	SimpleComparatorBase(settings), method(method), movement(movement) { }
 		ImageOffset findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ) const override;
 };
 

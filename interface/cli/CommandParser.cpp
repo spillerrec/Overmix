@@ -43,6 +43,7 @@ static void printHelp( QString type ){
 	if( type.isEmpty() ){
 		std << "Available commands:\n";
 		std << "\t" << "--pre-process\n";
+		std << "\t" << "--comparator\n";
 		std << "\t" << "--align\n";
 		std << "\t" << "--render\n";
 		std << "\t" << "--post-process\n";
@@ -67,6 +68,8 @@ static void printHelp( QString type ){
 		}
 		else if( type == "align" )
 			alignerHelpText( std );
+		else if( type == "comparator" )
+			comparatorHelpText( std );
 		else if( type == "render" )
 			renderHelpText( std );
 		else if( type == "save" ){
@@ -121,6 +124,9 @@ void CommandParser::parse( QStringList commands ){
 			convert( cmd.arguments(), id, arguments );
 			
 			processingParser( arguments )->process( renders[requireBound( id, 0, renders.size() )] );
+		}
+		else if( cmd.is( "comparator" ) ){
+			comparatorParser( cmd.arguments(), images );
 		}
 		else if( cmd.is( "align" ) ){
 			alignerParser( cmd.arguments(), images );

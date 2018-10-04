@@ -34,6 +34,15 @@ class GradientComparator : public SimpleComparatorBase{
 		color_type max_difference = 0.10*color::WHITE; //Difference must not be above this to match
 		
 	public:
+		GradientComparator() { };
+		GradientComparator( Difference::SimpleSettings settings
+			,	AlignMethod method, double movement
+			,	int start_level, int max_level, color_type max_difference
+			)
+			:	SimpleComparatorBase(settings), method(method), movement(movement)
+			,	start_level(start_level), max_level(max_level), max_difference(max_difference)
+			{ }
+		
 		ImageOffset findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ) const override;
 };
 

@@ -77,8 +77,10 @@ T getEnum( QString str, std::vector<std::pair<const char*, T>> cases ){
 	throw std::invalid_argument( fromQString("Unknown enum value: '" + str + "'") );
 }
 
-inline void convert( QString str, double& val ) { val = asDouble(str); }
-inline void convert( QString str, int& val ) { val = asInt(str); }
+inline void convert( QString str, double&    val ) { val = asDouble(str); }
+inline void convert( QString str, int&       val ) { val = asInt(str); }
+inline void convert( QString str, unsigned&  val ) { val = asInt(str); }
+inline void convert( QString str, short int& val ) { val = asInt(str); }
 inline void convert( QString str_in, QString& str_out ) { str_out = str_in; }
 
 inline void convert( QString str, bool& value ){
@@ -122,10 +124,20 @@ template<typename Output, typename Tuple, std::size_t... I>
 std::unique_ptr<Output> uniqueFromTuple( Tuple& tuple, std::index_sequence<I...> )
 	{ return std::make_unique<Output>( std::get<I>(tuple)... ); }
 
+template<typename Output, typename Tuple, std::size_t... I>
+Output constructFromTuple( Tuple& tuple, std::index_sequence<I...> )
+	{ return Output( std::get<I>(tuple)... ); }
+
 template<typename Output, typename... Args>
 std::unique_ptr<Output> convertUnique( QString parameters ){
 	auto args = convertTuple<Args...>( parameters );
 	return uniqueFromTuple<Output>( args, std::index_sequence_for<Args...>{} );
+}
+
+template<typename Output, typename... Args>
+Output convertConstruct( QString parameters ){
+	auto args = convertTuple<Args...>( parameters );
+	return constructFromTuple<Output>( args, std::index_sequence_for<Args...>{} );
 }
 
 }

@@ -32,6 +32,8 @@ namespace Overmix{ namespace Difference{
 		color_type epsilon; ///Ignore differences below this level
 		
 		SimpleSettings() : stride(1), use_l2(false), epsilon(0) { }
+		SimpleSettings(unsigned stride, bool use_l2, color_type epsilon)
+			:	stride(stride), use_l2(use_l2), epsilon(epsilon) { }
 	};
 	
 	double simple(      const Plane& p1, const Plane& p2,                                           Point<int> offset, SimpleSettings s={} );

@@ -25,12 +25,15 @@ namespace Overmix{
 
 class ImageEx;
 class AContainer;
+class ImageContainer;
 
-ImageEx renderParser( QString parameters, const AContainer& container );
-void   alignerParser( QString parameters,       AContainer& container );
+ImageEx  renderParser( QString parameters, const AContainer& container );
+void    alignerParser( QString parameters,       AContainer& container );
+void comparatorParser( QString parameters,   ImageContainer& container );
 
-void renderHelpText( QTextStream& std );
-void alignerHelpText( QTextStream& std );
+void     renderHelpText( QTextStream& std );
+void    alignerHelpText( QTextStream& std );
+void comparatorHelpText( QTextStream& std );
 
 }
 
