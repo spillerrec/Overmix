@@ -54,7 +54,7 @@ class FrameContainer : public AContainer{
 					indexes.push_back( i );
 		}
 		
-		unsigned realIndex( unsigned index ) const{ return indexes[index]; }
+		unsigned realIndex( unsigned index ) const{ return indexes.at(index); }
 };
 
 }

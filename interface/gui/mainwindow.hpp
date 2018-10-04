@@ -85,6 +85,10 @@ class main_widget: public QMainWindow{
 		ImagesModel img_model;
 		MaskModel mask_model;
 		
+		//TODO: Temporary, should be fixed properly
+		int selection_type = 0;
+		int selection_value = 0;
+		
 		void clear_cache();
 		
 		

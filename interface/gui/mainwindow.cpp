@@ -619,6 +619,12 @@ void main_widget::openOnlineHelp(){
 }
 
 AContainer& main_widget::getAlignedImages(){
+	ExceptionCatcher::Guard( this, [&](){
+		switch( selection_type ){
+			case 1: selection = std::make_unique<DelegatedContainer>( images.getGroup( selection_value ) );
+			case 2: selection = std::make_unique<FrameContainer>( images, images.getFrames().at(selection_value) );
+		}
+	} );
 	return selection ? *selection : images;
 }
 
@@ -634,33 +640,31 @@ void main_widget::applyModifications(){
 }
 
 void main_widget::updateSelection(){
-	auto getIndex = [&]( QString title, QString label, int max_value, auto on_accept ){
+	auto getIndex = [&]( QString title, QString label, int max_value ){
 			bool ok = false;
 			auto result = QInputDialog::getInt( this, title, label, 1, 1, max_value, 1, &ok );
 			if( ok )
-				on_accept( result - 1 );
+				selection_value = result - 1;
 		};
 	
 	ExceptionCatcher::Guard( this, [&](){
-		switch( ui->selection_selector->currentIndex() ){
+		selection_type = ui->selection_selector->currentIndex();
+		switch( selection_type ){
 			case 1:
-					getIndex( tr( "Select group" ), tr( "Select the group number" ), images.groupAmount()
-						, [&]( int index ){
-							selection = std::make_unique<DelegatedContainer>( images.getGroup( index ) );
-						} );
+					getIndex( tr( "Select group" ), tr( "Select the group number" ), images.groupAmount() );
 				break;
 			case 2: { //Select frame
 					auto frames = images.getFrames();
-					getIndex( tr( "Select frame" ), tr( "Select the frame number" ), frames.size()
-						, [&]( int index ){
-							selection = std::make_unique<FrameContainer>( images, frames[index] );
-						} );
+					getIndex( tr( "Select frame" ), tr( "Select the frame number" ), frames.size() );
 				} break;
 				
 			case 3: QMessageBox::warning( this, tr("Not implemented"), tr("Custom selection not yet implemented") );
 				//TODO: implement this obviously
 			case 0:
-			default: selection = nullptr; break;
+			default:
+					selection_type = 0;
+					selection = nullptr;
+				break;
 		}
 	} );
 	
