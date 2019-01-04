@@ -18,6 +18,7 @@
 #ifndef VIDEO_IMPORTER_HPP
 #define VIDEO_IMPORTER_HPP
 
+#include "VideoPreviewModel.hpp"
 #include <QDialog>
 
 class Ui_Dialog;
@@ -33,6 +34,7 @@ class VideoImporter : public QDialog{
 	private:
 		Ui_Dialog *ui;
 		QString filepath;
+		VideoPreviewModel model;
 		
 		
 	public:
@@ -40,6 +42,9 @@ class VideoImporter : public QDialog{
 		
 		static bool supportedFile( QString filename );
 		void import( ImageContainer &files, AProcessWatcher* watcher=nullptr );
+		
+	public slots:
+		void refresh();
 };
 
 }

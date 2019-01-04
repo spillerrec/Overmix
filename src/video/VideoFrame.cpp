@@ -185,3 +185,11 @@ ImageEx VideoFrame::toImageEx(){
 	return out;
 }
 
+#include <QImage>
+QImage VideoFrame::toPreview( int max_size ){
+	return toImageEx().to_qimage()
+			.scaled( max_size, max_size, Qt::KeepAspectRatio, Qt::SmoothTransformation)
+		;
+	//TODO: More efficient implementation
+}
+

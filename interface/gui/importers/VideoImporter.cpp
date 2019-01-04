@@ -28,9 +28,11 @@
 using namespace Overmix;
 
 VideoImporter::VideoImporter( QString filepath, QWidget* parent )
-	:	QDialog( parent ), ui( new Ui_Dialog ), filepath( filepath )
+	:	QDialog( parent ), ui( new Ui_Dialog ), filepath( filepath ), model( this )
 	{
 	ui->setupUi( this );
+	ui->preview_view->setModel( &model );
+	connect( ui->refresh, SIGNAL( clicked() ), this, SLOT( refresh() ) );
 }
 
 
@@ -48,5 +50,12 @@ void VideoImporter::import( ImageContainer &files, AProcessWatcher* watcher ){
 	Progress progress( "VideoImporter", amount, watcher, [&](int){
 			files.addImage( video.getFrame().toImageEx() );
 		});
+}
+
+void VideoImporter::refresh(){
+	model.setVideo( filepath
+		,	ui->offset_min->value()*60 + ui->offset_sec->value()
+		,	ui->frames_amount->value()
+		);
 }
 

@@ -25,6 +25,7 @@ set(SOURCE_GUI
 	gui/FullscreenViewer.cpp
 	gui/AlignMethodSelector.cpp
 	gui/importers/VideoImporter.cpp
+	gui/importers/VideoPreviewModel.cpp
 	)
 
 set(SOURCE_GUI_CONFIGS

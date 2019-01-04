@@ -20,6 +20,7 @@
 
 struct AVFrame;
 struct AVCodecContext;
+class QImage;
 
 namespace Overmix{
 
@@ -37,6 +38,7 @@ class VideoFrame{
 		~VideoFrame();
 		
 		ImageEx toImageEx();
+		QImage toPreview( int max_size );
 		
 		operator AVFrame*(){ return frame; }
 		
