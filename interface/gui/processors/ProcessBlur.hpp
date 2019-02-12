@@ -24,14 +24,14 @@ class QComboBox;
 
 namespace Overmix{
 
-struct Spinbox2D;
+struct DoubleSpinbox2D;
 
 class ProcessBlur : public AProcessor{
 	Q_OBJECT
 	
 	private:
 		QComboBox* method;
-		Spinbox2D* amount;
+		DoubleSpinbox2D* amount;
 	
 	public:
 		ProcessBlur( QWidget* parent );

@@ -47,8 +47,9 @@ void VideoImporter::import( ImageContainer &files, AProcessWatcher* watcher ){
 	video.seek( ui->offset_min->value()*60 + ui->offset_sec->value() );
 	
 	auto amount = ui->frames_amount->value();
-	Progress progress( "VideoImporter", amount, watcher, [&](int){
-			files.addImage( video.getFrame().toImageEx() );
+	Progress progress( "VideoImporter", amount, watcher, [&](int id){
+			auto name = "video_" + QString::number(id).rightJustified(4, '0');
+			files.addImage( video.getFrame().toImageEx(), -1, -1, name );
 		});
 }
 

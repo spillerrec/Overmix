@@ -26,11 +26,14 @@ using namespace Overmix;
 
 ProcessBlur::ProcessBlur( QWidget* parent ) : AProcessor( parent ){
 	method = newItem<QComboBox>( "Method" );
-	amount = newItem<Spinbox2D>( "Size"  );
+	amount = newItem<DoubleSpinbox2D>( "Size"  );
 	
 	//Configure
 	method->addItem( "Box" );
 	method->addItem( "Gaussian" );
+	
+	amount->setSingleStep( 0.250 );
+	amount->call( &QDoubleSpinBox::setDecimals, 2 );
 }
 
 QString ProcessBlur::name() const{ return "Blur"; }
