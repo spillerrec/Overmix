@@ -39,6 +39,5 @@ ImageEx ProcessWaifu::process( const ImageEx& input ) const{
 	auto scale   = scale_amount ->value();
 	auto denoise = denoise_level->value();
 	
-//	return Waifu( scale, denoise, "/usr/share/waifu2x-converter-cpp/" ).process( input );
-	return Waifu( scale, denoise, "models_rgb/" ).process( input );
+	return Waifu( scale, denoise, nullptr ).process( input );
 }

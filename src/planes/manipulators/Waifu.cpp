@@ -45,7 +45,7 @@ class WaifuBuffer{
 		unsigned stride() const
 			{ return components; }
 		unsigned bytesPerLine() const
-			{ return stride() * size.width() * 4; }
+			{ return stride() * size.width() * sizeof(float); }
 		unsigned char* getData()
 			{ return (unsigned char*)buf.get(); }
 		Size<unsigned> getSize() const{ return size; }
@@ -83,10 +83,16 @@ static Plane writePlane( WaifuBuffer& buffer, int offset ){
 Waifu::Waifu( double scale, int denoise, const char* model_dir )
 	:	scale(scale), denoise(denoise)
 {
-	auto conv = w2xconv_init( W2XCONV_GPU_AUTO, 0, false );
-	if( w2xconv_load_models( conv, model_dir ) < 0 )
+	conv = w2xconv_init( W2XCONV_GPU_AUTO, 0, true );
+	if( !conv )
+		throw std::runtime_error( "Waifu (w2xconv) could not be initialized" );
+	
+	auto local_dir = model_dir;
+	if( !local_dir )
+		local_dir = WAIFU_MODEL_DIR;
+	
+	if( w2xconv_load_models( conv, local_dir ) < 0 )
 		throw std::runtime_error( "Could not load Waifu2x models" );
-	//TODO: Handle failures
 }
 
 Waifu::~Waifu(){
