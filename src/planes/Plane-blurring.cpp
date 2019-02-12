@@ -210,8 +210,7 @@ Kernel Plane::gaussian_kernel( double deviation_x, double deviation_y ) const{
 }
 
 Plane Plane::blur_gaussian( double amount_x, double amount_y ) const{
-	const double scaling = 0.33/2; //TODO: pixel to deviation
-	auto kernel = gaussian_kernel( amount_x*scaling, amount_y*scaling );
+	auto kernel = gaussian_kernel( amount_x, amount_y );
 	return weighted_sum( kernel );
 }
 
