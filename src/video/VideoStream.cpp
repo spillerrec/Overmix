@@ -149,7 +149,7 @@ VideoFrame VideoStream::getFrame(){
 		//	if( avcodec_decode_video2( codec_context, frame, &frame_done, packet ) < 0 )
 		//		throw std::runtime_error( "Error while decoding frame" );
 		//	if( frame_done )
-				return std::move( frame );
+				return frame;
 		}
 	}
 	

@@ -30,7 +30,7 @@ class QSpinBox;
 
 namespace Overmix{
 
-class DoubleSpinbox2D;
+struct DoubleSpinbox2D;
 class AContainer;
 
 class SkipRenderPreview : public QDialog{

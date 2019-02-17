@@ -27,7 +27,7 @@ namespace Overmix{
 
 class ImageEx;
 template<typename T>
-class Point;
+struct Point;
 
 class AProcessor : public QGroupBox{
 	Q_OBJECT
