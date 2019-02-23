@@ -307,7 +307,7 @@ ImageEx Overmix::deVlcImage( const ImageEx& img ){
 
 ImageEx ImageEx::deconvolve_rl( Point<double> amount, unsigned iterations ) const{
 	auto creep = ImageEx::fromFile( "creep.png" ); //TODO: Get as input
-	auto get_creep = [&]( int c ){ return creep.is_valid() ? &creep.planes[0].p : nullptr; };
+	auto get_creep = [&]( int c ){ return creep.is_valid() ? &creep.planes[c].p : nullptr; };
 	
 	auto out( *this );
 	if( color_space.isYCbCr() )

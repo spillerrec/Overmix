@@ -77,6 +77,7 @@ class PointRenderBase{
 		
 	public:
 		PointRenderBase( Point<> pos ) : pos(pos) { }
+		virtual ~PointRenderBase() = default;
 		
 		void add_points( const Plane& img, Point<double> offset, Point<double> scale ){
 			auto relative = toQRectF( offset, scale*img.getSize() );
@@ -181,7 +182,7 @@ ImageEx FloatRender::render( const AContainer& aligner, AProcessWatcher* watcher
 	//TODO: determine amount of planes!
 	unsigned planes_amount = 3; //TODO: alpha?
 	
-	MultiProgress progress( "FloatRender", planes_amount, watcher );
+	Progress progress( "FloatRender", planes_amount, watcher );
 	
 	//Do iterator
 	auto full = aligner.size();

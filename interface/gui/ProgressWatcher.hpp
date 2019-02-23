@@ -35,17 +35,21 @@ class ProgressWatcher : public AProcessWatcher{
 			dialog.setMinimum( 0 );
 			dialog.setValue( 0 );
 		}
-		virtual void setTotal( int total ) override{
+		
+		void setTitle( std::string /*title*/ ) override {
+			//TODO:
+		}
+		void setTotal( int total ) override{
 			dialog.setMaximum( total );
 		}
-		virtual void setCurrent( int current ) override{
+		void setCurrent( int current ) override{
 			dialog.setValue( current );
 		}
-		virtual int getCurrent() const override{ return dialog.value(); }
+		int getCurrent() const override{ return dialog.value(); }
 		
-		virtual bool shouldCancel() const override{ return dialog.wasCanceled(); }
+		bool shouldCancel() const override{ return dialog.wasCanceled(); }
 		
-		AProcessWatcher* makeSubtask( std::string title ) override
+		AProcessWatcher* makeSubtask() override
 			{ return this; } //TODO: Do something sensible
 };
 	

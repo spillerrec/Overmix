@@ -28,11 +28,6 @@
 using namespace std;
 using namespace Overmix;
 
-static Plane save( Plane p, QString name ){
-//	ImageEx( p ).to_qimage( ImageEx::SYSTEM_KEEP ).save( name + ".png" );
-	return p;
-}
-
 Point<double> channelScale( const AContainer& container, unsigned index, unsigned channel ){
 	return container.image(index)[channel].getSize() / container.image(index).getSize().to<double>();
 }
@@ -142,7 +137,7 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 	auto est = AverageRender().render( group ); //Starting estimate
 	est.scaleFactor( upscale_factor );
 	auto beta = color::WHITE * this->beta / group.count();
-	for( unsigned c=0; c<planes_amount; ++c ){
+	for( unsigned c=0; c<planes_amount; ++c )
 		for( int i=0; i<iterations; i++ ){
 			if( progress.shouldCancel() )
 				return {};
@@ -159,13 +154,6 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 			else
 				est[c] = output_copy;
 		}
-		
-		//DEBUG: See how close our model gets to the input data
-		for( unsigned j=0; j<group.count(); j++ ){
-			save( degrade( est[c], {group, j, c} ), "deg" + QString::number(c) + "-" + QString::number(j) );
-			save( group.image(j)[c],                "low" + QString::number(c) + "-" + QString::number(j) );
-		}
-	}
 
 	return est;
 }

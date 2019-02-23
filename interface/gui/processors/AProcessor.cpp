@@ -46,9 +46,9 @@ AProcessor::AProcessor( QWidget* parent ) : QGroupBox(parent) {
 		btn->resize( size_hint.height(), size_hint.height() );
 	};
 	
-	addButton( "▲", [=]( bool a ){ emit moveUp(  this); } );
-	addButton( "▼", [=]( bool a ){ emit moveDown(this); } );
-	addButton( "X", [=]( bool a ){ emit closed(  this); } );
+	addButton( "▲", [=]( bool ){ emit moveUp(  this); } );
+	addButton( "▼", [=]( bool ){ emit moveDown(this); } );
+	addButton( "X", [=]( bool ){ emit closed(  this); } );
 }
 
 Point<double> AProcessor::modifyOffset( Point<double> in ) const

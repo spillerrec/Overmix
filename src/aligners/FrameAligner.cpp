@@ -29,9 +29,9 @@ void FrameAligner::align( class AContainer& container, class AProcessWatcher* wa
 	auto frames = container.getFrames();
 	auto base_point = container.minPoint();
 	
-	MultiProgress progress( "FrameAligner", 3, watcher );
+	Progress progress( "FrameAligner", 3, watcher );
 	auto progress_render = progress.makeProgress( "Render frames", frames.size() );
-	auto progress_align = progress.makeWatcher();
+	auto progress_align = progress.makeSubtask();
 	auto progress_offset = progress.makeProgress( "Offset frames", frames.size() );
 	
 	ImageContainer images;

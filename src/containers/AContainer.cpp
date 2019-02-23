@@ -30,8 +30,12 @@ const Plane& AContainer::alpha( unsigned index ) const{
 	return image( index ).alpha_plane();
 }
 
-const Plane& AContainer::mask( unsigned index ) const
+const Plane& AContainer::mask( unsigned ) const
 	{ throw std::logic_error( "AContainer::mask not defined for this container type!" ); }
+	
+
+int AContainer::imageMask( unsigned ) const
+	{ throw std::logic_error( "AContainer::imageMaskmask not defined for this container type!" ); }
 
 const Plane& AContainer::plane( unsigned index ) const{
 	auto& img = image( index );

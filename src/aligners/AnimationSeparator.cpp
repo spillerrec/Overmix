@@ -89,8 +89,8 @@ void AnimationSeparator::align( AContainer& container, AProcessWatcher* watcher 
 		return;
 	
 	//TODO: Handle above return in AProcessWatcher?
-	MultiProgress progress( "AnimationSeparator", 2, watcher );
-	auto threshold_progress = progress.makeWatcher();
+	Progress progress( "AnimationSeparator", 2, watcher );
+	auto threshold_progress = progress.makeSubtask();
 	auto distribute_progress = progress.makeProgress( "Distribute frames", container.count() );
 	
 	double threshold = findThreshold( container, threshold_progress ) * threshold_factor;

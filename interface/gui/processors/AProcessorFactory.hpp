@@ -45,7 +45,7 @@ class AProcessorFactory{
 	public:
 		AProcessorFactory();
 		
-		const char* const name( int index ) const;
+		const char* name( int index ) const;
 		std::unique_ptr<AProcessor> create( int index, QWidget* parent ) const;
 		int amount() const{ return factory.size(); }
 };

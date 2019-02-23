@@ -58,7 +58,7 @@ int VideoPreviewModel::columnCount( const QModelIndex& ) const
 	
 QVariant VideoPreviewModel::data( const QModelIndex& index, int role ) const {
 	int pos = index.row()*columnCount(index) + index.column();
-	if( !index.isValid() || pos < 0 || pos >= previews.size() )
+	if( !index.isValid() || pos < 0 || (unsigned)pos >= previews.size() )
 		return QVariant();
 	
 	return previews.at( pos ).img;

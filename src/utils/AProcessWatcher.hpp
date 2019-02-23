@@ -20,18 +20,20 @@
 
 #include <memory>
 #include <string>
+#include <array>
 
 namespace Overmix{
 
 class AProcessWatcher{
 	public:
 		virtual ~AProcessWatcher() { }
+		virtual void setTitle( std::string title ) = 0;
 		virtual void setTotal( int total ) = 0;
 		virtual void setCurrent( int current ) = 0;
 		virtual int getCurrent() const = 0;
 		virtual bool shouldCancel() const = 0;
 		
- 		virtual AProcessWatcher* makeSubtask( std::string name ) = 0;
+ 		virtual AProcessWatcher* makeSubtask() = 0;
 		
 		void add( int amount=1 ){ setCurrent( getCurrent() + amount ); }
 		
@@ -59,7 +61,12 @@ class Progress{
 		
 		Progress( std::string title, int total, AProcessWatcher* watcher )
 			:	watcher(watcher), total(total)
-			{ if( watcher ) watcher->setTotal( total ); }
+			{
+				if( watcher ){
+					watcher->setTotal( total );
+					watcher->setTitle( std::move(title) );
+				}
+			}
 		
 		template<typename Func>
 		Progress( std::string title, int total, AProcessWatcher* watcher, Func f )
@@ -70,23 +77,17 @@ class Progress{
 		bool shouldCancel()     const { return watcher ? watcher->shouldCancel() : false; }
 		void setCurrent( int current ){ if( watcher ) watcher->setCurrent( current ); }
 		
-};
-
-class MultiProgress{
-	private:
-		AProcessWatcher* watcher;
+		template<size_t count>
+		std::array<Progress, count> makeSubtasks( std::array<std::string, count> names ){
+			std::array<Progress, count> progresses;
+			for( size_t i=0; i<count; i++ )
+				progresses[i] = Progress( std::move( names[i] ) );
+			return progresses;
+		}
 		
-	public:
-		MultiProgress( std::string title, int progress_amount, AProcessWatcher* watcher )
-			:	watcher(watcher)
-			{
-			}
-		
-		AProcessWatcher* makeWatcher(){ return nullptr; };
+		AProcessWatcher* makeSubtask(){ return watcher ? makeSubtask() : nullptr; };
 		Progress makeProgress( std::string title, int total )
-			{ return { title, total, makeWatcher() }; }
-			
-		bool shouldCancel() const { return watcher ? watcher->shouldCancel() : false; }
+			{ return { title, total, makeSubtask() }; }
 };
 
 }

@@ -24,8 +24,6 @@ namespace Overmix{
 
 class PorterDuff{
 	private:
-		const Plane& source_alpha;
-		const Plane& destination_alpha;
 		PlaneBase<double> a_src;
 		PlaneBase<double> a_dest;
 		PlaneBase<double> a_both;

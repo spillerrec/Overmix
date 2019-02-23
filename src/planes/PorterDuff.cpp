@@ -25,8 +25,7 @@
 using namespace Overmix;
 
 PorterDuff::PorterDuff( const Plane& source_alpha, const Plane& destination_alpha )
-	:	source_alpha(source_alpha), destination_alpha(destination_alpha)
-	,	a_src( source_alpha.getSize() ), a_dest( source_alpha.getSize() ), a_both( source_alpha.getSize() )
+	:	a_src( source_alpha.getSize() ), a_dest( source_alpha.getSize() ), a_both( source_alpha.getSize() )
 	,	zero( source_alpha.getSize() ), ones( source_alpha.getSize() )
 {
 	assert( source_alpha.getSize() == destination_alpha.getSize() );

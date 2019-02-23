@@ -58,7 +58,7 @@ AProcessorFactory::AProcessorFactory(){
 }
 
 
-const char* const AProcessorFactory::name( int index ) const{
+const char* AProcessorFactory::name( int index ) const{
 	return factory.at(index).name;
 }
 

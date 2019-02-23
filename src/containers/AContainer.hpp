@@ -59,7 +59,7 @@ class AContainer{
 		virtual const ImageEx& image(     unsigned index ) const = 0;
 		virtual       ImageEx& imageRef(  unsigned index )       = 0;
 		virtual const Plane&   alpha(     unsigned index ) const = 0;
-		virtual       int      imageMask( unsigned index ) const{ return -1; }
+		virtual       int      imageMask( unsigned index ) const;
 		virtual Point<double>  pos(       unsigned index ) const = 0;
 		virtual       void     setPos(    unsigned index, Point<double> newVal ) = 0;
 		virtual       int      frame(     unsigned index ) const = 0;

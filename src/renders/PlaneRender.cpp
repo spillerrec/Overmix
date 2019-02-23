@@ -55,7 +55,7 @@ Plane PlaneRender::renderPlane( const AContainer& aligner, int plane, AProcessWa
 ImageEx PlaneRender::render( const AContainer& aligner, AProcessWatcher* watcher ) const{
 	unsigned planes_amount = aligner.image(0).size();
 	planes_amount = min( planes_amount, max_planes );
-	MultiProgress progress( "PlaneRender", planes_amount, watcher );
+	Progress progress( "PlaneRender", planes_amount, watcher );
 	
 	//Render all planes
 	auto color_space = aligner.image(0).getColorSpace();
@@ -63,7 +63,7 @@ ImageEx PlaneRender::render( const AContainer& aligner, AProcessWatcher* watcher
 	for( unsigned c=0; c<planes_amount; ++c ){
 		if( progress.shouldCancel() )
 			return {};
-		img.addPlane( renderPlane( aligner, c, progress.makeWatcher() ) );
+		img.addPlane( renderPlane( aligner, c, progress.makeSubtask() ) );
 	}
 	return img;
 }
