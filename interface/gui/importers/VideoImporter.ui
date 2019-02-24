@@ -144,6 +144,13 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>offset_min</tabstop>
+  <tabstop>offset_sec</tabstop>
+  <tabstop>frames_amount</tabstop>
+  <tabstop>refresh</tabstop>
+  <tabstop>preview_view</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
