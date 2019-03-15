@@ -136,7 +136,6 @@ ImageEx VideoFrame::toImageEx(){
 	
 	auto info = getVideoInfo( context.pix_fmt );
 	std::vector<Plane> planes;
-	qDebug() << "Color depth: " << info.depth;
 	
 	//Initialize planes
 	planes.emplace_back( context.width,            context.height            );
@@ -186,10 +185,17 @@ ImageEx VideoFrame::toImageEx(){
 }
 
 #include <QImage>
-QImage VideoFrame::toPreview( int max_size ){
-	return toImageEx().to_qimage()
-			.scaled( max_size, max_size, Qt::KeepAspectRatio, Qt::SmoothTransformation)
-		;
-	//TODO: More efficient implementation
+QImage VideoFrame::toPreview( int to_size ){
+	//Extract the image data
+	auto out = toImageEx();
+	
+	//Keep aspect ration
+	auto new_size = out.getSize();
+	auto max_size = std::max( new_size.x, new_size.y );
+	new_size *= to_size / (double)max_size;
+	
+	//Convert without interpolation and dithering
+	out.scale(new_size, ScalingFunction::SCALE_NEAREST);
+	return out.to_qimage(false);
 }
 

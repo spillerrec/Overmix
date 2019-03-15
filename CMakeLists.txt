@@ -39,7 +39,7 @@ if(W2XC)
 	
 	if(EXISTS /usr/share/waifu2x-converter-cpp/)
 		add_compile_definitions(WAIFU_MODEL_DIR="/usr/share/waifu2x-converter-cpp/")
-	elseif()
+	else()
 		message( "Waifu model dir not found!" )
 		add_compile_definitions(WAIFU_MODEL_DIR="models_rgb/")
 	endif()
