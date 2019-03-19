@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>651</width>
-    <height>568</height>
+    <width>725</width>
+    <height>577</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -107,14 +107,14 @@
      </item>
      <item>
       <widget class="QTableView" name="preview_view">
-       <property name="iconSize">
-        <size>
-         <width>128</width>
-         <height>128</height>
-        </size>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::NoSelection</enum>
        </property>
        <property name="showGrid">
-        <bool>false</bool>
+        <bool>true</bool>
+       </property>
+       <property name="gridStyle">
+        <enum>Qt::NoPen</enum>
        </property>
        <property name="cornerButtonEnabled">
         <bool>false</bool>
@@ -122,11 +122,8 @@
        <attribute name="horizontalHeaderVisible">
         <bool>false</bool>
        </attribute>
-       <attribute name="horizontalHeaderDefaultSectionSize">
-        <number>128</number>
-       </attribute>
-       <attribute name="verticalHeaderDefaultSectionSize">
-        <number>128</number>
+       <attribute name="verticalHeaderVisible">
+        <bool>false</bool>
        </attribute>
       </widget>
      </item>

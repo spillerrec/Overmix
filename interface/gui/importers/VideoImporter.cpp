@@ -58,5 +58,9 @@ void VideoImporter::refresh(){
 		,	ui->offset_min->value()*60 + ui->offset_sec->value()
 		,	ui->frames_amount->value()
 		);
+		
+	auto size = model.thumbnailSize();
+	ui->preview_view->horizontalHeader()->setDefaultSectionSize( size.width() );
+	ui->preview_view->verticalHeader()  ->setDefaultSectionSize( size.height() );
 }
 

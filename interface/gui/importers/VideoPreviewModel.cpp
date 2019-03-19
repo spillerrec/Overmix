@@ -26,6 +26,14 @@
 
 using namespace Overmix;
 
+QSize VideoPreviewModel::thumbnailSize() const{
+	if( amount > 0 )
+	{
+		auto size = previews.at(0).img.size();
+		return { size.width(), size.height() };
+	}
+	return {0, 0};
+}
 
 void VideoPreviewModel::setVideo( QString path, int seek_offset, int amount ){
 	amount = amount / SKIP_AMOUNT; //TODO: Add one if uneven
@@ -54,9 +62,12 @@ int VideoPreviewModel::rowCount( const QModelIndex& parent ) const {
 	return amount / columns + ((amount % columns) != 0 ? 1 : 0); //TODO: Wrong if 0!
 }
 int VideoPreviewModel::columnCount( const QModelIndex& ) const
-	{ return 5; }
+	{ return 4; }
 	
 QVariant VideoPreviewModel::data( const QModelIndex& index, int role ) const {
+	if( role != Qt::DecorationRole )
+		return {};
+	
 	int pos = index.row()*columnCount(index) + index.column();
 	if( !index.isValid() || pos < 0 || (unsigned)pos >= previews.size() )
 		return QVariant();

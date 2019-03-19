@@ -49,6 +49,7 @@ class VideoPreviewModel : public QAbstractTableModel{
 	public:
 		VideoPreviewModel( QObject* parent ) : QAbstractTableModel( parent ) { }
 		
+		QSize thumbnailSize() const;
 		void setVideo( QString path, int seek_offset, int amount );
 		
 	protected:
