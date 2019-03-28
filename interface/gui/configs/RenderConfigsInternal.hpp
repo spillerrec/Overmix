@@ -33,8 +33,6 @@ struct DoubleSpinbox2D;
 
 class AverageRenderConfig : public ARenderConfig{
 	private:
-		DoubleSpinbox2D* skip;
-		DoubleSpinbox2D* offset;
 		QCheckBox* upscale_chroma;
 	
 	public:
@@ -43,6 +41,19 @@ class AverageRenderConfig : public ARenderConfig{
 		
 		QString name() const override { return "Average"; }
 		QString discription() const override{ return "Each pixel is the average of its location in all frames"; }
+};
+
+class SkipRenderConfig : public ARenderConfig{
+	private:
+		DoubleSpinbox2D* skip;
+		DoubleSpinbox2D* offset;
+	
+	public:
+		SkipRenderConfig( QWidget* parent );
+		std::unique_ptr<ARender> getRender() const override;
+		
+		QString name() const override { return "Demosaic"; }
+		QString discription() const override{ return "Remove blurring from mosaic censor"; }
 };
 
 class DiffRenderConfig : public ARenderConfig{

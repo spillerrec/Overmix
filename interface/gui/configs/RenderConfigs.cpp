@@ -53,6 +53,8 @@ void RenderConfigChooser::p_initialize(){
 	};
 	
 	set( &addConfig<AverageRenderConfig>() );
+	auto skip = &addConfig<SkipRenderConfig>();
+	set( skip );
 	set( &addConfig<DiffRenderConfig>() );
 	set( &addConfig<FloatRenderConfig>() );
 	set( &addConfig<StatisticsRenderConfig>() );
@@ -68,12 +70,15 @@ std::unique_ptr<ARender> RenderConfigChooser::getRender() const
 
 
 std::unique_ptr<ARender> AverageRenderConfig::getRender() const{
-	auto render = std::make_unique<AverageRender>( upscale_chroma->isChecked() );
+	return std::make_unique<AverageRender>( upscale_chroma->isChecked() );
+}
+
+std::unique_ptr<ARender> SkipRenderConfig::getRender() const{
+	auto render = std::make_unique<AverageRender>( true ); //always scale chroma
 	render->setSpacing( skip  ->getValue() + Point<double>( 1, 1 ) );
 	render->setOffset(  offset->getValue() );
 	skip->setSingleStep( 0.1 );
 	offset->setSingleStep( 0.1 );
-	//TODO: skip and offset
 	return std::move( render );
 }
 
@@ -107,13 +112,18 @@ std::unique_ptr<ARender> DiffRenderConfig::getRender() const {
 AverageRenderConfig::AverageRenderConfig( QWidget* parent )
 	: ARenderConfig( parent ) {
 		setLayout( new QVBoxLayout( this ) );
+		upscale_chroma = addWidget<QCheckBox>( "Scale chroma" );
+		connect( upscale_chroma, SIGNAL(toggled(bool)), this, SIGNAL(changed()) );
+	}
+
+SkipRenderConfig::SkipRenderConfig( QWidget* parent )
+	: ARenderConfig( parent ) {
+		setLayout( new QVBoxLayout( this ) );
 		skip   = addWidget<DoubleSpinbox2D>( "Skip" );
 		offset = addWidget<DoubleSpinbox2D>( "Offset" );
-		upscale_chroma = addWidget<QCheckBox>( "Scale chroma" );
 		
 		skip->connectToChanges( this, SIGNAL(changed()) );
 		offset->connectToChanges( this, SIGNAL(changed()) );
-		connect( upscale_chroma, SIGNAL(toggled(bool)), this, SIGNAL(changed()) );
 	}
 
 std::unique_ptr<ARender> FloatRenderConfig::getRender() const
