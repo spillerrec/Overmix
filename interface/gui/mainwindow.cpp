@@ -708,6 +708,10 @@ void main_widget::create_slide(){
 }
 
 void main_widget::show_skip_render_preview(){
-	SkipRenderPreview( settings, images, this ).exec();
+	SkipRenderPreview dialog( settings, images, this );
+	dialog.setConfig( render_config.getSkipRenderSkip(), render_config.getSkipRenderOffset() );
+	
+	if( dialog.exec() == QDialog::Accepted )
+		render_config.setSkipRenderConfig( dialog.getSkip(), dialog.getOffset() );
 }
 

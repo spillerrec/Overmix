@@ -44,7 +44,7 @@ class AverageRenderConfig : public ARenderConfig{
 };
 
 class SkipRenderConfig : public ARenderConfig{
-	private:
+	public:
 		DoubleSpinbox2D* skip;
 		DoubleSpinbox2D* offset;
 	

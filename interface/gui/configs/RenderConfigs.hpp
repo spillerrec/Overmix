@@ -20,6 +20,8 @@
 
 #include "ConfigChooser.hpp"
 
+#include <Geometry.hpp>
+
 namespace Overmix{
 
 class ARender;
@@ -38,6 +40,8 @@ class ARenderConfig : public AConfig{
 
 class RenderConfigChooser : public ConfigChooser<ARenderConfig>{
 	Q_OBJECT
+	private:
+		class SkipRenderConfig* skipRender;
 	
 	public:
 		RenderConfigChooser( QWidget* parent, bool expand=false );
@@ -47,6 +51,10 @@ class RenderConfigChooser : public ConfigChooser<ARenderConfig>{
 		
 		QString name() const override{ return "Render selector"; }
 		QString discription() const override{ return "Selects a render"; }
+		
+		void setSkipRenderConfig( Point<double> skip, Point<double> offset );
+		Point<double> getSkipRenderSkip() const;
+		Point<double> getSkipRenderOffset() const;
 		
 	signals:
 		void changed();

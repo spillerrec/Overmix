@@ -45,7 +45,9 @@ class SkipRenderPreview : public QDialog{
 		
 	public:
 		SkipRenderPreview( QSettings& settings, const AContainer& images, QWidget* parent );
-		
+		Point<double> getSkip() const;
+		Point<double> getOffset() const;
+		void setConfig( Point<double> newSkip, Point<double> newOffset );
 		
 	public slots:
 		void update_preview();

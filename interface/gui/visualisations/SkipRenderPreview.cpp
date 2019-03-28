@@ -26,6 +26,7 @@
 #include <renders/AverageRender.hpp>
 #include <color.hpp>
 
+#include <QDialogButtonBox>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QSpinBox>
@@ -40,6 +41,7 @@ SkipRenderPreview::SkipRenderPreview( QSettings& settings, const AContainer& ima
 	skip   = new DoubleSpinbox2D( this );
 	offset = new DoubleSpinbox2D( this );
 	viewer = new imageViewer( settings, this );
+	auto buttons = new QDialogButtonBox( QDialogButtonBox::Ok | QDialogButtonBox::Cancel );
 	
 	id->setRange( 0, images.count()-1 );
 	skip->setValue( { 5, 5 } );
@@ -55,6 +57,7 @@ SkipRenderPreview::SkipRenderPreview( QSettings& settings, const AContainer& ima
  	layout_settings->addWidget( skip );
 	layout_settings->addWidget( offset );
 	layout_settings->addStretch();
+	layout_settings->addWidget( buttons );
 	layout_settings->setSizeConstraint( QLayout::SetMinimumSize );
 	
 	layout->addLayout( layout_settings );
@@ -66,6 +69,8 @@ SkipRenderPreview::SkipRenderPreview( QSettings& settings, const AContainer& ima
  	connect( id, SIGNAL(valueChanged(int)), this, SLOT( update_preview() ) );
  	skip  ->connectToChanges( this, SLOT( update_preview() ) );
  	offset->connectToChanges( this, SLOT( update_preview() ) );
+	connect( buttons, SIGNAL(accepted()), this, SLOT(accept()) );
+	connect( buttons, SIGNAL(rejected()), this, SLOT(reject()) );
 }
 
 
@@ -93,4 +98,15 @@ void SkipRenderPreview::update_preview(){
 	
 	viewer->change_image( new imageCache( out.to_qimage() ), true );
 }
+Point<double> SkipRenderPreview::getSkip() const
+	{ return skip->getValue(); }
+
+Point<double> SkipRenderPreview::getOffset() const
+	{ return offset->getValue(); }
+	
+void SkipRenderPreview::setConfig( Point<double> newSkip, Point<double> newOffset ){
+	skip  ->setValue( newSkip   );
+	offset->setValue( newOffset );
+}
+
 

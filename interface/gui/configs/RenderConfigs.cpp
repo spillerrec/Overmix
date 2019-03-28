@@ -53,8 +53,8 @@ void RenderConfigChooser::p_initialize(){
 	};
 	
 	set( &addConfig<AverageRenderConfig>() );
-	auto skip = &addConfig<SkipRenderConfig>();
-	set( skip );
+	skipRender = static_cast<SkipRenderConfig*>(&addConfig<SkipRenderConfig>());
+	set( skipRender );
 	set( &addConfig<DiffRenderConfig>() );
 	set( &addConfig<FloatRenderConfig>() );
 	set( &addConfig<StatisticsRenderConfig>() );
@@ -67,6 +67,15 @@ void RenderConfigChooser::p_initialize(){
 
 std::unique_ptr<ARender> RenderConfigChooser::getRender() const
 	{ return getSelected().getRender(); }
+
+void RenderConfigChooser::setSkipRenderConfig( Point<double> skip, Point<double> offset ){
+	skipRender->skip  ->setValue( skip   );
+	skipRender->offset->setValue( offset );
+}
+Point<double> RenderConfigChooser::getSkipRenderSkip() const
+	{ return skipRender->skip->getValue(); }
+Point<double> RenderConfigChooser::getSkipRenderOffset() const
+	{ return skipRender->offset->getValue(); }
 
 
 std::unique_ptr<ARender> AverageRenderConfig::getRender() const{
