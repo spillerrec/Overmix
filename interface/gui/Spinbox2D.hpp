@@ -55,6 +55,13 @@ class AbstractSpinbox2D : public QWidget {
 			spin_x.blockSignals( false );
 		}
 		
+		double calculateScale( Point<T> value ) const {
+			if( value.x == value.y ) //Handle the 0x0 case
+				return 1.0;
+			//Return 0.0 if one of the terms is 0.0
+			return (value.y != 0.0 ) ? (double)value.x / value.y : 0.0;
+		}		
+		
 	public:
 		AbstractSpinbox2D( QWidget* parent ) : QWidget( parent ), locker( "X" ) {
 			//Position widgets
@@ -81,8 +88,10 @@ class AbstractSpinbox2D : public QWidget {
 		
 		Point<T> getValue() const{ return {spin_x.value(), spin_y.value()}; }
 		void setValue( Point<T> value ){
-			setValueNoScale( value );
-			scale = (value.y > 0.0 ) ? (double)value.x / value.y : 0.0;
+			scale = calculateScale( value );
+			if( scale == 0.0 )
+				locker.setChecked( false );
+			setValueNoScale( value ); //We already set the scale, so updates will not break it
 		}
 		
 		template<typename Return, typename... Args>
