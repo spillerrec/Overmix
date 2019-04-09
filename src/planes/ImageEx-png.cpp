@@ -24,8 +24,10 @@
 #include <QIODevice>
 
 #include <png.h>
+#include <png++/png.hpp>
 #include <cstring>
 #include <vector>
+#include <sstream>
 
 using namespace std;
 using namespace Overmix;
@@ -144,5 +146,45 @@ bool ImageEx::from_png( QIODevice& dev ){
 	
 	png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
 	return true;
+}
+
+
+bool ImageEx::to_png( QIODevice& dev ) const{
+	try{
+		//Force color space to RGB
+		//TODO: Support gray?
+		if( color_space.transform() != Transform::RGB )
+			return toRgb().to_png(dev);
+		
+		//Convert image into PNG structure
+		png::image< png::rgba_pixel_16 > pngimg( get_width(), get_height() );
+		for( unsigned iy=0; iy<get_height(); iy++ )
+			for( unsigned ix=0; ix<get_width(); ix++ )
+			{
+				auto& pix = pngimg[iy][ix];
+				pix.red   = color::as16bit( (*this)[0][iy][ix] );
+				pix.green = color::as16bit( (*this)[1][iy][ix] );
+				pix.blue  = color::as16bit( (*this)[2][iy][ix] );
+				pix.alpha = 0xFFFF;
+			}
+		if( alpha_plane() )
+			for( unsigned iy=0; iy<get_height(); iy++ )
+				for( unsigned ix=0; ix<get_width(); ix++ )
+					pngimg[iy][ix].alpha = color::as16bit( alpha_plane()[iy][ix] );
+		
+		//Encode image into buffer
+		std::stringstream ss;
+		pngimg.write_stream( ss );
+		
+		//Write buffer into QIODevice
+		auto str = ss.str();
+		if( str.size() == 0 )
+			return false;
+		return str.size() == (unsigned)dev.write( str.data(), str.size() );
+	}
+	catch(...)
+	{
+		return false;
+	}
 }
 

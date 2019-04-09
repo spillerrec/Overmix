@@ -402,9 +402,19 @@ QString main_widget::getSavePath( QString title, QString file_types ){
 void main_widget::save_image(){
 	ExceptionCatcher::Guard( this, [&](){
 		for( auto& render : renders ){
-			QString filename = getSavePath( tr("Save image"), tr("PNG files (*.png);; dump files (*.dump)") );
+			QString filename = getSavePath( tr("Save image"), tr("PNG files (*.png);; PNG 16-bit (*.16bit.png);; dump files (*.dump)") );
 			if( !filename.isEmpty() ){
-				if( QFileInfo( filename ).suffix() == "dump" )
+				auto suffix = QFileInfo( filename ).completeSuffix();
+				if( suffix == "" )
+					filename += ".png";
+				
+				if( suffix == "16bit.png" )
+				{
+					QFile out( filename );
+					if( out.open(QIODevice::WriteOnly) )
+						render.raw.to_png( out );
+				}
+				else if( suffix == "dump" )
 					DumpSaver( postProcess( render.raw, true ), filename ).exec(); //TODO: fix postProcess
 				else
 					render.qimg.save( filename );

@@ -47,6 +47,8 @@ class ImageEx{
 		bool from_jpeg(   QIODevice& dev, class JpegDegrader* deg=nullptr );
 		bool from_png(    QIODevice& dev );
 		bool from_qimage( QIODevice& dev, QString ext );
+	public:
+		bool to_png( QIODevice& dev ) const;
 		
 	public:
 		void addPlane( Plane&& p ){ if( p.valid() ) planes.emplace_back( std::move(p) ); }

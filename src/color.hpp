@@ -48,6 +48,9 @@ struct color{
 	constexpr static unsigned char as8bit( color_type value ){
 		return asDouble( value ) * 255;
 	}
+	constexpr static uint16_t as16bit( color_type value ){
+		return asDouble( value ) * 0xFFFF;
+	}
 	constexpr static color_type from8bit( unsigned char value ){
 		return fromDouble( value / 255.0 );
 	}
