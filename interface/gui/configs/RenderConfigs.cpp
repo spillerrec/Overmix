@@ -130,6 +130,7 @@ SkipRenderConfig::SkipRenderConfig( QWidget* parent )
 		setLayout( new QVBoxLayout( this ) );
 		skip   = addWidget<DoubleSpinbox2D>( "Skip" );
 		offset = addWidget<DoubleSpinbox2D>( "Offset" );
+		skip->setValue( {10.0, 10.0} );
 		
 		skip->connectToChanges( this, SIGNAL(changed()) );
 		offset->connectToChanges( this, SIGNAL(changed()) );

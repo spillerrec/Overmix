@@ -37,6 +37,8 @@ using namespace Overmix;
 SkipRenderPreview::SkipRenderPreview( QSettings& settings, const AContainer& images, QWidget* parent )
 	:	QDialog( parent ), images(images)
 {
+	setWindowTitle( tr("Demosaic calculator") );
+	
 	id = new QSpinBox( this );
 	skip   = new DoubleSpinbox2D( this );
 	offset = new DoubleSpinbox2D( this );
@@ -48,7 +50,9 @@ SkipRenderPreview::SkipRenderPreview( QSettings& settings, const AContainer& ima
 	skip  ->setSingleStep( 0.1 );
 	offset->setSingleStep( 0.1 );
 	
-	viewer->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
+	buttons->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
+	viewer->setSizePolicy( QSizePolicy( QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding ) );
+	viewer->setMinimumSize( {480, 360} );
 	
 	auto layout          = new QHBoxLayout( this );
 	auto layout_settings = new QVBoxLayout( this );
