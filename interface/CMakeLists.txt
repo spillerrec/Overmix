@@ -48,6 +48,7 @@ set(SOURCE_GUI_PROCESSORS
 	gui/processors/ProcessDither.cpp
 	gui/processors/ProcessDeconvolve.cpp
 	gui/processors/ProcessEdge.cpp
+	gui/processors/ProcessInpaint.cpp
 	gui/processors/ProcessLevels.cpp
 	gui/processors/ProcessScale.cpp
 	)

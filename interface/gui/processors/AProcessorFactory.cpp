@@ -29,6 +29,7 @@
 #include "ProcessDilate.hpp"
 #include "ProcessDeconvolve.hpp"
 #include "ProcessEdge.hpp"
+#include "ProcessInpaint.hpp"
 #include "ProcessLevels.hpp"
 #include "ProcessScale.hpp"
 
@@ -50,6 +51,7 @@ AProcessorFactory::AProcessorFactory(){
 	addProcessor<ProcessDilate    >( "Dilate"           );
 	addProcessor<ProcessDeconvolve>( "Deconvolve"       );
 	addProcessor<ProcessEdge      >( "Edge detection"   );
+	addProcessor<ProcessInpaint   >( "Inpainting"       );
 	addProcessor<ProcessLevels    >( "Level adjustment" );
 	addProcessor<ProcessScale     >( "Scaling"          );
 #ifdef WAIFU
