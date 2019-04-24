@@ -20,17 +20,9 @@
 
 #include "ConfigChooser.hpp"
 
-class QSpinBox;
-class QDoubleSpinBox;
-class QLineEdit;
-class QComboBox;
-class QCheckBox;
-
 namespace Overmix{
 
 class AComparator;
-struct Spinbox2D;
-class AlignMethodSelector;
 
 class AComparatorConfig : public AConfig{
 	Q_OBJECT
@@ -58,39 +50,6 @@ class ComparatorConfigChooser : public ConfigChooser<AComparatorConfig>{
 		
 	signals:
 		void changed();
-};
-
-class GradientComparatorConfig : public AComparatorConfig{
-	private:
-		AlignMethodSelector* method;
-		QDoubleSpinBox* movement;
-		QSpinBox*       start_level;
-		QSpinBox*       max_level;
-		QCheckBox*      use_l2;
-		QSpinBox*       epsilon;
-		QSpinBox*       max_difference;
-	
-	public:
-		GradientComparatorConfig( QWidget* parent );
-        std::unique_ptr<AComparator> getComparator() const override;
-		
-		QString name() const override { return "Gradient"; }
-		QString discription() const override{ return "Uses gradient decent"; }
-};
-
-class BruteForceComparatorConfig : public AComparatorConfig{
-	private:
-		AlignMethodSelector* method;
-		QDoubleSpinBox* movement;
-		QCheckBox*      use_l2;
-		QSpinBox*       epsilon;
-	
-	public:
-		BruteForceComparatorConfig( QWidget* parent );
-        std::unique_ptr<AComparator> getComparator() const override;
-		
-		QString name() const override { return "Brute force"; }
-		QString discription() const override{ return "Tries EVERYTHING!"; }
 };
 
 

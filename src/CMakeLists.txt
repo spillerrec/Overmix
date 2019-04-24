@@ -49,6 +49,7 @@ set(SOURCES_COMPARATORS
 	comparators/BruteForceComparator.cpp
 	comparators/GradientComparator.cpp
 	comparators/GradientPlane.cpp
+	comparators/MultiScaleComparator.cpp
 	)
 	
 set(SOURCES_RENDERS

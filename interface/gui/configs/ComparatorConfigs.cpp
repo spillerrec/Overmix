@@ -17,9 +17,11 @@
 
 
 #include "ComparatorConfigs.hpp"
+#include "ComparatorConfigsInternal.hpp"
 
 #include "comparators/GradientComparator.hpp"
 #include "comparators/BruteForceComparator.hpp"
+#include "comparators/MultiScaleComparator.hpp"
 
 #include "../Spinbox2D.hpp"
 #include "../AlignMethodSelector.hpp"
@@ -44,6 +46,7 @@ void ComparatorConfigChooser::p_initialize(){
 	};
 	
 	set( &addConfig<GradientComparatorConfig>() );
+	set( &addConfig<MultiScaleComparatorConfig>() );
 	set( &addConfig<BruteForceComparatorConfig>() );
 }
 
@@ -146,5 +149,13 @@ std::unique_ptr<AComparator> BruteForceComparatorConfig::getComparator() const{
 	comperator->settings.epsilon = epsilon ->value();
 	
 	return std::move( comperator );
+}
+
+MultiScaleComparatorConfig::MultiScaleComparatorConfig( QWidget* parent ) : AComparatorConfig( parent ) {
+	
+}
+
+std::unique_ptr<AComparator> MultiScaleComparatorConfig::getComparator() const{
+	return std::make_unique<MultiScaleComparator>();
 }
 
