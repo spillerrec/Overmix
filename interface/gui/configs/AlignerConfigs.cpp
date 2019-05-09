@@ -29,6 +29,7 @@
 #include "aligners/RecursiveAligner.hpp"
 #include "aligners/LinearAligner.hpp"
 #include "aligners/SuperResAligner.hpp"
+#include "aligners/IndependentAligner.hpp"
 
 #include <QGridLayout>
 
@@ -43,6 +44,7 @@ AlignerConfigChooser::AlignerConfigChooser( QWidget* parent, bool expand )
 void AlignerConfigChooser::p_initialize(){
 	addConfig<AverageAlignerConfig>();
 	addConfig<RecursiveAlignerConfig>();
+	addConfig<IndependentAlignerConfig>();
 	addConfig<FakeAlignerConfig>();
 	addConfig<LinearAlignerConfig>();
 	addConfig<SeperateAlignerConfig>();
@@ -142,6 +144,13 @@ ClusterAlignerConfig::ClusterAlignerConfig( QWidget* parent )
 	max_groups->setValue( 20 );
 }
 
+IndependentAlignerConfig::IndependentAlignerConfig( QWidget* parent )
+	:	AAlignerConfig( parent, DISABLE_ALL ) {
+	range = addWidget<QSpinBox>( "Frames considered" );
+	
+	range->setRange( 1, 999999 );
+}
+
 
 std::unique_ptr<AAligner> AverageAlignerConfig::getAligner() const
 	{ return std::make_unique<AverageAligner>(); }
@@ -180,6 +189,9 @@ std::unique_ptr<AAligner> SuperResAlignerConfig::getAligner() const
 
 std::unique_ptr<AAligner> ClusterAlignerConfig::getAligner() const
 	{ return std::make_unique<ClusterAligner>( min_groups->value(), max_groups->value() ); }
+
+std::unique_ptr<AAligner> IndependentAlignerConfig::getAligner() const
+	{ return std::make_unique<IndependentAligner>( range->value() ); }
 
 std::unique_ptr<AAligner> NearestFrameAlignerConfig::getAligner() const
 	{ return std::make_unique<NearestFrameAligner>(); }

@@ -42,6 +42,7 @@ set(SOURCES_ALIGNERS
 	aligners/NearestFrameAligner.cpp
 	aligners/LinearAligner.cpp
 	aligners/SuperResAligner.cpp
+	aligners/IndependentAligner.cpp
 	)
 	
 set(SOURCES_COMPARATORS

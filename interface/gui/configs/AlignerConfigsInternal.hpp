@@ -120,6 +120,18 @@ class ClusterAlignerConfig : public AAlignerConfig{
 		QString discription() const override{ return "Tries to seperate frames through clustering"; }
 };
 
+class IndependentAlignerConfig : public AAlignerConfig{
+	private:
+		QSpinBox* range;
+		
+	public:
+		IndependentAlignerConfig( QWidget* parent );
+		std::unique_ptr<AAligner> getAligner() const override;
+		
+		QString name() const override { return "Independent"; }
+		QString discription() const override{ return "Provides reusable alignment"; }
+};
+
 class NearestFrameAlignerConfig : public AAlignerConfig{
 	public:
 		NearestFrameAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
