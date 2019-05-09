@@ -20,6 +20,7 @@
 #include "../planes/ImageEx.hpp"
 #include "../comparators/AComparator.hpp"
 #include "../containers/DelegatedContainer.hpp"
+#include "../utils/AProcessWatcher.hpp"
 #include "../color.hpp"
 
 #include <QColor>
@@ -67,8 +68,8 @@ ImageEx DistanceMatrixRender::render( const AContainer& aligner, AProcessWatcher
 		};
 	};
 	
-	
-	ImageEx out;
+	Progress progress( "DistanceMatrix", aligner.count()*aligner.count(), watcher );
+	ImageEx out( { Transform::RGB, Transfer::SRGB } );
 	for( unsigned c=0; c<3; c++ ){
 		Plane p( aligner.count(), aligner.count() );
 		for( unsigned iy=0; iy<p.get_height(); iy++ ){
@@ -80,6 +81,7 @@ ImageEx DistanceMatrixRender::render( const AContainer& aligner, AProcessWatcher
 				}
 				else
 					row[ix] = color::from8bit( 127 );
+				progress.add();
 			}
 		}
 		
