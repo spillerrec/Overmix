@@ -27,7 +27,6 @@
 #include <stdexcept>
 #include <vector>
 #include <iostream> //For debug
-#include <QDebug> //For debug
 
 using namespace Overmix;
 
@@ -35,7 +34,7 @@ using namespace Overmix;
 void IndependentAligner::align( AContainer& container, AProcessWatcher* watcher ) const {
 	Progress progress( "IndependentAligner", container.count() * range, watcher );
 	for( unsigned i=0; i<container.count(); i++ )
-		for( unsigned j=i; j<std::min(i+range, container.count()); j++ ){
+		for( unsigned j=i+1; j<=std::min(i+range, container.count()-1); j++ ){
 			container.findOffset( i, j );
 			progress.add();
 		}
@@ -48,15 +47,12 @@ void IndependentAligner::align( AContainer& container, AProcessWatcher* watcher 
 		for( unsigned j=0; j<i; j++ ){
 			if( container.hasCachedOffset( i, j ) ){
 				auto offset = container.getCachedOffset( i, j );
-				qDebug() << "Error: " << i << "_" << j << " is " << offset.error << "\n";
 				if( error > offset.error ){
 					error = offset.error;
 					best = offsets[j] - offset.distance;
-					qDebug() << "Best: " << offset.distance.x << "_" << offset.distance.y << "  +  " << offsets[j].x << "_" << offsets[j].y  << "\n";
 				}
 			}
 		}
-		qDebug() << "Offset for " << i << ": (" << best.x << "_" << best.y << ")\n";
 		offsets[i] = best;
 	}
 	
