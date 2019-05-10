@@ -85,7 +85,7 @@ class Progress{
 			return progresses;
 		}
 		
-		AProcessWatcher* makeSubtask(){ return watcher ? makeSubtask() : nullptr; };
+		AProcessWatcher* makeSubtask(){ return watcher ? watcher->makeSubtask() : nullptr; };
 		Progress makeProgress( std::string title, int total )
 			{ return { title, total, makeSubtask() }; }
 };
