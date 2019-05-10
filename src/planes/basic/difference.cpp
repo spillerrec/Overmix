@@ -142,6 +142,15 @@ double Difference::simpleAlpha( const Plane& p1, const Plane& p2, const Plane& a
 	unsigned width  = min( p1.get_width()  - p1_left, p2.get_width()  - p2_left );
 	unsigned height = min( p1.get_height() - p1_top,  p2.get_height() - p2_top  );
 	
+	if( p2.get_height() < unsigned(p2_top)
+		|| p1.get_height() < unsigned(p1_top)
+		|| p1.get_width()  < unsigned(p1_left)
+		|| p2.get_width()  < unsigned(p2_left)
+		){
+		qDebug("Broken align, dimensions out of sizes, issue #116");
+		return std::numeric_limits<double>::max();
+	}
+	
 	//Initial offsets on the two planes
 	//TODO: avoid using pointer math
 	auto c1 = p1.scan_line( p1_top ).begin() + p1_left;
