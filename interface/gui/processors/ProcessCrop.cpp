@@ -34,8 +34,8 @@ ProcessCrop::ProcessCrop( QWidget* parent ) : AProcessor( parent ){
 
 QString ProcessCrop::name() const{ return "Crop"; }
 
-Point<double> ProcessCrop::modifyOffset( Point<double> ) const
-	{ return { double(left->value()), double(top->value()) }; }
+Point<double> ProcessCrop::modifyOffset( Point<double> pos ) const
+	{ return pos + Point<>{left->value(), top->value()}; }
 
 ImageEx ProcessCrop::process( const ImageEx& input ) const{
 	ImageEx temp( input );
