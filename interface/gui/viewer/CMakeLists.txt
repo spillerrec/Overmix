@@ -29,5 +29,5 @@ if( UNIX )
 	set(PLATFORM_LIBRARIES ${PLATFORM_LIBRARIES} Qt5::X11Extras -lxcb)
 endif( UNIX )
 
-add_library(ImgViewer ${SOURCE_GUI_VIEWER} )
-target_link_libraries(ImgViewer Qt5::Gui Qt5::Widgets Qt5::Concurrent -llcms2 ${PLATFORM_LIBRARIES})
+add_library(qtimgviewer ${SOURCE_GUI_VIEWER} )
+target_link_libraries(qtimgviewer Qt5::Gui Qt5::Widgets Qt5::Concurrent -llcms2 ${PLATFORM_LIBRARIES})

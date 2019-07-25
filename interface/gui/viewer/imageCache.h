@@ -19,6 +19,7 @@
 #define IMAGECACHE_H
 
 #include "colorManager.h"
+#include "Orientation.hpp"
 
 #include <QObject>
 #include <QImage>
@@ -47,6 +48,8 @@ class imageCache: public QObject{
 		std::vector<int> frame_delays;
 		int loop_amount{ 0 };	//Amount of times the loop should continue looping
 		
+		Orientation orientation;
+		
 		long memory_size{ 0 };
 		
 	//Info about loading
@@ -71,6 +74,7 @@ class imageCache: public QObject{
 		
 		void reset();
 		
+		QImage thumbnail;
 		QStringList error_msgs;
 		
 	public:
@@ -86,16 +90,20 @@ class imageCache: public QObject{
 		
 		void set_profile( ColorProfile&& profile );
 		void set_info( unsigned total_frames, bool is_animated=false, int loops=0 );
+		void set_orientation( Orientation orientation ){ this->orientation = orientation; }
 		void add_frame( QImage frame, unsigned delay );
 		void set_fully_loaded();
 		
-		const ColorProfile& get_profile() const{ return profile; }
-		colorManager* get_manager() const{ return manager; }
 		long get_memory_size() const{ return memory_size; }	//Notice, this is a rough number, not accurate!
 		
 		//Animation info
 		bool is_animated() const{ return animate; }
 		int loop_count() const{ return loop_amount; }
+		
+		//Meta data
+		Orientation get_orientation() const{ return orientation; }
+		const ColorProfile& get_profile() const{ return profile; }
+		colorManager* get_manager() const{ return manager; }
 		
 		//Frame info
 		int frame_count() const{ return frame_amount; }

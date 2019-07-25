@@ -159,11 +159,11 @@ void colorManager::doTransform( QImage& img, const ColorProfile& in, unsigned mo
 		img = img.convertToFormat( QImage::Format_ARGB32 );
 	
 	//Convert
-	vector<char*> lines;
+	vector<void*> lines;
 	for( int i=0; i < img.height(); i++ )
-		lines.push_back( (char*)img.scanLine( i ) );
+		lines.push_back( static_cast<void*>(img.scanLine( i )) );
 	QtConcurrent::blockingMap( lines.begin(), lines.end()
-		,	[&]( char* line ){ transform.execute( line, line, img.width() ); }
+		,	[&]( void* line ){ transform.execute( line, line, img.width() ); }
 		);
 }
 

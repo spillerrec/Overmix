@@ -23,6 +23,9 @@
 #include <QSettings>
 #include <QContextMenuEvent>
 
+#include <memory>
+
+#include "Orientation.hpp"
 #include "ZoomBox.hpp"
 
 class imageCache;
@@ -33,7 +36,7 @@ class imageViewer: public QWidget{
 	Q_OBJECT
 	
 	private:
-		imageCache *image_cache{ nullptr };
+		std::shared_ptr<imageCache> image_cache;
 		int frame_amount{ 0 };
 		int current_frame{ 0 };
 		int loop_counter{ 0 };
@@ -57,24 +60,22 @@ class imageViewer: public QWidget{
 	//How the image is to be viewed
 	private:
 		ZoomBox zoom;
+		Orientation orientation;
 		
 	//Settings to autoscale
 	private:
 		bool auto_scale_on{ true };
-		bool auto_aspect_ratio;
-		bool auto_downscale_only;
-		bool auto_upscale_only;
-		bool restrict_viewpoint;
 		bool initial_resize;
-		bool keep_resize;
 		
 		void restrict_view( bool force=false );
 		void change_zoom( double new_level, QPoint keep_on );
 		void auto_zoom();
+	public slots:
+		void updateView();
 		
 	private:
 		QTimer *time;
-		const QSettings& settings;
+		QSettings& settings;
 		void init_size();
 		
 	private slots:
@@ -89,16 +90,18 @@ class imageViewer: public QWidget{
 		void goto_prev_frame(){ goto_frame( current_frame - 1); }
 		void restart_animation();
 		bool toogle_animation();
+		void rotate( int8_t amount );
+		void rotateLeft (){ rotate( -1 ); };
+		void rotateRight(){ rotate( +1 ); };
+		void mirror( bool hor, bool ver );
+		void mirrorHor(){ mirror( true, false ); }
+		void mirrorVer(){ mirror( false, true ); }
 	
 	protected:
+		void updateOrientation( Orientation wanted, Orientation current );
 		void draw_message( QStaticText* text );
 		void paintEvent( QPaintEvent* );
-		void resizeEvent( QResizeEvent* ){
-			if( auto_scale_on )
-				auto_zoom();
-			else
-				restrict_view();
-		}
+		void resizeEvent( QResizeEvent* ){ updateView(); }
 	
 	//Controlling mouse actions
 	protected:
@@ -125,16 +128,18 @@ class imageViewer: public QWidget{
 		void wheelEvent( QWheelEvent *event );
 	
 	public:
-		explicit imageViewer( const QSettings& settings, QWidget* parent = 0 );
+		explicit imageViewer( QSettings& settings, QWidget* parent = 0 );
 		
-		void change_image( imageCache *new_image, bool delete_old = true );
+		void change_image( std::shared_ptr<imageCache> new_image );
 		
 		Qt::MouseButton get_context_button() const{ return button_context; }
 		void create_context_event( const QMouseEvent& event );
 		
 		bool auto_zoom_active() const{ return auto_scale_on; }
 		QSize sizeHint() const;
-		QImage get_frame() const;
+		QImage get_frame();
+		QSize frameSize( unsigned index ) const;
+		QSize frameSize() const{ return frameSize( current_frame ); }
 	
 	signals:
 		void image_info_read();

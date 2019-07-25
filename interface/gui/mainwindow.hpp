@@ -104,7 +104,7 @@ class main_widget: public QMainWindow{
 		AContainer& getAlignedImages();
 		
 		void refreshQImageCache();
-		imageCache* createViewerCache() const;
+		std::shared_ptr<imageCache> createViewerCache() const;
 	
 	public:
 		explicit main_widget( ImageContainer& images );

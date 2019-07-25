@@ -199,9 +199,6 @@ main_widget::main_widget( ImageContainer& images )
 }
 
 main_widget::~main_widget(){
-	//TODO: fix imageViewer, so it cleans itself up!
-	browser.change_image( nullptr );
-	viewer.change_image( nullptr );
 	delete ui;
 }
 
@@ -339,9 +336,9 @@ void main_widget::refreshQImageCache(){
 	}
 }
 
-imageCache* main_widget::createViewerCache() const{
+std::shared_ptr<imageCache> main_widget::createViewerCache() const{
 	//TODO: proper frame timings
-	auto cache = new imageCache();
+	auto cache = std::make_shared<imageCache>();
 	cache->set_info( renders.size(), renders.size() > 1, -1 );
 	for( auto& render : renders )
 		cache->add_frame( render.qimg, 1000*3/25 ); //3 frame animation delay, with 25 frames a second
@@ -382,7 +379,7 @@ void main_widget::refresh_image(){
 	refreshQImageCache();
 	
 	ui->btn_as_mask->setEnabled( renders.size() == 1 && renders[0].raw.getColorSpace().isGray() );
-	viewer.change_image( createViewerCache(), true );
+	viewer.change_image( createViewerCache() );
 	refresh_text();
 	ui->btn_save->setEnabled( true );
 }
@@ -539,13 +536,13 @@ void main_widget::addGroup(){
 void main_widget::browserClickImage( const QModelIndex &index ){
 	auto img = img_model.getImage( index );
 	if( !img.isNull() )
-		browser.change_image( new imageCache( img ), true );
+		browser.change_image( std::make_shared<imageCache>( img ) );
 }
 
 void main_widget::browserClickMask( const QModelIndex &index ){
 	auto img = mask_model.getImage( index );
 	if( !img.isNull() )
-		browser.change_image( new imageCache( img ), true );
+		browser.change_image( std::make_shared<imageCache>( img ) );
 }
 
 static QModelIndex fromSelection( const QItemSelection& selected, const QItemSelection& deselected ){

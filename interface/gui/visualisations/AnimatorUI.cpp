@@ -16,7 +16,7 @@
 */
 
 
-#include "SkipRenderPreview.hpp"
+#include "AnimatorUI.hpp"
 
 #include "../viewer/imageViewer.h"
 #include "../viewer/imageCache.h"
@@ -81,7 +81,7 @@ SkipRenderPreview::SkipRenderPreview( QSettings& settings, const AContainer& ima
 void SkipRenderPreview::update_preview(){
 	auto img_id = id->value();
 	if( unsigned(img_id) >= images.count() || img_id < 0 ){
-		viewer->change_image( nullptr );
+		viewer->change_image( nullptr, true );
 		return;
 	}
 	auto img = images.image( img_id );
@@ -100,7 +100,7 @@ void SkipRenderPreview::update_preview(){
 	for( unsigned i=0; i<out.size(); i++ )
 		out[i] = out[i].maxPlane( result );
 	
-	viewer->change_image( std::make_shared<imageCache>( out.to_qimage() ) );
+	viewer->change_image( new imageCache( out.to_qimage() ), true );
 }
 Point<double> SkipRenderPreview::getSkip() const
 	{ return skip->getValue(); }

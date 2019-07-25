@@ -19,6 +19,7 @@
 #include "imageCache.h"
 #include "qrect_extras.h"
 #include "colorManager.h"
+#include "settings/ViewerSettings.h"
 
 using namespace std;
 
@@ -28,6 +29,7 @@ using namespace std;
 
 #include <QPainter>
 #include <QImage>
+#include <QTransform>
 #include <QStaticText>
 #include <QBrush>
 #include <QPen>
@@ -48,15 +50,11 @@ using namespace std;
 #include <algorithm>
 
 
-imageViewer::imageViewer( const QSettings& settings, QWidget* parent ): QWidget( parent ), settings( settings ){
+using S = ViewerSettings;
+
+imageViewer::imageViewer( QSettings& settings, QWidget* parent ): QWidget( parent ), settings( settings ){
 	//User settings
-	auto_aspect_ratio   = settings.value( "viewer/aspect_ratio",   true  ).toBool();
-	auto_downscale_only = settings.value( "viewer/downscale",      true  ).toBool();
-	auto_upscale_only   = settings.value( "viewer/upscale",        false ).toBool();
-	
-	restrict_viewpoint  = settings.value( "viewer/restrict",       true  ).toBool();
-	initial_resize      = settings.value( "viewer/initial_resize", true  ).toBool();
-	keep_resize         = settings.value( "viewer/keep_resize",    false ).toBool();
+	initial_resize = S(settings).initial_resize();
 	
 	button_rleft   = translate_button( "mouse/rocker-left",  'L' );
 	button_rright  = translate_button( "mouse/rocker-right", 'R' );
@@ -72,11 +70,58 @@ imageViewer::imageViewer( const QSettings& settings, QWidget* parent ): QWidget(
 	setContextMenuPolicy( Qt::PreventContextMenu );
 }
 
+void imageViewer::updateOrientation( Orientation wanted, Orientation current ){
+	auto orientation = current.difference( wanted ).normalized();
+	if( orientation.rotation != 0 ){
+		QTransform transform;
+		transform.rotate( orientation.rotation * 90 );
+		converted = converted.transformed( transform );
+	}
+	converted = converted.mirrored( orientation.flip_hor, orientation.flip_ver );
+}
 
-QImage imageViewer::get_frame() const{
-	if( image_cache && image_cache->loaded() >= current_frame )
-		return image_cache->frame( current_frame );
-	return QImage();
+void imageViewer::rotate( int8_t amount ){
+	auto transform = orientation.rotate( amount );
+	updateOrientation( transform, orientation );
+	orientation = transform;
+	zoom.change_content(frameSize(), true);
+	updateView();
+	update();
+}
+
+void imageViewer::mirror( bool hor, bool ver ){
+	auto transform = orientation.mirror( hor, ver );
+	updateOrientation( transform, orientation );
+	orientation = transform;
+	update();
+}
+
+QImage imageViewer::get_frame(){
+	if( !image_cache || current_frame >= image_cache->loaded() )
+		return {};
+	
+	int current_monitor = QApplication::desktop()->screenNumber( this );
+	if( converted_monitor != current_monitor ){
+		//Cache invalid, refresh
+		converted = image_cache->frame( current_frame );
+		
+		//Transform colors to current monitor profile
+		image_cache->get_manager()->doTransform( converted, image_cache->get_profile(), current_monitor );
+		converted_monitor = current_monitor;
+		
+		updateOrientation( orientation.add(image_cache->get_orientation()), {} );
+	}
+	
+	return converted;
+}
+
+QSize imageViewer::frameSize( unsigned index ) const{
+	if( image_cache ){
+		auto orient = orientation.add(image_cache->get_orientation());
+		return orient.finalSize( image_cache->frame(index).size() );
+	}
+	else
+		return {};
 }
 
 bool imageViewer::can_animate() const{
@@ -135,12 +180,8 @@ void imageViewer::goto_frame( int index ){
 	change_frame( index );
 	
 	//Make sure it works if the new frame has different dimensions
-	if( zoom.change_content( get_frame().size(), true ) ){
-		if( auto_scale_on )
-			auto_zoom();
-		else
-			restrict_view();
-	}
+	if( zoom.change_content( frameSize(), true ) )
+		updateView();
 }
 
 void imageViewer::restart_animation(){
@@ -166,7 +207,7 @@ bool imageViewer::toogle_animation(){
 }
 
 void imageViewer::restrict_view( bool force ){
-	if( restrict_viewpoint || force )
+	if( S(settings).restrict_viewpoint() || force )
 		zoom.restrict( size() );
 }
 
@@ -181,9 +222,21 @@ void imageViewer::change_zoom( double new_level, QPoint keep_on ){
 }
 
 void imageViewer::auto_zoom(){
-	zoom.resize( size(), auto_downscale_only, auto_upscale_only, auto_aspect_ratio );
-		update();
+	zoom.resize(
+			size()
+		,	S( settings ).auto_downscale_only()
+		,	S( settings ).auto_upscale_only()
+		,	S( settings ).auto_aspect_ratio()
+		);
+	update();
 	update_cursor();
+}
+
+void imageViewer::updateView(){
+	if( auto_scale_on )
+		auto_zoom();
+	else
+		restrict_view();
 }
 
 void imageViewer::update_cursor(){
@@ -226,10 +279,10 @@ void imageViewer::init_size(){
 	//TODO: customize
 	if( initial_resize )
 		emit resize_wanted();
-	initial_resize = keep_resize;
+	initial_resize = S(settings).keep_resize();
 	
 	//Only reset zoom if size differ
-	if( zoom.change_content( get_frame().size(), true ) ){
+	if( zoom.change_content( frameSize(), true ) ){
 		auto_scale_on = true; //TODO: customize?
 		auto_zoom();
 	}
@@ -238,18 +291,13 @@ void imageViewer::init_size(){
 }
 
 
-void imageViewer::change_image( imageCache *new_image, bool delete_old ){
+void imageViewer::change_image( std::shared_ptr<imageCache> new_image ){
+	if( new_image == image_cache )
+		return;
+	
 	time->stop(); //Prevent previous animation to interfere
 	
-	//TODO: Delete old cache even used?
-	if( image_cache ){
-		if( delete_old )
-			delete image_cache;
-		else
-			disconnect( image_cache, 0, this, 0 );
-	}
-	
-	image_cache = new_image;
+	image_cache = std::move(new_image);
 	waiting_on_frame = -1;
 	current_frame = 0;
 	frame_amount = 0;
@@ -261,14 +309,14 @@ void imageViewer::change_image( imageCache *new_image, bool delete_old ){
 			
 			//TODO: remove those connections again
 			case imageCache::EMPTY:
-					connect( image_cache, SIGNAL( info_loaded() ), this, SLOT( read_info() ) );
-					connect( image_cache, SIGNAL( frame_loaded(unsigned int) ), this, SLOT( check_frame(unsigned int) ) );
+					connect( image_cache.get(), SIGNAL( info_loaded() ), this, SLOT( read_info() ) );
+					connect( image_cache.get(), SIGNAL( frame_loaded(unsigned int) ), this, SLOT( check_frame(unsigned int) ) );
 				break;
 			
 			case imageCache::INFO_READY:
 			case imageCache::FRAMES_READY:
-					connect( image_cache, SIGNAL( info_loaded() ), this, SLOT( read_info() ) );
-					connect( image_cache, SIGNAL( frame_loaded(unsigned int) ), this, SLOT( check_frame(unsigned int) ) );
+					connect( image_cache.get(), SIGNAL( info_loaded() ), this, SLOT( read_info() ) );
+					connect( image_cache.get(), SIGNAL( frame_loaded(unsigned int) ), this, SLOT( check_frame(unsigned int) ) );
 					read_info();
 				break;
 			
@@ -334,26 +382,11 @@ void imageViewer::paintEvent( QPaintEvent* ){
 	
 	
 	//Everything went fine, start drawing the image
-	QImage frame;
-	int current_monitor = QApplication::desktop()->screenNumber( this );
-	if( converted_monitor != current_monitor ){
-		//Cache invalid, refresh
-		frame = image_cache->frame( current_frame );
-		
-		//Transform colors to current monitor profile
-		image_cache->get_manager()->doTransform( frame, image_cache->get_profile(), current_monitor );
-		
-		converted = frame;
-		converted_monitor = current_monitor;
-	}
-	else
-		frame = converted;
-	
 	QPainter painter( this );
-	if( zoom.scale() <= 1.5 )
+	if( zoom.scale() <= 1.5 || S(settings).smooth_scaling() )
 		painter.setRenderHints( QPainter::SmoothPixmapTransform, true );
 	
-	painter.drawImage( zoom.area(), frame );
+	painter.drawImage( zoom.area(), get_frame() );
 }
 
 QSize imageViewer::sizeHint() const{
@@ -362,11 +395,11 @@ QSize imageViewer::sizeHint() const{
 		
 	QSize size;
 	if( image_cache->is_animated() )
-		size = image_cache->frame( 0 ).size(); //Just return the first frame
+		size = frameSize( 0 ); //Just return the first frame
 	else{
 		//Iterate over all frames and find the largest
 		for( int i=0; i<image_cache->loaded(); i++ )
-			size = size.expandedTo( image_cache->frame( i ).size() );
+			size = size.expandedTo( frameSize( i ) );
 	}
 	
 	return size.expandedTo( zoom.size() );
@@ -444,6 +477,8 @@ void imageViewer::mouseDoubleClickEvent( QMouseEvent *event ){
 		else
 			emit double_clicked();
 	}
+	else
+		mousePressEvent( event ); //TODO: Test on windows
 }
 
 void imageViewer::mouseMoveEvent( QMouseEvent *event ){

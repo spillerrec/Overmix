@@ -53,7 +53,7 @@ MainWindow::MainWindow() : QWidget(), s_model(&s), view(this)
 	
 	connect( view.selectionModel(), &QItemSelectionModel::currentChanged, [&]( auto index ){
 		auto info = s.images[index.row()];
-		viewer->change_image( new imageCache( QImage( info.filename ) ), true );
+		viewer->change_image( std::make_shared<imageCache>( QImage( info.filename ) ) );
 	} );
 }
 

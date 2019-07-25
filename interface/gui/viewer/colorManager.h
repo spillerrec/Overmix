@@ -37,7 +37,7 @@ class ColorTransform{
 			transform = other.transform;
 			other.transform = nullptr;
 		}
-		~ColorTransform(){ cmsDeleteTransform( transform ); }
+		~ColorTransform(){ if(transform) cmsDeleteTransform( transform ); }
 		operator bool() const{ return transform; }
 		
 		void execute( const void* input_buffer, void* output_buffer, unsigned size )
