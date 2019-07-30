@@ -42,7 +42,7 @@ void IndependentAligner::align( AContainer& container, AProcessWatcher* watcher 
 	std::vector<Point<double>> offsets( container.count(), {0.0, 0.0} );
 	
 	for( unsigned i=0; i<container.count(); i++ ){
-		double error = 999999.9; //TODO:
+		double error = std::numeric_limits<double>::max();
 		Point<double> best(0,0);
 		for( unsigned j=0; j<i; j++ ){
 			if( container.hasCachedOffset( i, j ) ){
@@ -56,7 +56,26 @@ void IndependentAligner::align( AContainer& container, AProcessWatcher* watcher 
 		offsets[i] = best;
 	}
 	
+	//TODO: Use this base offset to determine how much other images overlaps
+	
+	/*
+	for( int iterations = 0; iterations < 10; iterations++ ){
+		for( unsigned i=0; i<container.count(); i++ ){
+			Point<double> sum = {0.0, 0.0};
+			int count = 0;
+			for( unsigned j=0; j<container.count(); j++ ){
+				if( container.hasCachedOffset( i, j ) && i != j ){
+					auto offset = container.getCachedOffset( j, i );
+					sum += offset.distance + offsets[j];
+					count++;
+				}
+			}
+			if (count > 0)
+				offsets[i] = sum / count;
+		}
+	}*/
+	
 	for( unsigned i=0; i<container.count(); i++ )
-		container.setPos( i, offsets[i] );
+		container.setPos( i, offsets[i].round() );
 }
 
