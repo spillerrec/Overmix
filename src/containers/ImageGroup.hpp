@@ -22,6 +22,7 @@
 #include "AContainer.hpp"
 
 #include <QString>
+#include <QFileInfo>
 #include <vector>
 
 namespace Overmix{
@@ -57,6 +58,11 @@ class ImageItem{
 			mask_id = id;
 			mask = Plane();
 		}
+		
+		void imageModified() {
+			//Remove absolute path info from filename
+			filename = QFileInfo(filename).fileName();
+		}
 };
 
 class ImageGroup : public AContainer{
@@ -78,7 +84,10 @@ class ImageGroup : public AContainer{
 	public: //AContainer implementation
 		virtual unsigned       count()                     const override{ return items.size(); }
 		virtual const ImageEx& image(     unsigned index ) const override{ return items.at(index).image(); }
-		virtual       ImageEx& imageRef(  unsigned index )       override{ return items.at(index).imageRef(); }
+		virtual       ImageEx& imageRef(  unsigned index )       override{
+			items.at(index).imageModified();
+			return items.at(index).imageRef();
+		}
 		virtual int            imageMask( unsigned index ) const override{ return items.at(index).maskId(); }
 		virtual const Plane&   alpha(     unsigned index ) const override{ return items.at(index).alpha( *masks ); }
 		virtual const Plane&   mask(      unsigned index ) const override{ return masks->at(index); }

@@ -60,6 +60,15 @@ bool ImageEx::read_dump_plane( QIODevice &dev ){
 }
 
 bool ImageEx::from_dump( QIODevice& dev ){
+	bool color_space_set = false;
+	if( dev.peek(4) == "DMP0" )
+	{
+		dev.read(4);
+		auto transform = static_cast<Transform>(dev.read(1).at(0));
+		auto transfer  = static_cast<Transfer >(dev.read(1).at(0));
+		color_space = {transform, transfer};
+		color_space_set = true;
+	}
 	Timer t( "from_dump" );
 	planes.reserve( 3 );
 	while( read_dump_plane( dev ) ); //Load all planes
@@ -75,8 +84,9 @@ bool ImageEx::from_dump( QIODevice& dev ){
 	}
 	
 	//Find type and validate
-	//NOTE: we don't really know the YCbCr format!
-	color_space = { (amount == 1) ? Transform::GRAY : Transform::YCbCr_709, Transfer::REC709 };
+	if( !color_space_set )
+		//NOTE: we don't really know the YCbCr format!
+		color_space = { (amount == 1) ? Transform::GRAY : Transform::YCbCr_709, Transfer::REC709 };
 	return amount < 4;
 }
 
@@ -102,6 +112,12 @@ static DumpPlane toDumpPlane( const Plane& plane, unsigned depth ){
 
 bool ImageEx::saveDump( QIODevice& dev, unsigned depth, bool compression ) const{
 	Timer t( "saveDump" );
+	dev.write( "DMP0" );
+	char transform = static_cast<char>(color_space.transform());
+	char transfer = static_cast<char>(color_space.transfer());
+	dev.write(&transform, 1);
+	dev.write(&transfer, 1);
+	
 	auto method = compression ? DumpPlane::LZMA : DumpPlane::NONE;
 	for( auto& info : planes )
 		if( !toDumpPlane( info.p, depth ).write( dev, method ) )

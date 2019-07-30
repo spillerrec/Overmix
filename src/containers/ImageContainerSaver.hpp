@@ -26,8 +26,13 @@ class ImageContainer;
 
 class ImageContainerSaver{
 	public:
+		struct SaveInfo{
+			bool can_save;
+			bool reuse_originals;
+		};
+		static SaveInfo canSave( const ImageContainer& container, QString filename );
 		static QString load( ImageContainer& container, QString file );
-		static QString save( const ImageContainer& container, QString filename );
+		static QString save( ImageContainer& container, QString filename );
 };
 
 }

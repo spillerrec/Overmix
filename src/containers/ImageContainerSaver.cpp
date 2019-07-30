@@ -160,7 +160,21 @@ template<typename T>
 void addXmlItem( xml_node& node, const char* name, T value )
 	{ addXmlItem( node, name, std::to_string( value ).c_str() ); }
 
-QString ImageContainerSaver::save( const ImageContainer& container, QString filename ){
+
+ImageContainerSaver::SaveInfo ImageContainerSaver::canSave( const ImageContainer& container, QString filename ){
+	SaveInfo result = {true, true};
+	for( auto& group : container )
+		for( auto& item : group )
+			if( item.filename.isEmpty() )
+				result.can_save = false;
+	
+	//TODO: Check if we need to dump the images
+	
+	return result;
+}
+	
+//May change filename if file if it needs to save the file somewhere
+QString ImageContainerSaver::save( ImageContainer& container, QString filename ){
 	//NOTE: we do not support alpha planes stored directly in the ImageEx, it will be ignored!
 	xml_document doc;
 	auto folder = QFileInfo( filename ).dir();
@@ -179,6 +193,12 @@ QString ImageContainerSaver::save( const ImageContainer& container, QString file
 		for( auto& item : group ){
 			if( item.filename.isEmpty() ) //Abort if no filename
 				return QObject::tr( "Does not support saving generated images" );
+			
+			if( QFileInfo(item.filename).isRelative() )
+			{
+				item.filename = folder.absolutePath() + "/" + item.filename + ".dump"; //TODO: Remove old extension if any
+				item.image().saveDump( item.filename );
+			}
 			
 			auto item_node = group_node.append_child( NODE_ITEM );
 			addXmlItem( item_node, NODE_ITEM_PATH , folder.relativeFilePath( item.filename ) );
