@@ -1,4 +1,4 @@
--/*
+/*
 	This file is part of Overmix.
 
 	Overmix is free software: you can redistribute it and/or modify
@@ -21,28 +21,39 @@
 
 #include <planes/ImageEx.hpp>
 
-#include <QImage>
 #include <QDialog>
+#include <vector>
 
+class QSettings;
 class imageViewer;
 class QSpinBox;
+
+namespace Ui {
+	class AnimatorUI;
+}
 
 namespace Overmix{
 
 struct DoubleSpinbox2D;
-class AContainer;
+struct Spinbox2D;
+class ImageContainer;
 
 class AnimatorUI : public QDialog{
 	Q_OBJECT
 	
 	private:
+		Ui::AnimatorUI* ui;
 		imageViewer* viewer;
-		QImage img;
-		DoubleSpinbox2D* skip;
-		DoubleSpinbox2D* offset;
+		ImageEx img;
+		DoubleSpinbox2D* movement;
+		Spinbox2D* size;
+		
+		std::vector<Rectangle<double>> getCrops();
 		
 	public:
-		AnimatorUI(QImage img, QWidget* parent );
+		AnimatorUI(QSettings& settings, ImageEx img, QWidget* parent );
+		~AnimatorUI();
+		void render(ImageContainer& container);
 		
 	public slots:
 		void update_preview();

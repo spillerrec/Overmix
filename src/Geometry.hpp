@@ -182,6 +182,11 @@ struct Rectangle{
 		return other.pos.x <= endPos().x && other.endPos().x >= pos.x
 		   &&  other.pos.y <= endPos().y && other.endPos().y >= pos.y;
 	}
+	
+	bool contains( Rectangle<T> other ) const{
+		return other.pos.x >= pos.x && other.pos.y >= pos.y
+			&&	other.endPos().x <= endPos().x && other.endPos().y <= endPos().y;
+	}
 };
 
 }

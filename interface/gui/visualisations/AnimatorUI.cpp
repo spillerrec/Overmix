@@ -17,100 +17,99 @@
 
 
 #include "AnimatorUI.hpp"
+#include "ui_AnimatorUI.h"
 
 #include "../viewer/imageViewer.h"
 #include "../viewer/imageCache.h"
 
 #include "../Spinbox2D.hpp"
-#include <containers/AContainer.hpp>
+#include <containers/ImageContainer.hpp>
 #include <renders/AverageRender.hpp>
 #include <color.hpp>
 
+#include <QSettings>
 #include <QDialogButtonBox>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QSpinBox>
+#include <QPainter>
 
 using namespace Overmix;
 
+AnimatorUI::~AnimatorUI(){ delete ui; }
 
-SkipRenderPreview::SkipRenderPreview( QSettings& settings, const AContainer& images, QWidget* parent )
-	:	QDialog( parent ), images(images)
+AnimatorUI::AnimatorUI( QSettings& settings, ImageEx img, QWidget* parent )
+	:	QDialog( parent ), ui(new Ui::AnimatorUI), viewer(new imageViewer(settings, this)), img(img)
 {
-	setWindowTitle( tr("Demosaic calculator") );
+    ui->setupUi(this);
 	
-	id = new QSpinBox( this );
-	skip   = new DoubleSpinbox2D( this );
-	offset = new DoubleSpinbox2D( this );
-	viewer = new imageViewer( settings, this );
-	auto buttons = new QDialogButtonBox( QDialogButtonBox::Ok | QDialogButtonBox::Cancel );
+	movement = new DoubleSpinbox2D( this );
+	size = new Spinbox2D( this );
+	movement->call( QDoubleSpinBox::setRange, -9999.0, 9999.0 );
+	size    ->call(       QSpinBox::setRange, 0, 9999 ); //TODO: set it to the size of the input image
+	ui->movement_layout->addRow(tr("Movement"), movement);
+	ui->movement_layout->addRow(tr("Size"), size);
 	
-	id->setRange( 0, images.count()-1 );
-	skip->setValue( { 5, 5 } );
-	skip  ->setSingleStep( 0.1 );
-	offset->setSingleStep( 0.1 );
-	
-	buttons->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
 	viewer->setSizePolicy( QSizePolicy( QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding ) );
 	viewer->setMinimumSize( {480, 360} );
+	ui->mainLayout->addWidget(viewer);
 	
-	auto layout          = new QHBoxLayout( this );
-	auto layout_settings = new QVBoxLayout( this );
-	
- 	layout_settings->addWidget( id );
- 	layout_settings->addWidget( skip );
-	layout_settings->addWidget( offset );
-	layout_settings->addStretch();
-	layout_settings->addWidget( buttons );
-	layout_settings->setSizeConstraint( QLayout::SetMinimumSize );
-	
-	layout->addLayout( layout_settings );
-	layout->addWidget( viewer );
-	setLayout( layout );
-	
+	connect( ui->buttons, SIGNAL(accepted()), this, SLOT(accept()) );
+	connect( ui->buttons, SIGNAL(rejected()), this, SLOT(reject()) );
+	movement->connectToChanges( this, SLOT( update_preview() ) );
+	size    ->connectToChanges( this, SLOT( update_preview() ) );
 	update_preview();
-	
- 	connect( id, SIGNAL(valueChanged(int)), this, SLOT( update_preview() ) );
- 	skip  ->connectToChanges( this, SLOT( update_preview() ) );
- 	offset->connectToChanges( this, SLOT( update_preview() ) );
-	connect( buttons, SIGNAL(accepted()), this, SLOT(accept()) );
-	connect( buttons, SIGNAL(rejected()), this, SLOT(reject()) );
 }
 
-
-void SkipRenderPreview::update_preview(){
-	auto img_id = id->value();
-	if( unsigned(img_id) >= images.count() || img_id < 0 ){
-		viewer->change_image( nullptr, true );
-		return;
+std::vector<Rectangle<double>> AnimatorUI::getCrops(){
+	auto s = size->getValue();
+	auto move = movement->getValue();
+	if (s.width() <= 0 || s.height() <= 0)
+		return {}; //Must have size
+	if (move.x == 0.0 && move.y == 0.0)
+		return {}; //Must have a direction
+	
+	Point<double> pos {0.0, 0.0};
+	//Start at the oposite corner from movement
+	if( move.x < 0 )
+		pos.x = img.get_width() - s.width();
+	if( move.y < 0 )
+		pos.y = img.get_height() - s.height();
+	
+	Rectangle<double> rect( pos, s );
+	Rectangle<double> area( {0.0, 0.0}, img.getSize().to<double>() );
+	
+	std::vector<Rectangle<double>> crops;
+	while( area.contains(rect) ){
+		crops.push_back( rect );
+		rect.pos += move;
 	}
-	auto img = images.image( img_id );
 	
-	SumPlane sum( img.getSize() );
-	sum.spacing = skip->getValue() + Point<double>(1,1);
-	sum.offset = offset->getValue();
-	
-	Plane temp( img.getSize() );
-	temp.fill( color::WHITE );
-	sum.addPlane( temp, {0,0} );
-	
-	auto result = sum.alpha();
-	
-	auto out = img.toRgb();
-	for( unsigned i=0; i<out.size(); i++ )
-		out[i] = out[i].maxPlane( result );
-	
-	viewer->change_image( new imageCache( out.to_qimage() ), true );
-}
-Point<double> SkipRenderPreview::getSkip() const
-	{ return skip->getValue(); }
-
-Point<double> SkipRenderPreview::getOffset() const
-	{ return offset->getValue(); }
-	
-void SkipRenderPreview::setConfig( Point<double> newSkip, Point<double> newOffset ){
-	skip  ->setValue( newSkip   );
-	offset->setValue( newOffset );
+	return crops;
 }
 
+
+void AnimatorUI::update_preview(){
+	QImage preview = img.to_qimage();
+	
+	//Draw rects based on crops
+	QPainter painter(&preview);
+	painter.setPen(Qt::red);
+	getCrops();
+	for(auto crop : getCrops())
+		painter.drawRect(crop.pos.x, crop.pos.y, crop.size.width(), crop.size.height());
+	
+	viewer->change_image( std::make_shared<imageCache>( preview ) );
+}
+
+void AnimatorUI::render(ImageContainer& container){
+	auto crops = getCrops();
+	for(size_t i=0; i<crops.size(); i++){
+		auto crop = crops[i];
+		QString filename = QString::number(i);//TODO: filename
+		ImageEx copy = img;
+		copy.crop(crop.pos, crop.size); //TODO: Support floating point crop
+		container.addImage(std::move(copy), -1, -1, filename);
+	}
+}
 

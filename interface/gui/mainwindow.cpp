@@ -40,6 +40,7 @@
 
 #include "savers/DumpSaver.hpp"
 #include "importers/VideoImporter.hpp"
+#include "visualisations/AnimatorUI.hpp"
 #include "visualisations/MovementGraph.hpp"
 #include "visualisations/SkipRenderPreview.hpp"
 #include "Spinbox2D.hpp"
@@ -709,8 +710,17 @@ void main_widget::crop_all(){
 
 void main_widget::create_slide(){
 	ExceptionCatcher::Guard( this, [&](){
-		Animator anim;
-		anim.render( renders[0].raw );
+		QString image_path = QFileDialog::getOpenFileName( this, tr("Open image for slide"), save_dir, tr("PNG files (*.png)") );
+		ImageEx img;
+		if( !img.read_file(image_path) )
+		{
+			QMessageBox::warning( this, tr("Load error"), tr("Could not open file as an image") );
+			return;
+		}
+		
+		AnimatorUI animator(settings, img, this);
+		if( animator.exec() == QDialog::Accepted )
+			animator.render(images);
 	} );
 }
 
