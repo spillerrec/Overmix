@@ -37,6 +37,7 @@ namespace Overmix{
 struct DoubleSpinbox2D;
 struct Spinbox2D;
 class ImageContainer;
+class AProcessWatcher;
 
 class AnimatorUI : public QDialog{
 	Q_OBJECT
@@ -53,7 +54,7 @@ class AnimatorUI : public QDialog{
 	public:
 		AnimatorUI(QSettings& settings, ImageEx img, QWidget* parent );
 		~AnimatorUI();
-		void render(ImageContainer& container);
+		void render(ImageContainer& container, AProcessWatcher* watcher);
 		
 	public slots:
 		void update_preview();

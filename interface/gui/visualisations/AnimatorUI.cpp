@@ -25,6 +25,7 @@
 #include "../Spinbox2D.hpp"
 #include <containers/ImageContainer.hpp>
 #include <renders/AverageRender.hpp>
+#include <utils/AProcessWatcher.hpp>
 #include <color.hpp>
 
 #include <QSettings>
@@ -45,8 +46,8 @@ AnimatorUI::AnimatorUI( QSettings& settings, ImageEx img, QWidget* parent )
 	
 	movement = new DoubleSpinbox2D( this );
 	size = new Spinbox2D( this );
-	movement->call( QDoubleSpinBox::setRange, -9999.0, 9999.0 );
-	size    ->call(       QSpinBox::setRange, 0, 9999 ); //TODO: set it to the size of the input image
+	movement->call( &QDoubleSpinBox::setRange, -9999.0, 9999.0 );
+	size    ->call(       &QSpinBox::setRange, 0, 9999 ); //TODO: set it to the size of the input image
 	ui->movement_layout->addRow(tr("Movement"), movement);
 	ui->movement_layout->addRow(tr("Size"), size);
 	
@@ -102,14 +103,18 @@ void AnimatorUI::update_preview(){
 	viewer->change_image( std::make_shared<imageCache>( preview ) );
 }
 
-void AnimatorUI::render(ImageContainer& container){
+void AnimatorUI::render(ImageContainer& container, AProcessWatcher* watcher){
 	auto crops = getCrops();
+	Progress progress( "Animator render", crops.size(), watcher );
 	for(size_t i=0; i<crops.size(); i++){
 		auto crop = crops[i];
 		QString filename = QString::number(i);//TODO: filename
 		ImageEx copy = img;
 		copy.crop(crop.pos, crop.size); //TODO: Support floating point crop
 		container.addImage(std::move(copy), -1, -1, filename);
+		container.setPos(i, crop.pos);
+		progress.add();
 	}
+	container.setAligned();
 }
 

@@ -720,7 +720,13 @@ void main_widget::create_slide(){
 		
 		AnimatorUI animator(settings, img, this);
 		if( animator.exec() == QDialog::Accepted )
-			animator.render(images);
+		{
+			ProgressWatcher watcher( this, "Creating images" );
+			animator.render(images, &watcher);
+			clear_cache();
+			refresh_text();
+			update_draw();
+		}
 	} );
 }
 
