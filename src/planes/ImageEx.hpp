@@ -115,6 +115,7 @@ class ImageEx{
 		}
 		unsigned get_width()  const{ return getSize().width(); }
 		unsigned get_height() const{ return getSize().height(); }
+		Rectangle<int> getArea() const{ return {{0,0}, getSize().to<int>()}; }
 		
 		Rectangle<unsigned> getCrop() const;
 		

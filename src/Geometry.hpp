@@ -178,6 +178,13 @@ struct Rectangle{
 	
 	Rectangle( Point<T> pos, Size<T> size ) : pos(pos), size(size) { }
 	
+	Rectangle<T> intersection( const Rectangle<T>& other ) const{
+		auto start = pos.max(other.pos);
+		auto end = endPos().min(other.endPos());
+		auto size = (end - start).max( Point<T>(0, 0) );
+		return {start, size};
+	}
+	
 	bool intersects( const Rectangle<T>& other ) const{
 		return other.pos.x <= endPos().x && other.endPos().x >= pos.x
 		   &&  other.pos.y <= endPos().y && other.endPos().y >= pos.y;
@@ -187,6 +194,9 @@ struct Rectangle{
 		return other.pos.x >= pos.x && other.pos.y >= pos.y
 			&&	other.endPos().x <= endPos().x && other.endPos().y <= endPos().y;
 	}
+	
+	template<typename T2>
+	Rectangle<T2> to() const{ return {pos.to<T2>(), size.to<T2>()}; }
 };
 
 }

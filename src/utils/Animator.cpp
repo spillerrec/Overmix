@@ -56,23 +56,31 @@ void blend( ImageEx& img, Point<int> pos, Point<int> size ){
 	}
 }
 
-void pixelate( ImageEx& img, Point<int> offset, Point<double> pos, Size<double> view_size, Size<int> pixel_size ){
-	auto end = img.getSize().min( pos+view_size ).to<int>();
+///@param img The image to be pixelated in place
+///@param offset The global position of the upper left corner of img
+///@param pos The global position of the censored area (upper left corner)
+///@param view_size The size of the censored area
+///@param pixel_size The size of each mosaic in the censored area
+void pixelate( ImageEx& img, Point<double> offset, Point<double> pos, Size<double> view_size, Size<int> pixel_size ){
+	//TODO: Support subpixel offsets?
+	auto area = img.getArea().intersection(Rectangle<double>(pos-offset, view_size).to<int>());
 	
-	//Skip unneeded pixels
-	while( (pos+pixel_size).x < 0 )
-		pos.x += pixel_size.x;
-	while( (pos+pixel_size).y < 0 )
-		pos.y += pixel_size.y;
+	//Ignore invalid pixel_size
+	if( pixel_size.x <= 0 || pixel_size.y <= 0 )
+		return;
+	//Skip if the area is outside the image
+	if( area.size.width()==0 || area.size.height()==0 )
+		return;
 	
-	//Align
-	pos.x = int(pos.x) / 11 * 11;
-	pos.y = int(pos.y) / 11 * 11;
+	//Censor the entire image, then crop the wanted part out of it
+	auto copy = img;
+	for( int y=0; y<(int)img.get_height(); y+=pixel_size.height() )
+		for( int x=0; x<(int)img.get_width(); x+=pixel_size.width() )
+			blend( copy, {x, y}, pixel_size );
+	//TODO: Optimize it so we only censor slightly more than needed.
+	//We need a slightly larger area so we get everything properly
 	
-	//For each pixel
-	for(    int iy=pos.y; iy<end.y; iy+=pixel_size.height() )
-		for( int ix=pos.x; ix<end.x; ix+=pixel_size.width()  )
-			blend( img, {ix, iy}, pixel_size );
+	img.copyFrom( copy, area.pos, area.size, area.pos );
 }
 
 void Animator::render( const ImageEx& img ) const{

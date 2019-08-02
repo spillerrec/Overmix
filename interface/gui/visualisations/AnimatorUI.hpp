@@ -49,6 +49,10 @@ class AnimatorUI : public QDialog{
 		DoubleSpinbox2D* movement;
 		Spinbox2D* size;
 		
+		Spinbox2D* censor_pos;
+		Spinbox2D* censor_size;
+		Spinbox2D* censor_pixel_size;
+		
 		std::vector<Rectangle<double>> getCrops();
 		
 	public:

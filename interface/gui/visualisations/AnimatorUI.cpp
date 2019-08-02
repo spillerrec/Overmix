@@ -37,6 +37,9 @@
 
 using namespace Overmix;
 
+//From Animator.cpp
+void pixelate( ImageEx& img, Point<double> offset, Point<double> pos, Size<double> view_size, Size<int> pixel_size );
+
 AnimatorUI::~AnimatorUI(){ delete ui; }
 
 AnimatorUI::AnimatorUI( QSettings& settings, ImageEx img, QWidget* parent )
@@ -44,12 +47,28 @@ AnimatorUI::AnimatorUI( QSettings& settings, ImageEx img, QWidget* parent )
 {
     ui->setupUi(this);
 	
+	auto setRangeToImageSize = [&](Spinbox2D* box){
+		//TODO: set each box limit individually
+		int max_size = std::max(img.get_width(), img.get_height());
+		box->call(&QSpinBox::setRange, 0, (int)max_size );
+	};
+	
 	movement = new DoubleSpinbox2D( this );
 	size = new Spinbox2D( this );
 	movement->call( &QDoubleSpinBox::setRange, -9999.0, 9999.0 );
-	size    ->call(       &QSpinBox::setRange, 0, 9999 ); //TODO: set it to the size of the input image
+	setRangeToImageSize(size);
 	ui->movement_layout->addRow(tr("Movement"), movement);
 	ui->movement_layout->addRow(tr("Size"), size);
+	
+	censor_pos = new Spinbox2D( this );
+	censor_size = new Spinbox2D( this );
+	censor_pixel_size = new Spinbox2D( this );
+	censor_pixel_size->call(&QSpinBox::setRange, 0, 200 );
+	setRangeToImageSize(censor_pos);
+	setRangeToImageSize(censor_size);
+	ui->censor_layout->addRow(tr("Position"), censor_pos);
+	ui->censor_layout->addRow(tr("Area size"), censor_size);
+	ui->censor_layout->addRow(tr("Pixel size"), censor_pixel_size);
 	
 	viewer->setSizePolicy( QSizePolicy( QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding ) );
 	viewer->setMinimumSize( {480, 360} );
@@ -57,8 +76,12 @@ AnimatorUI::AnimatorUI( QSettings& settings, ImageEx img, QWidget* parent )
 	
 	connect( ui->buttons, SIGNAL(accepted()), this, SLOT(accept()) );
 	connect( ui->buttons, SIGNAL(rejected()), this, SLOT(reject()) );
+	connect( ui->enable_censor, SIGNAL(clicked(bool)), this, SLOT(update_preview()) );
 	movement->connectToChanges( this, SLOT( update_preview() ) );
 	size    ->connectToChanges( this, SLOT( update_preview() ) );
+	censor_pos       ->connectToChanges( this, SLOT( update_preview() ) );
+	censor_size      ->connectToChanges( this, SLOT( update_preview() ) );
+	censor_pixel_size->connectToChanges( this, SLOT( update_preview() ) );
 	update_preview();
 }
 
@@ -91,7 +114,15 @@ std::vector<Rectangle<double>> AnimatorUI::getCrops(){
 
 
 void AnimatorUI::update_preview(){
-	QImage preview = img.to_qimage();
+	QImage preview;
+	if( ui->enable_censor->isChecked() )
+	{
+		auto copy = img;
+		pixelate(copy, {0,0}, censor_pos->getValue(), censor_size->getValue().to<double>(), censor_pixel_size->getValue());
+		preview = copy.to_qimage();
+	}
+	else
+		preview = img.to_qimage();
 	
 	//Draw rects based on crops
 	QPainter painter(&preview);
@@ -111,6 +142,8 @@ void AnimatorUI::render(ImageContainer& container, AProcessWatcher* watcher){
 		QString filename = QString::number(i);//TODO: filename
 		ImageEx copy = img;
 		copy.crop(crop.pos, crop.size); //TODO: Support floating point crop
+		if( ui->enable_censor->isChecked() )
+			pixelate(copy, crop.pos, censor_pos->getValue(), censor_size->getValue().to<double>(), censor_pixel_size->getValue());
 		container.addImage(std::move(copy), -1, -1, filename);
 		container.setPos(i, crop.pos);
 		progress.add();
