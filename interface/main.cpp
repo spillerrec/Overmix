@@ -25,7 +25,20 @@
 
 #include <iostream>
 
+#ifdef _WIN32
+#include "Windows.h"
+#endif
+
 int main( int argc, char *argv[] ){
+#ifdef _WIN32
+	//Enable console output on Windows if console is active. Does not work with pipe redirection
+	//From: https://stackoverflow.com/a/41701133/2248153
+	if( AttachConsole(ATTACH_PARENT_PROCESS) ){
+		freopen("CONOUT$", "w", stdout);
+		freopen("CONOUT$", "w", stderr);
+	}
+#endif
+	
 	QApplication a( argc, argv );
 	Overmix::ImageContainer images;
 	Overmix::CommandParser parser( images );
