@@ -19,6 +19,7 @@
 #define GEOMETRY_HPP
 
 #include <cmath>
+#include <algorithm>
 #include <QPoint>
 #include <QPointF>
 #include <QSize>
@@ -196,7 +197,7 @@ struct Rectangle{
 	}
 	
 	template<typename T2>
-	Rectangle<T2> to() const{ return {pos.to<T2>(), size.to<T2>()}; }
+	Rectangle<T2> to() const{ return {pos.template to<T2>(), size.template to<T2>()}; }
 };
 
 }
