@@ -19,11 +19,12 @@
 #include "VideoImporter.hpp"
 #include "ui_VideoImporter.h"
 
-#include "utils/AProcessWatcher.hpp"
-#include "video/VideoStream.hpp"
-#include "video/VideoFrame.hpp"
-#include "containers/ImageContainer.hpp"
+#include <utils/AProcessWatcher.hpp>
+#include <video/VideoStream.hpp>
+#include <video/VideoFrame.hpp>
+#include <containers/ImageContainer.hpp>
 #include <QFileInfo>
+#include "../ExceptionCatcher.hpp"
 
 using namespace Overmix;
 
@@ -43,24 +44,28 @@ bool VideoImporter::supportedFile( QString filename ){
 }
 
 void VideoImporter::import( ImageContainer &files, AProcessWatcher* watcher ){
-	VideoStream video( filepath );
-	video.seek( ui->offset_min->value()*60 + ui->offset_sec->value() );
-	
-	auto amount = ui->frames_amount->value();
-	Progress progress( "VideoImporter", amount, watcher, [&](int id){
-			auto name = "video_" + QString::number(id).rightJustified(4, '0');
-			files.addImage( video.getFrame().toImageEx(), -1, -1, name );
-		});
+	ExceptionCatcher::Guard( this, [&](){
+		VideoStream video( filepath );
+		video.seek( ui->offset_min->value()*60 + ui->offset_sec->value() );
+		
+		auto amount = ui->frames_amount->value();
+		Progress progress( "VideoImporter", amount, watcher, [&](int id){
+				auto name = "video_" + QString::number(id).rightJustified(4, '0');
+				files.addImage( video.getFrame().toImageEx(), -1, -1, name );
+			});
+	} );
 }
 
 void VideoImporter::refresh(){
-	model.setVideo( filepath
-		,	ui->offset_min->value()*60 + ui->offset_sec->value()
-		,	ui->frames_amount->value()
-		);
-		
-	auto size = model.thumbnailSize();
-	ui->preview_view->horizontalHeader()->setDefaultSectionSize( size.width() );
-	ui->preview_view->verticalHeader()  ->setDefaultSectionSize( size.height() );
+	ExceptionCatcher::Guard( this, [&](){
+		model.setVideo( filepath
+			,	ui->offset_min->value()*60 + ui->offset_sec->value()
+			,	ui->frames_amount->value()
+			);
+			
+		auto size = model.thumbnailSize();
+		ui->preview_view->horizontalHeader()->setDefaultSectionSize( size.width() );
+		ui->preview_view->verticalHeader()  ->setDefaultSectionSize( size.height() );
+	} );
 }
 
