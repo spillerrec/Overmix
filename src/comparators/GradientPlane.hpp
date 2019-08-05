@@ -53,7 +53,7 @@ struct GradientCheck{
 	GradientCheck( int l, int r, int t, int b, int lvl=1 )
 		:	left(l), right(r), top(t), bottom(b), level(lvl) { }
 	
-	GradientCheck( Size<unsigned> size, double width_scale, double height_scale, int lvl=1 );
+	GradientCheck( Size<unsigned> size1, Size<unsigned> size2, double width_scale, double height_scale, Point<double> hint, int lvl=1 );
 };
 
 class GradientPlane{

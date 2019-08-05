@@ -49,7 +49,7 @@ Plane simple2xDownscale( const Plane& img )
 }
 
 
-ImageOffset MultiScaleComparator::findOffset( const Plane& img1, const Plane& img2, const Plane& alpha1, const Plane& alpha2 ) const{
+ImageOffset MultiScaleComparator::findOffset( const Plane& img1, const Plane& img2, const Plane& alpha1, const Plane& alpha2, Point<double> hint ) const{
 	//Check of end of recursion, this is our starting point
 	if( !img1 || !img2 )
 		return {};
@@ -57,7 +57,7 @@ ImageOffset MultiScaleComparator::findOffset( const Plane& img1, const Plane& im
 	//Find the offset in one resolution step lower
 	auto down = [](const Plane& p){ return simple2xDownscale( p ); };
 	//auto down = [](const Plane& p){ return p.scale_cubic( {}, p.getSize()/2 ); };
-	auto result = findOffset( down(img1), down(img2), down(alpha1), down(alpha2) );
+	auto result = findOffset( down(img1), down(img2), down(alpha1), down(alpha2), hint/2 );
 	auto baseOffset = result.distance * 2;
 	
 	//Check all offsets

@@ -43,7 +43,7 @@ class GradientComparator : public SimpleComparatorBase{
 			,	start_level(start_level), max_level(max_level), max_difference(max_difference)
 			{ }
 		
-		ImageOffset findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ) const override;
+		ImageOffset findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2, Point<double> hint ) const override;
 };
 
 }

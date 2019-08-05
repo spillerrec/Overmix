@@ -75,6 +75,7 @@ class AContainer{
 		virtual const Plane& plane( unsigned index ) const;
 		
 	public:
+		virtual Point<double> getHint( unsigned, unsigned );
 		virtual const AComparator* getComparator() const = 0;
 		virtual bool        hasCachedOffset( unsigned, unsigned ) const{ return false; }
 		virtual ImageOffset getCachedOffset( unsigned, unsigned ) const;

@@ -25,7 +25,7 @@
 using namespace Overmix;
 
 
-ImageOffset BruteForceComparator::findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ) const{
+ImageOffset BruteForceComparator::findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2, Point<double> hint ) const{
 	Point<double> moves{ method == AlignMethod::VER ? 0.0 : movement
 	                   , method == AlignMethod::HOR ? 0.0 : movement
 	                   };

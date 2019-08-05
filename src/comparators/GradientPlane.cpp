@@ -43,11 +43,12 @@ void DiffCache::add_diff( int x, int y, double diff, unsigned precision ){
 	cache.emplace_back( c );
 }
 
-GradientCheck::GradientCheck( Size<unsigned> size, double width_scale, double height_scale, int lvl ){
-	left = ((int)1 - (int)size.width() ) * width_scale;
-	top  = ((int)1 - (int)size.height()) * height_scale;
-	right  = ((int)size.width()  - 1) * width_scale;
-	bottom = ((int)size.height() - 1) * height_scale;
+GradientCheck::GradientCheck( Size<unsigned> size1, Size<unsigned> size2, double width_scale, double height_scale, Point<double> hint, int lvl ){
+	//TODO: Handle size2 and perhaps improve hint
+	left = ((int)1 - (int)size1.width() ) * width_scale + hint.x;
+	top  = ((int)1 - (int)size1.height()) * height_scale + hint.y;
+	right  = ((int)size1.width()  - 1) * width_scale + hint.x;
+	bottom = ((int)size1.height() - 1) * height_scale + hint.y;
 	level = lvl;
 }
 

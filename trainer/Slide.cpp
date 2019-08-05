@@ -123,7 +123,7 @@ void Slide::createErrorMatrix( QString filepath ) const{
 		auto row = matrix.matrix.scan_line( i );
 		for( unsigned j=0; j<images.size(); j++ ){
 			GradientComparator gradient; //TODO: configure
-			row[j] = gradient.findOffset( images[i][0], images[j][0], images[i].alpha_plane(), images[j].alpha_plane() );
+			row[j] = gradient.findOffset( images[i][0], images[j][0], images[i].alpha_plane(), images[j].alpha_plane(), {0,0} );
 			output.add( row[j].error );
 		}
 		output.stop();

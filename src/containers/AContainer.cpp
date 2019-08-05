@@ -113,6 +113,16 @@ std::vector<int> AContainer::getFrames() const{
 	return frames;
 }
 
+
+Point<double> AContainer::getHint( unsigned index1, unsigned index2 )
+{
+	//Get the offset from the image just before to use as hint
+	int dir = (index1 < index2) ? +1 : -1; //Order of inputs might be swapped
+	if( hasCachedOffset(index1, index2-dir) )
+		return getCachedOffset(index1, index2-dir).distance;
+	return {0,0};
+}
+
 void AContainer::setCachedOffset( unsigned, unsigned, ImageOffset ){
 	qDebug( "No caching of alignment offsets implemented in this container" );
 }
@@ -128,7 +138,7 @@ ImageOffset AContainer::findOffset( unsigned index1, unsigned index2 ){
 	if( hasCachedOffset( index1, index2 ) )
 		return getCachedOffset( index1, index2 );
 	
-	auto offset = getComparator()->findOffset( plane(index1), plane(index2), alpha(index1), alpha(index2) );
+	auto offset = getComparator()->findOffset( plane(index1), plane(index2), alpha(index1), alpha(index2), getHint(index1, index2) );
 	setCachedOffset( index1, index2, offset );
 	return offset;
 }

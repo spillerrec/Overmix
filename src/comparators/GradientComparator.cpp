@@ -23,7 +23,7 @@
 using namespace Overmix;
 
 
-ImageOffset GradientComparator::findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2 ) const{
+ImageOffset GradientComparator::findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2, Point<double> hint ) const{
 	Point<double> moves{ method == AlignMethod::VER ? 0.0 : movement
 	                   , method == AlignMethod::HOR ? 0.0 : movement
 	                   };
@@ -34,7 +34,7 @@ ImageOffset GradientComparator::findOffset( const Plane& img1, const Plane& img2
 	
 	//Keep repeating with higher levels until it drops below threshold
 	do{
-		result = plane.findMinimum( { img1.getSize(), moves.x, moves.y, level } );
+		result = plane.findMinimum( { img1.getSize(), img2.getSize(), moves.x, moves.y, hint, level } );
 	}while( result.error > max_difference && level++ < max_level );
 	
 	return { result.distance, result.error, img1, img2 };
