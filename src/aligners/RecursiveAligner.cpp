@@ -72,7 +72,13 @@ static Plane mergeVertical( const Plane& p1, const Plane& p2, int offset ){
 /** Refers to a plane+alpha in a container, or contains an instance of a plane+alpha */
 struct Overmix::ImageGetter{
 	ModifiedPlane plane, alpha;
+	Point<double> center_left{0.0,0.0}; ///< The offset off the center for the left most image
+	Point<double> center_right{0.0,0.0}; ///< The offset off the center for the right most image
 	ImageGetter( ModifiedPlane p, ModifiedPlane a ) : plane(p), alpha(a) { }
+	ImageGetter( ModifiedPlane p, ModifiedPlane a, Point<double> left, Point<double> right ) :	ImageGetter(p, a) {
+		center_left = left;
+		center_right = right;
+	}
 };
 
 /** Creates a ImageGetter from this container with the specified index */
@@ -84,12 +90,18 @@ ImageGetter RecursiveAligner::getGetter( const AContainer& container, unsigned i
 /** Aligns two ImageGetters, and renders the average. Returns the render and the offset betten the getters */
 pair<ImageGetter,Point<double>> RecursiveAligner::combine( const AContainer& container, const ImageGetter& first, const ImageGetter& second ) const{
 	auto comparator = container.getComparator();
-	auto offset = comparator->findOffset( first.plane(), second.plane(), first.alpha(), second.alpha() ).distance;
+	
+	auto hint = first.center_right - second.center_left;
+	auto offset = comparator->findOffset( first.plane(), second.plane(), first.alpha(), second.alpha(), hint ).distance;
+	
+	//TODO: calculate new center points
+	Point<double> center_left = first.center_left - offset/2;
+	Point<double> center_right = second.center_right + offset/2;
 	
 	if( offset.x == 0
 		&&	!first.alpha() && !second.alpha()
 		&&	first.plane().get_width() == second.plane().get_width() )
-		return { ImageGetter{ mergeVertical( first.plane(), second.plane(), offset.y ), Plane() }, offset };
+		return { ImageGetter{ mergeVertical( first.plane(), second.plane(), offset.y ), Plane(), center_left, center_right }, offset };
 	else{
 		//Wrap planes in ImageContainer
 		//TODO: Optimize this
@@ -100,7 +112,7 @@ pair<ImageGetter,Point<double>> RecursiveAligner::combine( const AContainer& con
 		
 		//Render it
 		auto img = AverageRender( false, true ).render( container );
-		return { { std::move(img[0]), std::move(img.alpha_plane()) }, offset };
+		return { { std::move(img[0]), std::move(img.alpha_plane()), center_left, center_right }, offset };
 	}
 }
 
