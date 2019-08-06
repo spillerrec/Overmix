@@ -19,11 +19,12 @@
 // http://opencv.jp/opencv2-x-samples/usage_of_sparsemat_2_superresolution
 
 #include "RobustSrRender.hpp"
-#include "../planes/Plane.hpp"
-#include "../color.hpp"
 #include "AverageRender.hpp"
-#include "../planes/ImageEx.hpp"
+#include "../color.hpp"
 #include "../containers/AContainer.hpp"
+#include "../planes/Plane.hpp"
+#include "../planes/ImageEx.hpp"
+#include "../utils/AProcessWatcher.hpp"
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Sparse>
 #include <QDebug>
@@ -123,6 +124,8 @@ MatrixXf sign( const MatrixXf& mat1, const MatrixXf& mat2 ){
 
 ImageEx RobustSrRender::render(const AContainer &group, AProcessWatcher *watcher) const {
 	auto planes_amount = group.image(0).size();
+	Progress progress( "RobustSrRender", iterations*planes_amount, watcher );
+	
 	ImageEx img( group.image(0).getColorSpace() );
 	auto min_point = group.minPoint();
 	
@@ -139,6 +142,7 @@ ImageEx RobustSrRender::render(const AContainer &group, AProcessWatcher *watcher
 			auto output_copy = output;
 			for( const auto& lr : lowres )
 				output -= (sign( output_copy * lr.dhf, lr.img ) * lr.dhf.transpose()) * beta;
+			progress.add();
 		}
 		
 		img.addPlane( matrixToImage( output, group.image(0).getSize().width() * upscale_factor ) );

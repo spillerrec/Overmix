@@ -75,6 +75,8 @@ static VideoInfo getVideoInfo( AVPixelFormat pix_fmt ){
 		// Full chroma planar
 		case AV_PIX_FMT_YUV444P10LE:
 				out.depth = 10;
+				out.h_sub = out.v_sub = 1;
+			break;
 		case AV_PIX_FMT_YUV444P:
 				out.h_sub = out.v_sub = 1;
 			break;

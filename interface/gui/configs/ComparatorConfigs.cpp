@@ -107,7 +107,7 @@ std::unique_ptr<AComparator> GradientComparatorConfig::getComparator() const{
 	comperator->settings.epsilon = epsilon        ->value();
 	comperator->max_difference   = max_difference ->value();
 	
-	return std::move( comperator );
+	return comperator;
 }
 
 BruteForceComparatorConfig::BruteForceComparatorConfig( QWidget* parent ) : AComparatorConfig( parent ) {
@@ -148,7 +148,7 @@ std::unique_ptr<AComparator> BruteForceComparatorConfig::getComparator() const{
 	comperator->settings.use_l2  = use_l2  ->isChecked();
 	comperator->settings.epsilon = epsilon ->value();
 	
-	return std::move( comperator );
+	return comperator;
 }
 
 MultiScaleComparatorConfig::MultiScaleComparatorConfig( QWidget* parent ) : AComparatorConfig( parent ) {

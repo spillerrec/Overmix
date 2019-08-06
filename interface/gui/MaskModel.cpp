@@ -24,18 +24,18 @@ using namespace Overmix;
 
 
 
-QModelIndex MaskModel::index( int row, int column, const QModelIndex& model_parent ) const{
+QModelIndex MaskModel::index( int row, int column, const QModelIndex& ) const{
 	if( row < rowCount() )
 		return createIndex( row, column );
 	
 	return QModelIndex();
 }
 
-QModelIndex MaskModel::parent( const QModelIndex& child ) const{
+QModelIndex MaskModel::parent( const QModelIndex& ) const{
 	return QModelIndex();
 }
 
-int MaskModel::rowCount( const QModelIndex &parent ) const{
+int MaskModel::rowCount( const QModelIndex& ) const{
 	return images.maskCount();
 }
 
@@ -85,7 +85,7 @@ Qt::ItemFlags MaskModel::flags( const QModelIndex& model_index ) const{
 	return Qt::NoItemFlags;
 }
 
-bool MaskModel::setData( const QModelIndex& model_index, const QVariant& value, int role ){
+bool MaskModel::setData( const QModelIndex&, const QVariant&, int ){
 	return false;
 }
 

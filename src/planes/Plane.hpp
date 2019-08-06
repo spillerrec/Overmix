@@ -124,7 +124,7 @@ class Plane : public PlaneBase<color_type>{
 		Plane scale_generic( Point<unsigned> size, double window, Filter f, Point<double> offset={0.0,0.0} ) const;
 		Plane scale_generic_alpha( const Plane& alpha, Point<unsigned> size, double window, Filter f, Point<double> offset={0.0,0.0} ) const;
 	public:
-		Plane scale_nearest( const Plane& alpha, Point<unsigned> size ) const;
+		Plane scale_nearest( Point<unsigned> size ) const;
 		Plane scale_linear( const Plane& alpha, Point<unsigned> size, Point<double> offset={0.0,0.0} ) const{
 			return scale_generic_alpha( alpha, size, 1.5, linear, offset );
 		}
@@ -140,7 +140,7 @@ class Plane : public PlaneBase<color_type>{
 		
 		Plane scale_select( const Plane& alpha, Point<unsigned> size, ScalingFunction scaling, Point<double> offset={0.0,0.0} ) const{
 			switch( scaling ){
-				case ScalingFunction::SCALE_NEAREST : return scale_nearest(       alpha, size );
+				case ScalingFunction::SCALE_NEAREST : return scale_nearest(       size );
 				case ScalingFunction::SCALE_LINEAR  : return scale_linear(        alpha, size, offset );
 				case ScalingFunction::SCALE_MITCHELL: return scale_cubic(         alpha, size, offset );
 				case ScalingFunction::SCALE_CATROM  : return scale_generic_alpha( alpha, size, 2.5, catrom, offset );

@@ -26,8 +26,7 @@
 using namespace std;
 using namespace Overmix;
 
-Plane Plane::scale_nearest( const Plane& alpha, Point<unsigned> wanted ) const{
-	//TODO: Support alpha
+Plane Plane::scale_nearest( Point<unsigned> wanted ) const{
 	Timer t( "scale_nearest" );
 	Plane scaled( wanted );
 	
@@ -101,55 +100,6 @@ struct ScalePoint{
 			w /= total;
 	}
 };
-
-
-static Plane scale2x( const Plane& p, int window, Plane::Filter f ){
-	Timer t( "scale2x" );
-	Plane scaled( p.getSize() * 2 );
-	
-	auto w1 = ScalePoint( 100, p.get_width(), scaled.get_width(), 0, 2.5, f ).weights;
-	auto w2 = ScalePoint( 101, p.get_width(), scaled.get_width(), 0, 2.5, f ).weights;
-	
-	auto line_width = scaled.get_line_width();
-	auto column = [&]( const color_type* row ){
-			auto sum = std::make_pair( 0.0f, 0.0f );
-			for( int i=0; i<4; i++ ){
-				auto val = *(row + i*line_width);
-				sum.first  += val * w1[i];
-				sum.second += val * w2[i];
-			}
-			return sum;
-		};
-	
-	for( unsigned iy=4; iy<scaled.get_height()-4; iy+=2 ){
-		auto out1 = scaled.scan_line( iy   );
-		auto out2 = scaled.scan_line( iy+1 );
-		auto in  = p.scan_line( iy/2-2 ).begin();
-		
-		std::pair<float,float> c[4];
-		c[0] = column( in++ );
-		c[1] = column( in++ );
-		c[2] = column( in++ );
-		c[3] = column( in++ );
-		auto move = [&](){
-			c[0] = c[1];
-			c[1] = c[2];
-			c[2] = c[3];
-			c[3] = column( in++ );
-		};
-		
-		for( unsigned ix=2; ix<scaled.get_width()-4; ix+=2 ){
-			out1[ix+0]=c[0].first*w1[0] + c[1].first*w1[1] + c[2].first*w1[2];
-			out1[ix+1]=c[0].first*w2[0] + c[1].first*w2[1] + c[2].first*w2[2];
-			
-			out2[ix+0]=c[0].second*w1[0]+ c[1].second*w1[1]+c[2].second*w1[2];
-			out2[ix+1]=c[0].second*w2[0]+ c[1].second*w2[1]+c[2].second*w2[2];
-			move();
-		}
-	}
-	
-	return scaled;
-}
 
 
 Plane Plane::scale_generic( Point<unsigned> wanted, double window, Plane::Filter f, Point<double> offset ) const{

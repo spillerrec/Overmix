@@ -88,7 +88,7 @@ std::unique_ptr<ARender> SkipRenderConfig::getRender() const{
 	render->setOffset(  offset->getValue() );
 	skip->setSingleStep( 0.1 );
 	offset->setSingleStep( 0.1 );
-	return std::move( render );
+	return render;
 }
 
 DiffRenderConfig::DiffRenderConfig( QWidget* parent )
