@@ -726,6 +726,9 @@ void main_widget::create_slide(){
 			clear_cache();
 			refresh_text();
 			update_draw();
+			
+			if( animator.isPixilated() )
+				render_config.setSkipRenderConfig( animator.getSkip(), animator.getOffset() );
 		}
 	} );
 }

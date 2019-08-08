@@ -60,6 +60,10 @@ class AnimatorUI : public QDialog{
 		~AnimatorUI();
 		void render(ImageContainer& container, AProcessWatcher* watcher);
 		
+		bool isPixilated() const;
+		Point<double> getSkip() const;
+		Point<double> getOffset() const;
+		
 	public slots:
 		void update_preview();
 };

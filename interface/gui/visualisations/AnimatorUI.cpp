@@ -85,6 +85,10 @@ AnimatorUI::AnimatorUI( QSettings& settings, ImageEx img, QWidget* parent )
 	update_preview();
 }
 
+bool AnimatorUI::isPixilated() const{ return ui->enable_censor->isChecked(); }
+Point<double> AnimatorUI::getSkip() const { return censor_pixel_size->getValue() - 1.0; }
+Point<double> AnimatorUI::getOffset() const { return getSkip() / 2; }
+
 std::vector<Rectangle<double>> AnimatorUI::getCrops(){
 	auto s = size->getValue();
 	auto move = movement->getValue();
