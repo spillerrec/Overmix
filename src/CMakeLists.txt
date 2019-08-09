@@ -56,6 +56,7 @@ set(SOURCES_COMPARATORS
 set(SOURCES_RENDERS
 	renders/AnimRender.cpp
 	renders/AverageRender.cpp
+	renders/FastRender.cpp
 	renders/FloatRender.cpp
 	renders/DiffRender.cpp
 	renders/DistanceMatrixRender.cpp

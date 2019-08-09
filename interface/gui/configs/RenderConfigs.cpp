@@ -22,6 +22,7 @@
 #include "renders/AnimRender.hpp" //TODO: how to handle?
 #include "renders/AverageRender.hpp"
 #include "renders/DiffRender.hpp"
+#include "renders/FastRender.hpp"
 #include "renders/FloatRender.hpp"
 #include "renders/StatisticsRender.hpp"
 #include "renders/PixelatorRender.hpp"
@@ -63,6 +64,7 @@ void RenderConfigChooser::p_initialize(){
 	set( &addConfig<JpegRenderConfig>() );
 	set( &addConfig<JpegConstrainerRenderConfig>() );
 	set( &addConfig<DistanceMatrixRenderConfig>() );
+	set( &addConfig<FastRenderConfig>() );
 }
 
 std::unique_ptr<ARender> RenderConfigChooser::getRender() const
@@ -80,6 +82,10 @@ Point<double> RenderConfigChooser::getSkipRenderOffset() const
 
 std::unique_ptr<ARender> AverageRenderConfig::getRender() const{
 	return std::make_unique<AverageRender>( upscale_chroma->isChecked() );
+}
+
+std::unique_ptr<ARender> FastRenderConfig::getRender() const {
+	return std::make_unique<FastRender>();
 }
 
 std::unique_ptr<ARender> SkipRenderConfig::getRender() const{

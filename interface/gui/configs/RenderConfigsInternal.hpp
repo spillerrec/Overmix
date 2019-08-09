@@ -43,6 +43,15 @@ class AverageRenderConfig : public ARenderConfig{
 		QString discription() const override{ return "Each pixel is the average of its location in all frames"; }
 };
 
+class FastRenderConfig : public ARenderConfig{
+	public:
+		FastRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
+		std::unique_ptr<ARender> getRender() const override;
+		
+		QString name() const override { return "Fast preview"; }
+		QString discription() const override{ return "A very simple render to get an indication if something is off"; }
+};
+
 class SkipRenderConfig : public ARenderConfig{
 	public:
 		DoubleSpinbox2D* skip;
