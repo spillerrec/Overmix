@@ -29,6 +29,7 @@
 #include "color.hpp"
 #include "debug.hpp"
 #include "renders/AnimRender.hpp"
+#include "renders/FastRender.hpp"
 #include "Deteleciner.hpp"
 #include "containers/DelegatedContainer.hpp"
 #include "containers/FrameContainer.hpp"
@@ -438,15 +439,17 @@ void main_widget::clear_cache(){
 	resetImage();
 	for( auto& render : renders )
 		render.qimg = QImage();
-	viewer.change_image( nullptr );
+	
+	QImage preview = FastRender().render(images,nullptr).to_qimage(false);
+	viewer.change_image( std::make_shared<imageCache>(preview) );
 }
 
 void main_widget::clear_image(){
+	images.clear();
 	clear_cache();
 	clear_mask();
 	detelecine.clear();
 	
-	images.clear();
 	browser.change_image( nullptr );
 	ui->files_view->reset();
 	

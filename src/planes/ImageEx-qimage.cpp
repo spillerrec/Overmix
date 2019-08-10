@@ -90,12 +90,29 @@ QImage ImageEx::to_qimage( bool use_dither ) const{
 	if( planes.size() == 0 || !planes[0].p )
 		return QImage();
 	
+	auto to8bit = [use_dither]( Plane p )
+		{ return use_dither ? p.to8BitDither() : p.to8Bit(); };
+	
+	if( color_space.isGray() && !alpha_plane() )
+	{
+		QImage img( get_width(), get_height(), QImage::Format_Grayscale8 );
+		
+		auto p = to8bit( planes[0].p );
+		#pragma omp parallel for
+		for( unsigned iy=0; iy<get_height(); iy++ ){
+			auto out = (uint8_t*)img.scanLine( iy );
+			auto line = p.scan_line( iy );
+			
+			for( unsigned ix=0; ix<get_width(); ix++ )
+				out[ix] = line[ix];
+		}
+		
+		return img;
+	}
+	
 	//Convert colors
 	//TODO: Support grayscale output?
 	ImageEx rgb = toColorSpace( { Transform::RGB, Transfer::SRGB } );
-	
-	auto to8bit = [use_dither]( Plane p )
-		{ return use_dither ? p.to8BitDither() : p.to8Bit(); };
 	
 	//Convert to 8-bit range
 	std::vector<PlaneBase<uint8_t>> planar( 4 );

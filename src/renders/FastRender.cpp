@@ -40,25 +40,20 @@ ImageEx FastRender::render( const AContainer& aligner, AProcessWatcher* watcher 
 	
 	Progress progress( "FastRender", aligner.count(), watcher );
 	
-	//Check for movement in both direction
-	auto movement = aligner.hasMovement();
-	bool use_plane_alpha = ( movement.first && movement.second );
-	//TODO: Ignore alpha?
-	
 	Size<unsigned> lastSize;
 	Point<int> lastPos;
 	Plane out( aligner.size().size );
 	auto min_point = aligner.minPoint();
-	for( auto align : aligner ){
+	for( unsigned i=0; i<aligner.count(); i++ ){
 		if( progress.shouldCancel() )
 			return {};
 		
-		auto current = align.plane();
-		auto offset = align.pos() - min_point;
+		auto current = aligner.plane(i);
+		auto offset = aligner.pos(i) - min_point;
 		
 		auto writeArea = [&](int x, int y, int w, int h){
-			for( int iy=x; iy<h; iy++ )
-				for( int ix=y; ix<w; ix++ )
+			for( int iy=y; iy<h; iy++ )
+				for( int ix=x; ix<w; ix++ )
 				{
 					Point<int> dPos( ix, iy );
 					out.setPixel( offset + dPos, current.pixel( dPos ) );
