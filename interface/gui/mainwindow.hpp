@@ -125,7 +125,7 @@ class main_widget: public QMainWindow{
 		void urls_retrived( QStringList files );
 		
 	private slots:
-		void resetImage(){ renders.clear(); }
+		void clearCache();
 		void update_draw();
 	
 	public slots:

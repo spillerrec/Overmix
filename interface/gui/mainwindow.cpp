@@ -133,8 +133,8 @@ main_widget::main_widget( ImageContainer& images )
 	
 	//Reset aligner cache
 	connect( &render_config, SIGNAL( changed() ), this, SLOT( updateRender() ) );
-	connect( &img_model, SIGNAL( dataChanged(const QModelIndex&, const QModelIndex&) ), this, SLOT( resetImage() ) );
-	connect( &mask_model, SIGNAL( dataChanged(const QModelIndex&, const QModelIndex&) ), this, SLOT( resetImage() ) );
+	connect( &img_model, SIGNAL( dataChanged(const QModelIndex&, const QModelIndex&) ), this, SLOT( clearCache() ) );
+	connect( &mask_model, SIGNAL( dataChanged(const QModelIndex&, const QModelIndex&) ), this, SLOT( clearCache() ) );
 	
 	//Menubar
 	connect( ui->action_add_files,    SIGNAL( triggered() ), this, SLOT( open_image()     ) );
@@ -242,8 +242,7 @@ void main_widget::process_urls( QStringList files ){
 		}
 	} );
 	
-	clear_cache();
-	refresh_text();
+	clearCache();
 	update_draw();
 	update();
 	ui->files_view->reset();
@@ -433,12 +432,10 @@ void main_widget::save_files(){
 	} );
 }
 
-void main_widget::clear_cache(){
-	//TODO: a lot of this should probably be in resetImage!
+void main_widget::clearCache(){
+	refresh_text();
 	ui->btn_save->setEnabled( false );
-	resetImage();
-	for( auto& render : renders )
-		render.qimg = QImage();
+	renders.clear();
 	
 	QImage preview = FastRender().render(images,nullptr).to_qimage(false);
 	viewer.change_image( std::make_shared<imageCache>(preview) );
@@ -446,7 +443,7 @@ void main_widget::clear_cache(){
 
 void main_widget::clear_image(){
 	images.clear();
-	clear_cache();
+	clearCache();
 	clear_mask();
 	detelecine.clear();
 	
@@ -456,14 +453,13 @@ void main_widget::clear_image(){
 	selection = nullptr;
 	ui->selection_selector->setCurrentIndex( 0 );
 	
-	refresh_text();
 	update_draw();
 }
 
 void main_widget::alignImage(){
 	ExceptionCatcher::Guard( this, [&](){
 		Timer t( "alignImage" );
-		clear_cache(); //Prevent any animation from running
+		clearCache(); //Prevent any animation from running
 		ProgressWatcher watcher( this, "Aligning" );
 		
 		auto aligner = aligner_config.getAligner();
@@ -478,8 +474,7 @@ void main_widget::alignImage(){
 			aligner->align( getAlignedImages(), &watcher );
 	} );
 	
-	clear_cache();
-	refresh_text();
+	clearCache();
 	update_draw();
 }
 
@@ -571,8 +566,7 @@ void main_widget::removeFiles(){
 		if( indexes.size() > 0 )
 			img_model.removeRows( indexes.front().row(), indexes.size(), img_model.parent(indexes.front()) );
 	} );
-	refresh_text();
-	resetImage();
+	clearCache();
 }
 
 void main_widget::remove_mask(){
@@ -581,8 +575,7 @@ void main_widget::remove_mask(){
 		if( indexes.size() > 0 )
 			mask_model.removeRows( indexes.front().row(), indexes.size(), img_model.parent(indexes.front()) );
 	} );
-	refresh_text();
-	resetImage();
+	clearCache();
 }
 
 void main_widget::showFullscreen(){
@@ -647,7 +640,7 @@ void main_widget::applyModifications(){
 				container.imageRef(i) = preprocessor_list->process( container.imageRef(i) );
 			} );
 	} );
-	clear_cache();
+	clearCache();
 }
 
 void main_widget::updateSelection(){
@@ -679,15 +672,14 @@ void main_widget::updateSelection(){
 		}
 	} );
 	
-	clear_cache();
-	refresh_text();
+	clearCache();
 }
 
 void main_widget::updateComparator(){
 	images.setComparator( comparator_config.getComparator() );
 }
 void main_widget::updateRender(){
-	resetImage();
+	clearCache();
 	if( ui->render_redraw->isChecked() )
 		refresh_image();
 }
@@ -708,7 +700,7 @@ void main_widget::crop_all(){
 		});
 	} );
 	
-	clear_cache();
+	clearCache();
 }
 
 void main_widget::create_slide(){
@@ -726,8 +718,7 @@ void main_widget::create_slide(){
 		{
 			ProgressWatcher watcher( this, "Creating images" );
 			animator.render(images, &watcher);
-			clear_cache();
-			refresh_text();
+			clearCache();
 			update_draw();
 			
 			if( animator.isPixilated() )
