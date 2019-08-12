@@ -163,13 +163,13 @@ main_widget::main_widget( ImageContainer& images )
 	//Init files model
 	ui->files_view->setModel( &img_model );
 	ui->files_view->setColumnWidth( 0, 120 );
-	connect( ui->files_view->selectionModel(), &QItemSelectionModel::selectionChanged
+	connect( ui->files_view->selectionModel(), &QItemSelectionModel::currentChanged
 		,	this, &main_widget::browserChangeImage );
 	connect( ui->btn_add_group,    SIGNAL(clicked()), this, SLOT(addGroup()) );
 	connect( ui->btn_delete_files, SIGNAL(clicked()), this, SLOT(removeFiles()) );
 	
 	ui->mask_view->setModel( &mask_model );
-	connect( ui->mask_view->selectionModel(), &QItemSelectionModel::selectionChanged
+	connect( ui->mask_view->selectionModel(), &QItemSelectionModel::currentChanged
 		,	this, &main_widget::browserChangeMask );
 	connect( ui->files_view, &QAbstractItemView::clicked, this, &main_widget::browserClickImage );
 	connect( ui->mask_view,  &QAbstractItemView::clicked, this, &main_widget::browserClickMask  );
@@ -544,20 +544,12 @@ void main_widget::browserClickMask( const QModelIndex &index ){
 		browser.change_image( std::make_shared<imageCache>( img ) );
 }
 
-static QModelIndex fromSelection( const QItemSelection& selected, const QItemSelection& deselected ){
-	auto indexes = selected.indexes();
-	//TODO: Deselection does not work, see issue #117
-	if( indexes.size() > 0 )
-		return indexes.front();
-	return {};
+void main_widget::browserChangeImage( const QModelIndex& current, const QModelIndex& previous ){
+	browserClickImage( current );
 }
 
-void main_widget::browserChangeImage( const QItemSelection& selected, const QItemSelection& deselected ){
-	browserClickImage( fromSelection( selected, deselected ) );
-}
-
-void main_widget::browserChangeMask( const QItemSelection& selected, const QItemSelection& deselected ){
-	browserClickMask( fromSelection( selected, deselected ) );
+void main_widget::browserChangeMask( const QModelIndex& current, const QModelIndex& previous ){
+	browserClickMask( current );
 }
 
 void main_widget::removeFiles(){
@@ -583,7 +575,7 @@ void main_widget::showFullscreen(){
 		if( ui->tab_pages->currentIndex() != 0 ){
 			//Show selected file
 			QItemSelection empty;
-			auto img = img_model.getImage( fromSelection( ui->files_view->selectionModel()->selection(), empty ) );
+			auto img = img_model.getImage( ui->files_view->selectionModel()->currentIndex() );
 			if( !img.isNull() )
 				FullscreenViewer::show( settings, img, this );
 		}
