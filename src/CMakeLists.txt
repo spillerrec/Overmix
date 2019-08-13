@@ -62,7 +62,6 @@ set(SOURCES_RENDERS
 	renders/DistanceMatrixRender.cpp
 	renders/PlaneRender.cpp
 	renders/StatisticsRender.cpp
-	renders/PixelatorRender.cpp
 	renders/RobustSrRender.cpp
 	renders/EstimatorRender.cpp
 	renders/JpegRender.cpp

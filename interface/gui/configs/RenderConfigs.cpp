@@ -25,7 +25,6 @@
 #include "renders/FastRender.hpp"
 #include "renders/FloatRender.hpp"
 #include "renders/StatisticsRender.hpp"
-#include "renders/PixelatorRender.hpp"
 #include "renders/RobustSrRender.hpp"
 #include "renders/EstimatorRender.hpp"
 #include "renders/JpegRender.hpp"
@@ -60,7 +59,6 @@ void RenderConfigChooser::p_initialize(){
 	set( &addConfig<FloatRenderConfig>() );
 	set( &addConfig<StatisticsRenderConfig>() );
 	set( &addConfig<EstimatorRenderConfig>() );
-	set( &addConfig<PixelatorRenderConfig>() );
 	set( &addConfig<JpegRenderConfig>() );
 	set( &addConfig<JpegConstrainerRenderConfig>() );
 	set( &addConfig<DistanceMatrixRenderConfig>() );
@@ -177,9 +175,6 @@ std::unique_ptr<ARender> StatisticsRenderConfig::getRender() const{
 std::unique_ptr<ARender> EstimatorRenderConfig::getRender() const
 //TODO: Variouss controls for pretty much everything
 	{ return std::make_unique<EstimatorRender>( 1.0 ); }
-
-std::unique_ptr<ARender> PixelatorRenderConfig::getRender() const
-	{ return std::make_unique<PixelatorRender>(); }
 
 JpegRenderConfig::JpegRenderConfig( QWidget* parent ) : ARenderConfig( parent ) {
 	setLayout( new QVBoxLayout( this ) );

@@ -108,15 +108,6 @@ class EstimatorRenderConfig : public ARenderConfig{
 		QString discription() const override{ return "Super-Resolution image estimator"; }
 };
 
-class PixelatorRenderConfig : public ARenderConfig{
-	public:
-		PixelatorRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
-		std::unique_ptr<ARender> getRender() const override;
-		
-		QString name() const override { return "Pixelator"; }
-		QString discription() const override{ return "Pixelates the image"; }
-};
-
 class JpegRenderConfig : public ARenderConfig{
 	private:
 		QSpinBox* iterations;

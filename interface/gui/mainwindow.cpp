@@ -156,9 +156,6 @@ main_widget::main_widget( ImageContainer& images )
 	//Add images
 	//qRegisterMetaType<QList<QUrl> >( "QStringList" );
 	connect( this, SIGNAL( urls_retrived(QStringList) ), this, SLOT( process_urls(QStringList) ), Qt::QueuedConnection );
-
-	//Refresh info labels
-	refresh_text();
 	
 	//Init files model
 	ui->files_view->setModel( &img_model );
@@ -198,6 +195,9 @@ main_widget::main_widget( ImageContainer& images )
 	//foldableGroupBox( this, true,  ui->images_group      );
 	foldableGroupBox( this, false, ui->masks_group       );
 	foldableGroupBox( this, false, ui->selection_group   );
+
+	//Refresh info labels
+	clearCache();
 }
 
 main_widget::~main_widget(){
@@ -544,11 +544,11 @@ void main_widget::browserClickMask( const QModelIndex &index ){
 		browser.change_image( std::make_shared<imageCache>( img ) );
 }
 
-void main_widget::browserChangeImage( const QModelIndex& current, const QModelIndex& previous ){
+void main_widget::browserChangeImage( const QModelIndex& current, const QModelIndex& /*previous*/ ){
 	browserClickImage( current );
 }
 
-void main_widget::browserChangeMask( const QModelIndex& current, const QModelIndex& previous ){
+void main_widget::browserChangeMask( const QModelIndex& current, const QModelIndex& /*previous*/ ){
 	browserClickMask( current );
 }
 
