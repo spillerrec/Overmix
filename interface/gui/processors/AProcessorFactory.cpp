@@ -32,6 +32,7 @@
 #include "ProcessInpaint.hpp"
 #include "ProcessLevels.hpp"
 #include "ProcessScale.hpp"
+#include "ProcessSteam.hpp"
 
 #ifdef WAIFU
 #include "ProcessWaifu.hpp"
@@ -54,6 +55,7 @@ AProcessorFactory::AProcessorFactory(){
 	addProcessor<ProcessInpaint   >( "Inpainting"       );
 	addProcessor<ProcessLevels    >( "Level adjustment" );
 	addProcessor<ProcessScale     >( "Scaling"          );
+	addProcessor<ProcessSteam     >( "Steam"            );
 #ifdef WAIFU
 	addProcessor<ProcessWaifu     >( "Waifu2x"          );
 #endif
