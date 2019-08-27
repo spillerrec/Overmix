@@ -125,6 +125,8 @@ ImageEx Waifu::processRgb( const ImageEx& input ){
 }
 
 ImageEx Waifu::processYuv( const ImageEx& input ){
+	return processRgb(input.toRgb());
+	
 	WaifuBuffer in ( input.getSize(), 3        );
 	WaifuBuffer out( input.getSize(), 3, scale );
 	
@@ -133,14 +135,15 @@ ImageEx Waifu::processYuv( const ImageEx& input ){
 	readPlane( in, 1, input[1] ); //TODO: Scale chroma as needed
 	readPlane( in, 2, input[2] );
 	
-/*	w2xconv_convert_yuv( conv
+	/* TODO: Why no size parameter??
+	w2xconv_convert_yuv( conv
 		,	out.getData(), out.bytesPerLine()
 		,	in .getData(), in .bytesPerLine()
-		//,	input.get_width(), input.get_height() //TODO: How does this work without a size argument?
+		,	input.get_width(), input.get_height()
 		,	denoise, scale
 		,	0 //TODO: unknown 'blockSize' argument
-		);
-	*/
+		);//*/
+	
 	//Read image from output buffer
 	ImageEx output( input.getColorSpace() );
 	for( int i=0; i<3; i++ )
@@ -149,8 +152,6 @@ ImageEx Waifu::processYuv( const ImageEx& input ){
 }
 
 Plane Waifu::process( const Plane& input ) {
-	return process( ImageEx( input ) )[0]; //TODO: Temp RGB solution
-	
 	WaifuBuffer in ( input.getSize(), 1        );
 	WaifuBuffer out( input.getSize(), 1, scale );
 	
@@ -158,13 +159,46 @@ Plane Waifu::process( const Plane& input ) {
 	readPlane( in, 0, input );
 	
 	//TODO: Will require two-steps, as it is more low-level?
+	auto doStep = [&](W2XConvFilterType type){
+			w2xconv_apply_filter_y(conv, type,
+				out.getData(), out.bytesPerLine(),
+				in.getData(), in.bytesPerLine(),
+				input.get_width(), input.get_height(),
+				0
+				);
+		};
+		
+	//TODO: Other scaling factors
+	if (scale > 1)
+		doStep( W2XCONV_FILTER_SCALE2x );
+	
+	//Denoising TODO: Should this be before scaling?
+	auto amount = [this](){
+			switch(denoise){
+				case  1: return W2XCONV_FILTER_DENOISE1;
+				case  2: return W2XCONV_FILTER_DENOISE2;
+				default: return W2XCONV_FILTER_DENOISE3;
+			};
+		}();
+	if(denoise > 0)
+		doStep( amount );
 	
 	return writePlane( out, 0 );
 }
 
 ImageEx Waifu::process( const ImageEx& input ) {
-	//TODO: Select between Gray/Rgb/Yuv depending on image
-	auto output = processRgb( input.toRgb() );
+	ImageEx output;
+	
+	//Select between Gray/Rgb/Yuv depending on image
+	auto color_space = input.getColorSpace();
+	if( color_space.isRgb() )
+		output = processRgb( input );
+	else if( color_space.isYCbCr() )
+		output = processYuv( input );
+	else if( color_space.isGray() )
+		output = ImageEx( process( input[0] ) );
+	else
+		return {};
 	
 	//Scale alpha plane as well
 	if( input.alpha_plane() )

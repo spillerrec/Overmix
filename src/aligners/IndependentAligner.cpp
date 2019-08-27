@@ -58,7 +58,6 @@ void IndependentAligner::align( AContainer& container, AProcessWatcher* watcher 
 	
 	//TODO: Use this base offset to determine how much other images overlaps
 	
-	/*
 	for( int iterations = 0; iterations < 10; iterations++ ){
 		for( unsigned i=0; i<container.count(); i++ ){
 			Point<double> sum = {0.0, 0.0};
@@ -73,9 +72,9 @@ void IndependentAligner::align( AContainer& container, AProcessWatcher* watcher 
 			if (count > 0)
 				offsets[i] = sum / count;
 		}
-	}*/
+	}
 	
 	for( unsigned i=0; i<container.count(); i++ )
-		container.setPos( i, offsets[i].round() );
+		container.setPos( i, (offsets[i] * 2).round() / 2.0 );//.round() );
 }
 
