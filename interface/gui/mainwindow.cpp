@@ -410,7 +410,7 @@ void main_widget::save_image(){
 				{
 					QFile out( filename );
 					if( out.open(QIODevice::WriteOnly) )
-						render.raw.to_png( out );
+						postProcess( render.raw, true ).to_png( out ); //TODO: fix postProcess
 				}
 				else if( suffix == "dump" )
 					DumpSaver( postProcess( render.raw, true ), filename ).exec(); //TODO: fix postProcess
