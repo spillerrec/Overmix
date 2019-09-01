@@ -25,10 +25,10 @@ using namespace std;
 using namespace Overmix;
 
 
-template<typename T>
+template<typename Out, typename T>
 struct EdgeLine{
 	//Output
-	color_type* out;
+	Out* out;
 	unsigned width;
 	
 	//Kernels
@@ -38,7 +38,7 @@ struct EdgeLine{
 	unsigned div;
 	
 	//Operator
-	typedef color_type (*func_t)( const EdgeLine<T>&, const color_type* );
+	typedef Out (*func_t)( const EdgeLine<Out, T>&, const color_type* );
 	func_t func;
 	
 	//Input, with line_width as we need several lines
@@ -57,34 +57,37 @@ static T calculate_kernel( T *kernel, unsigned size, const color_type* in, unsig
 	return sum;
 }
 
+template<typename Out, typename T>
+static std::pair<T,T> calculate_direction( const EdgeLine<Out, T>& line, const color_type* in ){
+	T sum_x = calculate_kernel( line.weights_x, line.size, in, line.line_width );
+	T sum_y = calculate_kernel( line.weights_y, line.size, in, line.line_width );
+	return std::make_pair(sum_x, sum_y);
+}
+
 template<typename T>
-static color_type calculate_edge( const EdgeLine<T>& line, const color_type* in ){
-	using namespace std;
-	
-	int sum_x = calculate_kernel( line.weights_x, line.size, in, line.line_width );
-	int sum_y = calculate_kernel( line.weights_y, line.size, in, line.line_width );
-	int sum = abs( sum_x ) + abs( sum_y );
+static color_type calculate_edge( const EdgeLine<color_type, T>& line, const color_type* in ){
+	auto sums = calculate_direction<color_type, T>(line, in);
+	T sum = std::abs( sums.first ) + std::abs( sums.second );
 	sum /= line.div;
 	return color::truncate( sum );
 }
 
 template<typename T>
-static color_type calculate_zero_edge( const EdgeLine<T>& line, const color_type* in ){
-	using namespace std;
+static color_type calculate_zero_edge( const EdgeLine<color_type, T>& line, const color_type* in ){
 	//TODO: improve
-	int sum = max( calculate_kernel( line.weights_x, line.size, in, line.line_width ), 0 );
+	int sum = std::max( calculate_kernel( line.weights_x, line.size, in, line.line_width ), 0 );
 	sum /= line.div;
 	return color::truncate( sum );
 }
 
-template<typename T>
-static void edge_line( const EdgeLine<T>& line ){
+template<typename Out, typename T>
+static void edge_line( const EdgeLine<Out, T>& line ){
 	auto in = line.in;
 	auto out = line.out;
 	unsigned size_half = line.size/2;
 	
 	//Fill the start of the row with the same value
-	color_type first = line.func( line, in );
+	auto first = line.func( line, in );
 	for( unsigned ix=0; ix<size_half; ++ix )
 		*(out++) = first;
 	
@@ -93,22 +96,22 @@ static void edge_line( const EdgeLine<T>& line ){
 		*(out++) = line.func( line, in );
 	
 	//Repeat the end with the same value
-	color_type last = *(out-1);
+	auto last = *(out-1);
 	for( unsigned ix=end; ix<line.width; ++ix )
 		*(out++) = last;
 }
 
-
-template<typename T, typename T2>
-Plane parallel_edge_line( const Plane& p, vector<T> weights_x, vector<T> weights_y, unsigned div, T2 func ){
+template<typename PlaneType, typename T, typename T2>
+PlaneType parallel_edge_line( const Plane& p, vector<T> weights_x, vector<T> weights_y, unsigned div, T2 func ){
 	Timer t( "parallel_edge_line" );
-	Plane out( p.getSize() );
+	PlaneType out( p.getSize() );
 	unsigned size = sqrt( weights_x.size() );
 	
 	//Calculate all y-lines
-	std::vector<EdgeLine<T> > lines;
+	using OutType = typename PlaneType::PixelType;
+	std::vector<EdgeLine<OutType, T> > lines;
 	for( unsigned iy=0; iy<p.get_height(); ++iy ){
-		EdgeLine<T> line;
+		EdgeLine<OutType, T> line;
 		line.out = out.scan_line( iy ).begin();
 		line.width = p.get_width(); //TODO: investigate
 		
@@ -125,14 +128,19 @@ Plane parallel_edge_line( const Plane& p, vector<T> weights_x, vector<T> weights
 		lines.push_back( line );
 	}
 	
-	QtConcurrent::blockingMap( lines, &edge_line<T> );
+	QtConcurrent::blockingMap( lines, &edge_line<OutType, T> );
 	return out;
 }
 
 Plane Plane::edge_zero_generic( vector<int> weights, unsigned div ) const{
-	return parallel_edge_line( *this, weights, vector<int>(), div, calculate_zero_edge<int> );
+	return parallel_edge_line<Plane, int, decltype(calculate_zero_edge<int>)>( *this, weights, vector<int>(), div, calculate_zero_edge<int> );
 }
 
 Plane Plane::edge_dm_generic( vector<int> weights_x, vector<int> weights_y, unsigned div ) const{
-	return parallel_edge_line( *this, weights_x, weights_y, div, calculate_edge<int> );
+	return parallel_edge_line<Plane, int, decltype(calculate_edge<int>)>( *this, weights_x, weights_y, div, calculate_edge<int> );
+}
+
+PlaneBase<std::pair<int,int>> Plane::edge_dm_direction( std::vector<int> weights_x, std::vector<int> weights_y, unsigned div ) const{
+	auto func = calculate_direction<std::pair<int,int>, int>;
+	return parallel_edge_line<PlaneBase<std::pair<int,int>>, int, decltype(func)>( *this, weights_x, weights_y, div, func );
 }

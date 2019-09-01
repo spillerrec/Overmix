@@ -33,6 +33,7 @@
 #include "ProcessLevels.hpp"
 #include "ProcessScale.hpp"
 #include "ProcessSteam.hpp"
+#include "ProcessMosaic.hpp"
 
 #ifdef WAIFU
 #include "ProcessWaifu.hpp"
@@ -56,6 +57,7 @@ AProcessorFactory::AProcessorFactory(){
 	addProcessor<ProcessLevels    >( "Level adjustment" );
 	addProcessor<ProcessScale     >( "Scaling"          );
 	addProcessor<ProcessSteam     >( "Steam"            );
+	addProcessor<ProcessMosaic    >( "Mosaic"           );
 #ifdef WAIFU
 	addProcessor<ProcessWaifu     >( "Waifu2x"          );
 #endif

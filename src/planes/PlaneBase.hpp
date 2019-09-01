@@ -108,6 +108,8 @@ class PlaneBase{
 			,	data( std::make_unique<T[]>( dataSize() ) ) { }
 		PlaneBase( unsigned w, unsigned h ) : PlaneBase( Size<unsigned>( w, h ) ) { }
 		
+		using PixelType = T;
+		
 	//Memory copying
 		PlaneBase( const PlaneBase<T>& other ){
 			copySettings( other );
