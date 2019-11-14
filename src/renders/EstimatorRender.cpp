@@ -68,7 +68,7 @@ Plane EstimatorRender::degrade( const Plane& original, const Parameters& para ) 
 		out = out.blur_gaussian( bluring*upscale_factor.x, bluring*upscale_factor.y );
 	
 	//Degrade - resolution
-	out = out.scale_select( Plane(), out.getSize() / upscale_factor, scale_method/*, pos - pos.to<int>().to<double>()*/ ); //TODO: offset
+	out = out.scale_select( Plane(), out.getSize() / upscale_factor, scale_method, pos - pos.to<int>().to<double>() );
 	//TODO: Alpha
 	
 	
@@ -90,10 +90,10 @@ void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, d
 	delta = delta.scale_select( Plane(), delta.getSize()*scale, ScalingFunction::SCALE_MITCHELL );
 	//TODO: Alpha
 	
-	for( unsigned iy=0; iy<delta.get_height(); iy++ ){
+	for( unsigned iy=0; iy<std::min(delta.get_height(), out.get_height()-pos.y); iy++ ){
 		auto row_out = out  .scan_line( iy+pos.y );
 		auto row_in  = delta.scan_line( iy       );
-		for( unsigned ix=0; ix<delta.get_width(); ix++ )
+		for( unsigned ix=0; ix<std::min(delta.get_width(), out.get_width()-pos.x); ix++ )
 			row_out[ix+pos.x] = color::truncate( row_out[ix+pos.x] - row_in[ix] );
 	}
 }

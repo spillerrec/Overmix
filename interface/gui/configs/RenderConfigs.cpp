@@ -172,9 +172,38 @@ std::unique_ptr<ARender> StatisticsRenderConfig::getRender() const{
 	return std::make_unique<StatisticsRender>( getStats( function->currentIndex() ) );
 }
 
-std::unique_ptr<ARender> EstimatorRenderConfig::getRender() const
-//TODO: Variouss controls for pretty much everything
-	{ return std::make_unique<EstimatorRender>( 1.0 ); }
+
+EstimatorRenderConfig::EstimatorRenderConfig( QWidget* parent )
+: ARenderConfig( parent ) {
+	setLayout( new QVBoxLayout( this ) );
+	scale      = addWidget<QDoubleSpinBox>("Upscale factor");
+	iterations = addWidget<      QSpinBox>("Iterations");
+	beta       = addWidget<QDoubleSpinBox>("Beta");
+	lambda     = addWidget<QDoubleSpinBox>("Lambda");
+	alpha      = addWidget<QDoubleSpinBox>("Alpha");
+	reg_size   = addWidget<      QSpinBox>("Regularisation");
+	
+	iterations->setRange(0, 999);
+	beta->setDecimals(3);
+	
+	EstimatorPara defaults;
+	scale     ->setValue( 2.0 );
+	iterations->setValue( defaults.iterations );
+	beta      ->setValue( defaults.beta );
+	lambda    ->setValue( defaults.lambda );
+	alpha     ->setValue( defaults.alpha );
+	reg_size  ->setValue( defaults.reg_size );
+}
+
+std::unique_ptr<ARender> EstimatorRenderConfig::getRender() const {
+	EstimatorPara para;
+	para.iterations = iterations->value();
+	para.beta       = beta      ->value();
+	para.lambda     = lambda    ->value();
+	para.alpha      = alpha     ->value();
+	para.reg_size   = reg_size  ->value();
+	return std::make_unique<EstimatorRender>( scale->value(), para );
+}
 
 JpegRenderConfig::JpegRenderConfig( QWidget* parent ) : ARenderConfig( parent ) {
 	setLayout( new QVBoxLayout( this ) );

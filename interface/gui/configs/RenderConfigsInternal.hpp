@@ -100,8 +100,16 @@ class StatisticsRenderConfig : public ARenderConfig{
 };
 
 class EstimatorRenderConfig : public ARenderConfig{
+	private:
+		QDoubleSpinBox* scale;
+		QDoubleSpinBox* beta;
+		QDoubleSpinBox* lambda;
+		QDoubleSpinBox* alpha;
+		QSpinBox* reg_size;
+		QSpinBox* iterations;
+		
 	public:
-		EstimatorRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
+		EstimatorRenderConfig( QWidget* parent );
 		std::unique_ptr<ARender> getRender() const override;
 		
 		QString name() const override { return "Estimator"; }

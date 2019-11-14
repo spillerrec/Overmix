@@ -26,6 +26,14 @@ namespace Overmix{
 
 struct Parameters;
 
+struct EstimatorPara{
+	int iterations{ 150 };
+	double beta{ 1.3/255 };
+	double lambda{ 0.1 };
+	double alpha{ 0.7 };
+	int reg_size{ 7 };
+};
+
 class EstimatorRender : public ARender{
 	private:
 		//Estimation parameters
@@ -43,7 +51,14 @@ class EstimatorRender : public ARender{
 		Plane degrade( const Plane& original, const Parameters& para ) const;
 
 	public:
-		EstimatorRender( double upscale_factor ) : upscale_factor(upscale_factor,upscale_factor) { }
+		EstimatorRender( double upscale_factor, EstimatorPara para={} )
+			:	iterations(para.iterations)
+			,	beta      (para.beta)
+			,	lambda    (para.lambda)
+			,	alpha     (para.alpha)
+			,	reg_size  (para.reg_size)
+			,	upscale_factor(upscale_factor,upscale_factor)
+			{ }
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
 
