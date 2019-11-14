@@ -156,6 +156,7 @@ class Plane : public PlaneBase<color_type>{
 	private:
 		Plane edge_zero_generic( std::vector<int> weights, unsigned div ) const;
 		Plane edge_dm_generic( std::vector<int> weights_x, std::vector<int> weights_y, unsigned div ) const;
+		PlaneBase<std::pair<int,int>> edge_dm_direction( std::vector<int> weights_x, std::vector<int> weights_y, unsigned div ) const;
 		
 	public:
 		Plane edge_robert() const{
@@ -163,6 +164,9 @@ class Plane : public PlaneBase<color_type>{
 		}
 		Plane edge_sobel() const{
 			return edge_dm_generic( { -1,0,1, -2,0,2, -1,0,1 }, { 1,2,1, 0,0,0, -1,-2,-1 }, 4 );
+		}
+		PlaneBase<std::pair<int,int>> edge_sobel_direction() const{
+			return edge_dm_direction( { -1,0,1, -2,0,2, -1,0,1 }, { 1,2,1, 0,0,0, -1,-2,-1 }, 4 );
 		}
 		Plane edge_prewitt() const{
 			return edge_dm_generic( { -1,0,1, -1,0,1, -1,0,1 }, { 1,1,1, 0,0,0, -1,-1,-1 }, 3 );

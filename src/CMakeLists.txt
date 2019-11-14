@@ -12,6 +12,7 @@ set(SOURCES_CONTAINERS
 set(SOURCES_PLANES
 	planes/basic/difference.cpp
 	planes/manipulators/Inpaint.cpp
+	planes/manipulators/Mosaic.cpp
 	planes/manipulators/Steam.cpp
 	planes/ColorSpace.cpp
 	planes/DistanceMatrix.cpp

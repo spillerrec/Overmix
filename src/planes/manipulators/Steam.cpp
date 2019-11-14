@@ -43,12 +43,14 @@ Plane Steam::detect( const Plane& input, const Plane& alpha ){
 			unsigned end_y = std::min(unsigned(y+radius), input.get_height());
 			for( unsigned dy=start_y; dy<end_y; dy++ )
 				for( unsigned dx=start_x; dx<end_x; dx++ )
-					if( alpha[dy][dx] > 0 ){
+					//if( alpha[dy][dx] > 0 ) //TODO: Check if alpha exists
+					{
 						low  = std::min(low,  input[dy][dx]);
 						high = std::max(high, input[dy][dx]);
 					}
 			
-			out[y][x] = high-low;
+			//Blur input for bright area factor?
+			out[y][x] = color::fromDouble((1.0-color::asDouble(high-low)) * color::asDouble(input[y][x]));
 		}
 	}
 	
@@ -56,9 +58,10 @@ Plane Steam::detect( const Plane& input, const Plane& alpha ){
 }
 ImageEx Steam::detect( const ImageEx& input ){
 	ImageEx out( input );
+	out.to_grayscale(); //Ignore colors for now, perhaps use max in future instead?
 	
-	for(unsigned c=0; c<input.size(); c++)
-		out[c] = detect( input[c], input.alpha_plane() );
+	for(unsigned c=0; c<out.size(); c++)
+		out[c] = detect( out[c], out.alpha_plane() );
 	
 	//TODO: Alpha
 	out.alpha_plane() = {};
