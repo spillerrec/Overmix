@@ -59,16 +59,18 @@ Plane EstimatorRender::degrade( const Plane& original, const Parameters& para ) 
 	}
 	*/
 	
+	
 	//Crop to the area overlapping with our current image
 	auto pos = (para.container.pos(para.index)-para.min_point)*upscale_factor*channelScale(para.container, para.index, para.channel);
-	out.crop( pos, para.container.image(para.index)[para.channel].getSize()*upscale_factor );
+	auto crop_size = para.container.image(para.index)[para.channel].getSize()*upscale_factor;
+	out.crop( pos, crop_size );
 	
 	//Degrade - blur
 	if( bluring > 0 )
 		out = out.blur_gaussian( bluring*upscale_factor.x, bluring*upscale_factor.y );
 	
 	//Degrade - resolution
-	out = out.scale_select( Plane(), out.getSize() / upscale_factor, scale_method, pos - pos.to<int>().to<double>() );
+	out = out.scale_select( Plane(), out.getSize() / upscale_factor, scale_method );//, pos - pos.to<int>().to<double>() );
 	//TODO: Alpha
 	
 	
@@ -76,6 +78,7 @@ Plane EstimatorRender::degrade( const Plane& original, const Parameters& para ) 
 }
 
 static float signFloat( float a, float b, float c ){ return (a>b) ? c : (a<b) ? -c : 0.0f; }
+//static float signFloat( float a, float b, float c ){ return (a-b)*0.05*c; }
 
 void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, double beta, Point<double> scale ){
 	Point<int> pos = offset * scale;
@@ -84,7 +87,7 @@ void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, d
 	Plane delta( p1 );
 	for( unsigned iy=0; iy<p2.get_height(); iy++ )
 		for( auto val : makeZipRowIt( delta.scan_line( iy ), p2.scan_line( iy ) ) )
-			val.first = signFloat( val.first, val.second, beta );
+			val.first = color::truncate( signFloat( val.first, val.second, beta ) + color::WHITE/2 );
 	
 	//Upscale delta to fit
 	delta = delta.scale_select( Plane(), delta.getSize()*scale, ScalingFunction::SCALE_MITCHELL );
@@ -94,7 +97,7 @@ void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, d
 		auto row_out = out  .scan_line( iy+pos.y );
 		auto row_in  = delta.scan_line( iy       );
 		for( unsigned ix=0; ix<std::min(delta.get_width(), out.get_width()-pos.x); ix++ )
-			row_out[ix+pos.x] = color::truncate( row_out[ix+pos.x] - row_in[ix] );
+			row_out[ix+pos.x] = color::truncate( row_out[ix+pos.x] - (row_in[ix] - color::WHITE/2) );
 	}
 }
 
@@ -134,10 +137,22 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 	auto progress_amount = planes_amount * iterations * group.count();
 	Progress progress( "EstimatorRender", progress_amount, watcher );
 	
+	auto rect = group.size();
+	Size<> total_size = rect.size * upscale_factor + upscale_factor;	
 	auto est = AverageRender().render( group ); //Starting estimate
 	est.scaleFactor( upscale_factor );
 	auto beta = color::WHITE * this->beta / group.count();
-	for( unsigned c=0; c<planes_amount; ++c )
+	for( unsigned c=0; c<planes_amount; ++c ){
+		SumPlane summer(total_size);
+		
+		for( auto ref : group ){
+			auto alpha = Plane();
+			auto scaled = ref.image()[c].scale_select(alpha, (ref.image()[c].getSize()*upscale_factor), scale_method);			
+			summer.addPlane(scaled, ref.pos()*upscale_factor); //TODO: min_point offset?
+		}
+		est[c] = summer.average();
+		//est[c].fill(color::WHITE/2); //This must work as well for the algorithm to be correct
+		
 		for( int i=0; i<iterations; i++ ){
 			if( progress.shouldCancel() )
 				return {};
@@ -153,7 +168,8 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 				regularize( est[c], output_copy, reg_size, alpha, beta, lambda );
 			else
 				est[c] = output_copy;
-		}
+		}	
+	}
 
 	return est;
 }
