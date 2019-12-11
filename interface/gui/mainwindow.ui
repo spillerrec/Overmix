@@ -546,6 +546,7 @@
     <addaction name="action_crop_all"/>
     <addaction name="action_create_slide"/>
     <addaction name="action_show_skip_preview"/>
+    <addaction name="action_create_sr"/>
    </widget>
    <addaction name="menuFiles"/>
    <addaction name="menuView"/>
@@ -635,6 +636,11 @@
   <action name="action_show_skip_preview">
    <property name="text">
     <string>Show Demosaic Calculator</string>
+   </property>
+  </action>
+  <action name="action_create_sr">
+   <property name="text">
+    <string>Create SR sample</string>
    </property>
   </action>
  </widget>

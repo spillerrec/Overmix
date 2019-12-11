@@ -85,6 +85,7 @@ set(SOURCES_OTHERS
 	planes/dump/DumpPlane.cpp
 	utils/Animator.cpp
 	utils/ImageLoader.cpp
+	utils/SRSampleCreator.cpp
 	color.cpp
 	debug.cpp
 	Deteleciner.cpp

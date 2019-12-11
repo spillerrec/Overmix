@@ -38,6 +38,7 @@
 #include "utils/Animator.hpp"
 #include "utils/AProcessWatcher.hpp"
 #include "utils/ImageLoader.hpp"
+#include "utils/SRSampleCreator.hpp"
 
 #include "savers/DumpSaver.hpp"
 #include "importers/VideoImporter.hpp"
@@ -151,6 +152,8 @@ main_widget::main_widget( ImageContainer& images )
 	toggleMenubar();
 	
 	connect( ui->action_movement_graph, &QAction::triggered, [&](){ new MovementGraph( images ); } );
+	
+	connect( ui->action_create_sr, &QAction::triggered, [&](){ create_sr_sample(); } );
 	
 	
 	//Add images
@@ -715,6 +718,28 @@ void main_widget::create_slide(){
 			
 			if( animator.isPixilated() )
 				render_config.setSkipRenderConfig( animator.getSkip(), animator.getOffset() );
+		}
+	} );
+}
+
+void main_widget::create_sr_sample(){
+	ExceptionCatcher::Guard( this, [&](){
+		QString image_path = QFileDialog::getOpenFileName( this, tr("Open image for SR sample creation"), save_dir, tr("PNG files (*.png)") );
+		ImageEx img;
+		if( !img.read_file(image_path) )
+		{
+			QMessageBox::warning( this, tr("Load error"), tr("Could not open file as an image") );
+			return;
+		}
+		
+		SRSampleCreator creator;
+		bool accepted = false;
+		int scale = QInputDialog::getInt( this, tr("Scaling"), tr("Scaling"), 2, 2,8, 1, &accepted );
+		if( accepted )
+		{
+			creator.scale = scale;
+			creator.sample_count = scale * scale;
+			creator.render(images, img);
 		}
 	} );
 }
