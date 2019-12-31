@@ -83,6 +83,9 @@ Several tools related to the format have been developed, most importantly an app
 - [QCustomPlot](http://www.qcustomplot.com/) 2.x (required for GUI)
 - google/benchmark (required for unit-benchmarking)
 
+Optional:
+- waifu2x-converter-cpp (with opencv enabled)
+
 Linux only:
 - xcb
 - qt5x11extras

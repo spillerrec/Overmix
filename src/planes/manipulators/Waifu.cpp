@@ -18,6 +18,7 @@
 
 #include "Waifu.hpp"
 
+#define HAVE_OPENCV
 #include <w2xconv.h>
 #include "../ImageEx.hpp"
 #include "../../color.hpp"
