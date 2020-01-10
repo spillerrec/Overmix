@@ -440,7 +440,7 @@ void main_widget::clearCache(){
 	ui->btn_save->setEnabled( false );
 	renders.clear();
 	
-	QImage preview = FastRender().render(images,nullptr).to_qimage(false);
+	QImage preview = FastRender().render(getAlignedImages(),nullptr).to_qimage(false);
 	viewer.change_image( std::make_shared<imageCache>(preview) );
 }
 
