@@ -92,13 +92,6 @@ set(SOURCES_OTHERS
 	MultiPlaneIterator.cpp
 	)
 
-# mingw uses a different naming for FFTW apparently # TODO: find a better solution
-if( WIN32 )
-	set(PLATFORM_LIBRARIES ${PLATFORM_LIBRARIES} -lfftw3-3)
-else( WIN32 )
-	set(PLATFORM_LIBRARIES ${PLATFORM_LIBRARIES} -lfftw3)
-endif( WIN32 )
-
 # TODO: do something smarter?
 set(FFMPEG_LIBS -lavcodec -lavutil -lavformat)
 
@@ -113,7 +106,7 @@ add_library(OvermixCore
 	${WAIFU_SOURCES} 
 	${SOURCES_OTHERS} 
 	)
-target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -lm -lpng -ljpeg -lz -llzma -lpugixml ${FFMPEG_LIBS} ${WAIFU_LIB} ${PLATFORM_LIBRARIES})
+target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -lm -lpng -ljpeg -lz -llzma -lpugixml -lfftw3 ${FFMPEG_LIBS} ${WAIFU_LIB})
 
 # C++14
 set_property(TARGET OvermixCore PROPERTY CXX_STANDARD 14)

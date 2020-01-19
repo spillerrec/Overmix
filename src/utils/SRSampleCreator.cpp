@@ -26,7 +26,7 @@ using namespace Overmix;
 
 void SRSampleCreator::render( ImageContainer& add_to, const ImageEx& img ) const{
 	//TODO:
-	Point<unsigned> size( (img.get_width()-3) / scale * scale, (img.get_height()-3) / scale * scale );
+	Point<unsigned> size( (img.get_width()-(scale-1)) / scale * scale, (img.get_height()-(scale-1)) / scale * scale );
 	Point<unsigned> size_lr( size.x / scale, size.y / scale );
 	for( int x=0; x<scale; x++ )
 		for( int y=0; y<scale; y++ ){
@@ -39,4 +39,5 @@ void SRSampleCreator::render( ImageContainer& add_to, const ImageEx& img ) const
 			add_to.addImage( std::move(sample), -1, -1, QString::fromUtf8(("lr_" + std::to_string(x) + "_" + std::to_string(y)).c_str()) );
 			add_to.setPos( add_to.count()-1, offset );
 		}
+	add_to.setAligned();
 }

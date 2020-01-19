@@ -170,6 +170,8 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 				est[c] = output_copy;
 		}	
 	}
+	
+	est.alpha_plane() = {};
 
 	return est;
 }

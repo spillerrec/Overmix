@@ -741,6 +741,7 @@ void main_widget::create_sr_sample(){
 			creator.sample_count = scale * scale;
 			creator.render(images, img);
 		}
+		update_draw();
 	} );
 }
 
