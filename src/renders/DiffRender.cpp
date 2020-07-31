@@ -25,6 +25,7 @@
 
 #include <set>
 #include <vector>
+#include <stdexcept>
 using namespace std;
 using namespace Overmix;
 

@@ -22,6 +22,7 @@
 #include "../comparators/AComparator.hpp"
 
 #include <exception>
+#include <stdexcept>
 
 namespace Overmix{
 
