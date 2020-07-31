@@ -67,7 +67,7 @@ ImageEx FastRender::render( const AContainer& aligner, AProcessWatcher* watcher 
 			auto posDiff = (lastPos - offset).to<int>();
 			
 			auto startPos = posDiff.max( {0,0} );
-			auto endPos = (posDiff + lastSize).min( {w,h} );
+			auto endPos = (posDiff + lastSize).min( {w,h} ).max( {0,0} );
 			writeArea(0,0, w, startPos.y);
 			writeArea(0,startPos.y, startPos.x, endPos.y);
 			writeArea(endPos.x,startPos.y, w, endPos.y);
