@@ -37,6 +37,7 @@ void AverageAligner::align( AContainer& container, AProcessWatcher* watcher ) co
 	render.addAlphaPlane( comparator->process( container.plane( 0 ) )(), comparator->processAlpha( container.alpha( 0 ) )(), {0,0} );
 	
 	Point<double> hint = {0.0, 0.0};
+	Point<double> prevOffset = {0.0, 0.0};
 	for( unsigned i=1; i<container.count() && !progress.shouldCancel(); i++ ){
 		auto img   = comparator->process( container.plane( i ) );
 		auto alpha = comparator->processAlpha( container.alpha( i ) );
@@ -44,8 +45,12 @@ void AverageAligner::align( AContainer& container, AProcessWatcher* watcher ) co
 		//Find offset to base image
 		auto offset = comparator->findOffset( render.average(), img(), render.alpha(), alpha(), hint ).distance;
 		container.setPos( i, container.minPoint() + offset/comparator->scale() );
-		hint = offset;
 		render.addAlphaPlane( img(), alpha(), offset );
+		
+		//Update hint
+		hint = offset + (offset - prevOffset);
+		prevOffset = offset;
+		
 		progress.add();
 	}
 }

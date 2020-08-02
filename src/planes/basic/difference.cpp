@@ -147,7 +147,7 @@ double Difference::simpleAlpha( const Plane& p1, const Plane& p2, const Plane& a
 		|| p1.get_width()  < unsigned(p1_left)
 		|| p2.get_width()  < unsigned(p2_left)
 		){
-		qDebug("Broken align, dimensions out of sizes, issue #116");
+		qDebug("Broken align, dimensions out of sizes, reopen issue #116 if spottet");
 		return std::numeric_limits<double>::max();
 	}
 	

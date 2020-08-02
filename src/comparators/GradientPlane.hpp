@@ -47,10 +47,10 @@ struct GradientCheck{
 	int right  { 0 };
 	int top    { 0 };
 	int bottom { 0 };
-	int level  { 1 };
+	int level  { 0 };
+	Point<double> hint;
 	
-	GradientCheck(){ }
-	GradientCheck( int l, int r, int t, int b, int lvl=1 )
+	GradientCheck( int l=0, int r=0, int t=0, int b=0, int lvl=0 )
 		:	left(l), right(r), top(t), bottom(b), level(lvl) { }
 	
 	GradientCheck( Size<unsigned> size1, Size<unsigned> size2, double width_scale, double height_scale, Point<double> hint, int lvl=1 );

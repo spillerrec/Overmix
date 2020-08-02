@@ -43,12 +43,18 @@ void DiffCache::add_diff( int x, int y, double diff, unsigned precision ){
 	cache.emplace_back( c );
 }
 
-GradientCheck::GradientCheck( Size<unsigned> size1, Size<unsigned> size2, double width_scale, double height_scale, Point<double> hint, int lvl ){
-	//TODO: Handle size2 and perhaps improve hint
-	left = ((int)1 - (int)size1.width() ) * width_scale + hint.x;
-	top  = ((int)1 - (int)size1.height()) * height_scale + hint.y;
-	right  = ((int)size1.width()  - 1) * width_scale + hint.x;
-	bottom = ((int)size1.height() - 1) * height_scale + hint.y;
+GradientCheck::GradientCheck( Size<unsigned> size1, Size<unsigned> size2, double width_scale, double height_scale, Point<double> hint, int lvl ) : hint(hint){
+	//TODO: Hint is now broken since it might not be centered
+	auto limitLeftTop = Size<int>(1,1) - size2.to<int>();
+	auto limitBottomRight = size1.to<int>() - 1;
+	Point<double> scale(width_scale, height_scale);
+	
+	auto leftTop = limitLeftTop.max( limitLeftTop * scale + hint );
+	auto bottomRight = limitBottomRight.min( limitBottomRight * scale + hint );
+	left = leftTop.x;
+	top  = leftTop.y;
+	right  = bottomRight.x;
+	bottom = bottomRight.y;
 	level = lvl;
 }
 
@@ -68,20 +74,16 @@ struct img_comp{
 	double precision;
 	bool diff_set{ false }; //TODO: name is missleading, interface unclear as well
 	
-	img_comp( GradientPlane& plane, int hm, int vm, GradientCheck area = { 0,0,0,0,0 }, double p=1 )
+	img_comp( GradientPlane& plane, int hm, int vm, double diff, GradientCheck area={}, double p=1 )
 		:	plane(plane), area(area)
 		,	h_middle( hm ), v_middle( vm )
+		,	diff(diff)
 		,	precision( p )
-		{ }
+		{ diff_set = diff >= 0; }
 	void do_diff(){
 		if( !diff_set )
 			diff = plane.getDifference( h_middle, v_middle, precision );
 		//TODO: set to true?
-	}
-	void set_diff( double new_diff ){
-		diff = new_diff;
-		if( diff >= 0 )
-			diff_set = true;
 	}
 	
 	ImageOffset result() const{
@@ -96,9 +98,9 @@ struct img_comp{
 		int x = h_middle;
 		int y = v_middle;
 		//TODO: Geometry?
-		int p1_top = y < 0 ? 0 : y;
-		int p2_top = y > 0 ? 0 : -y;
+		int p1_top  = y < 0 ? 0 : y;
 		int p1_left = x < 0 ? 0 : x;
+		int p2_top  = y > 0 ? 0 : -y;
 		int p2_left = x > 0 ? 0 : -x;
 		unsigned width = std::min( plane.p1.get_width() - p1_left, plane.p2.get_width() - p2_left );
 		unsigned height = std::min( plane.p1.get_height() - p1_top, plane.p2.get_height() - p2_top );
@@ -111,10 +113,10 @@ struct img_comp{
 
 
 ImageOffset GradientPlane::findMinimum( GradientCheck area ){
-//	qDebug( "Round %d: %d,%d x %d,%d", area.level, area.left, area.right, area.top, area.bottom );
 	std::vector<img_comp> comps;
 	//TODO: Move to GradientCheck, and document
 	int amount = area.level*2 + 2;
+	comps.reserve( amount * amount );
 	double h_offset = (double)(area.right - area.left) / amount;
 	double v_offset = (double)(area.bottom - area.top) / amount;
 	auto level = area.level > 1 ? area.level-1 : 1;
@@ -123,11 +125,8 @@ ImageOffset GradientPlane::findMinimum( GradientCheck area ){
 		//Handle trivial step
 		//Check every diff in the remaining area
 		for( int ix=area.left; ix<=area.right; ix++ )
-			for( int iy=area.top; iy<=area.bottom; iy++ ){
-				img_comp t( *this, ix, iy );
-				t.set_diff( cache.get_diff( ix, iy, 1 ) );
-				comps.push_back( t );
-			}
+			for( int iy=area.top; iy<=area.bottom; iy++ )
+				comps.emplace_back( *this, ix, iy, cache.get_diff( ix, iy, 1 ) );
 	}
 	else{
 		//Make sure we will not do the same position multiple times
@@ -157,9 +156,8 @@ ImageOffset GradientPlane::findMinimum( GradientCheck area ){
 				};
 				
 				//Create and add
-				img_comp t( *this, x, y, sub_area, precision );
-				t.set_diff( cache.get_diff( x, y, t.precision ) );
-				comps.push_back( t );
+				auto diff = cache.get_diff( x, y, precision );
+				comps.emplace_back( *this, x, y, diff, sub_area, precision );
 			}
 	}
 	
