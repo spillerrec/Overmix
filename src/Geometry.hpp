@@ -191,6 +191,9 @@ struct Rectangle{
 		   &&  other.pos.y <= endPos().y && other.endPos().y >= pos.y;
 	}
 	
+	bool contains( const Size<T>& point ) const
+		{ return intersects( Rectangle<T>( point, {0,0} ) ); }
+	
 	bool contains( Rectangle<T> other ) const{
 		return other.pos.x >= pos.x && other.pos.y >= pos.y
 			&&	other.endPos().x <= endPos().x && other.endPos().y <= endPos().y;

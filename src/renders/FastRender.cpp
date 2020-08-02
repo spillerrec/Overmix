@@ -24,6 +24,7 @@
 #include "../utils/AProcessWatcher.hpp"
 #include "../utils/PlaneUtils.hpp"
 
+#include <iostream>
 #include <vector>
 using namespace std;
 using namespace Overmix;
@@ -59,22 +60,30 @@ ImageEx FastRender::render( const AContainer& aligner, AProcessWatcher* watcher 
 					out.setPixel( offset + dPos, current.pixel( dPos ) );
 				}
 		};
-		if( current.getSize() == lastSize )
-		{
-			//Write only new parts, this could be
+		
+		Rectangle<int> img1(offset, current.getSize());
+		Rectangle<int> img2(lastPos, lastSize);
+		
+		if( !img1.intersects(img2) ) //Write entire image
+			writeArea(0,0, current.get_width(), current.get_height());
+		else if( !img2.contains(img1) ){
+			auto p1 = img1.pos     .max(img2.pos     ) - img1.pos;
+			auto p2 = img1.endPos().min(img2.endPos()) - img1.pos;
 			int w = current.get_width();
 			int h = current.get_height();
-			auto posDiff = (lastPos - offset).to<int>();
 			
-			auto startPos = posDiff.max( {0,0} );
-			auto endPos = (posDiff + lastSize).min( {w,h} ).max( {0,0} );
-			writeArea(0,0, w, startPos.y);
-			writeArea(0,startPos.y, startPos.x, endPos.y);
-			writeArea(endPos.x,startPos.y, w, endPos.y);
-			writeArea(0, endPos.y, w, h);
+			writeArea(   0,    0,   p1.x, p1.y);
+			writeArea(p1.x,    0,   p2.x, p1.y);
+			writeArea(p2.x,    0,      w, p1.y);
+			
+			writeArea(   0, p1.y,   p1.x, p2.y);
+			writeArea(p2.x, p1.y,      w, p2.y);
+			
+			writeArea(   0, p2.y,   p1.x,    h);
+			writeArea(p1.x, p2.y,   p2.x,    h);
+			writeArea(p2.x, p2.y,   w,       h);
 		}
-		else //Write entire image
-			writeArea(0,0, current.get_width(), current.get_height());
+		
 		
 		lastSize = current.getSize();
 		lastPos = offset;
