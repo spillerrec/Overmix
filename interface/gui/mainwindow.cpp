@@ -445,6 +445,9 @@ void main_widget::clearCache(){
 }
 
 void main_widget::clear_image(){
+	selection = nullptr;
+	selection_type = selection_value = 0;
+	
 	images.clear();
 	clearCache();
 	clear_mask();
@@ -452,9 +455,6 @@ void main_widget::clear_image(){
 	
 	browser.change_image( nullptr );
 	ui->files_view->reset();
-	
-	selection = nullptr;
-	ui->selection_selector->setCurrentIndex( 0 );
 	
 	update_draw();
 }
@@ -657,8 +657,10 @@ void main_widget::updateSelection(){
 					getIndex( tr( "Select frame" ), tr( "Select the frame number" ), frames.size() );
 				} break;
 				
-			case 3: QMessageBox::warning( this, tr("Not implemented"), tr("Custom selection not yet implemented") );
+			case 3:
+				QMessageBox::warning( this, tr("Not implemented"), tr("Custom selection not yet implemented") );
 				//TODO: implement this obviously
+				[[fallthrough]];
 			case 0:
 			default:
 					selection_type = 0;
