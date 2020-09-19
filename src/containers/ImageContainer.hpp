@@ -27,6 +27,7 @@ class ImageContainer : public AContainer{
 	private:
 		std::unique_ptr<AComparator> comparator;
 	public:
+		void setComparator( const AComparator* );
 		void setComparator( std::unique_ptr<AComparator> );
 		
 	private:

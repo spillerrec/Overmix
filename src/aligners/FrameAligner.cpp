@@ -35,6 +35,7 @@ void FrameAligner::align( class AContainer& container, class AProcessWatcher* wa
 	auto progress_offset = progress.makeProgress( "Offset frames", frames.size() );
 	
 	ImageContainer images;
+	images.setComparator( container.getComparator() );
 	for( auto& frame : frames ){
 		FrameContainer current( container, frame );
 		images.addImage( FloatRender( 1.0, 1.0 ).render( current ) );

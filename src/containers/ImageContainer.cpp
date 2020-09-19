@@ -62,6 +62,27 @@ ImageOffset ImageContainer::IndexCache::getOffset( unsigned index1, unsigned ind
 		return offsets[index1][index2];
 }
 
+class TempComparator : public AComparator{
+	private:
+		const AComparator* parent;
+		
+	public:
+		TempComparator(const AComparator* parent) : parent(parent) {}
+		Size<double> scale() const override{ return parent->scale(); }
+		ModifiedPlane process( const Plane& plane ) const override { return parent->process(plane); }
+		ModifiedPlane processAlpha( const Plane& plane ) const override { return parent->processAlpha(plane); }
+		
+		ImageOffset findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2, Point<double> hint ) const
+			{ return parent->findOffset(img1, img2, a1, a2, hint); }
+		
+		double findError( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2, double x, double y ) const override
+			{ return parent->findError(img2, img2, a1, a2, x, y); }
+};
+
+void ImageContainer::setComparator( const AComparator* comp ){
+	setComparator( std::make_unique<TempComparator>( comp ) );
+}
+
 void ImageContainer::setComparator( std::unique_ptr<AComparator> g ){
 	comparator = std::move( g );
 	index_cache.invalidate( groups );
