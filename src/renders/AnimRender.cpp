@@ -39,7 +39,7 @@ static Plane expand( const Plane& p, Size<unsigned> size, Point<unsigned> pos ){
 	return out;
 }
 
-static Plane reduce( const Plane& p, Size<unsigned> size, Point<unsigned> pos ){
+static Plane reduce_func( const Plane& p, Size<unsigned> size, Point<unsigned> pos ){
 	Plane out( size );
 	out.copy( p, pos, size, {0,0} );
 	return out;
@@ -119,7 +119,7 @@ ImageEx AnimRender::render( int frame, AProcessWatcher* watcher ){
 		frames.setMask( i, frames.addMask( difference( frames.image( i ), base ) ) );
 	
 	//TODO: reduce
-	return modify( AverageRender().render( frames, watcher ), old[frame].size, old[frame].pos, reduce );
+	return modify( AverageRender().render( frames, watcher ), old[frame].size, old[frame].pos, reduce_func );
 }
 
 

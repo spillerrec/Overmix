@@ -11,6 +11,7 @@ set(SOURCES_CONTAINERS
 
 set(SOURCES_PLANES
 	planes/basic/difference.cpp
+	planes/basic/rotation.cpp
 	planes/manipulators/Inpaint.cpp
 	planes/manipulators/Mosaic.cpp
 	planes/manipulators/Steam.cpp
@@ -106,8 +107,8 @@ add_library(OvermixCore
 	${WAIFU_SOURCES} 
 	${SOURCES_OTHERS} 
 	)
-target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -lm -lpng -ljpeg -lz -llzma -lpugixml -lfftw3 ${FFMPEG_LIBS} ${WAIFU_LIB})
+target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -lm -lpng -ljpeg -lz -llzma -lpugixml fftw3 ${FFMPEG_LIBS} ${WAIFU_LIB})
 
-# C++14
-set_property(TARGET OvermixCore PROPERTY CXX_STANDARD 14)
+# C++17
+set_property(TARGET OvermixCore PROPERTY CXX_STANDARD 17)
 set_property(TARGET OvermixCore PROPERTY CXX_STANDARD_REQUIRED ON)
