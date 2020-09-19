@@ -166,6 +166,8 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 	auto movement = aligner.hasMovement();
 	if( movement.first && movement.second )
 		use_plane_alpha = true;
+	if( spacing.x > 1.0 || spacing.y > 1.0 )
+		use_plane_alpha = true;
 	
 	auto color_space = aligner.image(0).getColorSpace();
 	ImageEx img( for_merging ? color_space.changed( Transform::GRAY ) : color_space );
