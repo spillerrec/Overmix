@@ -67,7 +67,7 @@ set(SOURCE_GUI_VISUALISATION
 	gui/visualisations/SkipRenderPreview.cpp
 	)
 
-find_library(QCUSTOMPLOT NAMES qcustomplot2)
+find_library(QCUSTOMPLOT NAMES qcustomplot2 qcustomplot) #version 1 of the library is needed for CircleCI to compile
 
 if( WIN32 ) # Don't use registry on windows for saving options
 	add_definitions( -DPORTABLE )
