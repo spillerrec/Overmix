@@ -37,40 +37,7 @@ extern "C" {
 #include <libavutil/mathematics.h>
 }
 
-using namespace std; //TODO: remove
 using namespace Overmix;
-
-class VideoFile{
-	private:
-		QString filepath;
-		AVFormatContext* format_context;
-		AVCodecContext* codec_context;
-		
-		int stream_index;
-		
-		
-	public:
-		VideoFile( QString filepath )
-			:	filepath( filepath )
-			,	format_context( nullptr )
-			,	codec_context( nullptr )
-			{ }
-		
-		bool open();
-		bool seek( unsigned min, unsigned sec );
-		bool seek( int64_t byte );
-		void run( QString dir );
-		
-		void only_keyframes(){
-			codec_context->skip_loop_filter = AVDISCARD_NONKEY;
-			codec_context->skip_idct = AVDISCARD_NONKEY;
-			codec_context->skip_frame = AVDISCARD_NONKEY;
-		//	codec_context->lowres = 2;
-		}
-		
-		void debug_containter();
-		void debug_video();
-};
 
 VideoStream::VideoStream( QString filepath ){
 //	av_register_all();
@@ -108,11 +75,10 @@ bool VideoStream::seek( double seconds ){
 	int64_t wanted_time = seconds * AV_TIME_BASE;
 	int64_t target = av_rescale_q( wanted_time, AV_TIME_BASE_Q, format_context->streams[stream_index]->time_base );
 	if( av_seek_frame( format_context, stream_index, target,  0 ) < 0 ){
-		cout << "Couldn't seek\n";
+		std::cout << "Couldn't seek\n";
 		return false;
 	}
 	avcodec_flush_buffers( codec_context );
-	cout << "target: " << target << "\n";
 	return true;
 }
 

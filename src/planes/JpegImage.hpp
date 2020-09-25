@@ -63,7 +63,7 @@ class JpegBlock{
 		
 	public:
 		JpegBlock() : table( 1 ) { }
-		JpegBlock( int16_t* input ) : table( input ) { }
+		explicit JpegBlock( int16_t* input ) : table( input ) { }
 		
 		void fillFromRaw( const PlaneBase<double>& input, Point<unsigned> pos, const QuantBlock& quant );
 		void fillDctPlane( DctPlane& dct, const QuantBlock& quant ) const;
@@ -77,7 +77,7 @@ class JpegPlane : public PlaneBase<JpegBlock>{
 		QuantBlock quant;
 	
 	public:
-		JpegPlane( QuantBlock quant )
+		explicit JpegPlane( QuantBlock quant )
 			:	PlaneBase<JpegBlock>(),     quant(quant) { }
 		JpegPlane( Size<unsigned> size, QuantBlock quant )
 			:	PlaneBase<JpegBlock>(size), quant(quant) { }

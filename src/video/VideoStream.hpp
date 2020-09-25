@@ -38,7 +38,7 @@ class VideoStream{
 		
 		
 	public:
-		VideoStream( QString path );
+		explicit VideoStream( QString path );
 		
 		bool seek( double seconds );
 		VideoFrame getFrame();

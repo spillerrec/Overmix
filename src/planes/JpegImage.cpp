@@ -121,7 +121,7 @@ JpegImage Overmix::from_jpeg( QIODevice& dev ){
 		auto blockarr = jpeg.cinfo.mem->access_virt_barray( (j_common_ptr)&jpeg.cinfo, v_ptr[ic], 0, 1, false );
 		for( unsigned iy=0; iy<p.get_height(); iy++ )
 			for( unsigned ix=0; ix<p.get_width(); ix++ )
-				p.scan_line(iy)[ix] = { blockarr[iy][ix] };
+				p.scan_line(iy)[ix] = JpegBlock{ blockarr[iy][ix] };
 		
 		img.planes.emplace_back( std::move( p ) );
 	}

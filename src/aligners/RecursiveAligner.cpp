@@ -105,13 +105,13 @@ pair<ImageGetter,Point<double>> RecursiveAligner::combine( const AContainer& con
 	else{
 		//Wrap planes in ImageContainer
 		//TODO: Optimize this
-		ImageContainer container;
-		container.addImage( ImageEx(  first.plane(),  first.alpha() ) ); //We are having copies here!!
-		container.addImage( ImageEx( second.plane(), second.alpha() ) );
-		container.setPos( 1, offset );
+		ImageContainer local_container;
+		local_container.addImage( ImageEx(  first.plane(),  first.alpha() ) ); //We are having copies here!!
+		local_container.addImage( ImageEx( second.plane(), second.alpha() ) );
+		local_container.setPos( 1, offset );
 		
 		//Render it
-		auto img = AverageRender( false, true ).render( container );
+		auto img = AverageRender( false, true ).render( local_container );
 		return { { std::move(img[0]), std::move(img.alpha_plane()), center_left, center_right }, offset };
 	}
 }

@@ -76,7 +76,7 @@ class TempComparator : public AComparator{
 			{ return parent->findOffset(img1, img2, a1, a2, hint); }
 		
 		double findError( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2, double x, double y ) const override
-			{ return parent->findError(img2, img2, a1, a2, x, y); }
+			{ return parent->findError(img1, img2, a1, a2, x, y); }
 };
 
 void ImageContainer::setComparator( const AComparator* comp ){

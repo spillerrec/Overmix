@@ -27,7 +27,7 @@ class LinearAligner : public AAligner{
 		AlignMethod method;
 		
 	public:
-		LinearAligner( AlignMethod method ) : method(method) { }
+		explicit LinearAligner( AlignMethod method ) : method(method) { }
 		virtual void align( AContainer& container, AProcessWatcher* watcher=nullptr ) const override;
 };
 

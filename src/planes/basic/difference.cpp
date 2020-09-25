@@ -76,15 +76,15 @@ struct Para{
 	DiffAmount sum( T func, T2 alpha_func ) const{
 		//Calculates the sum of func applied on each i, but optimized for stride==1
 		precision_color_type sum = 0;
-		double alpha = 0;
+		double alphaSum = 0;
 		auto adder = [&]( unsigned i ){
 			auto alpha_value = (this->*alpha_func)( i );
 			sum += (this->*func)( i ) * alpha_value;
-			alpha += alpha_value;
+			alphaSum += alpha_value;
 		};
 		if( stride == 1 ) for( unsigned i=0; i<width; ++i       ) adder( i );
 		else              for( unsigned i=0; i<width; i+=stride ) adder( i );
-		return { sum, alpha };
+		return { sum, alphaSum };
 	}
 	
 	color_type distance_L1( unsigned i ) const{ 

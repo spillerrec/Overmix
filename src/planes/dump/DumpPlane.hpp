@@ -37,7 +37,7 @@ struct DumpPlane{
 	public:
 		DumpPlane() { }
 		DumpPlane( uint32_t width, uint32_t height, uint16_t depth, std::vector<uint8_t> data )
-			:	width(width), height(height), depth(depth), data(data) { }
+			:	width(width), height(height), depth(depth), data(std::move(data)) { }
 		
 		uint32_t getWidth() const{ return width; }
 		uint32_t getHeight() const{ return height; }

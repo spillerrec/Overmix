@@ -35,7 +35,7 @@ using namespace Overmix;
 struct MemStream{
 	//TODO: kinda unnecessary, just pass dev*
 	QIODevice* dev;
-	MemStream( QIODevice& dev ) : dev(&dev) { }
+	explicit MemStream( QIODevice& dev ) : dev(&dev) { }
 	
 	unsigned read( char* out, unsigned amount ){
 		auto result = dev->read( out, amount );

@@ -590,7 +590,7 @@ void main_widget::showFullscreen(){
 void main_widget::makeViewerBlack(){
 	auto pal = viewer.palette();
 	auto color = ui->action_make_black->isChecked() ? Qt::black : Qt::transparent;
-	pal.setColor( QPalette::Background, color );
+	pal.setColor( QPalette::Window, color );
 	viewer.setAutoFillBackground(true);
 	viewer.setPalette( pal );
 	viewer.update();

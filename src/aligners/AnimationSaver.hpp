@@ -51,7 +51,7 @@ class AnimationSaver{
 		QSize normalize();
 		
 	public:
-		AnimationSaver( QString folder );
+		explicit AnimationSaver( QString folder );
 		
 		int addImage( const ImageEx& img );
 		

@@ -55,22 +55,22 @@ class ConstDelegatedContainer : public AContainer{
 		virtual void setCachedOffset( unsigned, unsigned, ImageOffset ) override{ throw const_exception(); }
 		
 	public:
-		ConstDelegatedContainer( const AContainer& container ) : container(container) { }
+		explicit ConstDelegatedContainer( const AContainer& container ) : container(container) { }
 };
 
 class DelegatedContainer : public ConstDelegatedContainer{
 	private:
-		AContainer& container;
+		AContainer& mutable_container;
 		
 	public: //AContainer implementation
-		virtual ImageEx& imageRef( unsigned index ) override{ return container.imageRef( index ); }
-		virtual void setPos( unsigned index, Point<double> pos ) override{ container.setPos( index, pos ); }
-		virtual void setFrame( unsigned index, int frame ) override{ container.setFrame( index, frame ); }
-		virtual void setMask( unsigned index, int id ) override { container.setMask( index, id ); }
-		virtual void setCachedOffset( unsigned i, unsigned j, ImageOffset offset ) override { container.setCachedOffset( i, j, offset ); }
+		virtual ImageEx& imageRef( unsigned index ) override{ return mutable_container.imageRef( index ); }
+		virtual void setPos( unsigned index, Point<double> pos ) override{ mutable_container.setPos( index, pos ); }
+		virtual void setFrame( unsigned index, int frame ) override{ mutable_container.setFrame( index, frame ); }
+		virtual void setMask( unsigned index, int id ) override { mutable_container.setMask( index, id ); }
+		virtual void setCachedOffset( unsigned i, unsigned j, ImageOffset offset ) override { mutable_container.setCachedOffset( i, j, offset ); }
 		
 	public:
-		DelegatedContainer( AContainer& container ) : ConstDelegatedContainer(container), container(container) { }
+		explicit DelegatedContainer( AContainer& container ) : ConstDelegatedContainer(container), mutable_container(container) { }
 };
 
 }

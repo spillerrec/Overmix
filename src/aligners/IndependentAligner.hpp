@@ -28,7 +28,7 @@ class IndependentAligner : public AAligner{
 	
 	public:
 		IndependentAligner() { }
-		IndependentAligner( unsigned range ) : range(range){ }
+		explicit IndependentAligner( unsigned range ) : range(range){ }
 		virtual void align( class AContainer& container, class AProcessWatcher* watcher=nullptr ) const override;
 };
 

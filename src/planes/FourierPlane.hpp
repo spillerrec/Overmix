@@ -33,7 +33,9 @@ class FourierPlane : public PlaneBase<std::complex<double>>{
 		double scaling{ 1.0 };
 		
 	public:
-		FourierPlane( Size<unsigned> size ) : PlaneBase( size ), real_width( size.width()*2 ) { }
+		explicit FourierPlane( Size<unsigned> size ) : PlaneBase( size ), real_width( size.width()*2 ) { }
+		
+		explicit FourierPlane( const Plane& p, double range=1.0 );
 		
 		FourierPlane( const FourierPlane& p )
 			:	PlaneBase( p ), real_width( p.real_width ), scaling( p.scaling ) { }
@@ -41,19 +43,17 @@ class FourierPlane : public PlaneBase<std::complex<double>>{
 			:	PlaneBase( p ), real_width( p.real_width ), scaling( p.scaling ) { }
 		
 		FourierPlane& operator=( const FourierPlane& p ){
-			*(PlaneBase<std::complex<double>>*)this = p;
+			*static_cast<PlaneBase<std::complex<double>>*>(this) = p;
 			real_width = p.real_width;
 			scaling = p.scaling;
 			return *this;
 		}
 		FourierPlane& operator=( FourierPlane&& p ){
-			*(PlaneBase<std::complex<double>>*)this = p;
+			*static_cast<PlaneBase<std::complex<double>>*>(this) = p;
 			real_width = p.real_width;
 			scaling = p.scaling;
 			return *this;
 		}
-		
-		FourierPlane( const Plane& p, double range=1.0 );
 		
 		Plane asPlane() const;
 		Plane toPlane() const{
@@ -73,7 +73,7 @@ class DctPlane : public PlaneBase<double>{
 		fftw_plan plan_dct, plan_idct;
 		
 	public:
-		DctPlane( Size<unsigned> size );
+		explicit DctPlane( Size<unsigned> size );
 		~DctPlane();
 		DctPlane( const DctPlane& ) = delete;
 		

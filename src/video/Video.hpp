@@ -35,7 +35,7 @@ class Video{
 		std::unique_ptr<VideoStream> stream;
 		
 	public:
-		Video( QString path );
+		explicit Video( QString path );
 		bool isValid() const;
 		
 		void setPosition( double seconds );

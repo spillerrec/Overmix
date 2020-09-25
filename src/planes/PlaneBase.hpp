@@ -103,7 +103,7 @@ class PlaneBase{
 		
 	public:
 		PlaneBase() { }
-		PlaneBase( Size<unsigned> size )
+		explicit PlaneBase( Size<unsigned> size )
 			:	realsize(size), size(size), line_width( size.width() )
 			,	data( std::make_unique<T[]>( dataSize() ) ) { }
 		PlaneBase( unsigned w, unsigned h ) : PlaneBase( Size<unsigned>( w, h ) ) { }

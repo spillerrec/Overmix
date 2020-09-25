@@ -85,7 +85,7 @@ struct LevelOptions{
 };
 
 static color_type level_pixel( color_type in, void* data ){
-	LevelOptions *opt = (LevelOptions*)data;
+	LevelOptions *opt = static_cast<LevelOptions*>(data);
 	
 	//Limit
 	double scale = 1.0 / ( opt->limit_max - opt->limit_min );
