@@ -70,7 +70,7 @@ class Progress{
 		
 		template<typename Func>
 		Progress( std::string title, int total, AProcessWatcher* watcher, Func f )
-			:	Progress( title, total, watcher )
+			:	Progress( std::move(title), total, watcher )
 			{ loopAll( f ); }
 		
 		void add( int amount=1 )      { if( watcher ) watcher->add( amount ); }

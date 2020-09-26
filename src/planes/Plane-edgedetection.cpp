@@ -20,6 +20,7 @@
 #include "../debug.hpp"
 
 #include <QtConcurrent>
+#include <type_traits>
 
 using namespace std;
 using namespace Overmix;
@@ -33,8 +34,8 @@ struct EdgeLine{
 	
 	//Kernels
 	unsigned size;
-	T *weights_x;
-	T *weights_y;
+	const T *weights_x;
+	const T *weights_y;
 	unsigned div;
 	
 	//Operator
@@ -48,7 +49,7 @@ struct EdgeLine{
 
 template<typename T>
 static T calculate_kernel( T *kernel, unsigned size, const color_type* in, unsigned line_width ){
-	T sum = 0;
+	std::remove_cv_t<T> sum = 0;
 	for( unsigned iy=0; iy<size; ++iy ){
 		auto row = in + iy*line_width;
 		for( unsigned ix=0; ix<size; ++ix, ++kernel, ++row )
@@ -102,7 +103,7 @@ static void edge_line( const EdgeLine<Out, T>& line ){
 }
 
 template<typename PlaneType, typename T, typename T2>
-PlaneType parallel_edge_line( const Plane& p, vector<T> weights_x, vector<T> weights_y, unsigned div, T2 func ){
+PlaneType parallel_edge_line( const Plane& p, const vector<T>& weights_x, const vector<T>& weights_y, unsigned div, T2 func ){
 	Timer t( "parallel_edge_line" );
 	PlaneType out( p.getSize() );
 	unsigned size = sqrt( weights_x.size() );
@@ -132,15 +133,15 @@ PlaneType parallel_edge_line( const Plane& p, vector<T> weights_x, vector<T> wei
 	return out;
 }
 
-Plane Plane::edge_zero_generic( vector<int> weights, unsigned div ) const{
+Plane Plane::edge_zero_generic( const vector<int>& weights, unsigned div ) const{
 	return parallel_edge_line<Plane, int, decltype(calculate_zero_edge<int>)>( *this, weights, vector<int>(), div, calculate_zero_edge<int> );
 }
 
-Plane Plane::edge_dm_generic( vector<int> weights_x, vector<int> weights_y, unsigned div ) const{
+Plane Plane::edge_dm_generic( const vector<int>& weights_x, const vector<int>& weights_y, unsigned div ) const{
 	return parallel_edge_line<Plane, int, decltype(calculate_edge<int>)>( *this, weights_x, weights_y, div, calculate_edge<int> );
 }
 
-PlaneBase<std::pair<int,int>> Plane::edge_dm_direction( std::vector<int> weights_x, std::vector<int> weights_y, unsigned div ) const{
+PlaneBase<std::pair<int,int>> Plane::edge_dm_direction( const vector<int>& weights_x, const vector<int>& weights_y, unsigned div ) const{
 	auto func = calculate_direction<std::pair<int,int>, int>;
 	return parallel_edge_line<PlaneBase<std::pair<int,int>>, int, decltype(func)>( *this, weights_x, weights_y, div, func );
 }

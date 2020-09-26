@@ -36,7 +36,7 @@ namespace Overmix{ class ImageContainer; }
 struct Timer{
 	QElapsedTimer t;
 	QString name;
-	Timer( QString name ) : name(name) { t.start(); }
+	explicit Timer( QString name ) : name(name) { t.start(); }
 	~Timer(){ print(name); }
 	void print( QString name )
 		{ qCDebug(LogTiming) << name << " completed in: " << t.restart(); }
@@ -56,7 +56,7 @@ namespace debug{
 			std::ofstream file;
 			
 		public:	
-			CsvFile( std::string filename ) : file( filename ) { }
+			explicit CsvFile( const std::string& filename ) : file( filename ) { }
 			~CsvFile(){ file.close(); }
 			
 			CsvFile& add( const char* const value ){

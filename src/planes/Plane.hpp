@@ -154,25 +154,26 @@ class Plane : public PlaneBase<color_type>{
 		
 	//Edge-detection
 	private:
-		Plane edge_zero_generic( std::vector<int> weights, unsigned div ) const;
-		Plane edge_dm_generic( std::vector<int> weights_x, std::vector<int> weights_y, unsigned div ) const;
-		PlaneBase<std::pair<int,int>> edge_dm_direction( std::vector<int> weights_x, std::vector<int> weights_y, unsigned div ) const;
+		using Weights = std::vector<int>;
+		Plane edge_zero_generic( const Weights& weights, unsigned div ) const;
+		Plane edge_dm_generic( const Weights& weights_x, const Weights& weights_y, unsigned div ) const;
+		PlaneBase<std::pair<int,int>> edge_dm_direction( const Weights& weights_x, const Weights& weights_y, unsigned div ) const;
 		
 	public:
 		Plane edge_robert() const{
-			return edge_dm_generic( { 0,1, -1,0 }, { 1,0, 0,-1 }, 1 );
+			return edge_dm_generic( Weights{ 0,1, -1,0 }, Weights{ 1,0, 0,-1 }, 1 );
 		}
 		Plane edge_sobel() const{
-			return edge_dm_generic( { -1,0,1, -2,0,2, -1,0,1 }, { 1,2,1, 0,0,0, -1,-2,-1 }, 4 );
+			return edge_dm_generic( Weights{ -1,0,1, -2,0,2, -1,0,1 }, Weights{ 1,2,1, 0,0,0, -1,-2,-1 }, 4 );
 		}
 		PlaneBase<std::pair<int,int>> edge_sobel_direction() const{
-			return edge_dm_direction( { -1,0,1, -2,0,2, -1,0,1 }, { 1,2,1, 0,0,0, -1,-2,-1 }, 4 );
+			return edge_dm_direction( Weights{ -1,0,1, -2,0,2, -1,0,1 }, Weights{ 1,2,1, 0,0,0, -1,-2,-1 }, 4 );
 		}
 		Plane edge_prewitt() const{
-			return edge_dm_generic( { -1,0,1, -1,0,1, -1,0,1 }, { 1,1,1, 0,0,0, -1,-1,-1 }, 3 );
+			return edge_dm_generic( Weights{ -1,0,1, -1,0,1, -1,0,1 }, Weights{ 1,1,1, 0,0,0, -1,-1,-1 }, 3 );
 		}
 		Plane edge_laplacian() const{
-			return edge_zero_generic( { -1,-1,-1, -1,8,-1, -1,-1,-1 }, 1 );
+			return edge_zero_generic( Weights{ -1,-1,-1, -1,8,-1, -1,-1,-1 }, 1 );
 		}
 		Plane edge_laplacian_large() const{
 			return edge_zero_generic( {
