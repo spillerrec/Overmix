@@ -36,7 +36,7 @@ struct PlaneItInfo{
 	color_type* row_start{ nullptr };
 	color_type* row{ nullptr };
 	
-	PlaneItInfo( Plane& p, Point<> pos={0,0} ) : p(p), x(pos.x), y(pos.y) { }
+	explicit PlaneItInfo( Plane& p, Point<> pos={0,0} ) : p(p), x(pos.x), y(pos.y) { }
 	
 	bool check_x( int x )
 		{ return x >= 0 && (unsigned)x < p.get_width(); }
@@ -153,7 +153,7 @@ class MultiPlaneIterator{
 		void new_x( int x );
 	
 	public:
-		MultiPlaneIterator( std::vector<PlaneItInfo> info ) :	infos( info ){
+		explicit MultiPlaneIterator( std::vector<PlaneItInfo> info ) :	infos( std::move(info) ){
 			x = y = left = top = 0;
 			right = bottom = -1;
 		}

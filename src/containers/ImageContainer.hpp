@@ -46,7 +46,7 @@ class ImageContainer : public AContainer{
 			public: //Modify
 				void reserve( unsigned amount );
 				void push_back( ImagePosition position );
-				void setOffset( unsigned, unsigned, ImageOffset );
+				void setOffset( unsigned, unsigned, const ImageOffset& );
 				void invalidate( const std::vector<ImageGroup>& groups );
 				void clear(){
 					indexes.clear();

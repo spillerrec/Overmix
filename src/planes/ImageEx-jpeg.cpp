@@ -17,13 +17,11 @@
 
 #include "ImageEx.hpp"
 
+#include "JpegWrapper.hpp"
 #include "../color.hpp"
 #include "../debug.hpp"
 
 #include "../degraders/JpegDegrader.hpp"
-
-#include "gwenview/iodevicejpegsourcemanager.h"
-#include "jpeglib.h"
 
 #include <QFile>
 
@@ -43,51 +41,6 @@ JpegDegrader ImageEx::getJpegDegrader( QString path ){
 	return deg;
 }
 
-struct JpegComponent{
-	jpeg_component_info *info;
-	
-	JpegComponent( jpeg_component_info& info ) : info(&info) { }
-	
-	Size<JDIMENSION> size() const
-		{ return { info->downsampled_width, info->downsampled_height }; }
-	Size<JDIMENSION> sizePadded() const {
-		Size<JDIMENSION> dctsize( info->h_samp_factor*DCTSIZE, info->v_samp_factor*DCTSIZE );
-		return (size() + dctsize-1) / dctsize * dctsize;
-	}
-	
-	Size<int> sampling() const
-		{ return { info->h_samp_factor, info->v_samp_factor }; }
-};
-
-class JpegDecompress{
-	public: //TODO:
-		jpeg_decompress_struct cinfo;
-		jpeg_error_mgr jerr;
-		
-	public:
-		JpegDecompress(){
-			jpeg_create_decompress( &cinfo );
-			cinfo.err = jpeg_std_error( &jerr );
-		}
-		~JpegDecompress(){ jpeg_destroy_decompress( &cinfo ); }
-		
-		void setDevice( QIODevice& dev )
-			{ Gwenview::IODeviceJpegSourceManager::setup( &cinfo, &dev ); }
-		
-		void readHeader( bool what=true )
-			{ jpeg_read_header( &cinfo, what ); }
-		
-		int components() const{ return cinfo.output_components; }
-		JpegComponent operator[](int i){ return { cinfo.comp_info[i] }; }
-		
-		Size<JDIMENSION> size() const{ return { cinfo.image_width, cinfo.image_height }; }
-		
-		Size<JDIMENSION> sizePadded() const{
-			Size<JDIMENSION> mcu_size( cinfo.max_h_samp_factor*DCTSIZE, cinfo.max_v_samp_factor*DCTSIZE );
-			return (size() + mcu_size-1) / mcu_size * mcu_size;
-		}
-};
-
 
 using namespace std;
 class RawReader{
@@ -104,18 +57,18 @@ class RawReader{
 		RawReader( JpegDecompress& jpeg, ImageEx& img )
 			: jpeg(jpeg), img(img){
 				//Create buffers
-				for( int i=0; i<jpeg.components(); i++ )
+				for( int i=0; i<jpeg.outComponents(); i++ )
 					plane_buf.emplace_back( jpeg[i].sizePadded() );
 				
 				//Create row accesses
-				for( int i=0; i<jpeg.components(); i++ ){
+				for( int i=0; i<jpeg.outComponents(); i++ ){
 					row_bufs.emplace_back( plane_buf[i].get_height(), nullptr );
 					for( unsigned iy=0; iy<row_bufs[i].size(); iy++ )
 						row_bufs[i][iy] = plane_buf[i].scan_line( iy ).begin();
 				}
 				
 				//Apply "fake" crop
-				for( int i=0; i<jpeg.components(); i++ )
+				for( int i=0; i<jpeg.outComponents(); i++ )
 					plane_buf[i].crop( {0,0}, jpeg[i].size() );
 			}
 		

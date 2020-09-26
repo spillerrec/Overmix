@@ -42,7 +42,7 @@ void ImageContainer::IndexCache::invalidate( const std::vector<ImageGroup>& grou
 		for( unsigned ii=0; ii<groups[ig].items.size(); ii++ )
 			push_back( {ig, ii} );
 }
-void ImageContainer::IndexCache::setOffset( unsigned index1, unsigned index2, ImageOffset offset ) {
+void ImageContainer::IndexCache::setOffset( unsigned index1, unsigned index2, const ImageOffset& offset ) {
 	if( index2 > index1 )
 		setOffset( index2, index1, offset.reverse() );
 	else
@@ -67,7 +67,7 @@ class TempComparator : public AComparator{
 		const AComparator* parent;
 		
 	public:
-		TempComparator(const AComparator* parent) : parent(parent) {}
+		explicit TempComparator(const AComparator* parent) : parent(parent) {}
 		Size<double> scale() const override{ return parent->scale(); }
 		ModifiedPlane process( const Plane& plane ) const override { return parent->process(plane); }
 		ModifiedPlane processAlpha( const Plane& plane ) const override { return parent->processAlpha(plane); }

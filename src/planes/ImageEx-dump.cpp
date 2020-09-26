@@ -27,20 +27,6 @@ using namespace std;
 using namespace Overmix;
 
 
-template<typename T> void copyLine( color_type* out, const T* in, unsigned width, double scale ){
-	for( unsigned ix=0; ix<width; ++ix )
-		out[ix] = color::fromDouble( in[ix] / scale );
-}
-
-void process_dump_line( color_type *out, const uint8_t* in, unsigned width, uint16_t depth ){
-	double scale = pow( 2.0, depth ) - 1.0;
-	
-	if( depth <= 8 )
-		copyLine( out, in, width, scale );
-	else
-		copyLine( out, reinterpret_cast<const uint16_t*>(in), width, scale );
-}
-
 bool ImageEx::read_dump_plane( QIODevice &dev ){
 	DumpPlane dump_plane;
 	if( !dump_plane.readHeader( dev ) )
@@ -50,11 +36,6 @@ bool ImageEx::read_dump_plane( QIODevice &dev ){
 	//TODO: add assertion that width == line_width !!
 	//TODO: add assertion that type-size and color depth matches with the shit we are doing here
 	dump_plane.readData( dev, (uint16_t*)planes.back().p.scan_line(0).begin(), 14 ); //TODO: constant with bit depth
-	
-	
-	//Convert data
-//	for( auto&& row : planes.back() )
-//		process_dump_line( row.line(), dump_plane.constScanline( row.y() ), row.width(), dump_plane.getDepth() );
 	
 	return true;
 }
