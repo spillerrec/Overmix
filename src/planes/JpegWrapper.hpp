@@ -1,3 +1,22 @@
+/*
+	This file is part of Overmix.
+
+	Overmix is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	Overmix is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef JPEG_WRAPPER_HPP
+#define JPEG_WRAPPER_HPP
 
 #include "gwenview/iodevicejpegsourcemanager.h"
 #include <jpeglib.h>
@@ -9,7 +28,7 @@ namespace Overmix{
 struct JpegComponent{
 	jpeg_component_info *info;
 	
-	JpegComponent( jpeg_component_info& info ) : info(&info) { }
+	explicit JpegComponent( jpeg_component_info& info ) : info(&info) { }
 	
 	Size<JDIMENSION> size() const
 		{ return { info->downsampled_width, info->downsampled_height }; }
@@ -42,7 +61,7 @@ class JpegDecompress{
 		
 		int outComponents() const{ return cinfo.output_components; }
 		int numComponents() const{ return cinfo.num_components; }
-		JpegComponent operator[](int i) const{ return { cinfo.comp_info[i] }; }
+		auto operator[](int i) const{ return JpegComponent{ cinfo.comp_info[i] }; }
 		
 		Size<unsigned> imageSize() const
 			{ return { cinfo.image_width, cinfo.image_height }; }
@@ -66,3 +85,5 @@ class JpegDecompress{
 };
 
 }
+
+#endif

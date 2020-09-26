@@ -34,7 +34,7 @@ class ImageEx{
 		struct PlaneInfo{
 			Plane p;
 			Size<int> subsampling;
-			PlaneInfo( Plane&& p, Size<int> sub={0,0} )
+			explicit PlaneInfo( Plane&& p, Size<int> sub={0,0} )
 				:	p(std::move(p)), subsampling(sub) {}
 		};
 	
@@ -55,7 +55,7 @@ class ImageEx{
 		
 		ImageEx() : color_space( Transform::UNKNOWN, Transfer::UNKNOWN ) { }
 		explicit ImageEx( ColorSpace s ) : color_space(s) { planes.reserve(s.components()); }
-		ImageEx( Plane&& p ) : ImageEx( { Transform::GRAY, Transfer::UNKNOWN } )
+		explicit ImageEx( Plane&& p ) : ImageEx( { Transform::GRAY, Transfer::UNKNOWN } )
 			{ addPlane( std::move(p) ); } //TODO: transfer function!
 		ImageEx( Plane p, Plane a ) : ImageEx( std::move(p) ) { alpha = std::move(a); }
 		

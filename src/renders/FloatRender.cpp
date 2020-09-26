@@ -20,6 +20,7 @@
 #include "AverageRender.hpp"
 #include "../containers/AContainer.hpp"
 #include "../planes/ImageEx.hpp"
+#include "../planes/basic/distributions.hpp"
 #include "../color.hpp"
 #include "../utils/AProcessWatcher.hpp"
 
@@ -33,27 +34,7 @@ using namespace std;
 using namespace Overmix;
 using PointF = Point<double>;
 
-static double cubic( double b, double c, double x ){
-	x = abs( x );
-	
-	if( x < 1 )
-		return
-				(12 - 9*b - 6*c)/6 * x*x*x
-			+	(-18 + 12*b + 6*c)/6 * x*x
-			+	(6 - 2*b)/6
-			;
-	else if( x < 2 )
-		return
-				(-b - 6*c)/6 * x*x*x
-			+	(6*b + 30*c)/6 * x*x
-			+	(-12*b - 48*c)/6 * x
-			+	(8*b + 24*c)/6
-			;
-	else
-		return 0;
-}
-static double spline( double x ){ return cubic( 1.0, 0.0, x ); }
-//TODO: reuse implementation in Plane
+static double spline( double x ){ return Distributions::cubic( 1.0, 0.0, x ); }
 
 QPointF toQPoint( Point<double> point ){ return QPointF( point.x, point.y ); }
 QRectF toQRectF( Point<double> pos, Size<double> size ){ return QRectF( pos.x, pos.y, size.width(), size.height() ); }
@@ -99,37 +80,11 @@ class PointRenderBase{
 
 class PointRender : public PointRenderBase{
 	protected:
-		vector<ValuePos>& points;
-		
-	public:
-		explicit PointRender( Point<int> pos, vector<ValuePos>& points ) : PointRenderBase( pos ), points(points) {
-			points.clear();
-		}
-		
-		color_type value(){
-			sort( points.begin(), points.end() );
-			double sum = 0.0;
-			double weight = 0.0;
-			for( unsigned i=0; i<min(points.size(),(vector<ValuePos>::size_type)16); ++i ){
-				double w = spline( points[i].distance );
-				sum += points[i].value * w;
-				weight += w;
-			}
-			return (weight!=0.0) ? round(sum / weight) : 0;
-		}
-		
-		virtual void add_point( ValuePos p ) override{
-			points.push_back( p );
-		}
-};
-
-class PointRender2 : public PointRenderBase{
-	protected:
 		double sum = 0.0;
 		double weight = 0.0;
 		
 	public:
-		explicit PointRender2( Point<int> pos ) : PointRenderBase( pos ), sum(0), weight(0) { }
+		explicit PointRender( Point<int> pos ) : PointRenderBase( pos ), sum(0), weight(0) { }
 		
 		color_type value(){
 			return (weight!=0.0) ? color::truncate(sum / weight) : color::BLACK;
@@ -140,23 +95,6 @@ class PointRender2 : public PointRenderBase{
 			sum += p.value * w;
 			weight += w;
 		}
-};
-
-class PointRender3 : public PointRenderBase{
-	protected:
-		ValuePos p{ 99999, 0 };
-		
-	public:
-		explicit PointRender3( Point<int> pos ) : PointRenderBase( pos ) { }
-		
-		color_type value(){
-			return p.value;
-		}
-		
-		virtual void add_point( ValuePos p ) override{
-			this->p = min( this->p, p );
-		}
-		
 };
 
 bool isSubpixel( const AContainer& aligner ){
@@ -207,7 +145,7 @@ ImageEx FloatRender::render( const AContainer& aligner, AProcessWatcher* watcher
 		for( unsigned iy=0; iy<out.get_height(); ++iy ){
 			auto row = out.scan_line( iy );
 			for( unsigned ix=0; ix<out.get_width(); ++ix ){
-				PointRender2 p( PointF( ix, iy ) + full.pos*scale/*, points*/ );
+				PointRender p( PointF( ix, iy ) + full.pos*scale/*, points*/ );
 				
 				for( unsigned j=0; j<aligner.count(); ++j )
 					p.add_points( aligner.image( j )[i], aligner.pos( j ) * scale, scales[j] );
