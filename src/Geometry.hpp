@@ -182,8 +182,8 @@ struct Rectangle{
 	Rectangle<T> intersection( const Rectangle<T>& other ) const{
 		auto start = pos.max(other.pos);
 		auto end = endPos().min(other.endPos());
-		auto size = (end - start).max( Point<T>(0, 0) );
-		return {start, size};
+		auto new_size = (end - start).max( Point<T>(0, 0) );
+		return {start, new_size};
 	}
 	
 	bool intersects( const Rectangle<T>& other ) const{

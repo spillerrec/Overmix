@@ -166,7 +166,7 @@ Plane Plane::normalize() const{
 
 Plane Plane::maxPlane( const Plane& p ) const{
 	assert( getSize() == p.getSize() );
-	auto out = *this;
+	auto out = Plane(*this);
 	for( unsigned iy=0; iy<get_height(); ++iy )
 		for( auto val : makeZipRowIt( out.scan_line(iy), p.scan_line( iy ) ) )
 			val.first = std::max( val.first, val.second );
@@ -175,7 +175,7 @@ Plane Plane::maxPlane( const Plane& p ) const{
 
 Plane Plane::minPlane( const Plane& p ) const{
 	assert( getSize() == p.getSize() );
-	auto out = *this;
+	auto out = Plane(*this);
 	for( unsigned iy=0; iy<get_height(); ++iy )
 		for( auto val : makeZipRowIt( out.scan_line(iy), p.scan_line( iy ) ) )
 			val.first = std::min( val.first, val.second );

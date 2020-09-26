@@ -29,7 +29,7 @@ class MultiScaleComparator : public SimpleComparatorBase{
 		
 	public:
 		MultiScaleComparator() { };
-		MultiScaleComparator( AlignMethod method )
+		explicit MultiScaleComparator( AlignMethod method )
 			:	method(method) { }
 		
 		ImageOffset findOffset( const Plane& img1, const Plane& img2, const Plane& a1, const Plane& a2, Point<double> hint ) const override;

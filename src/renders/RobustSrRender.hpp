@@ -30,7 +30,7 @@ class RobustSrRender : public ARender{
 		float beta{ 1.3f / 255 / 2 };
 
 	public:
-		RobustSrRender( int upscale_factor ) : upscale_factor(upscale_factor) { }
+		explicit RobustSrRender( int upscale_factor ) : upscale_factor(upscale_factor) { }
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
 

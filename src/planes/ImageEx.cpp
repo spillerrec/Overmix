@@ -164,7 +164,7 @@ ImageEx ImageEx::flatten() const{
 	if( alpha_plane() )
 		out.copy( alpha_plane(), {0,0}, alpha_plane().getSize(), {x_offset,0} );
 	
-	return ImageEx{ out };
+	return ImageEx{ std::move(out) };
 }
 
 

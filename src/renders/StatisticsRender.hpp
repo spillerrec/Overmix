@@ -36,7 +36,7 @@ class StatisticsRender : public PlaneRender{
 		virtual pixel_func* pixel() const override;
 		
 	public:
-		StatisticsRender( Statistics function ) : function(function) {
+		explicit StatisticsRender( Statistics function ) : function(function) {
 			if( function == Statistics::DIFFERENCE )
 				max_planes = 1;
 		}

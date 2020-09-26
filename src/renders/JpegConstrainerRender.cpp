@@ -30,12 +30,13 @@
 using namespace Overmix;
 
 
-JpegConstrainerRender::JpegConstrainerRender( QString path ){
-	degrader = ImageEx::getJpegDegrader( path );
-    QFile f( path );
-    if( !f.open( QIODevice::ReadOnly ) )
-        throw std::runtime_error( "Could not open file" );
-    jpeg = from_jpeg( f );
+JpegConstrainerRender::JpegConstrainerRender( QString path )
+	:	degrader(ImageEx::getJpegDegrader( path ))
+{
+	QFile f( path );
+	if( !f.open( QIODevice::ReadOnly ) )
+		throw std::runtime_error( "Could not open file" );
+	jpeg = from_jpeg( f );
 }
 
 ImageEx JpegConstrainerRender::render(const AContainer &group, AProcessWatcher *watcher) const {

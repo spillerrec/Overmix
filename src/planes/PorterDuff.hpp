@@ -37,7 +37,7 @@ class PorterDuff{
 		Plane values( const PlaneBase<double>& s, const PlaneBase<double>& d, const PlaneBase<double>& b ) const;
 		Plane alpha( bool s, bool d, bool b ) const;
 		
-		Plane over( const Plane& src, const Plane dest ) const;
+		Plane over( const Plane& src, const Plane& dest ) const;
 		Plane overAlpha() const;
 };
 

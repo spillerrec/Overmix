@@ -36,7 +36,7 @@ class SumPlane {
 	
 	public:
 		SumPlane() { }
-		SumPlane( Size<> size ) : sum( size ), amount( size ){
+		explicit SumPlane( Size<> size ) : sum( size ), amount( size ){
 			sum.fill( 0 );
 			amount.fill( 0 );
 		}

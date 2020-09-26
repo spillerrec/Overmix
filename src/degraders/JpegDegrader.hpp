@@ -45,7 +45,7 @@ class QuantTable{
 		
 	public:
 		QuantTable();
-		QuantTable( uint16_t* input );
+		explicit QuantTable( uint16_t* input );
 		
 		unsigned degrade8x8Comp( DctPlane& f1, DctPlane& f2, const Plane& p1, const Plane& p2, Point<unsigned> pos ) const;
         unsigned degradeFromBlock( class JpegBlock coeffs, DctPlane& image ) const;

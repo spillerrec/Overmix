@@ -75,5 +75,5 @@ static auto edgeDetect(const ImageEx& input){
 ImageEx Mosaic::detect( const ImageEx& input ){
 	auto out = edgeDetect( input );
 	
-	return ImageEx(out.map([](auto value){ return color::fromDouble(value); } ));
+	return ImageEx(Plane(out.map([](auto value){ return color::fromDouble(value); } )));
 }

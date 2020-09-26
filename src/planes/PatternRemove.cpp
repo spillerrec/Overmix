@@ -43,7 +43,7 @@ Plane   Overmix::patternRemove( const Plane&   p  , Point<double> size ){
 	auto mean = p.blur_box( size.x, size.y );
 	
 	//TODO:
-	auto out = p;
+	auto out = Plane(p);
 	for( unsigned iy=0; iy<out.get_height(); iy++ ){
 		auto row = out.scan_line( iy );
 		auto m = mean.scan_line( iy );

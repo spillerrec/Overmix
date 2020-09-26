@@ -101,6 +101,9 @@ class PlaneBase{
 		unsigned getOffset( unsigned x, unsigned y ) const
 			{ return x + offset.x + (y + offset.y) * line_width; }
 		
+		///@return This plane as the base plane type, to use assignment overload in deriverd classes
+		PlaneBase<T>& asBasePlane(){ return *this; }
+		
 	public:
 		PlaneBase() { }
 		explicit PlaneBase( Size<unsigned> size )

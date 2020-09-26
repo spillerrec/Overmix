@@ -149,7 +149,7 @@ class RawReader{
 		
 		Plane convert( const PlaneBase<uint8_t>& p ) const{
 			//TODO: make more efficient?
-			auto out = p.to<color_type>();
+			auto out = Plane(p.to<color_type>());
 			for( unsigned iy=0; iy<out.get_height(); iy++ )
 				for( unsigned ix=0; ix<out.get_width(); ix++ )
 					out.setPixel( {ix,iy}, color::from8bit(out.pixel( {ix,iy} )) );
@@ -182,7 +182,7 @@ bool ImageEx::from_jpeg( QIODevice& dev, JpegDegrader* deg ){
 		//TODO: set color type
 		
 		for( int i=0; i<jpeg.cinfo.output_components; i++ )
-			deg->addPlane( { {jpeg.cinfo.comp_info[i].quant_table->quantval}
+			deg->addPlane( { QuantTable{jpeg.cinfo.comp_info[i].quant_table->quantval}
 					,	jpeg.cinfo.max_h_samp_factor / double(jpeg.cinfo.comp_info[i].h_samp_factor)
 					,	jpeg.cinfo.max_v_samp_factor / double(jpeg.cinfo.comp_info[i].v_samp_factor)
 				} );

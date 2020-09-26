@@ -226,7 +226,7 @@ QString ImageContainerSaver::save( ImageContainer& container, QString filename )
 		int id = 0;
 		for( auto& mask : container.getMasks() ){
 			auto mask_file = mask_folder + "/" + QString::number( id++ ) + ".dump";
-			ImageEx( mask ).saveDump( folder.absolutePath() + "/" + mask_file );
+			ImageEx( Plane(mask) ).saveDump( folder.absolutePath() + "/" + mask_file );
 			addXmlItem( masks, NODE_MASK, mask_file );
 		}
 	}

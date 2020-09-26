@@ -70,7 +70,7 @@ QVariant MaskModel::headerData( int section, Qt::Orientation orien, int role ) c
 
 QImage MaskModel::getImage( const QModelIndex& model_index ) const{
 	if( model_index.isValid() )
-		return ImageEx( images.mask( model_index.row() ) ).to_qimage();
+		return ImageEx( Plane(images.mask( model_index.row() )) ).to_qimage();
 	return QImage();
 }
 

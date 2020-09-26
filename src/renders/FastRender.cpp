@@ -49,7 +49,7 @@ ImageEx FastRender::render( const AContainer& aligner, AProcessWatcher* watcher 
 		if( progress.shouldCancel() )
 			return {};
 		
-		auto current = aligner.plane(i);
+		const auto& current = aligner.plane(i);
 		auto offset = aligner.pos(i) - min_point;
 		
 		auto writeArea = [&](int x, int y, int w, int h){
@@ -90,7 +90,7 @@ ImageEx FastRender::render( const AContainer& aligner, AProcessWatcher* watcher 
 		progress.add();
 	}
 	
-	return ImageEx( out );
+	return ImageEx( std::move(out) );
 }
 
 

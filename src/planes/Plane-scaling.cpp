@@ -105,7 +105,7 @@ struct ScalePoint{
 Plane Plane::scale_generic( Point<unsigned> wanted, double window, Plane::Filter f, Point<double> offset ) const{
 	Timer t( "scale_generic" );
 	if( !*this || wanted == getSize() )
-		return *this;
+		return Plane(*this);
 	
 	Plane scaled( wanted );
 	
@@ -151,7 +151,7 @@ Plane Plane::scale_generic_alpha( const Plane& alpha, Point<unsigned> wanted, do
 	
 	Timer t( "scale_generic_alpha" );
 	if( !*this || wanted == getSize() )
-		return *this;
+		return Plane(*this);
 	
 	Plane scaled( wanted );
 	

@@ -35,7 +35,7 @@ class JpegConstrainerRender : public ARender{
 		JpegDegrader degrader;
         
 	public:
-		JpegConstrainerRender( QString path );
+		explicit JpegConstrainerRender( QString path );
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
 

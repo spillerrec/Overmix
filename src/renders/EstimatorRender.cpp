@@ -42,9 +42,8 @@ struct Overmix::Parameters{
 	Point<double> min_point;
 	
 	Parameters( const AContainer& container, unsigned index, unsigned channel /*const Plane& background*/ )
-		: container(container), index(index), channel(channel) /*background(background)*/ {
-			min_point = container.minPoint();
-		}
+		: /*background(background),*/ container(container)
+		,	index(index), channel(channel), min_point(container.minPoint()) { }
 };
 
 Plane EstimatorRender::degrade( const Plane& original, const Parameters& para ) const{
@@ -156,7 +155,7 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 		for( int i=0; i<iterations; i++ ){
 			if( progress.shouldCancel() )
 				return {};
-			auto output_copy = est[c];
+			auto output_copy = Plane(est[c]);
 			
 			//Improve estimate
 			for( unsigned j=0; j<group.count(); j++, progress.add() )

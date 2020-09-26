@@ -54,23 +54,23 @@ void Plane::for_each_pixel( const Plane& p, Plane::PixelFunc2 f, void* data ){
 		} );
 }
 
-void Plane::add( Plane &p ){
+void Plane::add( const Plane &p ){
 	for_each_pixel( p, []( color_type a, color_type b, void* )
 		{ return color::truncateFullRange( precision_color_type(a) + b ); } );
 }
-void Plane::substract( Plane &p ){
+void Plane::substract( const Plane &p ){
 	for_each_pixel( p, []( color_type a, color_type b, void* )
 		{ return color::truncateFullRange( precision_color_type(b) - a ); } );
 }
-void Plane::difference( Plane &p ){
+void Plane::difference( const Plane &p ){
 	for_each_pixel( p, []( color_type a, color_type b, void* )
 		{ return (color_type)std::abs( precision_color_type(b) - a ); } );
 }
-void Plane::divide( Plane &p ){
+void Plane::divide( const Plane &p ){
 	for_each_pixel( p, []( color_type a, color_type b, void* )
 		{ return color::fromDouble( color::asDouble( b ) / color::asDouble( a ) ); } );
 }
-void Plane::multiply( Plane &p ){
+void Plane::multiply( const Plane &p ){
 	for_each_pixel( p, []( color_type a, color_type b, void* )
 		{ return color::fromDouble( color::asDouble( b ) * color::asDouble( a ) ); } );
 }

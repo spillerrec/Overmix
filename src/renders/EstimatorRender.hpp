@@ -51,7 +51,7 @@ class EstimatorRender : public ARender{
 		Plane degrade( const Plane& original, const Parameters& para ) const;
 
 	public:
-		EstimatorRender( double upscale_factor, EstimatorPara para={} )
+		explicit EstimatorRender( double upscale_factor, const EstimatorPara& para={} )
 			:	iterations(para.iterations)
 			,	beta      (para.beta)
 			,	lambda    (para.lambda)

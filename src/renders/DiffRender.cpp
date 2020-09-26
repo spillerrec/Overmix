@@ -152,7 +152,7 @@ ImageEx DiffRender::render( const AContainer& aligner, AProcessWatcher* watcher 
 		init = init.minPlane( aligner.mask( i ) );
 	
 	//Create output image
-	return ImageEx{ init };
+	return ImageEx{ std::move(init) };
 }
 
 

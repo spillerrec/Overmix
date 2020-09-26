@@ -75,7 +75,7 @@ struct img_comp{
 	bool diff_set{ false }; //TODO: name is missleading, interface unclear as well
 	
 	img_comp( GradientPlane& plane, int hm, int vm, double diff, GradientCheck area={}, double p=1 )
-		:	plane(plane), area(area)
+		:	plane(plane), area(std::move(area))
 		,	h_middle( hm ), v_middle( vm )
 		,	diff(diff)
 		,	precision( p )

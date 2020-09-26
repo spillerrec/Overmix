@@ -299,5 +299,5 @@ Plane Plane::deconvolve_rl( Point<double> amount, unsigned iterations, Plane* cr
 		estimate = new_estimate;
 	}
 	
-	return estimate.to<color_type>();
+	return Plane(estimate.to<color_type>());
 }

@@ -106,8 +106,8 @@ pair<ImageGetter,Point<double>> RecursiveAligner::combine( const AContainer& con
 		//Wrap planes in ImageContainer
 		//TODO: Optimize this
 		ImageContainer local_container;
-		local_container.addImage( ImageEx(  first.plane(),  first.alpha() ) ); //We are having copies here!!
-		local_container.addImage( ImageEx( second.plane(), second.alpha() ) );
+		local_container.addImage( ImageEx( Plane( first.plane()), Plane( first.alpha()) ) ); //We are having copies here!!
+		local_container.addImage( ImageEx( Plane(second.plane()), Plane(second.alpha()) ) );
 		local_container.setPos( 1, offset );
 		
 		//Render it

@@ -102,7 +102,7 @@ class PointRender : public PointRenderBase{
 		vector<ValuePos>& points;
 		
 	public:
-		PointRender( Point<int> pos, vector<ValuePos>& points ) : PointRenderBase( pos ), points(points) {
+		explicit PointRender( Point<int> pos, vector<ValuePos>& points ) : PointRenderBase( pos ), points(points) {
 			points.clear();
 		}
 		
@@ -129,7 +129,7 @@ class PointRender2 : public PointRenderBase{
 		double weight = 0.0;
 		
 	public:
-		PointRender2( Point<int> pos ) : PointRenderBase( pos ), sum(0), weight(0) { }
+		explicit PointRender2( Point<int> pos ) : PointRenderBase( pos ), sum(0), weight(0) { }
 		
 		color_type value(){
 			return (weight!=0.0) ? color::truncate(sum / weight) : color::BLACK;
@@ -147,7 +147,7 @@ class PointRender3 : public PointRenderBase{
 		ValuePos p{ 99999, 0 };
 		
 	public:
-		PointRender3( Point<int> pos ) : PointRenderBase( pos ) { }
+		explicit PointRender3( Point<int> pos ) : PointRenderBase( pos ) { }
 		
 		color_type value(){
 			return p.value;

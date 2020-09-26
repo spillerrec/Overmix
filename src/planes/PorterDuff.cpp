@@ -64,7 +64,7 @@ Plane PorterDuff::alpha( bool s, bool d, bool b ) const{
 	return values( value(s), value(d), value(b) );
 }
 
-Plane PorterDuff::over( const Plane& src, const Plane dest ) const{
+Plane PorterDuff::over( const Plane& src, const Plane& dest ) const{
 	auto s_src = src.toDouble();
 	return values( s_src, dest.toDouble(), s_src );
 }

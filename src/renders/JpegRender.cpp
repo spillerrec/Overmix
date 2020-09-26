@@ -40,8 +40,9 @@ struct Overmix::Parameters{
 	Point<double> min_point;
 	
 	Parameters( const AContainer& container, unsigned index, unsigned channel )
-		: container(container), index(index), channel(channel)
-			{ min_point = container.minPoint(); }
+		:	container(container), index(index), channel(channel)
+		,	min_point(container.minPoint())
+		{ }
 };
 
 Plane JpegRender::degrade( const Plane& original, const Parameters& para ) const{
@@ -54,8 +55,9 @@ Plane JpegRender::degrade( const Plane& original, const Parameters& para ) const
 	return out;
 }
 
-JpegRender::JpegRender( QString path, int iterations ) : iterations(iterations)
-	{ jpeg = ImageEx::getJpegDegrader( path ); }
+JpegRender::JpegRender( QString path, int iterations )
+	:	iterations(iterations), jpeg(ImageEx::getJpegDegrader( path ))
+	{ }
 
 ImageEx JpegRender::render(const AContainer &group, AProcessWatcher *watcher) const {
 	auto planes_amount = 1u;//group.image(0).size();
@@ -103,7 +105,7 @@ ImageEx JpegRender::render(const AContainer &group, AProcessWatcher *watcher) co
 			for( unsigned j=0; j<imgs.count(); j++, progress.add() ){
 				auto deg  = degrade(  est[c], {imgs, j, c} );
 				auto mask = degrade( diff[c], {imgs, j, c} );
-				auto lr = imgs.image(j)[c];
+				const auto& lr = imgs.image(j)[c];
 				imgs.imageRef(j)[c] = jpeg.planes[c].degradeComp( mask, deg, lr, change );
 			}
 			qCDebug(LogDelta) << "Change: " << change / imgs.count();

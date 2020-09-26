@@ -79,7 +79,7 @@ AnimRender::AnimRender( const AContainer& aligner, ARender& render, AProcessWatc
 	}
 }
 
-Plane difference( Plane base, Plane other ){
+Plane difference( Plane base, const Plane& other ){
 	//Create mask
 	base.difference( other );
 	base.binarize_threshold( color::from8bit( 1 ) ); //TODO: constant as setting
@@ -96,7 +96,7 @@ Plane difference( const ImageEx& base, const ImageEx& other ){
 	mask.fill( color::WHITE );
 	
 	for( unsigned i=0; i<base.size(); i++ ){
-		auto img = difference( base[i], other[i] );
+		auto img = difference( Plane(base[i]), other[i] );
 		mask = mask.minPlane( getScaled( img, mask.getSize() )() );
 	}
 
@@ -114,7 +114,7 @@ ImageEx AnimRender::render( int frame, AProcessWatcher* watcher ){
 	
 	//Setup masks
 	frames.clearMasks();
-	auto& base = frames.image( frame );
+	const auto& base = frames.image( frame );
 	for( unsigned i=0; i<frames.count(); i++ )
 		frames.setMask( i, frames.addMask( difference( frames.image( i ), base ) ) );
 	

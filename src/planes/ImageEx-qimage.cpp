@@ -43,7 +43,7 @@ bool ImageEx::from_qimage( QIODevice& dev, QString ext ){
 #if QT_VERSION >= 0x050500
 	if( img.format() == QImage::Format_Grayscale8 ){
 		color_space = { Transform::GRAY, Transfer::SRGB };
-		planes.emplace_back( size );
+		planes.emplace_back( Plane(size) );
 		
 		for( unsigned iy=0; iy<size.height(); ++iy ){
 			auto out = planes[0].p.scan_line( iy ).begin();
@@ -59,7 +59,7 @@ bool ImageEx::from_qimage( QIODevice& dev, QString ext ){
 		img = img.convertToFormat( QImage::Format_ARGB32 );
 		
 		for( int i=0; i<3; i++ )
-			planes.emplace_back( size );
+			planes.emplace_back( Plane(size) );
 		
 		for( unsigned iy=0; iy<size.height(); ++iy ){
 			auto r = planes[0].p.scan_line( iy ).begin();
@@ -90,7 +90,7 @@ QImage ImageEx::to_qimage( bool use_dither ) const{
 	if( planes.size() == 0 || !planes[0].p )
 		return QImage();
 	
-	auto to8bit = [use_dither]( Plane p )
+	auto to8bit = [use_dither]( const Plane& p )
 		{ return use_dither ? p.to8BitDither() : p.to8Bit(); };
 	
 	if( color_space.isGray() && !alpha_plane() )

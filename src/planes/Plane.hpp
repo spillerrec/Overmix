@@ -44,22 +44,22 @@ enum class ScalingFunction{
 class Plane : public PlaneBase<color_type>{
 	public:
 		Plane() { }
-		Plane( Size<unsigned> size ) : PlaneBase( size ) { }
-		Plane( unsigned w, unsigned h ) : PlaneBase( w, h ) { }
+		explicit Plane( Size<unsigned> size ) : PlaneBase( size ) { }
+		explicit Plane( unsigned w, unsigned h ) : PlaneBase( w, h ) { }
 		
-		Plane( const Plane& p ) : PlaneBase( p ) { }
+		explicit Plane( const Plane& p ) : PlaneBase( p ) { }
 		Plane( Plane&& p ) : PlaneBase( std::move(p) ) { }
 		
 		Plane& operator=( const Plane& p ){
-			*(PlaneBase<color_type>*)this = p;
+			asBasePlane() = p;
 			return *this;
 		}
 		Plane& operator=( Plane&& p ){
-			*(PlaneBase<color_type>*)this = std::move(p);
+			asBasePlane() = std::move(p);
 			return *this;
 		}
 		
-		Plane( const PlaneBase<color_type>& p ) : PlaneBase( p ) { }
+		explicit Plane( const PlaneBase<color_type>& p ) : PlaneBase( p ) { }
 		
 	//Plane handling
 		
@@ -87,11 +87,11 @@ class Plane : public PlaneBase<color_type>{
 		void for_each_pixel( Plane::PixelFunc1 f, void* data=nullptr );
 		void for_each_pixel( const Plane& p, Plane::PixelFunc2 f, void* data=nullptr );
 	public:
-		void add( Plane &p );
-		void substract( Plane &p );
-		void difference( Plane &p );
-		void divide( Plane &p );
-		void multiply( Plane &p );
+		void add( const Plane &p );
+		void substract( const Plane &p );
+		void difference( const Plane &p );
+		void divide( const Plane &p );
+		void multiply( const Plane &p );
 		Plane level( color_type limit_min, color_type limit_max
 			,	color_type output_min, color_type output_max
 			,	double gamma
