@@ -45,7 +45,7 @@ class AverageRenderConfig : public ARenderConfig{
 
 class FastRenderConfig : public ARenderConfig{
 	public:
-		Fexplicit astRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
+		explicit FastRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
 		std::unique_ptr<ARender> getRender() const override;
 		
 		QString name() const override { return "Fast preview"; }
