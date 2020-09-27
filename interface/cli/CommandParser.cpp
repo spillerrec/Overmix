@@ -89,7 +89,7 @@ struct Command{
 	bool is_file;
 	Splitter parts;
 	
-	Command( QString cmd )
+	explicit Command( QString cmd )
 		:	is_file( !cmd.startsWith( "--" ) )
 		,	parts( cmd.right( is_file ? cmd.length() : cmd.length()-2 ), '=' )
 		{ }
@@ -104,7 +104,8 @@ struct Command{
 void CommandParser::parse( QStringList commands ){
 	std::vector<ImageEx> renders;
 	
-	for( Command cmd : commands ){
+	for( auto& cmd_str : commands ){
+		Command cmd(cmd_str);
 		if( cmd.is_file ){ //Load a file
 			if( QFileInfo( cmd.filename() ).completeSuffix() == "xml.overmix" )
 				ImageContainerSaver::load( images, cmd.filename() );

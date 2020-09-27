@@ -28,7 +28,7 @@ class CommandParser{
 		bool use_gui{ true };
 		
 	public:
-		CommandParser( ImageContainer& images ) : images(images) { }
+		explicit CommandParser( ImageContainer& images ) : images(images) { }
 		
 		void parse( QStringList commands );
 		bool useGui() const{ return use_gui; }

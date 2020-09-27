@@ -33,10 +33,9 @@ int main( int argc, char *argv[] ){
 #ifdef _WIN32
 	//Enable console output on Windows if console is active. Does not work with pipe redirection
 	//From: https://stackoverflow.com/a/41701133/2248153
-	if( AttachConsole(ATTACH_PARENT_PROCESS) ){
-		freopen("CONOUT$", "w", stdout);
-		freopen("CONOUT$", "w", stderr);
-	}
+	if( AttachConsole(ATTACH_PARENT_PROCESS) )
+		if( !freopen("CONOUT$", "w", stdout) || !freopen("CONOUT$", "w", stderr) )
+			std::cout << "Couldn't redirect debug input\n";
 #endif
 	
 	QApplication a( argc, argv );

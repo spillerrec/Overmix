@@ -60,7 +60,7 @@ class AlignerConfigChooser : public ConfigChooser<AAlignerConfig>{
 	Q_OBJECT
 	
 	public:
-		AlignerConfigChooser( QWidget* parent, bool expand=false ); //Add all the configs
+		explicit AlignerConfigChooser( QWidget* parent, bool expand=false ); //Add all the configs
 		virtual void p_initialize() override;
 		
 		std::unique_ptr<AAligner> getAligner() const { return getSelected().getAligner(); }

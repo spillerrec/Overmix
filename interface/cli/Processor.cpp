@@ -60,7 +60,7 @@ struct ScaleProcessor : public Processor{
 	ScalingFunction function{ ScalingFunction::SCALE_CATROM };
 	Point<double> scale;
 	
-	ScaleProcessor( QString str ) { convert( str, function, scale ); }
+	explicit ScaleProcessor( QString str ) { convert( str, function, scale ); }
 	
 	void process( ImageEx& img ) override
 		{ img.scaleFactor( scale, function ); }
@@ -69,7 +69,7 @@ struct ScaleProcessor : public Processor{
 struct EdgeProcessor : public Processor {
 	PlaneFunc function;
 	
-	EdgeProcessor( QString str ) { convert( str, function ); }
+	explicit EdgeProcessor( QString str ) { convert( str, function ); }
 	
 	void process( ImageEx& img ) override
 		{ img.apply( function ); }
@@ -78,7 +78,7 @@ struct EdgeProcessor : public Processor {
 struct DilateProcessor : public Processor {
 	int size;
 	
-	DilateProcessor( QString str ) { convert( str, size ); }
+	explicit DilateProcessor( QString str ) { convert( str, size ); }
 	
 	void process( ImageEx& img ) override
 		{ img.apply( &Plane::dilate, size ); }
@@ -87,7 +87,7 @@ struct DilateProcessor : public Processor {
 struct BinarizeThresholdProcessor : public Processor {
 	double threshold;
 	
-	BinarizeThresholdProcessor( QString str ) { convert( str, threshold ); }
+	explicit BinarizeThresholdProcessor( QString str ) { convert( str, threshold ); }
 	
 	void process( ImageEx& img ) override {
 		for( unsigned i=0; i<img.size(); i++ )
@@ -99,7 +99,7 @@ struct BinarizeAdaptiveProcessor : public Processor {
 	int amount;
 	double threshold;
 	
-	BinarizeAdaptiveProcessor( QString str ) { convert( str, amount, threshold ); }
+	explicit BinarizeAdaptiveProcessor( QString str ) { convert( str, amount, threshold ); }
 	
 	void process( ImageEx& img ) override {
 		for( unsigned i=0; i<img.size(); i++ )
@@ -108,7 +108,7 @@ struct BinarizeAdaptiveProcessor : public Processor {
 };
 
 struct BinarizeDitherProcessor : public Processor {
-	BinarizeDitherProcessor( QString ) { }
+	explicit BinarizeDitherProcessor( QString ) { }
 	
 	void process( ImageEx& img ) override {
 		for( unsigned i=0; i<img.size(); i++ )
@@ -119,7 +119,7 @@ struct BinarizeDitherProcessor : public Processor {
 struct BlurProcessor : public Processor {
 	Point<double> deviation;
 	
-	BlurProcessor( QString str ) { convert( str, deviation ); }
+	explicit BlurProcessor( QString str ) { convert( str, deviation ); }
 	
 	void process( ImageEx& img ) override {
 		for( unsigned i=0; i<img.size(); i++ )
@@ -131,7 +131,7 @@ struct DeconvolveProcessor : public Processor {
 	Point<double> deviation;
 	int iterations;
 	
-	DeconvolveProcessor( QString str ) { convert( str, deviation, iterations ); }
+	explicit DeconvolveProcessor( QString str ) { convert( str, deviation, iterations ); }
 	
 	void process( ImageEx& img ) override {
 		for( unsigned i=0; i<img.size(); i++ )
@@ -142,7 +142,7 @@ struct DeconvolveProcessor : public Processor {
 struct LevelProcessor : public Processor {
 	double limit_min, limit_max, output_min, output_max, gamma;
 	
-	LevelProcessor( QString str )
+	explicit LevelProcessor( QString str )
 		{ convert( str, limit_min, limit_max, output_min, output_max, gamma ); }
 	
 	void process( ImageEx& img ) override {
@@ -160,7 +160,7 @@ struct LevelProcessor : public Processor {
 struct PatternProcessor : public Processor {
 	Point<double> size;
 	
-	PatternProcessor( QString str )
+	explicit PatternProcessor( QString str )
 		{ convert( str, size ); }
 	
 	void process( ImageEx& img ) override {

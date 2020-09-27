@@ -34,7 +34,7 @@ class Overmix::ColorRangeSpinbox : public QWidget{
 		QSpinBox end;
 		
 	public:
-		ColorRangeSpinbox( QWidget* parent )
+		explicit ColorRangeSpinbox( QWidget* parent )
 			:	QWidget( parent ), start(this), end(this)
 		{
 			setLayout( new QHBoxLayout );
