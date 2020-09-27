@@ -36,7 +36,7 @@ double AnimationSeparator::findError( AContainer& container, int index1, int ind
 	if( skip_align ) //Assume container is already aligned
 		return container.findError( index1, index2 );
 	else
-		return container.findOffset( index1, index2+1 ).error;
+		return container.findOffset( index1, index2 ).error;
 }
 
 double AnimationSeparator::findThreshold( AContainer& container, AProcessWatcher* watcher ) const{
