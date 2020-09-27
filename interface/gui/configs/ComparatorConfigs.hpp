@@ -28,7 +28,7 @@ class AComparatorConfig : public AConfig{
 	Q_OBJECT
 	
 	public:
-		AComparatorConfig( QWidget* parent ) : AConfig(parent) { }
+		explicit AComparatorConfig( QWidget* parent ) : AConfig(parent) { }
 		
 		virtual std::unique_ptr<AComparator> getComparator() const = 0;
 		
@@ -40,7 +40,7 @@ class ComparatorConfigChooser : public ConfigChooser<AComparatorConfig>{
 	Q_OBJECT
 	
 	public:
-		ComparatorConfigChooser( QWidget* parent, bool expand=false );
+		explicit ComparatorConfigChooser( QWidget* parent, bool expand=false );
 		virtual void p_initialize() override;
 		
 		std::unique_ptr<AComparator> getComparator() const;

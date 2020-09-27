@@ -44,7 +44,7 @@ class RenderConfigChooser : public ConfigChooser<ARenderConfig>{
 		class SkipRenderConfig* skipRender;
 	
 	public:
-		RenderConfigChooser( QWidget* parent, bool expand=false );
+		explicit RenderConfigChooser( QWidget* parent, bool expand=false );
 		virtual void p_initialize() override;
 		
 		std::unique_ptr<ARender> getRender() const;

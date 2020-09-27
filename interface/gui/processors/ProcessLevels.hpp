@@ -35,7 +35,7 @@ class ProcessLevels : public AProcessor{
 		ColorRangeSpinbox* out_levels;
 	
 	public:
-		ProcessLevels( QWidget* parent );
+		explicit ProcessLevels( QWidget* parent );
 		
 		QString name() const override;
 		bool modifiesImage() const override;

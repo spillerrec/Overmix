@@ -26,7 +26,7 @@ class ProcessDeVlc : public AProcessor{
 	Q_OBJECT
 	
 	public:
-		ProcessDeVlc( QWidget* parent ) : AProcessor( parent ) { }
+		explicit ProcessDeVlc( QWidget* parent ) : AProcessor( parent ) { }
 		
 		QString name() const override;
 		ImageEx process( const ImageEx& img ) const override;

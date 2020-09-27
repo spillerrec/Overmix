@@ -40,7 +40,7 @@ class ProcessorList : public QWidget{
 		int indexOf( AProcessor* ) const;
 	
 	public:
-		ProcessorList( QWidget* parent );
+		explicit ProcessorList( QWidget* parent );
 		
 		ImageEx process( const ImageEx& img ) const;
 		Point<double> modifyOffset( Point<double> ) const;

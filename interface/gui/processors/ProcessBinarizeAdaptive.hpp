@@ -32,7 +32,7 @@ class ProcessBinarizeAdaptive : public AProcessor{
 		QSpinBox* size;
 	
 	public:
-		ProcessBinarizeAdaptive( QWidget* parent );
+		explicit ProcessBinarizeAdaptive( QWidget* parent );
 		
 		QString name() const override;
 		ImageEx process( const ImageEx& img ) const override;

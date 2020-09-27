@@ -31,7 +31,7 @@ class ProcessCrop : public AProcessor{
 		QSpinBox *left, *top, *right, *bottom;
 	
 	public:
-		ProcessCrop( QWidget* parent );
+		explicit ProcessCrop( QWidget* parent );
 		
 		QString name() const override;
 		ImageEx process( const ImageEx& img ) const override;

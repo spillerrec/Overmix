@@ -42,7 +42,7 @@ class GradientComparatorConfig : public AComparatorConfig{
 		QSpinBox*       max_difference;
 	
 	public:
-		GradientComparatorConfig( QWidget* parent );
+		explicit GradientComparatorConfig( QWidget* parent );
         std::unique_ptr<AComparator> getComparator() const override;
 		
 		QString name() const override { return "Gradient"; }
@@ -57,7 +57,7 @@ class BruteForceComparatorConfig : public AComparatorConfig{
 		QSpinBox*       epsilon;
 	
 	public:
-		BruteForceComparatorConfig( QWidget* parent );
+		explicit BruteForceComparatorConfig( QWidget* parent );
         std::unique_ptr<AComparator> getComparator() const override;
 		
 		QString name() const override { return "Brute force"; }
@@ -66,7 +66,7 @@ class BruteForceComparatorConfig : public AComparatorConfig{
 
 class MultiScaleComparatorConfig : public AComparatorConfig{
 	public:
-		MultiScaleComparatorConfig( QWidget* parent );
+		explicit MultiScaleComparatorConfig( QWidget* parent );
         std::unique_ptr<AComparator> getComparator() const override;
 		
 		QString name() const override { return "Multi-scale"; }

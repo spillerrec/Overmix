@@ -27,11 +27,8 @@ namespace Overmix{
 class AlignMethodSelector : public QComboBox{
 	Q_OBJECT
 	
-	private:
-		
 	public:
-		
-		AlignMethodSelector( QWidget* parent );
+		explicit AlignMethodSelector( QWidget* parent );
 		
 		AlignMethod getValue() const;
 		

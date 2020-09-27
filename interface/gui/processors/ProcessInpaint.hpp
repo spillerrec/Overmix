@@ -26,7 +26,7 @@ class ProcessInpaint : public AProcessor{
 	Q_OBJECT
 	
 	public:
-		ProcessInpaint( QWidget* parent );
+		explicit ProcessInpaint( QWidget* parent );
 		
 		QString name() const override;
 		ImageEx process( const ImageEx& img ) const override;

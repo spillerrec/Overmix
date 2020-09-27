@@ -34,7 +34,7 @@ class ProcessScale : public AProcessor{
 		DoubleSpinbox2D* scale;
 	
 	public:
-		ProcessScale( QWidget* parent );
+		explicit ProcessScale( QWidget* parent );
 		
 		QString name() const override;
 		bool modifiesImage() const override;

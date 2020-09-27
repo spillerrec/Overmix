@@ -36,7 +36,7 @@ class AverageRenderConfig : public ARenderConfig{
 		QCheckBox* upscale_chroma;
 	
 	public:
-		AverageRenderConfig( QWidget* parent );
+		explicit AverageRenderConfig( QWidget* parent );
 		std::unique_ptr<ARender> getRender() const override;
 		
 		QString name() const override { return "Average"; }
@@ -45,7 +45,7 @@ class AverageRenderConfig : public ARenderConfig{
 
 class FastRenderConfig : public ARenderConfig{
 	public:
-		FastRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
+		Fexplicit astRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
 		std::unique_ptr<ARender> getRender() const override;
 		
 		QString name() const override { return "Fast preview"; }
@@ -58,7 +58,7 @@ class SkipRenderConfig : public ARenderConfig{
 		DoubleSpinbox2D* offset;
 	
 	public:
-		SkipRenderConfig( QWidget* parent );
+		explicit SkipRenderConfig( QWidget* parent );
 		std::unique_ptr<ARender> getRender() const override;
 		
 		QString name() const override { return "Demosaic"; }
@@ -72,7 +72,7 @@ class DiffRenderConfig : public ARenderConfig{
 		QSpinBox* dilate_size;
 		
 	public:
-		DiffRenderConfig( QWidget* parent );
+		explicit DiffRenderConfig( QWidget* parent );
 		std::unique_ptr<ARender> getRender() const override;
 		
 		QString name() const override { return "Static Difference"; }
@@ -81,7 +81,7 @@ class DiffRenderConfig : public ARenderConfig{
 
 class FloatRenderConfig : public ARenderConfig{
 	public:
-		FloatRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
+		explicit FloatRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
 		std::unique_ptr<ARender> getRender() const override;
 		
 		QString name() const override { return "Subpixel"; }
@@ -92,7 +92,7 @@ class StatisticsRenderConfig : public ARenderConfig{
 	private:
 		QComboBox* function;
 	public:
-		StatisticsRenderConfig( QWidget* parent );
+		explicit StatisticsRenderConfig( QWidget* parent );
 		std::unique_ptr<ARender> getRender() const override;
 		
 		QString name() const override { return "Statistics"; }
@@ -109,7 +109,7 @@ class EstimatorRenderConfig : public ARenderConfig{
 		QSpinBox* iterations;
 		
 	public:
-		EstimatorRenderConfig( QWidget* parent );
+		explicit EstimatorRenderConfig( QWidget* parent );
 		std::unique_ptr<ARender> getRender() const override;
 		
 		QString name() const override { return "Estimator"; }
@@ -121,7 +121,7 @@ class JpegRenderConfig : public ARenderConfig{
 		QSpinBox* iterations;
 		QLineEdit* path;
 	public:
-		JpegRenderConfig( QWidget* parent );
+		explicit JpegRenderConfig( QWidget* parent );
 		std::unique_ptr<ARender> getRender() const override;
 		
 		QString name() const override { return "Jpeg estimator"; }
@@ -132,7 +132,7 @@ class JpegConstrainerRenderConfig : public ARenderConfig{
 	private:
 		QLineEdit* path;
 	public:
-		JpegConstrainerRenderConfig( QWidget* parent );
+		explicit JpegConstrainerRenderConfig( QWidget* parent );
 		std::unique_ptr<ARender> getRender() const override;
 		
 		QString name() const override { return "Jpeg constrainer"; }
@@ -141,7 +141,7 @@ class JpegConstrainerRenderConfig : public ARenderConfig{
 
 class DistanceMatrixRenderConfig : public ARenderConfig{
 	public:
-		DistanceMatrixRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
+		explicit DistanceMatrixRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
 		std::unique_ptr<ARender> getRender() const override;
 		
 		QString name() const override { return "Alignment matrix"; }

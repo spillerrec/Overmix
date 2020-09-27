@@ -26,7 +26,7 @@ class ProcessSteam : public AProcessor{
 	Q_OBJECT
 	
 	public:
-		ProcessSteam( QWidget* parent );
+		explicit ProcessSteam( QWidget* parent );
 		
 		QString name() const override;
 		ImageEx process( const ImageEx& img ) const override;

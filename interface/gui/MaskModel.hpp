@@ -33,7 +33,7 @@ class MaskModel : public QAbstractItemModel{
 		ImageContainer& images;
 		
 	public:
-		MaskModel( ImageContainer& images ) : images(images) { }
+		explicit MaskModel( ImageContainer& images ) : images(images) { }
 		
 		//QAbstractItemModel implementation
 		virtual QModelIndex index( int row, int column, const QModelIndex& parent=QModelIndex() ) const override;

@@ -29,7 +29,7 @@ class MovementGraph : public QWidget{
 		class ImageContainer& images;
 		
 	public:
-		MovementGraph( ImageContainer& images );
+		explicit MovementGraph( ImageContainer& images );
 		
 };
 

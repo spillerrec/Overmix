@@ -44,7 +44,7 @@ class AAlignerConfig : public AConfig, private Ui::ImageAligner{
 		};
 	
 	public:
-		AAlignerConfig( QWidget* parent, int edits );
+		explicit AAlignerConfig( QWidget* parent, int edits );
 		
 		virtual std::unique_ptr<AAligner> getAligner() const = 0;
 		

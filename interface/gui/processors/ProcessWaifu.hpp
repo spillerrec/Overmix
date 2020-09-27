@@ -32,7 +32,7 @@ class ProcessWaifu : public AProcessor{
 		QSpinBox* denoise_level;
 	
 	public:
-		ProcessWaifu( QWidget* parent );
+		explicit ProcessWaifu( QWidget* parent );
 		
 		QString name() const override;
 		ImageEx process( const ImageEx& img ) const override;

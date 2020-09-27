@@ -26,7 +26,7 @@ class ProcessMosaic : public AProcessor{
 	Q_OBJECT
 	
 	public:
-		ProcessMosaic( QWidget* parent );
+		explicit ProcessMosaic( QWidget* parent );
 		
 		QString name() const override;
 		ImageEx process( const ImageEx& img ) const override;

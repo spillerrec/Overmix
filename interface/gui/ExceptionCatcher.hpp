@@ -33,8 +33,8 @@ class ExceptionCatcher : public QDialog {
 		Ui::ExceptionCatcher *ui;
 		
 	public:
-		ExceptionCatcher( QWidget* parent = nullptr );
-		ExceptionCatcher( QString what, QWidget* parent = nullptr );
+		explicit ExceptionCatcher( QWidget* parent = nullptr );
+		explicit ExceptionCatcher( QString what, QWidget* parent = nullptr );
 		~ExceptionCatcher();
 		
 		template<typename Function>

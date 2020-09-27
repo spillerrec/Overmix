@@ -58,7 +58,7 @@ class ConfigChooser : public AConfig{
 		}
 		
 	public:
-		ConfigChooser( QWidget* parent, bool expand=false )
+		explicit ConfigChooser( QWidget* parent, bool expand=false )
 			:	AConfig( parent ), expand(expand), dropbox( parent ){
 			
 			setLayout( new QVBoxLayout( this ) );

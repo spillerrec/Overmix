@@ -26,7 +26,7 @@ class ProcessDither : public AProcessor{
 	Q_OBJECT
 	
 	public:
-		ProcessDither( QWidget* parent ) : AProcessor( parent ) { }
+		explicit ProcessDither( QWidget* parent ) : AProcessor( parent ) { }
 		
 		QString name() const override;
 		ImageEx process( const ImageEx& img ) const override;

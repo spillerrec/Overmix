@@ -33,7 +33,7 @@ class ProcessColor : public AProcessor{
 		QComboBox* transfer;
 	
 	public:
-		ProcessColor( QWidget* parent );
+		explicit ProcessColor( QWidget* parent );
 		
 		QString name() const override;
 		ImageEx process( const ImageEx& img ) const override;

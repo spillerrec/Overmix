@@ -31,7 +31,7 @@ class ProcessEdge : public AProcessor{
 		QComboBox* method;
 	
 	public:
-		ProcessEdge( QWidget* parent );
+		explicit ProcessEdge( QWidget* parent );
 		
 		QString name() const override;
 		ImageEx process( const ImageEx& img ) const override;

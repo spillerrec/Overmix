@@ -33,7 +33,7 @@ class ImagesModel : public QAbstractItemModel{
 		ImageContainer& images;
 		
 	public:
-		ImagesModel( ImageContainer& images ) : images(images) { }
+		explicit ImagesModel( ImageContainer& images ) : images(images) { }
 		
 		//QAbstractItemModel implementation
 		virtual QModelIndex index( int row, int column, const QModelIndex& parent=QModelIndex() ) const override;

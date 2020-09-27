@@ -34,7 +34,7 @@ class ProcessBlur : public AProcessor{
 		DoubleSpinbox2D* amount;
 	
 	public:
-		ProcessBlur( QWidget* parent );
+		explicit ProcessBlur( QWidget* parent );
 		
 		QString name() const override;
 		bool modifiesImage() const override;

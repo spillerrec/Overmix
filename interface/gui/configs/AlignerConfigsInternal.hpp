@@ -28,7 +28,7 @@ namespace Overmix{
 
 class AverageAlignerConfig : public AAlignerConfig{
 	public:
-		AverageAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
+		explicit AverageAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
 		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Ordered"; }
@@ -37,7 +37,7 @@ class AverageAlignerConfig : public AAlignerConfig{
 
 class RecursiveAlignerConfig : public AAlignerConfig{
 	public:
-		RecursiveAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
+		explicit RecursiveAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
 		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Recursive"; }
@@ -46,7 +46,7 @@ class RecursiveAlignerConfig : public AAlignerConfig{
 
 class FakeAlignerConfig : public AAlignerConfig{
 	public:
-		FakeAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
+		explicit FakeAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
 		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "None (Stills)"; }
@@ -55,7 +55,7 @@ class FakeAlignerConfig : public AAlignerConfig{
 
 class LinearAlignerConfig : public AAlignerConfig{
 	public:
-		LinearAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_RES | DISABLE_EXTRA | DISABLE_MOVE ) { }
+		explicit LinearAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_RES | DISABLE_EXTRA | DISABLE_MOVE ) { }
 		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Fit to Linear Curve"; }
@@ -68,7 +68,7 @@ class SeperateAlignerConfig : public AAlignerConfig{
 		QDoubleSpinBox* threshold;
 	
 	public:
-		SeperateAlignerConfig( QWidget* parent );
+		explicit SeperateAlignerConfig( QWidget* parent );
 		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Separate Frames"; }
@@ -77,7 +77,7 @@ class SeperateAlignerConfig : public AAlignerConfig{
 
 class AlignFrameAlignerConfig : public AAlignerConfig{
 	public:
-		AlignFrameAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
+		explicit AlignFrameAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
 		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Align Frames"; }
@@ -91,7 +91,7 @@ class FrameCalculatorAlignerConfig : public AAlignerConfig{
 		QSpinBox* repeats;
 		
 	public:
-		FrameCalculatorAlignerConfig( QWidget* parent );
+		explicit FrameCalculatorAlignerConfig( QWidget* parent );
 		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Frame calculator"; }
@@ -100,7 +100,7 @@ class FrameCalculatorAlignerConfig : public AAlignerConfig{
 
 class SuperResAlignerConfig : public AAlignerConfig{
 	public:
-		SuperResAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, ENABLE_ALL ) { }
+		explicit SuperResAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, ENABLE_ALL ) { }
 		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "SuperRes"; }
@@ -113,7 +113,7 @@ class ClusterAlignerConfig : public AAlignerConfig{
 		QSpinBox* max_groups;
 		
 	public:
-		ClusterAlignerConfig( QWidget* parent );
+		explicit ClusterAlignerConfig( QWidget* parent );
 		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Cluster animation"; }
@@ -125,7 +125,7 @@ class IndependentAlignerConfig : public AAlignerConfig{
 		QSpinBox* range;
 		
 	public:
-		IndependentAlignerConfig( QWidget* parent );
+		explicit IndependentAlignerConfig( QWidget* parent );
 		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Independent"; }
@@ -134,7 +134,7 @@ class IndependentAlignerConfig : public AAlignerConfig{
 
 class NearestFrameAlignerConfig : public AAlignerConfig{
 	public:
-		NearestFrameAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
+		explicit NearestFrameAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL ) { }
 		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "Set unassigned frames"; }

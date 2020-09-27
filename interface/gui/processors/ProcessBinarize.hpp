@@ -31,7 +31,7 @@ class ProcessBinarize : public AProcessor{
 		QSpinBox* threshold;
 	
 	public:
-		ProcessBinarize( QWidget* parent );
+		explicit ProcessBinarize( QWidget* parent );
 		
 		QString name() const override;
 		ImageEx process( const ImageEx& img ) const override;

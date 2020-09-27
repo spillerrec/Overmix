@@ -63,7 +63,7 @@ class AbstractSpinbox2D : public QWidget {
 		}		
 		
 	public:
-		AbstractSpinbox2D( QWidget* parent ) : QWidget( parent ), locker( "X" ) {
+		explicit AbstractSpinbox2D( QWidget* parent ) : QWidget( parent ), locker( "X" ) {
 			//Position widgets
 			setLayout( new QHBoxLayout( this ) );
 			layout()->addWidget( &spin_x );
@@ -104,7 +104,7 @@ class AbstractSpinbox2D : public QWidget {
 };
 
 struct Spinbox2D : public AbstractSpinbox2D<QSpinBox,int>{
-	Spinbox2D( QWidget* parent ) : AbstractSpinbox2D( parent ) { }
+	explicit Spinbox2D( QWidget* parent ) : AbstractSpinbox2D( parent ) { }
 	
 	template<typename Func>
 	void connectToChanges( QObject* receiver, Func func ){
@@ -114,7 +114,7 @@ struct Spinbox2D : public AbstractSpinbox2D<QSpinBox,int>{
 };
 
 struct DoubleSpinbox2D : public AbstractSpinbox2D<QDoubleSpinBox,double>{
-	DoubleSpinbox2D( QWidget* parent ) : AbstractSpinbox2D( parent ) { }
+	explicit DoubleSpinbox2D( QWidget* parent ) : AbstractSpinbox2D( parent ) { }
 	
 	template<typename Func>
 	void connectToChanges( QObject* receiver, Func func ){

@@ -31,7 +31,7 @@ class ProcessDilate : public AProcessor{
 		QSpinBox* size;
 	
 	public:
-		ProcessDilate( QWidget* parent );
+		explicit ProcessDilate( QWidget* parent );
 		
 		QString name() const override;
 		ImageEx process( const ImageEx& img ) const override;

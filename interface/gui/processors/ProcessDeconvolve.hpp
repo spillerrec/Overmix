@@ -34,7 +34,7 @@ class ProcessDeconvolve : public AProcessor{
 		QSpinBox* iterations;
 	
 	public:
-		ProcessDeconvolve( QWidget* parent );
+		explicit ProcessDeconvolve( QWidget* parent );
 		
 		QString name() const override;
 		bool modifiesImage() const override;
