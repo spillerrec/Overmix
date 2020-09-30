@@ -21,6 +21,7 @@
 #include "utils/utils.hpp"
 
 #include <QFileInfo>
+#include <QPainter>
 
 using namespace Overmix;
 
@@ -160,7 +161,16 @@ QImage ImagesModel::getImage( const QModelIndex& model_index ) const{
 	if( index.isValid() && !index.isGroup() ){
 		auto& item = index.getItem();
 		auto img = item.image().to_qimage();
-		return setQImageAlpha( img, item.alpha( images.getMasks() ) );
+		img = setQImageAlpha( img, item.alpha( images.getMasks() ) );
+		
+		//Expand with transparent to fill entire output size
+		auto area = images.size();
+		auto offset = item.offset - area.pos;
+		QImage full_img(area.size.width(), area.size.height(), QImage::Format_ARGB32);
+		QPainter painter(&full_img);
+		painter.drawImage(QPoint(offset.x, offset.y), img);
+		
+		return full_img;
 		
 	}
 	return QImage();

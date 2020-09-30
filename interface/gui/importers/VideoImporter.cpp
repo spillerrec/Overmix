@@ -51,7 +51,10 @@ void VideoImporter::import( ImageContainer &files, AProcessWatcher* watcher ){
 		auto amount = ui->frames_amount->value();
 		Progress progress( "VideoImporter", amount, watcher, [&](int id){
 				auto name = "video_" + QString::number(id).rightJustified(4, '0');
-				files.addImage( video.getFrame().toImageEx(), -1, -1, name );
+				auto frame = video.getFrame();
+				if( frame.is_keyframe() )
+					name += "k";
+				files.addImage( frame.toImageEx(), -1, -1, name );
 			});
 	} );
 }
