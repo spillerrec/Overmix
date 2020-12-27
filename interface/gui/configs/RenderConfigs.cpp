@@ -23,6 +23,7 @@
 #include "renders/AverageRender.hpp"
 #include "renders/DiffRender.hpp"
 #include "renders/FastRender.hpp"
+#include "renders/FocusStackingRender.hpp"
 #include "renders/FloatRender.hpp"
 #include "renders/StatisticsRender.hpp"
 #include "renders/RobustSrRender.hpp"
@@ -63,6 +64,7 @@ void RenderConfigChooser::p_initialize(){
 	set( &addConfig<JpegConstrainerRenderConfig>() );
 	set( &addConfig<DistanceMatrixRenderConfig>() );
 	set( &addConfig<FastRenderConfig>() );
+	set( &addConfig<FocusStackingRenderConfig>() );
 }
 
 std::unique_ptr<ARender> RenderConfigChooser::getRender() const
@@ -234,4 +236,24 @@ std::unique_ptr<ARender> JpegConstrainerRenderConfig::getRender() const
 
 std::unique_ptr<ARender> DistanceMatrixRenderConfig::getRender() const
 	{ return std::make_unique<DistanceMatrixRender>(); }
+	
+
+FocusStackingRenderConfig::FocusStackingRenderConfig( QWidget* parent )
+: ARenderConfig( parent ) {
+	setLayout( new QVBoxLayout( this ) );
+	blur_amount = addWidget<QDoubleSpinBox>("Blurring");
+	kernel_size = addWidget<QSpinBox>("Size");
+	
+	blur_amount->setRange(0, 999);
+	blur_amount->setDecimals(3);
+	blur_amount->setValue( 0.0 );
+	
+	kernel_size->setRange(0, 999);
+	kernel_size->setValue( 15 );
+}
+std::unique_ptr<ARender> FocusStackingRenderConfig::getRender() const {
+	auto amount = blur_amount->value();
+	auto size = kernel_size->value();
+	return std::make_unique<FocusStackingRender>( amount, size );
+}
 

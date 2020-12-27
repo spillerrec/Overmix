@@ -60,6 +60,7 @@ set(SOURCES_RENDERS
 	renders/AnimRender.cpp
 	renders/AverageRender.cpp
 	renders/FastRender.cpp
+	renders/FocusStackingRender.cpp
 	renders/FloatRender.cpp
 	renders/DiffRender.cpp
 	renders/DistanceMatrixRender.cpp

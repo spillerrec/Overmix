@@ -79,6 +79,18 @@ class DiffRenderConfig : public ARenderConfig{
 		QString discription() const override{ return "Detects static content (logo, credits, etc.)"; }
 };
 
+class FocusStackingRenderConfig : public ARenderConfig{
+	private:
+		QDoubleSpinBox* blur_amount;
+		QSpinBox* kernel_size;
+	public:
+		explicit FocusStackingRenderConfig( QWidget* parent );
+		std::unique_ptr<ARender> getRender() const override;
+		
+		QString name() const override { return "Focus Stacking"; }
+		QString discription() const override{ return "Combine focus stacked images"; }
+};
+
 class FloatRenderConfig : public ARenderConfig{
 	public:
 		explicit FloatRenderConfig( QWidget* parent ) : ARenderConfig( parent ) { }
