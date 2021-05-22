@@ -27,7 +27,7 @@ using namespace Overmix;
 
 
 Plane Inpaint::simple( const Plane& input, const Plane& alpha ){
-	constexpr int radius = 10;
+	constexpr int radius = 20;
 	
 	Plane out( input.getSize() );
 	
@@ -38,7 +38,7 @@ Plane Inpaint::simple( const Plane& input, const Plane& alpha ){
 				continue;
 			}
 			
-			double distance = std::numeric_limits<double>::max();
+			int distance = std::numeric_limits<int>::max();
 			color_type value = 0;
 			unsigned start_x = unsigned( std::max(0, int(x)-radius) );
 			unsigned start_y = unsigned( std::max(0, int(y)-radius) );
@@ -47,9 +47,9 @@ Plane Inpaint::simple( const Plane& input, const Plane& alpha ){
 			for( unsigned dy=start_y; dy<end_y; dy++ )
 				for( unsigned dx=start_x; dx<end_x; dx++ )
 					if( alpha[dy][dx] > 0 ){
-						double x_dist = (double)(dx - x);
-						double y_dist = (double)(dy - y);
-						auto current_dist = std::sqrt((double)x_dist*x_dist + (double)y_dist*y_dist);
+						int x_dist = (int)x - dx;
+						int y_dist = (int)y - dy;
+						auto current_dist = /*std::sqrt(*/x_dist*x_dist + y_dist*y_dist;//);
 						if( current_dist < distance ){
 							distance = current_dist;
 							value = input[dy][dx];
