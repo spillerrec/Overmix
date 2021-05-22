@@ -122,6 +122,8 @@ std::vector<WeightedSumLine<T>> prepare_weighted_sum(
 	default_line.w_width = kernel.get_width();
 	default_line.w_height = kernel.get_height();
 	default_line.full_sum = default_line.calculate_sum();
+	if( default_line.full_sum == 0.0 )
+		default_line.full_sum = 1.0;
 	
 	int half_size = kernel.get_height() / 2;
 	std::vector<WeightedSumLine<T>> lines;
