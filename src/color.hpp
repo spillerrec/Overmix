@@ -39,11 +39,19 @@ struct color{
 	constexpr static color_type MIN_VAL = std::numeric_limits<color_type>::min();
 	constexpr static color_type MAX_VAL = std::numeric_limits<color_type>::max();
 	
+	template<typename T>
+	constexpr static color_type truncate( T value )
+		{ return std::min( std::max( value, (T)BLACK ), (T)WHITE ); }
+	
+	template<typename T>
+	constexpr static color_type truncateFullRange( T value )
+		{ return std::min( std::max( value, (T)MIN_VAL ), (T)MAX_VAL ); }
+	
 	constexpr static double asDouble( color_type value ){
 		return value / (double)WHITE;
 	}
 	constexpr static color_type fromDouble( double value ){
-		return value * WHITE + 0.5;
+		return truncateFullRange( value * WHITE + 0.5 );
 	}
 	constexpr static unsigned char as8bit( color_type value ){
 		return asDouble( value ) * 255;
@@ -57,14 +65,6 @@ struct color{
 	constexpr static color_type from16bit( uint16_t value ){
 		return fromDouble( value / double(std::numeric_limits<uint16_t>::max()) );
 	}
-	
-	template<typename T>
-	static color_type truncate( T value )
-		{ return std::min( std::max( value, (T)BLACK ), (T)WHITE ); }
-	
-	template<typename T>
-	static color_type truncateFullRange( T value )
-		{ return std::min( std::max( value, (T)MIN_VAL ), (T)MAX_VAL ); }
 	
 	public:
 		color( color_type r, color_type g, color_type b, color_type a = WHITE )
