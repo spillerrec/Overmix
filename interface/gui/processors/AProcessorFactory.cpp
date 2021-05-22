@@ -53,6 +53,8 @@ AProcessorFactory::AProcessorFactory(){
 	addProcessor<ProcessDilate    >( "Dilate"           );
 	addProcessor<ProcessDeconvolve>( "Deconvolve"       );
 	addProcessor<ProcessEdge      >( "Edge detection"   );
+	addProcessor<ProcessEdge2     >( "Laplacian of Gaussians"   );
+	addProcessor<ProcessEdge3     >( "Diff of Guassian" );
 	addProcessor<ProcessInpaint   >( "Inpainting"       );
 	addProcessor<ProcessLevels    >( "Level adjustment" );
 	addProcessor<ProcessScale     >( "Scaling"          );

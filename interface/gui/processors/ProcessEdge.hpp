@@ -21,6 +21,8 @@
 #include "AProcessor.hpp"
 
 class QComboBox;
+class QSpinBox;
+class QDoubleSpinBox;
 
 namespace Overmix{
 
@@ -32,6 +34,37 @@ class ProcessEdge : public AProcessor{
 	
 	public:
 		explicit ProcessEdge( QWidget* parent );
+		
+		QString name() const override;
+		ImageEx process( const ImageEx& img ) const override;
+};
+
+class ProcessEdge2 : public AProcessor{
+	Q_OBJECT
+	
+	private:
+		QDoubleSpinBox* sigma;
+		QDoubleSpinBox* amount;
+		QSpinBox* size;
+	
+	public:
+		explicit ProcessEdge2( QWidget* parent );
+		
+		QString name() const override;
+		ImageEx process( const ImageEx& img ) const override;
+};
+
+class ProcessEdge3 : public AProcessor{
+	Q_OBJECT
+	
+	private:
+		QDoubleSpinBox* sigma1;
+		QDoubleSpinBox* sigma2;
+		QDoubleSpinBox* amount;
+		QSpinBox* size;
+	
+	public:
+		explicit ProcessEdge3( QWidget* parent );
 		
 		QString name() const override;
 		ImageEx process( const ImageEx& img ) const override;

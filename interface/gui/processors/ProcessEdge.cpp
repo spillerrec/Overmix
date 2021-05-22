@@ -19,6 +19,8 @@
 #include "ProcessEdge.hpp"
 
 #include <QComboBox>
+#include <QSpinBox>
+#include <QDoubleSpinBox>
 #include "planes/ImageEx.hpp"
 
 using namespace Overmix;
@@ -49,5 +51,54 @@ ImageEx ProcessEdge::process( const ImageEx& input ) const{
 	//TODO: assert size
 	ImageEx output( input );
 	output.apply( edge_mapping[method->currentIndex()].func );
+	return output;
+}
+
+
+ProcessEdge2::ProcessEdge2( QWidget* parent ) : AProcessor( parent ){
+	sigma  = newItem<QDoubleSpinBox>( "Sigma"  );
+	amount = newItem<QDoubleSpinBox>( "Amount" );
+	size   = newItem<QSpinBox      >( "Size"   );
+	
+	sigma->setValue(0.5);
+	amount->setValue(1.0);
+	size->setValue(2);
+	
+	sigma->setSingleStep(0.05);
+	amount->setSingleStep(0.1);
+}
+
+QString ProcessEdge2::name() const{ return "Laplacian of Guassians"; }
+
+ImageEx ProcessEdge2::process( const ImageEx& input ) const{
+	//TODO: assert size
+	ImageEx output( input );
+	output.apply( &Plane::edge_laplacian_ex, sigma->value(), amount->value(), size->value() );
+	return output;
+}
+
+
+ProcessEdge3::ProcessEdge3( QWidget* parent ) : AProcessor( parent ){
+	sigma1  = newItem<QDoubleSpinBox>( "SigmaLow"  );
+	sigma2  = newItem<QDoubleSpinBox>( "SigmaHigh"  );
+	amount = newItem<QDoubleSpinBox>( "Amount" );
+	size   = newItem<QSpinBox      >( "Size"   );
+	
+	sigma1->setValue(0.0);
+	sigma2->setValue(0.5);
+	amount->setValue(1.0);
+	size->setValue(2);
+	
+	sigma1->setSingleStep(0.05);
+	sigma2->setSingleStep(0.05);
+	amount->setSingleStep(0.1);
+}
+
+QString ProcessEdge3::name() const{ return "Gaussian Edge"; }
+
+ImageEx ProcessEdge3::process( const ImageEx& input ) const{
+	//TODO: assert size
+	ImageEx output( input );
+	output.apply( &Plane::edge_guassian, sigma1->value(), sigma2->value(), amount->value() );
 	return output;
 }

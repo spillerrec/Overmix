@@ -174,7 +174,9 @@ class Plane : public PlaneBase<color_type>{
 		Plane edge_prewitt() const{
 			return edge_dm_generic( Weights{ -1,0,1, -1,0,1, -1,0,1 }, Weights{ 1,1,1, 0,0,0, -1,-1,-1 }, 3 );
 		}
+		Plane edge_laplacian_ex(double sigma, double k, int size) const;
 		Plane edge_laplacian() const{
+			return edge_laplacian_ex(0.5, 3.0, 2);
 			return edge_zero_generic( Weights{ -1,-1,-1, -1,8,-1, -1,-1,-1 }, 1 );
 		}
 		Plane edge_laplacian_large() const{
@@ -186,6 +188,8 @@ class Plane : public PlaneBase<color_type>{
 					 0, 0,-1, 0, 0
 				}, 2 );
 		}
+		
+		Plane edge_guassian(double sigma_low, double sigma_high, double amount) const;
 		
 	//Blurring
 	private:

@@ -76,9 +76,8 @@ static color_type calculate_edge( const EdgeLine<color_type, T>& line, const col
 template<typename T>
 static color_type calculate_zero_edge( const EdgeLine<color_type, T>& line, const color_type* in ){
 	//TODO: improve
-	int sum = std::max( calculate_kernel( line.weights_x, line.size, in, line.line_width ), 0 );
-	sum /= line.div;
-	return color::truncate( sum );
+	auto sum = std::abs( calculate_kernel( line.weights_x, line.size, in, line.line_width ) / (T)line.div );
+	return color::truncate(  sum );
 }
 
 template<typename Out, typename T>
@@ -103,7 +102,7 @@ static void edge_line( const EdgeLine<Out, T>& line ){
 }
 
 template<typename PlaneType, typename T, typename T2>
-PlaneType parallel_edge_line( const Plane& p, const vector<T>& weights_x, const vector<T>& weights_y, unsigned div, T2 func ){
+PlaneType parallel_edge_line( const Plane& p, const vector<T>& weights_x, const vector<T>& weights_y, T div, T2 func ){
 	Timer t( "parallel_edge_line" );
 	PlaneType out( p.getSize() );
 	unsigned size = sqrt( weights_x.size() );
@@ -144,4 +143,25 @@ Plane Plane::edge_dm_generic( const vector<int>& weights_x, const vector<int>& w
 PlaneBase<std::pair<int,int>> Plane::edge_dm_direction( const vector<int>& weights_x, const vector<int>& weights_y, unsigned div ) const{
 	auto func = calculate_direction<std::pair<int,int>, int>;
 	return parallel_edge_line<PlaneBase<std::pair<int,int>>, int, decltype(func)>( *this, weights_x, weights_y, div, func );
+}
+
+Plane Plane::edge_laplacian_ex(double sigma, double k, int size) const{
+	int width = size*2 + 1;
+	k *= 8.0 / 3.0;
+	std::vector<double> weights(width*width, 0.0);
+	for(int x=-size; x<=size; x++)
+		for(int y=-size; y<=size; y++)
+			weights[(y + size)*width + (x + size)] = -k * (1- (x*x + y*y) / (2 * sigma * sigma)) * std::exp(- (x*x + y*y) / (2*sigma*sigma));
+	weights[(size)*width + (size)] -= std::accumulate(weights.begin(), weights.end(), 0.0);
+	
+	return parallel_edge_line<Plane, double, decltype(calculate_zero_edge<double>)>( *this, weights, vector<double>(), 1.0, calculate_zero_edge<double> );
+}
+
+Plane Plane::edge_guassian(double sigma_low, double sigma_high, double amount) const{
+	auto low  = blur_gaussian(sigma_low,  sigma_low ).edge_sobel();//edge_laplacian(0.5, 3.0, 2);
+	auto high = blur_gaussian(sigma_high, sigma_high).edge_sobel();//edge_laplacian(0.5, 3.0, 2);
+	
+	low.substract(high);
+	
+	return low.level(0, low.max_value(), color::BLACK, color::WHITE, 1.0);
 }
