@@ -23,6 +23,7 @@
 #include <vector>
 #include <utility>
 #include <QDebug>
+#include <png++/png.hpp>
 
 #include "../color.hpp"
 #include "basic/difference.hpp"
@@ -56,6 +57,18 @@ PlaneBase<uint8_t> Plane::to8BitDither() const{
 		}
 	}
 	return out;
+}
+
+void Plane::save_png(std::string path) const{
+	png::image< png::gray_pixel_16 > image(get_width(), get_height());
+	
+	for( unsigned iy=0; iy<get_height(); iy++ ){
+		auto line = scan_line( iy );
+		for( unsigned ix=0; ix<get_width(); ix++ )
+			image[iy][ix] = line[ix] << 2;
+	}
+	
+	image.write(path);
 }
 
 color_type Plane::min_value() const{

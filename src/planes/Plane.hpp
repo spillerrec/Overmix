@@ -61,6 +61,8 @@ class Plane : public PlaneBase<color_type>{
 		
 		explicit Plane( const PlaneBase<color_type>& p ) : PlaneBase( p ) { }
 		
+		void save_png(std::string path) const;
+		
 	//Plane handling
 		
 	//Convert
