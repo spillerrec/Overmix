@@ -26,7 +26,6 @@
 #include <QFileInfo>
 #include <stdexcept>
 
-
 using namespace std;
 using namespace Overmix;
 
@@ -54,14 +53,37 @@ class ColorRow{
 
 static const double DOUBLE_MAX = std::numeric_limits<double>::max();
 
+static Plane RgbToGrayscale(const Plane& r, const Plane& g, const Plane& b, const ColorSpace& /*color_space*/)
+{
+	Timer t( "RgbToGrayscale" );
+	if (r.getSize() != g.getSize() || g.getSize() != b.getSize()) {
+		qWarning("RgbToGrayscale failed, planes not consistent in size!");
+		return {};
+	}
+	
+	//TODO: Get those from color space
+	double cr = 0.3;
+	double cg = 0.59;
+	double cb = 0.11;
+	
+	Plane out(r.getSize());
+	for (unsigned y=0; y<r.get_height(); y++)
+		for (unsigned x=0; x<r.get_width(); x++) 
+			out[y][x] = color::truncateFullRange( r[y][x] * cr + g[y][x] * cg + b[y][x] * cb );
+	
+	return out;
+}
+
 void ImageEx::to_grayscale(){
 	Timer t( "to_grayscale" );
+	qWarning("Color space: %d", (int)color_space.transform());
 	switch( color_space.transform() ){
-		case Transform::RGB:
-				//TODO: properly convert to grayscale
-				while( planes.size() > 1 )
-					planes.pop_back();
+		case Transform::RGB: {
+			auto p = RgbToGrayscale(planes[0].p, planes[1].p, planes[2].p, color_space);
+			planes.clear();
+			addPlane( std::move(p) );
 			break;
+		}
 		case Transform::GRAY:
 		case Transform::YCbCr_601:
 		case Transform::YCbCr_709:
@@ -81,7 +103,6 @@ ImageEx ImageEx::toRgb() const
 ImageEx ImageEx::toColorSpace( ColorSpace to ) const{
 	Timer t( "ImageEx::toColorSpace" );
 	ImageEx out( *this );
-	out.color_space = to;
 	
 	//Special case for RGB to gray
 	if( to.isGray() ){
@@ -89,6 +110,7 @@ ImageEx ImageEx::toColorSpace( ColorSpace to ) const{
 		return out;
 	}
 	
+	out.color_space = to;
 	//Special case for GRAY to RGB
 	if( color_space.isGray() && to.isRgb() ){
 		//TODO: Transfer function not converted
