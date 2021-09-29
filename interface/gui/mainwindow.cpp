@@ -420,6 +420,8 @@ void main_widget::save_image(){
 				else
 					render.qimg.save( filename );
 			}
+			else
+				break;
 		}
 	} );
 }
