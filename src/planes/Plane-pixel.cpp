@@ -74,6 +74,14 @@ void Plane::multiply( const Plane &p ){
 	for_each_pixel( p, []( color_type a, color_type b, void* )
 		{ return color::fromDouble( color::asDouble( b ) * color::asDouble( a ) ); } );
 }
+void Plane::mix( const Plane &p, double amount ){
+	for_each_pixel( p, []( color_type a, color_type b, void* data )
+		{
+			double amount = *reinterpret_cast<double*>(data);
+			return color::fromDouble( color::asDouble( b ) * (1.0-amount) + color::asDouble( a ) * amount );
+		},
+		&amount);
+}
 
 
 struct LevelOptions{

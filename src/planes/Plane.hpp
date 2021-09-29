@@ -94,6 +94,7 @@ class Plane : public PlaneBase<color_type>{
 		void difference( const Plane &p );
 		void divide( const Plane &p );
 		void multiply( const Plane &p );
+		void mix( const Plane &p, double amount = 0.5 );
 		Plane level( color_type limit_min, color_type limit_max
 			,	color_type output_min, color_type output_max
 			,	double gamma
