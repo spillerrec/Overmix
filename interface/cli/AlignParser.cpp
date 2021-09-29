@@ -60,7 +60,7 @@ static unique_ptr<AAligner> makeAligner( QString name, QString parameters ){
 	else if( name == "Recursive" )
 		return std::make_unique<RecursiveAligner>();
 	else if( name == "SuperRes" )
-		return convertUnique<SuperResAligner,AlignMethod,double>( parameters );
+		return convertUnique<SuperResAligner,double>( parameters );
 	else
 		throw std::invalid_argument( fromQString( "No aligner found with the name: '" + name + "'" ) );
 }

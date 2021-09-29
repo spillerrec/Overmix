@@ -24,11 +24,10 @@ namespace Overmix{
 
 class SuperResAligner : public AAligner{
 	private:
-		AlignMethod method;
 		double scale;
 		
 	public:
-		SuperResAligner( AlignMethod method, double scale ) : method(method), scale(scale) { }
+		SuperResAligner( double scale ) : scale(scale) { }
 		virtual void align( class AContainer& container, class AProcessWatcher* watcher=nullptr ) const override;
 };
 

@@ -185,7 +185,7 @@ std::unique_ptr<AAligner> FrameCalculatorAlignerConfig::getAligner() const{
 }
 
 std::unique_ptr<AAligner> SuperResAlignerConfig::getAligner() const
-	{ return std::make_unique<SuperResAligner>( getMethod(), getScale() ); }
+	{ return std::make_unique<SuperResAligner>( getScale() ); }
 
 std::unique_ptr<AAligner> ClusterAlignerConfig::getAligner() const
 	{ return std::make_unique<ClusterAligner>( min_groups->value(), max_groups->value() ); }

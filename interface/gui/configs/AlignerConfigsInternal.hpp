@@ -100,7 +100,7 @@ class FrameCalculatorAlignerConfig : public AAlignerConfig{
 
 class SuperResAlignerConfig : public AAlignerConfig{
 	public:
-		explicit SuperResAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, ENABLE_ALL ) { }
+		explicit SuperResAlignerConfig( QWidget* parent ) : AAlignerConfig( parent, DISABLE_ALL & ~DISABLE_RES ) { }
 		std::unique_ptr<AAligner> getAligner() const override;
 		
 		QString name() const override { return "SuperRes"; }
