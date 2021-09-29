@@ -225,7 +225,7 @@ static DPlane divide2( const DPlane& left, const DPlane& right ){
 		auto pl=begin(*rl);
 		auto pr=begin(*rr);
 		for( ; pl!=end(*rl); ++pl, ++pr )
-			*pl = *pl / *pr;
+			*pl = (*pr != 0) ? *pl / *pr : 0;
 	}
 	return copy;
 }
