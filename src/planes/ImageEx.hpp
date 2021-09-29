@@ -46,6 +46,7 @@ class ImageEx{
 		bool from_dump(   QIODevice& dev );
 		bool from_jpeg(   QIODevice& dev, class JpegDegrader* deg=nullptr );
 		bool from_png(    QIODevice& dev );
+		bool from_libraw( QIODevice& dev );
 		bool from_qimage( QIODevice& dev, QString ext );
 	public:
 		bool to_png( QIODevice& dev ) const;

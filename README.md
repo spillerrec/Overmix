@@ -75,6 +75,7 @@ Several tools related to the format have been developed, most importantly an app
 - libpng
 - png++ (header only)
 - libjpeg
+- libraw
 - fftw3
 - pugixml
 - lcms2 (required for GUI)

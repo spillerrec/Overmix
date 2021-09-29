@@ -26,6 +26,7 @@ enum class Transform{
 	,	YCbCr_601 //As specified in Rec. 601
 	,	YCbCr_709 //As specified in Rec. 709
 	,	JPEG      //As YCbCr_601, but without studio-swing
+	,	BAYER     //R, G1, B, G2, non-calibrated color space
 	,	UNKNOWN
 };
 enum class Transfer{ //i.e. gamma function
@@ -71,6 +72,8 @@ class ColorSpace{
 		///Returns true if transform is GRAY
 		bool isGray() const{ return _transform == Transform::GRAY; }
 		
+		bool isBayer() const{ return _transform == Transform::BAYER; }
+		
 		int components() const{
 			switch( _transform ){
 				case Transform::GRAY:
@@ -80,6 +83,8 @@ class ColorSpace{
 				case Transform::YCbCr_709:
 				case Transform::JPEG:
 						return 3;
+				case Transform::BAYER:
+						return 4;
 				default: return 0;
 			}
 		}

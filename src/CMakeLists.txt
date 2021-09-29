@@ -20,6 +20,7 @@ set(SOURCES_PLANES
 	planes/ImageEx.cpp
 	planes/ImageEx-dump.cpp
 	planes/ImageEx-jpeg.cpp
+	planes/ImageEx-libraw.cpp
 	planes/ImageEx-png.cpp
 	planes/ImageEx-qimage.cpp
 	planes/FourierPlane.cpp
@@ -108,7 +109,7 @@ add_library(OvermixCore
 	${WAIFU_SOURCES} 
 	${SOURCES_OTHERS} 
 	)
-target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -lm -lpng -ljpeg -lz -llzma -lpugixml fftw3 ${FFMPEG_LIBS} ${WAIFU_LIB})
+target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -lm -lpng -ljpeg -lraw -lz -llzma -lpugixml fftw3 ${FFMPEG_LIBS} ${WAIFU_LIB})
 
 # C++17
 set_property(TARGET OvermixCore PROPERTY CXX_STANDARD 17)

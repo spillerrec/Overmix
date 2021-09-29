@@ -47,7 +47,16 @@ color ColorSpace::convert( color from, ColorSpace to ) const{
 		auto gamma = true; //TODO: set to false
 		switch( to._transform ){
 			case Transform::GRAY: break;
-			case Transform::RGB: break;
+			case Transform::RGB:
+				if( _transfer == Transfer::LINEAR && to._transfer == Transfer::SRGB )
+				{
+					auto convert = [](color_type x){ return color::fromDouble( color::linear2sRgb( color::asDouble(x) ) ); };
+					from.r = convert(from.r);
+					from.g = convert(from.g);
+					from.b = convert(from.b);
+					from.a = convert(from.a);
+				}
+				break;
 			case Transform::YCbCr_601: from = from.rgbToYcbcr( 0.299,  0.587,  0.114,  gamma, true  ); break;
 			case Transform::YCbCr_709: from = from.rgbToYcbcr( 0.2126, 0.7152, 0.0722, gamma, true  ); break;
 			case Transform::JPEG:      from = from.rgbToYcbcr( 0.299,  0.587,  0.114,  gamma, false ); break;
@@ -55,6 +64,41 @@ color ColorSpace::convert( color from, ColorSpace to ) const{
 				qWarning() << "Unsupported transform: " << (int)to._transform;
 				throw std::runtime_error( "ColorSpace::convert(): unsupported transform!" );
 		}
+	}
+	else
+	{
+		double r = color::asDouble(from.r);
+		double g = color::asDouble(from.g);
+		double b = color::asDouble(from.b);
+		double a = color::asDouble(from.a);
+		
+		auto apply = [&](auto func){
+				r = func( r );
+				g = func( g );
+				b = func( b );
+				a = func( a );
+		};
+		switch( _transfer ){
+			case Transfer::LINEAR: break;
+			case Transfer::SRGB:   apply(color::sRgb2linear); break;
+			case Transfer::REC709: apply(color::ycbcr2linear); break;
+			default:
+				qWarning() << "Unsupported transfer: " << (int)to._transfer;
+				throw std::runtime_error( "ColorSpace::convert(): unsupported transfer!" );
+		}
+		switch( to._transfer ){
+			case Transfer::LINEAR: break;
+			case Transfer::SRGB:   apply(color::linear2sRgb); break;
+			//case Transfer::REC709: apply(color::linear2ycbcr); break; //TODO: Implement
+			default:
+				qWarning() << "Unsupported transfer: " << (int)to._transfer;
+				throw std::runtime_error( "ColorSpace::convert(): unsupported transfer!" );
+		}
+		
+		from.r = color::fromDouble( r );
+		from.g = color::fromDouble( g );
+		from.b = color::fromDouble( b );
+		from.a = color::fromDouble( a );
 	}
 	
 	return from;

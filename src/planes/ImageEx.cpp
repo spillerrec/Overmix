@@ -88,6 +88,7 @@ void ImageEx::to_grayscale(){
 		case Transform::YCbCr_601:
 		case Transform::YCbCr_709:
 		case Transform::JPEG:
+		case Transform::BAYER: //TODO: 
 				while( planes.size() > 1 )
 					planes.pop_back();
 			break;
@@ -109,6 +110,20 @@ ImageEx ImageEx::toColorSpace( ColorSpace to ) const{
 		out.to_grayscale();
 		return out;
 	}
+	
+	//Special case for Bayer inputs
+	if (color_space.isBayer()){
+		//TODO: Do something more proper that aligns the channels!
+		ImageEx copy(*this);
+		std::swap(copy.planes[2], copy.planes[3]);
+		copy.planes[1].p.mix(copy.planes[3].p); //Average the two green channels
+		copy.planes.pop_back(); //Remove the second (non-averaged) green channel
+		copy.color_space = color_space.changed(Transform::RGB);
+		return copy.toColorSpace(to);
+	}
+	
+	if( to.isBayer() )
+		throw std::runtime_error( "Colorspace conversion to bayer not implemented!" );
 	
 	out.color_space = to;
 	//Special case for GRAY to RGB
@@ -148,6 +163,8 @@ bool ImageEx::read_file( QString path ){
 		return false;
 	
 	auto ext = QFileInfo( path ).suffix().toLower();
+	if( ext == "fff" || ext == "dng" || ext == "arw" )
+		return from_libraw( f );
 	if( ext == "dump" )
 		return from_dump( f );
 	if( ext == "png" )
