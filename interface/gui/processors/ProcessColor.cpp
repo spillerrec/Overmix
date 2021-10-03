@@ -19,6 +19,7 @@
 #include "ProcessColor.hpp"
 
 #include <QComboBox>
+#include <QCheckBox>
 #include "../Spinbox2D.hpp"
 #include "planes/ImageEx.hpp"
 
@@ -48,13 +49,22 @@ ProcessColor::ProcessColor( QWidget* parent ) : AProcessor( parent ){
 	for( auto mapping : transfer_mapping )
 		transfer->addItem( mapping.second );
 	transfer->setCurrentIndex( 1 );
+	
+	subsample = newItem<QCheckBox>( "Subsample chroma" );
 }
 
 QString ProcessColor::name() const{ return "Color space"; }
 
 ImageEx ProcessColor::process( const ImageEx& input ) const{
-	return input.toColorSpace(
+	auto result = input.toColorSpace(
 		{	transform_mapping[ transform->currentIndex() ].first
 		,	transfer_mapping[  transfer ->currentIndex() ].first
 		} );
+		
+	if (subsample->isChecked() && transform->currentIndex() >= 2){ //Must be YUV
+		for( size_t i=1; i<result.size(); i++ )
+			result[i] = result[i].scale_select(result.alpha_plane(), result.getSize() / 2, ScalingFunction::SCALE_CATROM);
+	}
+	
+	return result;
 }

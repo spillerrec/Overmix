@@ -21,6 +21,7 @@
 #include "AProcessor.hpp"
 
 class QComboBox;
+class QCheckBox;
 
 namespace Overmix{
 
@@ -31,6 +32,7 @@ class ProcessColor : public AProcessor{
 	private:
 		QComboBox* transform;
 		QComboBox* transfer;
+		QCheckBox* subsample;
 	
 	public:
 		explicit ProcessColor( QWidget* parent );
