@@ -60,6 +60,9 @@ PlaneBase<uint8_t> Plane::to8BitDither() const{
 }
 
 void Plane::save_png(std::string path) const{
+	if( get_width()==0 || get_height() == 0 )
+		throw std::logic_error("Tried to " + path + " with invalid dimensions " + std::to_string(get_width()) + "x" + std::to_string(get_height()));
+	
 	png::image< png::gray_pixel_16 > image(get_width(), get_height());
 	
 	for( unsigned iy=0; iy<get_height(); iy++ ){
