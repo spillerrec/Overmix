@@ -84,6 +84,27 @@ void Plane::mix( const Plane &p, double amount ){
 }
 
 
+Plane Plane::overlay( const Plane& p, const Plane& p_alpha, const Plane& this_alpha ) const{
+	if( !p_alpha )
+		return Plane{ p };
+	
+	Plane out(*this);
+	
+	auto size = getSize().min( p.getSize() );
+	for( size_t iy=0; iy<size.height(); iy++ )
+		for( size_t ix=0; ix<size.width(); ix++ ){
+			//if (!this_alpha)
+			{
+				auto amount = color::asDouble( p_alpha[iy][ix] );
+				out[iy][ix] = color::fromDouble( color::asDouble( out[iy][ix] ) * (1.0-amount) + color::asDouble( p[iy][ix] ) * amount );
+			}
+			//TODO: Else
+		}
+		
+	return out;
+}
+
+
 struct LevelOptions{
 	color_type limit_min;
 	color_type limit_max;

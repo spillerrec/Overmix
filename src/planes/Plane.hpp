@@ -104,6 +104,8 @@ class Plane : public PlaneBase<color_type>{
 		Plane minPlane( const Plane& p ) const;
 		Plane maxPlane( const Plane& p ) const;
 		
+		Plane overlay( const Plane& p, const Plane& p_alpha, const Plane& this_alpha = {} ) const;
+		
 	//Binarization
 		//TODO: find threshold methods: average, otsu?
 		void binarize_threshold( color_type threshold );

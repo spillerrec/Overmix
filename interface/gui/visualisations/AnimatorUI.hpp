@@ -46,6 +46,7 @@ class AnimatorUI : public QDialog{
 		Ui::AnimatorUI* ui;
 		imageViewer* viewer;
 		ImageEx img;
+		ImageEx overlay;
 		DoubleSpinbox2D* movement;
 		Spinbox2D* size;
 		
@@ -54,6 +55,7 @@ class AnimatorUI : public QDialog{
 		Spinbox2D* censor_pixel_size;
 		
 		std::vector<Rectangle<double>> getCrops();
+		std::vector<Rectangle<double>> getCropsOverlay();
 		
 	public:
 		AnimatorUI(QSettings& settings, ImageEx img, QWidget* parent );

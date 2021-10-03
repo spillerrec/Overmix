@@ -34,6 +34,8 @@
 #include <QVBoxLayout>
 #include <QSpinBox>
 #include <QPainter>
+#include <QFileDialog>
+#include <QMessageBox>
 
 using namespace Overmix;
 
@@ -83,6 +85,16 @@ AnimatorUI::AnimatorUI( QSettings& settings, ImageEx img, QWidget* parent )
 	censor_size      ->connectToChanges( this, SLOT( update_preview() ) );
 	censor_pixel_size->connectToChanges( this, SLOT( update_preview() ) );
 	update_preview();
+	
+	
+	connect( ui->add_overlay_btn, &QPushButton::clicked, [&](bool){
+		QString image_path = QFileDialog::getOpenFileName( this, tr("Open overlay image for slide"), "", tr("PNG files (*.png)") );
+		if( !overlay.read_file(image_path) )
+		{
+			QMessageBox::warning( this, tr("Load error"), tr("Could not open file as an image") );
+			return;
+		}
+	});
 }
 
 bool AnimatorUI::isPixilated() const{ return ui->enable_censor->isChecked(); }
@@ -116,6 +128,30 @@ std::vector<Rectangle<double>> AnimatorUI::getCrops(){
 	return crops;
 }
 
+std::vector<Rectangle<double>> AnimatorUI::getCropsOverlay(){
+	auto main_crops = getCrops();
+	if( main_crops.size() == 0 || !overlay ){
+		qDebug("No overlay image!");
+		return {};
+	}
+	
+	auto size = main_crops.at(0).size;
+	auto needed_movement = (overlay.getSize() - size).max(Point<int>(0, 0));
+	qDebug("needed_movement: %d x %d", needed_movement.x, needed_movement.y);
+	auto movement_per_frame = needed_movement.to<double>() / main_crops.size();
+	qDebug("movement_per_frame: %f x %f", movement_per_frame.x, movement_per_frame.y);
+	std::vector<Rectangle<double>> crops;
+	
+	auto crop_size = overlay.getSize().min( size );
+	for( size_t i=0; i<main_crops.size(); i++ ){
+		auto pos = (movement_per_frame * (double)i).floor();
+		
+		crops.push_back( {pos, crop_size.to<double>()} );
+	}
+	
+	return crops;
+}
+
 
 void AnimatorUI::update_preview(){
 	QImage preview;
@@ -140,6 +176,7 @@ void AnimatorUI::update_preview(){
 
 void AnimatorUI::render(ImageContainer& container, AProcessWatcher* watcher){
 	auto crops = getCrops();
+	auto cropsOverlay = getCropsOverlay();
 	Progress progress( "Animator render", crops.size(), watcher );
 	for(size_t i=0; i<crops.size(); i++){
 		auto crop = crops[i];
@@ -148,6 +185,18 @@ void AnimatorUI::render(ImageContainer& container, AProcessWatcher* watcher){
 		copy.crop(crop.pos, crop.size); //TODO: Support floating point crop
 		if( ui->enable_censor->isChecked() )
 			pixelate(copy, crop.pos, censor_pos->getValue(), censor_size->getValue().to<double>(), censor_pixel_size->getValue());
+		
+		if( overlay ){
+			ImageEx copyOverlay = overlay;
+			auto overlay_crop = cropsOverlay.at(i);
+			qDebug("Overlay at %fx%f, %fx%f", overlay_crop.pos.x, overlay_crop.pos.y, overlay_crop.size.x, overlay_crop.size.y);
+			copyOverlay.crop(overlay_crop.pos, overlay_crop.size);
+			
+			//TODO: alpha?
+			for( size_t c=0; c<copy.size(); c++ )
+				copy[c] = copy[c].overlay( copyOverlay[c], copyOverlay.alpha_plane() );
+		}
+		
 		container.addImage(std::move(copy), -1, -1, filename);
 		container.setPos(i, crop.pos);
 		progress.add();
