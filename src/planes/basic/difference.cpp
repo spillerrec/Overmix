@@ -34,8 +34,10 @@ struct Sum{
 	
 	double average() const{ return sum / count; }
 	Sum& operator+=( DiffAmount add ){
-		sum += add.first / add.second;
-		total += add.second;
+		if( add.second > 0 ){
+			sum += add.first / add.second;
+			total += add.second;
+		}
 		count++;
 		return *this;
 	}

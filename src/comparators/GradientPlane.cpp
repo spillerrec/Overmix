@@ -61,6 +61,7 @@ GradientCheck::GradientCheck( Size<unsigned> size1, Size<unsigned> size2, double
 double GradientPlane::getDifference( int x, int y, double precision ) const{
 	auto local = settings;
 	local.stride = precision; //TODO: double?
+	local.stride = std::max(1u, local.stride);
 	return Difference::simpleAlpha( p1, p2, a1, a2, {x, y}, local );
 }
 
@@ -187,10 +188,8 @@ ImageOffset GradientPlane::findMinimum( GradientCheck area ){
 			cache.add_diff( c.h_middle, c.v_middle, c.diff, c.precision );
 	}
 	
-	if( !best ){
-		qDebug( "ERROR! no result to continue on!!" );
-		return {};
-	}
+	if( !best )
+		throw std::runtime_error( "GradientPlane::findMinimum: no result to continue on!!" );
 	
 	return best->result();
 }
