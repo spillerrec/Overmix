@@ -70,11 +70,11 @@ inline double asDouble( QString encoded ){
 }
 
 template<typename T>
-T getEnum( QString str, std::vector<std::pair<const char*, T>> cases ){
+T getEnum( QString type, QString str, std::vector<std::pair<const char*, T>> cases ){
 	auto pos = std::find_if( cases.begin(), cases.end(), [&]( auto pair ){ return pair.first == str; } );
 	if( pos != cases.end() )
 		return pos->second;
-	throw std::invalid_argument( fromQString("Unknown enum value: '" + str + "'") );
+	throw std::invalid_argument( fromQString("Unknown " + type + " enum value: '" + str + "'") );
 }
 
 inline void convert( QString str, double&    val ) { val = asDouble(str); }
@@ -84,7 +84,7 @@ inline void convert( QString str, short int& val ) { val = asInt(str); }
 inline void convert( QString str_in, QString& str_out ) { str_out = str_in; }
 
 inline void convert( QString str, bool& value ){
-	value = getEnum<bool>( str.toLower(),
+	value = getEnum<bool>( "boolean", str.toLower(),
 		{	{ "0",     false }
 		,	{ "f",     false }
 		,	{ "false", false }
@@ -100,6 +100,16 @@ void convert( QString str, Arg& val, Arg2& val2, Args&... args ){
 	convert( split.left, val );
 	convert( split.right, val2, args... );
 }
+template<typename Arg>
+void convertSub( QString str, QChar /*split_char*/, Arg& val ){
+	convert( str, val );
+}
+template<typename Arg, typename Arg2, typename... Args>
+void convertSub( QString str, QChar split_char, Arg& val, Arg2& val2, Args&... args ){
+	Splitter split( str, split_char );
+	convert( split.left, val );
+	convertSub( split.right, split_char, val2, args... );
+}
 
 template<typename T>
 void convert( QString str, Point<T>& val ){
@@ -110,14 +120,14 @@ void convert( QString str, Point<T>& val ){
 
 
 template<typename Tuple, std::size_t... I>
-Tuple callConvert( QString str, Tuple tuple, std::index_sequence<I...> ){
-	convert( str, std::get<I>(tuple)... );
+Tuple callConvert( QString str, QChar split_char, Tuple tuple, std::index_sequence<I...> ){
+	convertSub( str, split_char, std::get<I>(tuple)... );
 	return tuple;
 }
 
 template<typename... Args>
-std::tuple<Args...> convertTuple( QString str )
-	{ return callConvert( str, std::tuple<Args...>(), std::index_sequence_for<Args...>{} ); }
+std::tuple<Args...> convertTuple( QString str, QChar split_char )
+	{ return callConvert( str, split_char, std::tuple<Args...>(), std::index_sequence_for<Args...>{} ); }
 	
 
 template<typename Output, typename Tuple, std::size_t... I>
@@ -129,14 +139,14 @@ Output constructFromTuple( Tuple& tuple, std::index_sequence<I...> )
 	{ return Output( std::get<I>(tuple)... ); }
 
 template<typename Output, typename... Args>
-std::unique_ptr<Output> convertUnique( QString parameters ){
-	auto args = convertTuple<Args...>( parameters );
+std::unique_ptr<Output> convertUnique( QString parameters, QChar split_char = ':' ){
+	auto args = convertTuple<Args...>( parameters, split_char );
 	return uniqueFromTuple<Output>( args, std::index_sequence_for<Args...>{} );
 }
 
 template<typename Output, typename... Args>
-Output convertConstruct( QString parameters ){
-	auto args = convertTuple<Args...>( parameters );
+Output convertConstruct( QString parameters, QChar split_char = ':' ){
+	auto args = convertTuple<Args...>( parameters, split_char );
 	return constructFromTuple<Output>( args, std::index_sequence_for<Args...>{} );
 }
 

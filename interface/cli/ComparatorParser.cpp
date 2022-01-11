@@ -25,17 +25,19 @@
 #include "containers/ImageContainer.hpp"
 
 #include <QString>
+#include <iostream>
 #include <QTextStream>
 
 using namespace Overmix;
 
 
 static void convert( QString str, Difference::SimpleSettings& func ){
-	func = convertConstruct<Difference::SimpleSettings,unsigned,bool,color_type>( str );
+	std::cout << str.toLocal8Bit().constData() << std::endl;
+	func = convertConstruct<Difference::SimpleSettings,unsigned,bool,color_type>( str, '/' );
 }
 
 static void convert( QString str, AlignMethod& func ){
-	func = getEnum<AlignMethod>( str,
+	func = getEnum<AlignMethod>( "direction", str,
 		{	{ "both", AlignMethod::BOTH }
 		,	{ "ver",  AlignMethod::VER  }
 		,	{ "hor",  AlignMethod::HOR  }
@@ -60,8 +62,8 @@ void Overmix::comparatorHelpText( QTextStream& std ){
 	std << "Specifies how images should be compared for aligning:\n";
 	std << "\n";
 	std << "Algorithms:\n";
-	std << "\t" << "Gradient:<TODO>:<AlignMethod>:<movement>:<start level>:<max level>:<max difference>\n";
-	std << "\t" << "BruteForce:<TODO>:<AlignMethod>:<movement>\n";
+	std << "\t" << "Gradient:<stride>/<use L2>/<min difference>:<AlignMethod>:<movement>:<start level>:<max level>:<max difference>\n";
+	std << "\t" << "BruteForce:<stride>/<use L2>/<min difference>:<AlignMethod>:<movement>\n";
 	std << "\n";
 	std << "AlignMethod: both, ver, hor\n";
 	std << "\n";

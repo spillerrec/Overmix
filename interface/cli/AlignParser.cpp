@@ -37,7 +37,7 @@ using namespace std;
 using namespace Overmix;
 
 static void convert( QString str, AlignMethod& func ){
-	func = getEnum<AlignMethod>( str,
+	func = getEnum<AlignMethod>( "direction", str,
 		{	{ "both", AlignMethod::BOTH }
 		,	{ "ver",  AlignMethod::VER  }
 		,	{ "hor",  AlignMethod::HOR  }

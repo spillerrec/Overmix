@@ -29,7 +29,7 @@
 using namespace Overmix;
 
 static void convert( QString str, Statistics& func ){
-	func = getEnum<Statistics>( str,
+	func = getEnum<Statistics>( "statistics-type", str,
 		{	{ "avg",        Statistics::AVG        }
 		,	{ "min",        Statistics::MIN        }
 		,	{ "max",        Statistics::MAX        }
