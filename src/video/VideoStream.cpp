@@ -22,6 +22,7 @@
 
 #include <QString>
 #include <QDebug>
+#include <QFileInfo>
 
 #include <iostream>
 #include <stdexcept>
@@ -69,6 +70,13 @@ VideoStream::VideoStream( QString filepath ){
 	
 	if( avcodec_open2( codec_context, codec, nullptr ) < 0 )
 		throw std::runtime_error( "Couldn't open codec\n" );
+}
+
+bool VideoStream::isVideoFile( QString path )
+{
+	auto ext = QFileInfo( path ).suffix().toLower();
+	//TODO: multiple extesions
+	return ext == "mkv" || ext == "mp4" || ext == "webm";
 }
 
 bool VideoStream::seek( double seconds ){

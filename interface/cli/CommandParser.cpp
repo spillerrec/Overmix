@@ -23,6 +23,8 @@
 
 #include "containers/ImageContainer.hpp"
 #include "containers/ImageContainerSaver.hpp"
+#include "video/VideoStream.hpp"
+#include "video/VideoFrame.hpp"
 
 #include <QFileInfo>
 #include <QImage>
@@ -30,6 +32,7 @@
 #include <QTextStream>
 #include <QDebug>
 
+#include <iostream>
 #include <vector>
 
 using namespace Overmix;
@@ -109,6 +112,18 @@ void CommandParser::parse( QStringList commands ){
 		if( cmd.is_file ){ //Load a file
 			if( QFileInfo( cmd.filename() ).completeSuffix() == "xml.overmix" )
 				ImageContainerSaver::load( images, cmd.filename() );
+			else if( VideoStream::isVideoFile( cmd.filename() ) )
+			{
+				try{
+					VideoStream stream( cmd.filename() );
+					while (true){
+						images.addImage( stream.getFrame().toImageEx() );
+					}
+				}
+				catch(std::exception& e){
+					std::cout << e.what() << std::endl;
+				}
+			}
 			else
 				images.addImage( ImageEx::fromFile( cmd.filename() ), -1, -1, cmd.filename() );
 		}

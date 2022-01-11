@@ -43,6 +43,8 @@ class VideoStream{
 		bool seek( double seconds );
 		VideoFrame getFrame();
 		void skipFrame();
+		
+		static bool isVideoFile( QString path );
 };
 
 }

@@ -32,7 +32,6 @@ using namespace Overmix;
 
 
 static void convert( QString str, Difference::SimpleSettings& func ){
-	std::cout << str.toLocal8Bit().constData() << std::endl;
 	func = convertConstruct<Difference::SimpleSettings,unsigned,bool,color_type>( str, '/' );
 }
 
