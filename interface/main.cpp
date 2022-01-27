@@ -22,11 +22,29 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QStringList>
+#include <QFile>
+#include <QTextStream>
 
 #include <iostream>
 
 #ifdef _WIN32
-#include "Windows.h"
+	#include "Windows.h"
+	#include <QOperatingSystemVersion>
+
+	bool windowsDarkThemeAvailable(){
+		// dark mode supported Windows 10 1809 10.0.17763 onward
+		// https://stackoverflow.com/questions/53501268/win10-dark-theme-how-to-use-in-winapi
+		auto major = QOperatingSystemVersion::current().majorVersion();
+		auto micro = QOperatingSystemVersion::current().microVersion();
+		return (major == 10 && micro >= 17763) || (major > 10);
+	}
+
+	bool UseDarkTheme(){
+		QSettings settings( "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings::NativeFormat );
+		return settings.value( "AppsUseLightTheme", 1 ).toInt() == 0;
+	}
+#else
+	bool UseDarkTheme(){ return false; }
 #endif
 
 int main( int argc, char *argv[] ){
@@ -41,6 +59,18 @@ int main( int argc, char *argv[] ){
 	QApplication a( argc, argv );
 	Overmix::ImageContainer images;
 	Overmix::CommandParser parser( images );
+	
+	if( UseDarkTheme() ){
+		QFile f(":qdarkstyle/dark/style.qss");
+		if( !f.exists() ){
+			printf("Unable to set stylesheet, file not found\n");
+		}
+		else{
+			f.open(QFile::ReadOnly | QFile::Text);
+			QTextStream ts(&f);
+			qApp->setStyleSheet(ts.readAll());
+		}
+	}
 	
 	try{
 		//Parse command-line arguments

@@ -6,7 +6,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall") # Turn on warnings
 # Qt compilers setup
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(RESOURCES
+	gui/qdarkstyle/dark/style.qrc
+	)
 
 set(SOURCE_CLI
 	cli/AlignParser.cpp
@@ -74,7 +79,7 @@ if( WIN32 ) # Don't use registry on windows for saving options
 endif( WIN32 )
 
 add_executable(OvermixCli ${SOURCE_CLI} main-cli.cpp)
-add_executable(Overmix WIN32 ${SOURCE_CLI} ${SOURCE_GUI} ${SOURCE_GUI_CONFIGS} ${SOURCE_GUI_PROCESSORS} ${SOURCE_GUI_SAVERS} ${SOURCE_GUI_VISUALISATION} ${SOURCE_GUI_VIEWER} ${extra_moc} main.cpp)
+add_executable(Overmix WIN32 ${RESOURCES} ${SOURCE_CLI} ${SOURCE_GUI} ${SOURCE_GUI_CONFIGS} ${SOURCE_GUI_PROCESSORS} ${SOURCE_GUI_SAVERS} ${SOURCE_GUI_VISUALISATION} ${SOURCE_GUI_VIEWER} ${extra_moc} main.cpp)
 
 # Set-up libraries
 find_package(Qt5Widgets REQUIRED)
