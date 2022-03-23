@@ -68,7 +68,7 @@ void Plane::save_png(std::string path) const{
 	for( unsigned iy=0; iy<get_height(); iy++ ){
 		auto line = scan_line( iy );
 		for( unsigned ix=0; ix<get_width(); ix++ )
-			image[iy][ix] = line[ix] << 2;
+			image[iy][ix] = color::truncate(line[ix]) << 2;
 	}
 	
 	image.write(path);

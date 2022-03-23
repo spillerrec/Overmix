@@ -23,14 +23,20 @@
 #include "video/VideoFrame.hpp"
 #include "containers/ImageContainer.hpp"
 #include <QFileInfo>
+#include <QBrush>
 
 using namespace Overmix;
+
+PreviewItem::PreviewItem(VideoFrame& frame){
+	img = frame.toPreview( 128 );
+	keyframe = frame.is_keyframe();
+}
 
 QSize VideoPreviewModel::thumbnailSize() const{
 	if( amount > 0 )
 	{
 		auto size = previews.at(0).img.size();
-		return { size.width(), size.height() };
+		return { size.width()+4, size.height()+4 };
 	}
 	return {0, 0};
 }
@@ -46,13 +52,17 @@ void VideoPreviewModel::setVideo( QString path, int seek_offset, int amount ){
 	emit beginResetModel();
 	stream->seek( seek_offset );
 	previews.clear();
-	previews.resize( amount );
+	previews.reserve( amount );
 	
 	//TODO: Rest of it in another thread
 	for( int i=0; i<amount; i++ ){
-		previews[i].img = stream->getFrame().toPreview( 128 );
-		for( int j=1; j<SKIP_AMOUNT; j++ )
-			stream->getFrame();
+		auto f = stream->getFrame();
+		previews.emplace_back( f );
+		for( int j=1; j<SKIP_AMOUNT; j++ ){
+			auto frame = stream->getFrame();
+			if( frame.is_keyframe() )
+				previews.emplace_back( frame );
+		}
 	}
 	emit endResetModel();
 }
@@ -65,12 +75,15 @@ int VideoPreviewModel::columnCount( const QModelIndex& ) const
 	{ return 4; }
 	
 QVariant VideoPreviewModel::data( const QModelIndex& index, int role ) const {
-	if( role != Qt::DecorationRole )
-		return {};
-	
 	int pos = index.row()*columnCount(index) + index.column();
 	if( !index.isValid() || pos < 0 || (unsigned)pos >= previews.size() )
 		return QVariant();
 	
-	return previews.at( pos ).img;
+	bool keyframe = previews.at( pos ).keyframe;
+	switch( role ){
+		case Qt::DecorationRole: return previews.at( pos ).img;
+		case Qt::BackgroundRole: return QBrush(QColor(255, (!keyframe) ? 255 : 0, (!keyframe) ? 255 : 0));
+	}
+	return {};
+	
 }

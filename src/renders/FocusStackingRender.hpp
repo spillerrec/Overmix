@@ -27,16 +27,16 @@ namespace Overmix{
 
 class FocusStackingRender : public ARender{
 	protected:
-		double blur_amount;
+		double std_dev;
 		int kernel_size;
 		
 	public:
-		FocusStackingRender( double blur_amount, int kernel_size )
-			:	blur_amount(blur_amount), kernel_size(kernel_size) { }
+		FocusStackingRender( double std_dev, int kernel_size )
+			:	std_dev(std_dev), kernel_size(kernel_size) { }
 		
 		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 		
-		void setBlurAmount( double val ){ blur_amount = val; }
+		void setBlurAmount( double val ){ std_dev = val; }
 };
 
 }

@@ -74,10 +74,25 @@ static color_type calculate_edge( const EdgeLine<color_type, T>& line, const col
 }
 
 template<typename T>
+static color_type calculate_edge_center( const EdgeLine<color_type, T>& line, const color_type* in ){
+	auto sums = calculate_direction<color_type, T>(line, in);
+	T sum = sums.first;//std::abs( sums.first ) + std::abs( sums.second );
+	sum /= line.div;
+	return color::truncateFullRange( sum );
+}
+
+template<typename T>
 static color_type calculate_zero_edge( const EdgeLine<color_type, T>& line, const color_type* in ){
 	//TODO: improve
 	auto sum = std::abs( calculate_kernel( line.weights_x, line.size, in, line.line_width ) / (T)line.div );
 	return color::truncate(  sum );
+}
+
+template<typename T>
+static color_type calculate_zero_edge_center( const EdgeLine<color_type, T>& line, const color_type* in ){
+	//TODO: improve
+	auto sum = calculate_kernel( line.weights_x, line.size, in, line.line_width ) / (T)line.div;
+	return color::truncateFullRange( sum );
 }
 
 template<typename Out, typename T>

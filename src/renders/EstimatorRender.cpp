@@ -24,12 +24,13 @@
 #include "../utils/AProcessWatcher.hpp"
 
 #include <QString>
+#include <iostream>
 
 using namespace std;
 using namespace Overmix;
 
 Point<double> channelScale( const AContainer& container, unsigned index, unsigned channel ){
-	return container.image(index)[channel].getSize() / container.image(index).getSize().to<double>();
+	return container.image(index)[channel].getSize().to<double>() / container.image(index).getSize().to<double>();
 }
 
 struct Overmix::Parameters{
@@ -60,16 +61,22 @@ Plane EstimatorRender::degrade( const Plane& original, const Parameters& para ) 
 	
 	
 	//Crop to the area overlapping with our current image
-	auto pos = (para.container.pos(para.index)-para.min_point)*upscale_factor*channelScale(para.container, para.index, para.channel);
-	auto crop_size = para.container.image(para.index)[para.channel].getSize()*upscale_factor;
+	auto channel_scale = channelScale(para.container, para.index, para.channel);
+	std::cout << "channel_scale: " << channel_scale.x << "x" << channel_scale.y << std::endl;
+	auto pos = (para.container.pos(para.index)-para.min_point)*upscale_factor;
+	auto crop_size = para.container.image(para.index).getSize()*upscale_factor;
 	out.crop( pos, crop_size );
+	
+	std::cout << "crop size: " << crop_size.x << "x" << crop_size.y << std::endl;
 	
 	//Degrade - blur
 	if( bluring > 0 )
 		out = out.blur_gaussian( bluring*upscale_factor.x, bluring*upscale_factor.y );
 	
+	auto out_size = out.getSize() / upscale_factor * channel_scale;
+	std::cout << "out size: " << out_size.x << "x" << out_size.y << std::endl;
 	//Degrade - resolution
-	out = out.scale_select( Plane(), out.getSize() / upscale_factor, scale_method );//, pos - pos.to<int>().to<double>() );
+	out = out.scale_select( Plane(), out.getSize() / upscale_factor * channel_scale, scale_method );//, pos - pos.to<int>().to<double>() );
 	//TODO: Alpha
 	
 	
@@ -79,7 +86,7 @@ Plane EstimatorRender::degrade( const Plane& original, const Parameters& para ) 
 static float signFloat( float a, float b, float c ){ return (a>b) ? c : (a<b) ? -c : 0.0f; }
 //static float signFloat( float a, float b, float c ){ return (a-b)*0.05*c; }
 
-void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, double beta, Point<double> scale ){
+void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, double beta, Point<double> scale, Point<double> plane_scale ){
 	Point<int> pos = offset * scale;
 	
 	//Find diff
@@ -89,7 +96,7 @@ void sign( Plane& out, const Plane& p1, const Plane& p2, Point<double> offset, d
 			val.first = color::truncate( signFloat( val.first, val.second, beta ) + color::WHITE/2 );
 	
 	//Upscale delta to fit
-	delta = delta.scale_select( Plane(), delta.getSize()*scale, ScalingFunction::SCALE_MITCHELL );
+	delta = delta.scale_select( Plane(), delta.getSize()*scale/plane_scale, ScalingFunction::SCALE_MITCHELL );
 	//TODO: Alpha
 	
 	for( unsigned iy=0; iy<std::min(delta.get_height(), out.get_height()-pos.y); iy++ ){
@@ -146,8 +153,8 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 		
 		for( auto ref : group ){
 			auto alpha = Plane();
-			auto scaled = ref.image()[c].scale_select(alpha, (ref.image()[c].getSize()*upscale_factor), scale_method);			
-			summer.addPlane(scaled, ref.pos()*upscale_factor); //TODO: min_point offset?
+			auto scaled = ref.image()[c].scale_select(alpha, (ref.image().getSize()*upscale_factor), scale_method);			
+			summer.addPlane(scaled, (ref.pos() - min_point)*upscale_factor);
 		}
 		est[c] = summer.average();
 		//est[c].fill(color::WHITE/2); //This must work as well for the algorithm to be correct
@@ -158,9 +165,16 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 			auto output_copy = Plane(est[c]);
 			
 			//Improve estimate
-			for( unsigned j=0; j<group.count(); j++, progress.add() )
-				sign( output_copy, degrade( est[c], {group, j, c} ), group.image(j)[c], group.pos(j)-min_point
-					, beta, channelScale(group, j, c)*upscale_factor );
+			for( unsigned j=0; j<group.count(); j++, progress.add() ) {
+				auto degraded = degrade( est[c], {group, j, c} );
+				if( c == 1 && i == 0 && j == 0 ){
+					degraded.save_png("est_degraded.png");
+					group.image(j)[c].save_png("est_original.png");
+				}
+				sign( output_copy, degraded, group.image(j)[c], group.pos(j)-min_point
+					, beta, upscale_factor, channelScale(group, j, c) );
+					
+			}
 			
 			//Regularization
 			if( lambda > 0.0 )

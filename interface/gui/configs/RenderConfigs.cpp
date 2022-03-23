@@ -31,6 +31,7 @@
 #include "renders/JpegRender.hpp"
 #include "renders/JpegConstrainerRender.hpp"
 #include "renders/DistanceMatrixRender.hpp"
+#include "renders/ParallaxRender.hpp"
 
 #include "../Spinbox2D.hpp"
 
@@ -65,6 +66,7 @@ void RenderConfigChooser::p_initialize(){
 	set( &addConfig<DistanceMatrixRenderConfig>() );
 	set( &addConfig<FastRenderConfig>() );
 	set( &addConfig<FocusStackingRenderConfig>() );
+	set( &addConfig<ParallaxRenderConfig>() );
 }
 
 std::unique_ptr<ARender> RenderConfigChooser::getRender() const
@@ -255,5 +257,31 @@ std::unique_ptr<ARender> FocusStackingRenderConfig::getRender() const {
 	auto amount = blur_amount->value();
 	auto size = kernel_size->value();
 	return std::make_unique<FocusStackingRender>( amount, size );
+}
+
+ParallaxRenderConfig::ParallaxRenderConfig( QWidget* parent )
+: ARenderConfig( parent ) {
+		setLayout( new QVBoxLayout( this ) );
+		iterations  = addWidget<QSpinBox>( "Iterations" );
+		threshold   = addWidget<QDoubleSpinBox>( "Threshold" );
+		dilate_size = addWidget<QSpinBox>( "Dilate amount" );
+		
+		iterations ->setValue( 2 );
+		threshold  ->setValue( 0.5 );
+		dilate_size->setValue( 10 );
+		
+		iterations->setRange( 1, 99 );
+		threshold->setRange( 0.0, 1.0 );
+		
+		threshold->setSingleStep( 0.05 );
+		
+		connect( iterations,  SIGNAL(valueChanged(int)   ), this, SIGNAL(changed()) );
+		connect( threshold,   SIGNAL(valueChanged(double)), this, SIGNAL(changed()) );
+		connect( dilate_size, SIGNAL(valueChanged(int)   ), this, SIGNAL(changed()) );
+}
+std::unique_ptr<ARender> ParallaxRenderConfig::getRender() const {
+	return std::make_unique<ParallaxRender>(
+			iterations->value(), threshold->value(), dilate_size->value()
+		);
 }
 

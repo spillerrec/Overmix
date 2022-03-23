@@ -179,7 +179,7 @@ class Plane : public PlaneBase<color_type>{
 		}
 		Plane edge_laplacian_ex(double sigma, double k, int size) const;
 		Plane edge_laplacian() const{
-			return edge_laplacian_ex(0.5, 3.0, 2);
+			//return edge_laplacian_ex(0.5, 3.0, 2);
 			return edge_zero_generic( Weights{ -1,-1,-1, -1,8,-1, -1,-1,-1 }, 1 );
 		}
 		Plane edge_laplacian_large() const{

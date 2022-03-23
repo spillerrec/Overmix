@@ -79,6 +79,8 @@ if( WIN32 ) # Don't use registry on windows for saving options
 endif( WIN32 )
 
 add_executable(OvermixCli ${SOURCE_CLI} main-cli.cpp)
+add_executable(OvermixAlign ${SOURCE_CLI} main-align.cpp)
+add_executable(OvermixEdge ${SOURCE_CLI} main-edge.cpp)
 add_executable(Overmix WIN32 ${RESOURCES} ${SOURCE_CLI} ${SOURCE_GUI} ${SOURCE_GUI_CONFIGS} ${SOURCE_GUI_PROCESSORS} ${SOURCE_GUI_SAVERS} ${SOURCE_GUI_VISUALISATION} ${SOURCE_GUI_VIEWER} ${extra_moc} main.cpp)
 
 # Set-up libraries
@@ -88,14 +90,22 @@ find_package(Qt5PrintSupport REQUIRED)
 
 include_directories ("${PROJECT_SOURCE_DIR}/../src")
 target_link_libraries(OvermixCli OvermixCore Qt5::Widgets)
+target_link_libraries(OvermixAlign OvermixCore Qt5::Widgets)
+target_link_libraries(OvermixEdge OvermixCore Qt5::Widgets)
 target_link_libraries(Overmix OvermixCore qtimgviewer Qt5::Widgets Qt5::PrintSupport ${QCUSTOMPLOT})
 
 install(TARGETS Overmix RUNTIME DESTINATION bin)
 install(TARGETS OvermixCli RUNTIME DESTINATION bin)
+install(TARGETS OvermixAlign RUNTIME DESTINATION bin)
+install(TARGETS OvermixEdge RUNTIME DESTINATION bin)
 
 
 # C++17
 set_property(TARGET Overmix    PROPERTY CXX_STANDARD 17)
 set_property(TARGET OvermixCli PROPERTY CXX_STANDARD 17)
+set_property(TARGET OvermixAlign PROPERTY CXX_STANDARD 17)
+set_property(TARGET OvermixEdge PROPERTY CXX_STANDARD 17)
 set_property(TARGET Overmix    PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET OvermixCli PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET OvermixAlign PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET OvermixEdge PROPERTY CXX_STANDARD_REQUIRED ON)

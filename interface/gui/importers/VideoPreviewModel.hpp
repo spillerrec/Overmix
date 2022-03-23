@@ -33,7 +33,11 @@ class VideoStream;
 class PreviewItem{
 	public:
 		QImage img;
+		bool keyframe = false;
 		//TODO:
+		
+		PreviewItem() = default;
+		PreviewItem(class VideoFrame& frame);
 };
 
 class VideoPreviewModel : public QAbstractTableModel{

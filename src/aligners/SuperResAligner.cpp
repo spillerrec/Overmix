@@ -20,7 +20,7 @@
 #include "../containers/AContainer.hpp"
 #include "../comparators/AComparator.hpp"
 #include "../planes/ImageEx.hpp"
-#include "../renders/RobustSrRender.hpp"
+#include "../renders/EstimatorRender.hpp"
 
 #include <stdexcept>
 
@@ -32,7 +32,7 @@ void SuperResAligner::align( class AContainer& container, class AProcessWatcher*
 	if( !comparator )
 		throw std::runtime_error( "No comparator in container for SuperResAligner" );
 	
-	auto base = RobustSrRender( scale ).render( container, watcher );
+	auto base = EstimatorRender( scale ).render( container, watcher );
 	for( unsigned i=0; i<container.count(); i++ ){
 		auto img = container.image( i );
 		img.scaleFactor( {scale, scale} );

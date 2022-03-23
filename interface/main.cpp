@@ -24,8 +24,11 @@
 #include <QStringList>
 #include <QFile>
 #include <QTextStream>
+#include <QVulkanInstance>
 
 #include <iostream>
+
+#include <kompute/Manager.hpp>
 
 #ifdef _WIN32
 	#include "Windows.h"
@@ -46,6 +49,8 @@
 #else
 	bool UseDarkTheme(){ return false; }
 #endif
+
+kp::Manager *mgr = nullptr;
 
 int main( int argc, char *argv[] ){
 #ifdef _WIN32
@@ -73,6 +78,16 @@ int main( int argc, char *argv[] ){
 	}
 	
 	try{
+		QVulkanInstance inst;
+		inst.create();
+		
+
+
+		auto instance = std::make_shared<vk::Instance>(inst.vkInstance());
+		kp::Manager mgr2(instance, {}, {});
+		mgr2.createDevice();
+		mgr = &mgr2;
+
 		//Parse command-line arguments
 		auto args = a.arguments();
 		args.removeFirst();

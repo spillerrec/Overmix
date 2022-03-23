@@ -1,0 +1,84 @@
+#version 450
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+// The input tensors bind index is relative to index in parameter passed
+layout(set = 0, binding = 0) buffer buf_in_a { float in_a[]; };
+layout(set = 0, binding = 1) buffer buf_in_b { float in_b[]; };
+layout(set = 0, binding = 2) buffer buf_out_a { float out_a[]; };
+
+layout (constant_id = 0) const float in_w = 0;
+layout (constant_id = 1) const float in_h = 0;
+layout (constant_id = 2) const float in_x = 0;
+layout (constant_id = 3) const float in_y = 0;
+layout (constant_id = 4) const float stddev = 0;
+
+float edge(int dx, int dy){
+    uint x = gl_GlobalInvocationID.x + dx + int(in_x);
+    uint y = gl_GlobalInvocationID.y + dy + int(in_y);
+
+    uint pos = x + y*uint(in_w);
+    return in_a[pos];
+}
+float ref1(int dx, int dy){
+    uint x = gl_GlobalInvocationID.x + dx + int(in_x);
+    uint y = gl_GlobalInvocationID.y + dy + int(in_y);
+
+    uint pos = x + y*uint(in_w);
+    return in_b[pos];
+}
+void write(float val, int dx, int dy){
+    uint x = gl_GlobalInvocationID.x + dx + int(in_x);
+    uint y = gl_GlobalInvocationID.y + dy + int(in_y);
+
+    uint pos = x + y*uint(in_w);
+    out_a[pos] = val;
+}
+
+float mse(float a, float b){
+    float d = a - b;
+    return d*d;
+}
+
+void main() {
+    int x = int(gl_GlobalInvocationID.x) + int(in_x);
+    int y = int(gl_GlobalInvocationID.y) + int(in_y);
+    int k = 1;
+    int r = 10;
+    
+    float sum = 0.0;
+    float weight = 0.0;
+
+    //if (k + r > x || k + r > y || x >= in_w - r - k-1 || y >= in_h - r - k-1)
+    //    return;
+
+    if( (k > x) || (k > y) || (x >= int(in_w) - k) || (y >= int(in_h) - k) ){
+        write(edge(0,0), 0, 0);
+        return;
+    }
+
+    int ry_start = max(k, int(y)-r) - int(y);//-r;
+    int rx_start = max(k, int(x)-r) - int(x);
+    int ry_end = min(r+int(y), int(in_h)-k-1) - int(y);//r;
+    int rx_end = min(r+int(x), int(in_w)-k-1) - int(x);//r;
+
+    for (int ry=ry_start; ry<=ry_end; ry++)
+        for (int rx=rx_start; rx<=rx_end; rx++){
+            float v = edge(rx, ry);
+            
+            float w = 0.0;
+            for (int dy=-k; dy<=k; dy++)
+                for (int dx=-k; dx<=k; dx++){
+                    float diff = mse(ref1(dx, dy), ref1(dx+rx, dy+ry));
+                    w += diff;
+                }
+            w = exp(-w / stddev);
+            sum += v * w;
+            weight += w;
+        }
+
+    float res = (weight > 0) ? sum / weight : 0.5;
+    
+    uint pos = x + y*uint(in_w);
+    out_a[pos] = res;
+}

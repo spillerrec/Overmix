@@ -15,35 +15,30 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef VIDEO_FRAME_HPP
-#define VIDEO_FRAME_HPP
+#ifndef PARALLAX_RENDER_HPP
+#define PARALLAX_RENDER_HPP
 
-struct AVFrame;
-struct AVCodecContext;
-class QImage;
+#include "ARender.hpp"
+
+#include "../Geometry.hpp"
 
 namespace Overmix{
 
-class ImageEx;
+class Plane;
 
-class VideoFrame{
+class ParallaxRender : public ARender{
 	private:
-		AVFrame *frame;
-		AVCodecContext& context;
+		Plane iteration( const AContainer& aligner, const AContainer& real, Size<unsigned> size ) const;
+		
+		int iteration_count{ 2 };
+		double threshold{ 0.5 }; //For binarization
+		unsigned dilate_size{ 10 };
 		
 	public:
-		VideoFrame( AVCodecContext &context );
-		VideoFrame( const VideoFrame& ) = delete;
-		VideoFrame( VideoFrame&& );
-		~VideoFrame();
+		ParallaxRender( int iteration_count, double threshold, unsigned dilate_size )
+			: iteration_count(iteration_count), threshold(threshold), dilate_size(dilate_size) { }
 		
-		ImageEx toImageEx();
-		QImage toPreview( int max_size );
-		
-		operator AVFrame*(){ return frame; }
-		
-		bool is_keyframe() const;
-		int frameNumber() const;
+		virtual ImageEx render( const AContainer& group, AProcessWatcher* watcher=nullptr ) const override;
 };
 
 }

@@ -45,6 +45,17 @@ VideoFrame::VideoFrame( VideoFrame&& other ) : frame( other.frame ), context( ot
 
 bool VideoFrame::is_keyframe() const{ return frame->key_frame; }
 
+int VideoFrame::frameNumber() const{
+	//TODO: Check if this ever contains useful info
+	if (frame->display_picture_number != 0)
+		return frame->display_picture_number;
+	
+	//Calculate it based on the frame time
+	auto second = frame->pts / (double)AV_TIME_BASE * 1000;
+	auto frame = second * av_q2d(context.framerate);
+	return (int)std::round(frame);
+}
+
 
 
 struct VideoInfo{

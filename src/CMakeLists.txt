@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.0)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
 
+add_subdirectory(shaders)
+
 set(SOURCES_CONTAINERS
 	containers/AContainer.cpp
 	containers/ImageContainer.cpp
@@ -71,6 +73,7 @@ set(SOURCES_RENDERS
 	renders/EstimatorRender.cpp
 	renders/JpegRender.cpp
 	renders/JpegConstrainerRender.cpp
+	renders/ParallaxRender.cpp
 	)
 	
 set(SOURCES_DEGRADERS
@@ -109,7 +112,16 @@ add_library(OvermixCore
 	${WAIFU_SOURCES} 
 	${SOURCES_OTHERS} 
 	)
-target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -lm -lpng -ljpeg -lraw -lz -llzma -lpugixml fftw3 ${FFMPEG_LIBS} ${WAIFU_LIB})
+target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -lm -lpng -ljpeg -lraw -lz -llzma -lpugixml fftw3 -lkompute -lvulkan-1 -lfmt ${FFMPEG_LIBS} ${WAIFU_LIB})
+
+add_dependencies(OvermixCore Shaders)
+
+add_custom_command(TARGET OvermixCore POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:OvermixCore>/shaders/"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${PROJECT_BINARY_DIR}/shaders"
+        "$<TARGET_FILE_DIR:OvermixCore>/shaders"
+        )
 
 # C++17
 set_property(TARGET OvermixCore PROPERTY CXX_STANDARD 17)

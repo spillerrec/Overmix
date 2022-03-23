@@ -29,6 +29,21 @@
 #include <QImage>
 #include <algorithm>
 #include <vector>
+
+
+#define KOMPUTE_LOG_OVERRIDE
+#define KP_LOG_DEBUG(...)
+#define KP_LOG_INFO(...)
+#define KP_LOG_ERROR(...)
+#define KP_LOG_WARN(...)
+
+#include <kompute/Core.hpp>
+#include <kompute/Manager.hpp>
+#include <kompute/Tensor.hpp>
+#include <kompute/operations/OpAlgoDispatch.hpp>
+#include <kompute/operations/OpTensorSyncDevice.hpp>
+#include <kompute/operations/OpTensorSyncLocal.hpp>
+
 using namespace std;
 using namespace Overmix;
 
@@ -86,6 +101,8 @@ struct Layer{
 		
 	std::string Extension() const {
 		std::string extra = "-";
+		if( scale < 100 )
+			extra += "0";
 		if( scale < 10 )
 			extra += "0";
 		extra += std::to_string(scale) + ".png";
@@ -102,6 +119,7 @@ struct Layer{
 				int id = 0;
 				for( int i=0; i<(int)amount; i++ ){
 					auto val = planes[i][y][x];
+					//val = std::abs((int)val - color::WHITE/2);
 					if( val > best ){
 						best = val;
 						id = i;
@@ -179,6 +197,144 @@ struct Layer{
 	}
 };
 
+Plane NLM(const Plane& p){
+	
+	Plane denoised(p);
+	
+	int k = 1;
+	int r = 10;
+	#pragma omp parallel for
+	for (int y=r+k; y<(int)p.get_height()-r-k; y++){
+		for (int x=r+k; x<(int)p.get_width()-r-k; x++){
+			
+			double sum = 0.0;
+			double weight = 0.0;
+			
+			for (int ry=-r; ry<=r; ry++)
+				for (int rx=-r; rx<=r; rx++){
+					
+					auto v = p[y+ry][x+rx];
+					//auto v = edge[y+ry][x+rx];
+					
+					auto w = 0.0;
+					for (int dy=-k; dy<=k; dy++)
+						for (int dx=-k; dx<=k; dx++){
+							auto diff = (int)p[y+dy][x+dx] - p[y+ry+dy][x+rx+dx];
+							w += diff * diff;
+						}
+					
+					//w = (w > 0.0) ? 1.0 / w : 1.0;
+					w = std::exp(-w / 10000.0);
+					sum += v * w;
+					weight += w;
+				}
+			
+			
+			denoised[y][x] = std::max(0.0, (weight > 0.0) ? sum / weight : p[y][x]);
+			//denoised[y][x] = (weight > 0.0) ? sum / weight : edge[y][x];
+		}
+	}
+	
+	return denoised;
+}
+
+
+static std::vector<uint32_t>
+compiledSource(
+  const std::string& path)
+{
+		Timer t("compiledSource");
+    std::ifstream fileStream(path, std::ios::binary);
+    std::vector<char> buffer;
+    buffer.insert(buffer.begin(), std::istreambuf_iterator<char>(fileStream), {});
+    return {(uint32_t*)buffer.data(), (uint32_t*)(buffer.data() + buffer.size())};
+}
+
+extern kp::Manager* mgr;
+Plane NLM2(const Plane& p, const Plane& ref, double stddev){
+	//return Plane(p);
+	Timer t("NLM_GPU");
+	
+	auto toTensor = [&](const Plane& p){
+		Timer t("toTensor");
+		std::vector<float> v;
+		v.resize(p.get_height() * p.get_width());
+		#pragma omp parallel for
+		for( int y=0; y<(int)p.get_height(); y++ )
+			for( int x=0; x<(int)p.get_width(); x++ )
+				v[x + y*p.get_width()] = (float)color::asDouble(p[y][x]);
+		return mgr->tensor(v);
+	};
+	
+	auto t_edge = toTensor(p);
+	auto t_p1 = toTensor(ref);
+
+	
+	Plane denoised(p.getSize());
+	auto t_out = toTensor(denoised);
+	static auto shader = compiledSource("shaders/nlm.spv");
+	{
+		Timer t("syncDevice");
+	mgr->sequence()->record<kp::OpTensorSyncDevice>({t_edge, t_p1})->eval();
+
+	}
+
+	struct Params{
+		int32_t width;
+		int32_t height;
+		int32_t stride;
+		int32_t offset_x;
+		int32_t offset_y;
+		float std_dev;
+	} params;
+	params.width = params.stride = p.get_width();
+	params.height = p.get_height();
+	params.offset_x = params.offset_y = 0;
+	params.std_dev = stddev;
+
+{Timer t2("execute");
+	int tile_size_w = p.get_width();//(((p.get_width()+3)/4) + 15) / 16 * 16;// 128 + 256;
+	int tile_size_h = p.get_height();//(((p.get_height()+3)/4)+ 15) / 16 * 16;//128 + 256;
+	kp::Workgroup workgroup({(unsigned int)tile_size_w/16, (unsigned int)tile_size_h/16, 1});
+	//std::vector<float> specConsts({ (float)p.get_width(), (float)p.get_height(), (float)ox, (float)oy, (float)stddev });
+	std::vector<int32_t> specConsts({ 10, 1 });
+
+	auto algorithm = mgr->algorithm({t_edge, t_p1, t_out},
+								shader,
+								workgroup,
+								specConsts, std::vector<Params>({params}));
+	auto sq = mgr->sequence();
+	sq->record<kp::OpAlgoDispatch>(algorithm);
+	sq->eval();
+}
+{
+	
+		Timer t("syncLocal");
+	mgr->sequence()->record<kp::OpTensorSyncLocal>({t_out})->eval();
+
+}
+	float* v_out;
+	{
+		Timer t("vector");
+	v_out = t_out->data();
+
+	}
+	
+	{
+		Timer t("fromTensor");
+	#pragma omp parallel for
+	for (int y=0; y<(int)denoised.get_height(); y++)
+		for (int x=0; x<(int)denoised.get_width(); x++)
+			denoised[y][x] = color::fromDouble( v_out[x + y*denoised.get_width()] );
+	}
+
+	return denoised;
+}
+
+Plane NLM2(const Plane& p, const ImageEx& ref, double stddev){
+	return NLM2(p, ref[1], stddev);
+}
+
 #include <iostream>
 #include <fstream>
 ImageEx FocusStackingRender::render( const AContainer& aligner, AProcessWatcher* watcher ) const{
@@ -212,6 +368,7 @@ ImageEx FocusStackingRender::render( const AContainer& aligner, AProcessWatcher*
 	auto out = ImageEx(aligner.image(0));
 	
 	std::vector<Plane> planes;
+	std::vector<Plane> sources;
 	std::vector<int64_t> sum0(65536, 0), count0(65536, 0);
 	std::vector<int64_t> sum1(65536, 0), count1(65536, 0);
 	std::vector<int64_t> sum2(65536, 0), count2(65536, 0);
@@ -220,37 +377,59 @@ ImageEx FocusStackingRender::render( const AContainer& aligner, AProcessWatcher*
 		if( progress.shouldCancel() )
 			return {};
 		
-		auto subtract_noise = [](auto& h, auto& p, auto& sum, auto& count)
-		{
-			for( int y=0; y<p.getSize().height(); y++ )
-				for( int x=0; x<p.getSize().width(); x++ )
-				{
+		auto calculate_stats = [](auto& h, auto& p, auto& sum, auto& count){
+			for( int y=0; y<(int)p.getSize().height(); y++ )
+				for( int x=0; x<(int)p.getSize().width(); x++ ){
 					auto j = h[y][x];
 					auto& v = p[y][x];
 					sum[j] += v;
 					count[j] += 1;
-					
-					auto xx = (double)j * 8.9; //NOTE: Based on the results from the CSV dump and will change for different images. Also misses a linear offset?
-					if( xx > 0.0 )
-						v = std::max(0.0, v - std::sqrt(xx));
+				}
+		};
+
+		auto subtract_noise = [](auto& h, auto& p)
+		{
+			for( int y=0; y<(int)p.getSize().height(); y++ )
+				for( int x=0; x<(int)p.getSize().width(); x++ )
+				{
+					auto j = h[y][x];
+					auto& v = p[y][x];
+					auto xx = std::sqrt(std::max((double)j - 80, 0.0)) * 3.9; //NOTE: Based on the results from the CSV dump and will change for different images. Also misses a linear offset?
+					v = std::max(0.0, v - xx);
+					//if( xx > 0.0 )
+						//v = std::max(0.0, v - std::sqrt(xx)) * ((140 - std::sqrt(xx)) / 140);
 				}
 		};
 		
 		
 		auto inputImg = aligner.image(i);
+		/* 
+		inputImg[0] = NLM(inputImg[0]);
+		inputImg[1] = NLM(inputImg[1]);
+		inputImg[2] = NLM(inputImg[2]);
+		inputImg[3] = NLM(inputImg[3]);
+		//*/
 		auto img = inputImg.copyApply( &Plane::edge_laplacian );
-		//img[0].save_png("before0.png");
-		//img[1].save_png("before1.png");
-		//img[2].save_png("before2.png");
-		//img[3].save_png("before3.png");
-		subtract_noise( inputImg[0], img[0], sum0, count0 );
-		subtract_noise( inputImg[1], img[1], sum1, count1 );
-		subtract_noise( inputImg[2], img[2], sum2, count2 );
-		subtract_noise( inputImg[3], img[3], sum3, count3 );
-		//img[0].save_png("after0.png");
-		//img[1].save_png("after1.png");
-		//img[2].save_png("after2.png");
-		//img[3].save_png("after3.png");
+		//img[0].save_png("plane-" + std::to_string(i) + "-before0.png");
+		//img[1].save_png("plane-" + std::to_string(i) + "-before1.png");
+		//img[2].save_png("plane-" + std::to_string(i) + "-before2.png");
+		//img[3].save_png("plane-" + std::to_string(i) + "-before3.png");
+		
+		//calculate_stats( inputImg[0], img[0], sum0, count0 );
+		//calculate_stats( inputImg[1], img[1], sum1, count1 );
+		//calculate_stats( inputImg[2], img[2], sum2, count2 );
+		//calculate_stats( inputImg[3], img[3], sum3, count3 );
+		
+		subtract_noise( inputImg[0], img[0] );
+		subtract_noise( inputImg[1], img[1] );
+		subtract_noise( inputImg[2], img[2] );
+		subtract_noise( inputImg[3], img[3] );
+		
+		//img[0].save_png("plane-" + std::to_string(i) + "-after0.png");
+		//img[1].save_png("plane-" + std::to_string(i) + "-after1.png");
+		//img[2].save_png("plane-" + std::to_string(i) + "-after2.png");
+		//img[3].save_png("plane-" + std::to_string(i) + "-after3.png");
+		
 		//img.to_grayscale();
 		//img = img.toRgb();
 		//img.to_grayscale();
@@ -258,16 +437,18 @@ ImageEx FocusStackingRender::render( const AContainer& aligner, AProcessWatcher*
 		img[2].mix(img[3]);
 		img[0].mix(img[2]);
 		
+		
+		//img[0] = NLM2(img[0], inputImg);
+		
+		sources.push_back(inputImg[1]);
 		planes.push_back(img[0]);
-		//planes.push_back( Maximum(inputImg[c]/*.blur_gaussian(blur_amount, blur_amount)*/.edge_laplacian(), 10) );
-		//planes.push_back( inputImg[0].edge_guassian(1.5, 1.0, 1.0) );
 		
 		progress.add();
 	}
 	
 	std::ofstream myfile;
 	myfile.open ("noise.csv");
-	for(int i=0; i<65536; i++){
+	for(int i=0; i<65536/8; i++){
 		myfile << sum0[i] << ", " << count0[i] << ", ";
 		myfile << sum1[i] << ", " << count1[i] << ", ";
 		myfile << sum2[i] << ", " << count2[i] << ", ";
@@ -278,7 +459,7 @@ ImageEx FocusStackingRender::render( const AContainer& aligner, AProcessWatcher*
 	
 	
 	//for( unsigned i=0; i<planes.size(); i++ )
-	//	planes[i].save_png("plane-" + std::to_string(i) + ".png");
+	//	planes[i].save_png("plane-" + std::to_string(i) + "_0.png");
 	
 	
 	auto size = planes[0].getSize();
@@ -287,24 +468,35 @@ ImageEx FocusStackingRender::render( const AContainer& aligner, AProcessWatcher*
 	
 	for( int i=1; i<=64; i*=2 )
 	{
+		std::vector<Plane> denoised;
+		for(size_t j=0; j<planes.size(); j++){
+			denoised.push_back( NLM2(planes[j], sources[j], std_dev/(i*i)) );
+		}
+
 		Layer l( planes[0].getSize(), i );
-		l.FillSelected( planes );
-		l.FillMaxDiff( planes );
+		l.FillSelected( denoised );
+		l.FillMaxDiff( denoised );
 		l.FillStDev( 2 );
 		l.FillSelectedFilter( kernel_size );
 		
 		auto extra = l.Extension();
 		autoLevel(l.selected       ).save_png("selected"        + extra);
-		autoLevel(l.selected_filter).save_png("selected_filter" + extra);
-		autoLevel(l.weight         ).save_png("weight"          + extra);
-		autoLevel(l.max_diff       ).save_png("max_diff"        + extra);
-		autoLevel(l.stdev          ).save_png("stdev"           + extra);
+		//autoLevel(l.selected_filter).save_png("selected_filter" + extra);
+		//autoLevel(l.weight         ).save_png("weight"          + extra);
+		//autoLevel(l.max_diff       ).save_png("max_diff"        + extra);
+		//autoLevel(l.stdev          ).save_png("stdev"           + extra);
 		
 		layers.push_back( std::move(l) );
 		
 		// Downscale
-		for( unsigned i=0; i<planes.size(); i++ )
+		for( unsigned i=0; i<planes.size(); i++ ){
 			planes[i] = planes[i].scale_cubic( Plane(), planes[i].getSize() / 2 );
+			
+			sources[i] = sources[i].scale_cubic( Plane(), sources[i].getSize() / 2 );
+		}
+		
+		//for( unsigned j=0; j<planes.size(); j++ )
+		//	planes[j].save_png("plane-" + std::to_string(j) + "_" + std::to_string(i) + ".png");
 	}
 	
 	for( int i=layers.size()-2; i >= 0; i-- ) {
@@ -318,17 +510,18 @@ ImageEx FocusStackingRender::render( const AContainer& aligner, AProcessWatcher*
 		for(int y=k; y<(int)size.height()-k; y++)
 			for (int x=k; x<(int)size.width()-k; x++)
 			{
+				int current = (int)current_scale[y][x];
 				int diff = 10000;
 				for( int y2 = std::max(y/2-1, 0); y2 <= std::min(y/2+1, (int)lower_scale.get_height()-1); y2++ )
 					for( int x2 = std::max(x/2-1, 0); x2 <= std::min(x/2+1, (int)lower_scale.get_width()-1); x2++ )
-						diff = std::min(diff, std::abs(lower_scale[y2][x2] - (int)current_scale[y][x]));
+						diff = std::min(diff, std::abs(lower_scale[y2][x2] - current));
 				ignore[y][x] = (diff > 1) ? 1 : 0;
 			}
 			
 		for(int y=k; y<(int)size.height()-k; y++)
 			for (int x=k; x<(int)size.width()-k; x++)
 			{
-				if( ignore[y][x] > 0 )
+				if( ignore[y][x] > 0 && layers[i].weight[y][x] < layers[i+1].weight[y/2][x/2] )
 					current_scale[y][x] = lower_scale[y/2][x/2];
 			}
 		
@@ -383,7 +576,7 @@ ImageEx FocusStackingRender::render( const AContainer& aligner, AProcessWatcher*
 			suspicious[y][x] = std::abs(selected_filter[y][x] - (int)blurred[y][x]);
 	autoLevel(suspicious)     .save_png("suspicious.png");
 	
-	suspicious.binarize_threshold( suspicious.max_value()*0.1 );
+	suspicious.binarize_threshold( suspicious.max_value()*0.5 );
 	autoLevel(suspicious)     .save_png("suspicious-binarized.png");
 	suspicious = suspicious.level(color::BLACK, color::WHITE, color::WHITE, color::BLACK, 1.0);
 	
@@ -397,14 +590,14 @@ ImageEx FocusStackingRender::render( const AContainer& aligner, AProcessWatcher*
 			suspicious2[y][x] = std::abs(filled[y][x] - (int)blurred2[y][x]);
 	autoLevel(suspicious2)     .save_png("suspicious2.png");
 	
-	suspicious2.binarize_threshold( suspicious2.max_value()*0.1 );
+	suspicious2.binarize_threshold( suspicious2.max_value()*0.5 );
 	autoLevel(suspicious2)     .save_png("suspicious-binarized2.png");
 	suspicious2 = suspicious2.level(color::BLACK, color::WHITE, color::WHITE, color::BLACK, 1.0);
 	
 	auto filled2 = Inpaint::simple(filled, suspicious2);
 	
 	double gMult = 2.4;
-	double mults[4] = {1.5 * gMult, gMult, gMult, 2.75 * gMult};
+	double mults[4] = {1.5 * gMult, gMult, gMult, 1.75 * gMult};
 	for( int y=0; y<(int)size.height(); y++ )
 		for ( int x=0; x<(int)size.width(); x++ ){
 			auto id = filled2[y][x];

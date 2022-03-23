@@ -39,6 +39,9 @@ const vector<ImageLoader::Item>& ImageLoader::loadAll( AProcessWatcher* watcher 
 	QObject::connect( &future_watcher, &QFutureWatcher<void>::progressValueChanged
 		,	[&](int val){ progress.setCurrent( val ); } );
 	
+	//for(auto& item : images)
+	//	item.second = ImageEx::fromFile( item.first );
+	
 	// Start loading images
 	auto future = QtConcurrent::map( images, []( Item& item ){
 			item.second = ImageEx::fromFile( item.first );
@@ -48,6 +51,7 @@ const vector<ImageLoader::Item>& ImageLoader::loadAll( AProcessWatcher* watcher 
 	//Wait for completion and handle all events
 	while( !future.isFinished() )
 		QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
+		
 	return images;
 }
 

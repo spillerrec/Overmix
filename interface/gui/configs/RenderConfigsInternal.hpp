@@ -160,6 +160,20 @@ class DistanceMatrixRenderConfig : public ARenderConfig{
 		QString discription() const override{ return "Shows which images have been compared, and their distance"; }
 };
 
+class ParallaxRenderConfig : public ARenderConfig{
+	private:
+		QSpinBox* iterations;
+		QDoubleSpinBox* threshold;
+		QSpinBox* dilate_size;
+		
+	public:
+		explicit ParallaxRenderConfig( QWidget* parent );
+		std::unique_ptr<ARender> getRender() const override;
+		
+		QString name() const override { return "Parallax"; }
+		QString discription() const override{ return "Attempts to generate a mask of the background in a parallax stitch"; }
+};
+
 }
 
 #endif
