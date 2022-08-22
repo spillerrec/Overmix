@@ -29,11 +29,12 @@ color ColorSpace::convert( color from, ColorSpace to ) const{
 		return from;
 	
 	if( _transform != to._transform ){
+		auto gammaFrom = _transfer != Transfer::SRGB; //TODO: handle this properly
 		switch( _transform ){
 			case Transform::GRAY: break;
 			case Transform::RGB: break;
-			case Transform::YCbCr_601: from = from.rec601ToRgb(); break;
-			case Transform::YCbCr_709: from = from.rec709ToRgb(); break;
+			case Transform::YCbCr_601: from = from.rec601ToRgb( gammaFrom ); break;
+			case Transform::YCbCr_709: from = from.rec709ToRgb( gammaFrom ); break;
 			case Transform::JPEG:      from = from.jpegToRgb(); break;
 			default:
 				qWarning() << "Unsupported transform: " << (int)_transform;
@@ -44,7 +45,7 @@ color ColorSpace::convert( color from, ColorSpace to ) const{
 			//TODO: implement
 		}
 		
-		auto gamma = true; //TODO: set to false
+		auto gammaTo = to._transfer == Transfer::REC709; //TODO: handle this properly
 		switch( to._transform ){
 			case Transform::GRAY: break;
 			case Transform::RGB:
@@ -57,9 +58,9 @@ color ColorSpace::convert( color from, ColorSpace to ) const{
 					from.a = convert(from.a);
 				}
 				break;
-			case Transform::YCbCr_601: from = from.rgbToYcbcr( 0.299,  0.587,  0.114,  gamma, true  ); break;
-			case Transform::YCbCr_709: from = from.rgbToYcbcr( 0.2126, 0.7152, 0.0722, gamma, true  ); break;
-			case Transform::JPEG:      from = from.rgbToYcbcr( 0.299,  0.587,  0.114,  gamma, false ); break;
+			case Transform::YCbCr_601: from = from.rgbToYcbcr( 0.299,  0.587,  0.114,  gammaTo, true  ); break;
+			case Transform::YCbCr_709: from = from.rgbToYcbcr( 0.2126, 0.7152, 0.0722, gammaTo, true  ); break;
+			case Transform::JPEG:      from = from.rgbToYcbcr( 0.299,  0.587,  0.114,  gammaTo, false ); break;
 			default:
 				qWarning() << "Unsupported transform: " << (int)to._transform;
 				throw std::runtime_error( "ColorSpace::convert(): unsupported transform!" );

@@ -214,6 +214,13 @@
                </property>
               </widget>
              </item>
+             <item row="1" column="0">
+              <widget class="QCheckBox" name="cbx_nogamma">
+               <property name="text">
+                <string>Disable gamma correction</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </widget>
           </item>
@@ -512,7 +519,7 @@
      <x>0</x>
      <y>0</y>
      <width>998</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">

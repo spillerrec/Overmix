@@ -121,6 +121,7 @@ class ImageEx{
 		Rectangle<unsigned> getCrop() const;
 		
 		ColorSpace getColorSpace() const{ return color_space; }
+		void overrideColorSpace( ColorSpace to ) { color_space = to; }
 		
 		
 		double diff( const ImageEx& img, int x, int y ) const;

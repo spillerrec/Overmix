@@ -302,6 +302,9 @@ QImage main_widget::qrenderImage( const ImageEx& img ){
 		if( ui->cbx_nocolor->isChecked() )
 			image = image.flatten();
 		
+		if( ui->cbx_nogamma->isChecked() )
+			image.overrideColorSpace( image.getColorSpace().changed( Transfer::SRGB ) );
+		
 		//Render image
 		//TODO: fix postProcess
 		return image.to_qimage( ui->cbx_dither->isChecked() );
