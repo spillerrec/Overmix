@@ -1,0 +1,47 @@
+#version 450
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+// The input tensors bind index is relative to index in parameter passed
+layout(set = 0, binding = 0) buffer buf_in_a { float in_a[]; };
+layout(set = 0, binding = 1) buffer buf_in_b { float in_b[]; };
+layout(set = 0, binding = 2) buffer buf_out_a { float out_a[]; };
+
+layout (push_constant, std430) uniform PushConstants{
+	int width;
+	int height;
+	int stride;
+	int offset_x;
+	int offset_y;
+	float offset;
+	float scale;
+};
+
+float pixel(){
+	uint x = gl_GlobalInvocationID.x + int(offset_x);
+	uint y = gl_GlobalInvocationID.y + int(offset_y);
+
+	uint pos = x + y*uint(width);
+	return in_a[pos];
+}
+float ref(){
+	uint x = gl_GlobalInvocationID.x + int(offset_x);
+	uint y = gl_GlobalInvocationID.y + int(offset_y);
+
+	uint pos = x + y*uint(width);
+	return in_b[pos];
+}
+void write(float val){
+	uint x = gl_GlobalInvocationID.x + int(offset_x);
+	uint y = gl_GlobalInvocationID.y + int(offset_y);
+
+	uint pos = x + y*uint(width);
+	out_a[pos] = val;
+}
+
+void main() {
+	float xx = sqrt(max(ref() + offset, 0.0)*32768/2) * scale / (32768/2);
+	float res = abs(pixel());// - xx;
+	
+	write(res);
+}

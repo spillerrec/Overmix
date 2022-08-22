@@ -1,0 +1,64 @@
+#version 450
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+// The input tensors bind index is relative to index in parameter passed
+layout(set = 0, binding = 0) buffer buf_in_a { float in_a[]; };
+layout(set = 0, binding = 1) buffer buf_out_a { float out_a[]; };
+
+layout (constant_id = 0) const int k = 2;
+
+layout (push_constant, std430) uniform PushConstants{
+	int width;
+	int height;
+	int stride;
+	int offset_x;
+	int offset_y;
+	float threshold;
+};
+
+float pixel(int dx, int dy){
+	uint x = gl_GlobalInvocationID.x + dx + int(offset_x);
+	uint y = gl_GlobalInvocationID.y + dy + int(offset_y);
+
+	uint pos = x + y*uint(width);
+	return in_a[pos];
+}
+void write(float val){
+	uint x = gl_GlobalInvocationID.x + int(offset_x);
+	uint y = gl_GlobalInvocationID.y + int(offset_y);
+
+	uint pos = x + y*uint(width);
+	out_a[pos] = val;
+}
+
+void main() {
+	int x = int(gl_GlobalInvocationID.x) + int(offset_x);
+	int y = int(gl_GlobalInvocationID.y) + int(offset_y);
+	
+	if( (k > x) || (k > y) || (x >= int(width) - k) || (y >= int(height) - k) ){
+		write(pixel(0,0));
+		return;
+	}
+	
+	
+	float max_value = -100000;
+	float min_value = +100000;
+	float average = 0;
+	for (int dy=-k; dy<=k; dy++)
+		for (int dx=-k; dx<=k; dx++)
+			if( !(dy==0 && dx==0) ){
+				float val = pixel(dx, dy);
+				max_value = max(max_value, val);
+				min_value = min(min_value, val);
+				average += val;
+			}
+	
+	float pix = pixel(0, 0);
+	bool hot  = (pix - max_value) / pix > threshold;
+	bool cold = (min_value - pix) / pix > threshold;
+	if( hot || cold )
+		pix = average / ((k*2+1) * (k*2+1) - 1);
+	
+	write(pix);
+}

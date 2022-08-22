@@ -251,7 +251,7 @@ compiledSource(
 }
 
 extern kp::Manager* mgr;
-Plane NLM2(const Plane& p, const Plane& ref, double stddev){
+Plane NLM2(const Plane& p, const Plane& ref, const Plane& ref1, const Plane& ref2, double stddev){
 	//return Plane(p);
 	Timer t("NLM_GPU");
 	
@@ -268,6 +268,8 @@ Plane NLM2(const Plane& p, const Plane& ref, double stddev){
 	
 	auto t_edge = toTensor(p);
 	auto t_p1 = toTensor(ref);
+	auto t_p2 = toTensor(ref1);
+	auto t_p3 = toTensor(ref2);
 
 	
 	Plane denoised(p.getSize());
@@ -275,7 +277,7 @@ Plane NLM2(const Plane& p, const Plane& ref, double stddev){
 	static auto shader = compiledSource("shaders/nlm.spv");
 	{
 		Timer t("syncDevice");
-	mgr->sequence()->record<kp::OpTensorSyncDevice>({t_edge, t_p1})->eval();
+	mgr->sequence()->record<kp::OpTensorSyncDevice>({t_edge, t_p1, t_p2, t_p3})->eval();
 
 	}
 
@@ -295,11 +297,11 @@ Plane NLM2(const Plane& p, const Plane& ref, double stddev){
 {Timer t2("execute");
 	int tile_size_w = p.get_width();//(((p.get_width()+3)/4) + 15) / 16 * 16;// 128 + 256;
 	int tile_size_h = p.get_height();//(((p.get_height()+3)/4)+ 15) / 16 * 16;//128 + 256;
-	kp::Workgroup workgroup({(unsigned int)tile_size_w/16, (unsigned int)tile_size_h/16, 1});
+	kp::Workgroup workgroup({(unsigned int)(tile_size_w+15)/16, (unsigned int)(tile_size_h+15)/16, 1});
 	//std::vector<float> specConsts({ (float)p.get_width(), (float)p.get_height(), (float)ox, (float)oy, (float)stddev });
-	std::vector<int32_t> specConsts({ 10, 1 });
+	std::vector<int32_t> specConsts({ 1, 20 });
 
-	auto algorithm = mgr->algorithm({t_edge, t_p1, t_out},
+	auto algorithm = mgr->algorithm({t_edge, t_p1, t_p2, t_p3, t_out},
 								shader,
 								workgroup,
 								specConsts, std::vector<Params>({params}));
@@ -332,7 +334,7 @@ Plane NLM2(const Plane& p, const Plane& ref, double stddev){
 }
 
 Plane NLM2(const Plane& p, const ImageEx& ref, double stddev){
-	return NLM2(p, ref[1], stddev);
+	return NLM2(p, ref[0], ref[1], ref[3], stddev);
 }
 
 #include <iostream>
@@ -367,8 +369,22 @@ ImageEx FocusStackingRender::render( const AContainer& aligner, AProcessWatcher*
 	
 	auto out = ImageEx(aligner.image(0));
 	
+		auto subtract_noise = [](auto& h, auto& p)
+		{
+			for( int y=0; y<(int)p.getSize().height(); y++ )
+				for( int x=0; x<(int)p.getSize().width(); x++ )
+				{
+					auto j = h[y][x];
+					auto& v = p[y][x];
+					auto xx = std::sqrt(std::max((double)j - 80, 0.0)) * 3.9; //NOTE: Based on the results from the CSV dump and will change for different images. Also misses a linear offset?
+					v = v - xx;
+					//if( xx > 0.0 )
+						//v = std::max(0.0, v - std::sqrt(xx)) * ((140 - std::sqrt(xx)) / 140);
+				}
+		};
+	
 	std::vector<Plane> planes;
-	std::vector<Plane> sources;
+	std::vector<Plane> sources, sources1, sources2;
 	std::vector<int64_t> sum0(65536, 0), count0(65536, 0);
 	std::vector<int64_t> sum1(65536, 0), count1(65536, 0);
 	std::vector<int64_t> sum2(65536, 0), count2(65536, 0);
@@ -387,19 +403,6 @@ ImageEx FocusStackingRender::render( const AContainer& aligner, AProcessWatcher*
 				}
 		};
 
-		auto subtract_noise = [](auto& h, auto& p)
-		{
-			for( int y=0; y<(int)p.getSize().height(); y++ )
-				for( int x=0; x<(int)p.getSize().width(); x++ )
-				{
-					auto j = h[y][x];
-					auto& v = p[y][x];
-					auto xx = std::sqrt(std::max((double)j - 80, 0.0)) * 3.9; //NOTE: Based on the results from the CSV dump and will change for different images. Also misses a linear offset?
-					v = std::max(0.0, v - xx);
-					//if( xx > 0.0 )
-						//v = std::max(0.0, v - std::sqrt(xx)) * ((140 - std::sqrt(xx)) / 140);
-				}
-		};
 		
 		
 		auto inputImg = aligner.image(i);
@@ -433,15 +436,21 @@ ImageEx FocusStackingRender::render( const AContainer& aligner, AProcessWatcher*
 		//img.to_grayscale();
 		//img = img.toRgb();
 		//img.to_grayscale();
-		img[0].mix(img[1]);
-		img[2].mix(img[3]);
-		img[0].mix(img[2]);
+		//img[0].mix(img[1]);
+		//img[2].mix(img[3]);
+		//img[0].mix(img[2]);
+		
+		inputImg[1].mix(inputImg[2]);
+		//img[2].mix(inputImg[3]);
+		//img[0].mix(inputImg[2]);
 		
 		
 		//img[0] = NLM2(img[0], inputImg);
 		
-		sources.push_back(inputImg[1]);
-		planes.push_back(img[0]);
+		sources.push_back(inputImg[0]);
+		sources1.push_back(inputImg[1]);
+		sources2.push_back(inputImg[3]);
+		planes.push_back(img[1]);
 		
 		progress.add();
 	}
@@ -470,7 +479,10 @@ ImageEx FocusStackingRender::render( const AContainer& aligner, AProcessWatcher*
 	{
 		std::vector<Plane> denoised;
 		for(size_t j=0; j<planes.size(); j++){
-			denoised.push_back( NLM2(planes[j], sources[j], std_dev/(i*i)) );
+			denoised.push_back( NLM2(planes[j], sources[j], sources1[j], sources2[j], std_dev/(i*i)) );
+			//subtract_noise( sources[j], denoised[j] );
+			//denoised[j].save_png("plane-denoised-" + std::to_string(j) + "_" + std::to_string(i) + ".png");
+			//sources[j].save_png("plane-sources-" + std::to_string(j) + "_" + std::to_string(i) + ".png");
 		}
 
 		Layer l( planes[0].getSize(), i );
@@ -493,6 +505,8 @@ ImageEx FocusStackingRender::render( const AContainer& aligner, AProcessWatcher*
 			planes[i] = planes[i].scale_cubic( Plane(), planes[i].getSize() / 2 );
 			
 			sources[i] = sources[i].scale_cubic( Plane(), sources[i].getSize() / 2 );
+			sources1[i] = sources1[i].scale_cubic( Plane(), sources1[i].getSize() / 2 );
+			sources2[i] = sources2[i].scale_cubic( Plane(), sources2[i].getSize() / 2 );
 		}
 		
 		//for( unsigned j=0; j<planes.size(); j++ )

@@ -1,0 +1,66 @@
+#version 450
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+// The input tensors bind index is relative to index in parameter passed
+layout(set = 0, binding = 0) buffer buf_in_a { float in_a[]; };
+layout(set = 0, binding = 1) buffer buf_out_a { float out_a[]; };
+
+layout (constant_id = 0) const int w00 = 0;
+layout (constant_id = 1) const int w10 = 0;
+layout (constant_id = 2) const int w20 = 0;
+layout (constant_id = 3) const int w01 = 0;
+layout (constant_id = 4) const int w11 = 0;
+layout (constant_id = 5) const int w21 = 0;
+layout (constant_id = 6) const int w02 = 0;
+layout (constant_id = 7) const int w12 = 0;
+layout (constant_id = 8) const int w22 = 0;
+
+layout (push_constant, std430) uniform PushConstants{
+	int width;
+	int height;
+	int stride;
+	int offset_x;
+	int offset_y;
+};
+
+float pixel(int dx, int dy){
+	uint x = gl_GlobalInvocationID.x + dx + int(offset_x);
+	uint y = gl_GlobalInvocationID.y + dy + int(offset_y);
+
+	uint pos = x + y*uint(width);
+	return in_a[pos];
+}
+void write(float val){
+	uint x = gl_GlobalInvocationID.x + int(offset_x);
+	uint y = gl_GlobalInvocationID.y + int(offset_y);
+
+	uint pos = x + y*uint(width);
+	out_a[pos] = val;
+}
+
+void main() {
+	int x = int(gl_GlobalInvocationID.x) + int(offset_x);
+	int y = int(gl_GlobalInvocationID.y) + int(offset_y);
+
+	int total = w00 + w01 + w02 + w10 + w11 + w12 + w20 + w21 + w22;
+	
+	int k = 1;
+	if( (k > x) || (k > y) || (x >= int(width) - k) || (y >= int(height) - k) ){
+		write(pixel(0,0) * total);
+		return;
+	}
+	
+	float sum = 0;
+	sum += w00 * pixel(-1, -1);
+	sum += w10 * pixel(+0, -1);
+	sum += w20 * pixel(+1, -1);
+	sum += w01 * pixel(-1,  0);
+	sum += w11 * pixel(+0,  0);
+	sum += w21 * pixel(+1,  0);
+	sum += w02 * pixel(-1, +1);
+	sum += w12 * pixel(+0, +1);
+	sum += w22 * pixel(+1, +1);
+
+	write(sum);
+}

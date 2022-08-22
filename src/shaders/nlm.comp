@@ -5,7 +5,9 @@ layout (local_size_x = 16, local_size_y = 16) in;
 // The input tensors bind index is relative to index in parameter passed
 layout(set = 0, binding = 0) buffer buf_in_a { float in_a[]; };
 layout(set = 0, binding = 1) buffer buf_in_b { float in_b[]; };
-layout(set = 0, binding = 2) buffer buf_out_a { float out_a[]; };
+layout(set = 0, binding = 2) buffer buf_in_c { float in_c[]; };
+layout(set = 0, binding = 3) buffer buf_in_d { float in_d[]; };
+layout(set = 0, binding = 4) buffer buf_out_a { float out_a[]; };
 
 layout (constant_id = 0) const int k = 1;
 layout (constant_id = 1) const int r = 10;
@@ -20,71 +22,97 @@ layout (push_constant, std430) uniform PushConstants{
 };
 
 float edge(int dx, int dy){
-    uint x = gl_GlobalInvocationID.x + dx + int(offset_x);
-    uint y = gl_GlobalInvocationID.y + dy + int(offset_y);
+	uint x = gl_GlobalInvocationID.x + dx + int(offset_x);
+	uint y = gl_GlobalInvocationID.y + dy + int(offset_y);
 
-    uint pos = x + y*uint(width);
-    return in_a[pos];
+	uint pos = x + y*uint(width);
+	return in_a[pos];
 }
 float ref1(int dx, int dy){
-    uint x = gl_GlobalInvocationID.x + dx + int(offset_x);
-    uint y = gl_GlobalInvocationID.y + dy + int(offset_y);
+	uint x = gl_GlobalInvocationID.x + dx + int(offset_x);
+	uint y = gl_GlobalInvocationID.y + dy + int(offset_y);
 
-    uint pos = x + y*uint(width);
-    return in_b[pos];
+	uint pos = x + y*uint(width);
+	return in_b[pos];
+}
+float ref2(int dx, int dy){
+	uint x = gl_GlobalInvocationID.x + dx + int(offset_x);
+	uint y = gl_GlobalInvocationID.y + dy + int(offset_y);
+
+	uint pos = x + y*uint(width);
+	return in_c[pos];
+}
+float ref3(int dx, int dy){
+	uint x = gl_GlobalInvocationID.x + dx + int(offset_x);
+	uint y = gl_GlobalInvocationID.y + dy + int(offset_y);
+
+	uint pos = x + y*uint(width);
+	return in_d[pos];
 }
 void write(float val, int dx, int dy){
-    uint x = gl_GlobalInvocationID.x + dx + int(offset_x);
-    uint y = gl_GlobalInvocationID.y + dy + int(offset_y);
+	uint x = gl_GlobalInvocationID.x + dx + int(offset_x);
+	uint y = gl_GlobalInvocationID.y + dy + int(offset_y);
 
-    uint pos = x + y*uint(width);
-    out_a[pos] = val;
+	uint pos = x + y*uint(width);
+	out_a[pos] = val;
 }
 
 float mse(float a, float b){
-    float d = a - b;
-    return d*d;
+	float d = a - b;
+	return d*d;
 }
 
 void main() {
-    int x = int(gl_GlobalInvocationID.x) + int(offset_x);
-    int y = int(gl_GlobalInvocationID.y) + int(offset_y);
-    //int k = 1;
-    //int r = 10;
-    
-    float sum = 0.0;
-    float weight = 0.0;
+	int x = int(gl_GlobalInvocationID.x) + int(offset_x);
+	int y = int(gl_GlobalInvocationID.y) + int(offset_y);
+	//int k = 1;
+	//int r = 10;
+	
+	float sum = 0.0;
+	float weight = 0.0;
 
-    //if (k + r > x || k + r > y || x >= in_w - r - k-1 || y >= in_h - r - k-1)
-    //    return;
+	//if (k + r > x || k + r > y || x >= in_w - r - k-1 || y >= in_h - r - k-1)
+	//    return;
 
-    if( (k > x) || (k > y) || (x >= int(width) - k) || (y >= int(height) - k) ){
-        write(edge(0,0), 0, 0);
-        return;
-    }
+	if( (k > x) || (k > y) || (x >= int(width) - k) || (y >= int(height) - k) ){
+		write(edge(0,0), 0, 0);
+		return;
+	}
 
-    int ry_start = max(k, int(y)-r) - int(y);//-r;
-    int rx_start = max(k, int(x)-r) - int(x);
-    int ry_end = min(r+int(y), int(width)-k-1) - int(y);//r;
-    int rx_end = min(r+int(x), int(width)-k-1) - int(x);//r;
+	int ry_start = max(k, int(y)-r) - int(y);//-r;
+	int rx_start = max(k, int(x)-r) - int(x);
+	int ry_end = min(r+int(y), int(width)-k-1) - int(y);//r;
+	int rx_end = min(r+int(x), int(width)-k-1) - int(x);//r;
 
-    for (int ry=ry_start; ry<=ry_end; ry++)
-        for (int rx=rx_start; rx<=rx_end; rx++){
-            float v = edge(rx, ry);
-            
-            float w = 0.0;
-            for (int dy=-k; dy<=k; dy++)
-                for (int dx=-k; dx<=k; dx++){
-                    float diff = mse(ref1(dx, dy), ref1(dx+rx, dy+ry));
-                    w += diff;
-                }
-            w = exp(-w / std_dev);
-            sum += v * w;
-            weight += w;
-        }
+	float scale0 = sqrt(ref1(0, 0));
+	float scale1 = sqrt(ref2(0, 0));
+	float scale2 = sqrt(ref3(0, 0));
 
-    float res = (weight > 0) ? sum / weight : 0.5;
-    
-    uint pos = x + y*uint(width);
-    out_a[pos] = res;
+	for (int ry=ry_start; ry<=ry_end; ry++)
+		for (int rx=rx_start; rx<=rx_end; rx++){
+			float v = edge(rx, ry);
+			
+			float w0 = 0.0, w1 = 0.0, w2 = 0.0;
+			for (int dy=-k; dy<=k; dy++)
+				for (int dx=-k; dx<=k; dx++){
+					w0 += mse(ref1(dx, dy), ref1(dx+rx, dy+ry));
+					w1 += mse(ref2(dx, dy), ref2(dx+rx, dy+ry));
+					w2 += mse(ref3(dx, dy), ref3(dx+rx, dy+ry));
+				}
+			float w = exp(-w0 / (std_dev * scale0))
+					+ exp(-w1 / (std_dev * scale1))
+					+ exp(-w2 / (std_dev * scale2))
+					;
+			w = exp(-(w0 + w1 + w2) / (std_dev));
+			sum += v * w;
+			weight += w;
+		}
+
+	//float res = weight / ((ry_end - ry_start) * (rx_end - rx_start));//
+	
+	float res = (weight > 0) ? sum / weight : 0.5;
+	//res = pow(res, 0.5);
+	
+	uint pos = x + y*uint(width);
+	out_a[pos] = res;
 }
