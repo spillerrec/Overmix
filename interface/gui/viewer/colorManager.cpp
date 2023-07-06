@@ -106,18 +106,16 @@ colorManager::colorManager(){
 	disp.cb = sizeof(DISPLAY_DEVICE);
 	while( EnumDisplayDevices( nullptr, index++, &disp, 0 ) != 0 ){
 		//Temporaries for converting
-		DWORD size = 250;
-		wchar_t icc_path[size];
-		char path_ancii[size*2];
+		DWORD size = MAX_PATH;
+		char icc_path[MAX_PATH];
 		
 		//Get profile
 		HDC hdc = CreateDC( nullptr, disp.DeviceName, nullptr, nullptr );
-		GetICMProfile( hdc, &size, icc_path );
+		GetICMProfileA( hdc, &size, icc_path );
 		DeleteDC( hdc );
 		
 		//Read and add
-		wcstombs( path_ancii, icc_path, size*2 );
-		monitors.emplace_back( ColorProfile::fromFile( path_ancii, "r") );
+		monitors.emplace_back( ColorProfile::fromFile( icc_path, "r") );
 	}
 #else
 	#ifdef Q_OS_UNIX
