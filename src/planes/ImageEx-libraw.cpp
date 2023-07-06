@@ -71,18 +71,18 @@ bool ImageEx::from_libraw( QIODevice& dev ){
 		for (int ix=0; ix<width; ix++)
 		{
 			auto val = GetRggb(ix, iy );
-			max_values.r  = std::max(max_values.r,  val.r );
-			max_values.g1 = std::max(max_values.g1, val.g1);
-			max_values.g2 = std::max(max_values.g2, val.g2);
-			max_values.b  = std::max(max_values.b,  val.b );
+			max_values.r  = max(max_values.r,  val.r );
+			max_values.g1 = max(max_values.g1, val.g1);
+			max_values.g2 = max(max_values.g2, val.g2);
+			max_values.b  = max(max_values.b,  val.b );
 		}
 	max_values.r = 65535;
 	max_values.g1 = 65535;
 	max_values.g2 = 65535;
 	max_values.b = 65535;
 		
-	Rggb black = {loader.imgdata.color.cblack[0], loader.imgdata.color.cblack[1], loader.imgdata.color.cblack[2], loader.imgdata.color.cblack[3]};
-	auto sub = [](int val, int subtract){ return std::max(0, val - subtract); };
+	Rggb black = {(uint16_t)loader.imgdata.color.cblack[0], (uint16_t)loader.imgdata.color.cblack[1], (uint16_t)loader.imgdata.color.cblack[2], (uint16_t)loader.imgdata.color.cblack[3]};
+	auto sub = [](int val, int subtract){ return max(0, val - subtract); };
 	max_values.r  = sub(max_values.r , black.r );
 	max_values.g1 = sub(max_values.g1, black.g1);
 	max_values.g2 = sub(max_values.g2, black.g2);
