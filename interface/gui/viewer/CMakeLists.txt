@@ -20,6 +20,7 @@ set(SOURCE_GUI_VIEWER
 if( WIN32 )
 	add_definitions(-DUNICODE -D_UNICODE)
 endif( WIN32 )
+find_package(lcms2 CONFIG REQUIRED)
 
 # Set-up libraries
 find_package(Qt5Widgets REQUIRED)
@@ -30,4 +31,4 @@ if( UNIX )
 endif( UNIX )
 
 add_library(qtimgviewer ${SOURCE_GUI_VIEWER} )
-target_link_libraries(qtimgviewer Qt5::Gui Qt5::Widgets Qt5::Concurrent -llcms2 ${PLATFORM_LIBRARIES})
+target_link_libraries(qtimgviewer Qt5::Gui Qt5::Widgets Qt5::Concurrent lcms2::lcms2 ${PLATFORM_LIBRARIES})

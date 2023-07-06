@@ -2,6 +2,19 @@ cmake_minimum_required(VERSION 3.0)
 
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
+find_package(PNG REQUIRED)
+find_package(ZLIB REQUIRED)
+find_package(LibLZMA REQUIRED)
+find_package(JPEG REQUIRED)
+find_package(LibRaw REQUIRED)
+find_package(FFMPEG REQUIRED)
+find_package(pugixml CONFIG REQUIRED)
+find_package(FFTW3 CONFIG REQUIRED)
+find_package(OpenMP)
+
+find_library(MATH_LIBRARY m)
+
+find_path(PNGPP_INCLUDE_DIRS "png++/color.hpp")
 
 set(SOURCES_CONTAINERS
 	containers/AContainer.cpp
@@ -109,7 +122,12 @@ add_library(OvermixCore
 	${WAIFU_SOURCES} 
 	${SOURCES_OTHERS} 
 	)
-target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent -lm -lpng -ljpeg -lraw -lz -llzma -lpugixml fftw3 ${FFMPEG_LIBS} ${WAIFU_LIB})
+target_compile_definitions(OvermixCore PRIVATE ${LibRaw_DEFINITIONS})
+target_include_directories(OvermixCore PRIVATE ${JPEG_INCLUDE_DIRS} ${PNGPP_INCLUDE_DIRS} ${LibRaw_INCLUDE_DIR} ${FFMPEG_INCLUDE_DIRS})
+target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent PNG::PNG ZLIB::ZLIB LibLZMA::LibLZMA pugixml::pugixml FFTW3::fftw3 OpenMP::OpenMP_CXX ${JPEG_LIBRARIES} ${LibRaw_LIBRARIES} ${FFMPEG_LIBRARIES} ${WAIFU_LIB})
+if(MATH_LIBRARY)
+    target_link_libraries(OvermixCore ${MATH_LIBRARY})
+endif()
 
 # C++17
 set_property(TARGET OvermixCore PROPERTY CXX_STANDARD 17)
