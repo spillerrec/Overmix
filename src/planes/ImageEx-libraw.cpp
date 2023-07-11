@@ -46,11 +46,11 @@ bool ImageEx::from_libraw( QIODevice& dev ){
 	
 	color_space = {Transform::BAYER, Transfer::LINEAR};
 	
-	int width  = loader.imgdata.rawdata.sizes.width/2;
-	int height = loader.imgdata.rawdata.sizes.height/2;
-	int off_x = loader.imgdata.rawdata.sizes.left_margin/2;
-	int off_y = loader.imgdata.rawdata.sizes.top_margin/2;
-	int stride = loader.imgdata.rawdata.sizes.raw_pitch / sizeof(uint16_t);
+	unsigned width  = loader.imgdata.rawdata.sizes.width/2;
+	unsigned height = loader.imgdata.rawdata.sizes.height/2;
+	unsigned off_x = loader.imgdata.rawdata.sizes.left_margin/2;
+	unsigned off_y = loader.imgdata.rawdata.sizes.top_margin/2;
+	unsigned stride = loader.imgdata.rawdata.sizes.raw_pitch / sizeof(uint16_t);
 	for( int i=0; i<4; i++ )
 		planes.emplace_back( Plane{width, height} );
 	
