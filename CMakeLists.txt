@@ -8,7 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 
 # Turn on warnings
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wnon-virtual-dtor -Wcast-align -Wunused") #-Wpedantic
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wnon-virtual-dtor -Wcast-align -Wunused") #-Wpedantic -Wall -Wextra
 
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Widgets REQUIRED)
