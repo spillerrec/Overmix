@@ -1,25 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
 
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5Concurrent REQUIRED)
-find_package(PNG REQUIRED)
-find_package(ZLIB REQUIRED)
-find_package(LibLZMA REQUIRED)
-find_package(JPEG REQUIRED)
-find_package(pugixml CONFIG REQUIRED)
-find_package(OpenMP REQUIRED)
-
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBRAW REQUIRED IMPORTED_TARGET libraw)
-pkg_check_modules(FFTW3 REQUIRED IMPORTED_TARGET fftw3)
-pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
-    libavformat
-    libavcodec
-    libavutil
-)
-
-find_library(MATH_LIBRARY m)
-
 find_path(PNGPP_INCLUDE_DIRS "png++/color.hpp")
 
 set(SOURCES_CONTAINERS
@@ -113,9 +93,6 @@ set(SOURCES_OTHERS
 	Deteleciner.cpp
 	MultiPlaneIterator.cpp
 	)
-
-# TODO: do something smarter?
-set(FFMPEG_LIBS -lavcodec -lavutil -lavformat)
 
 add_library(OvermixCore 
 	${SOURCES_CONTAINERS} 

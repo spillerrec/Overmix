@@ -28,6 +28,32 @@ else()
 	message("Couldn't detect compiler")
 endif()
 
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Concurrent REQUIRED)
+find_package(Qt5PrintSupport REQUIRED)
+if( UNIX )
+	include(FindX11)
+	find_package(Qt5X11Extras REQUIRED)
+	set(PLATFORM_LIBRARIES ${PLATFORM_LIBRARIES} Qt5::X11Extras X11::xcb)
+endif( UNIX )
+find_package(PNG REQUIRED)
+find_package(ZLIB REQUIRED)
+find_package(LibLZMA REQUIRED)
+find_package(JPEG REQUIRED)
+find_package(pugixml REQUIRED)
+find_package(OpenMP REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBRAW REQUIRED IMPORTED_TARGET libraw)
+pkg_check_modules(FFTW3 REQUIRED IMPORTED_TARGET fftw3)
+pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
+    libavformat
+    libavcodec
+    libavutil
+)
+pkg_check_modules(LCMS2 REQUIRED IMPORTED_TARGET lcms2)
+
+find_library(MATH_LIBRARY m)
 
 find_library(W2XC NAMES w2xc libw2xc HINTS x86_64-w64-mingw32/lib)
 
