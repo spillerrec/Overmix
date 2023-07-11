@@ -10,24 +10,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 # Turn on warnings
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wnon-virtual-dtor -Wcast-align -Wunused") #-Wpedantic
 
-
-#Fails on Arch for some reason
-#find_package(OpenMP REQUIRED)
-#set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-#set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-#set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-	message("clang")
-	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xclang -fopenmp")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-	message("gcc")
-	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-	set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fopenmp")
-else()
-	message("Couldn't detect compiler")
-endif()
-
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
@@ -54,7 +36,6 @@ pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
 pkg_check_modules(LCMS2 REQUIRED IMPORTED_TARGET lcms2)
 
 find_library(MATH_LIBRARY m)
-
 find_library(W2XC NAMES w2xc libw2xc HINTS x86_64-w64-mingw32/lib)
 
 if(W2XC)
