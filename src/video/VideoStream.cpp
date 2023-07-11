@@ -51,7 +51,11 @@ VideoStream::VideoStream( QString filepath ){
 		throw std::runtime_error( "Couldn't find stream\n" );
 	
 	//Find the first video stream (and be happy)
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58, 79, 100)
 	AVCodec *codec = nullptr;
+#else
+	const AVCodec* codec = nullptr;
+#endif
 	stream_index = av_find_best_stream( format_context, AVMEDIA_TYPE_VIDEO, -1, -1, &codec, 0 );
 	if( stream_index < 0 )
 		std::runtime_error( "Could not find video stream" );
