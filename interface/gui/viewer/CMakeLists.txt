@@ -20,15 +20,18 @@ set(SOURCE_GUI_VIEWER
 if( WIN32 )
 	add_definitions(-DUNICODE -D_UNICODE)
 endif( WIN32 )
-find_package(lcms2 CONFIG REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LCMS2 REQUIRED IMPORTED_TARGET lcms2)
 
 # Set-up libraries
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
 if( UNIX )
+	include(FindX11)
 	find_package(Qt5X11Extras REQUIRED)
-	set(PLATFORM_LIBRARIES ${PLATFORM_LIBRARIES} Qt5::X11Extras -lxcb)
+	set(PLATFORM_LIBRARIES ${PLATFORM_LIBRARIES} Qt5::X11Extras X11::xcb)
 endif( UNIX )
 
 add_library(qtimgviewer ${SOURCE_GUI_VIEWER} )
-target_link_libraries(qtimgviewer Qt5::Gui Qt5::Widgets Qt5::Concurrent lcms2::lcms2 ${PLATFORM_LIBRARIES})
+target_include_directories(qtimgviewer PRIVATE ${X11_INCLUDE_DIR})
+target_link_libraries(qtimgviewer Qt5::Gui Qt5::Widgets Qt5::Concurrent PkgConfig::LCMS2 ${PLATFORM_LIBRARIES})

@@ -6,11 +6,17 @@ find_package(PNG REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(LibLZMA REQUIRED)
 find_package(JPEG REQUIRED)
-find_package(LibRaw REQUIRED)
-find_package(FFMPEG REQUIRED)
 find_package(pugixml CONFIG REQUIRED)
-find_package(FFTW3 CONFIG REQUIRED)
-find_package(OpenMP)
+find_package(OpenMP REQUIRED)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBRAW REQUIRED IMPORTED_TARGET libraw)
+pkg_check_modules(FFTW3 REQUIRED IMPORTED_TARGET fftw3)
+pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
+    libavformat
+    libavcodec
+    libavutil
+)
 
 find_library(MATH_LIBRARY m)
 
@@ -122,9 +128,8 @@ add_library(OvermixCore
 	${WAIFU_SOURCES} 
 	${SOURCES_OTHERS} 
 	)
-target_compile_definitions(OvermixCore PRIVATE ${LibRaw_DEFINITIONS})
-target_include_directories(OvermixCore PRIVATE ${JPEG_INCLUDE_DIRS} ${PNGPP_INCLUDE_DIRS} ${LibRaw_INCLUDE_DIR} ${FFMPEG_INCLUDE_DIRS})
-target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent PNG::PNG ZLIB::ZLIB LibLZMA::LibLZMA pugixml::pugixml FFTW3::fftw3 OpenMP::OpenMP_CXX ${JPEG_LIBRARIES} ${LibRaw_LIBRARIES} ${FFMPEG_LIBRARIES} ${WAIFU_LIB})
+target_include_directories(OvermixCore PRIVATE ${JPEG_INCLUDE_DIRS} ${PNGPP_INCLUDE_DIRS})
+target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent PNG::PNG ZLIB::ZLIB LibLZMA::LibLZMA pugixml::pugixml PkgConfig::FFTW3 PkgConfig::LIBRAW PkgConfig::FFMPEG OpenMP::OpenMP_CXX ${JPEG_LIBRARIES} ${WAIFU_LIB})
 if(MATH_LIBRARY)
     target_link_libraries(OvermixCore ${MATH_LIBRARY})
 endif()
