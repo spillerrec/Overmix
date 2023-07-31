@@ -51,7 +51,11 @@ VideoStream::VideoStream( QString filepath ){
 		throw std::runtime_error( "Couldn't find stream\n" );
 	
 	//Find the first video stream (and be happy)
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58, 79, 100)
 	AVCodec *codec = nullptr;
+#else
+	const AVCodec* codec = nullptr;
+#endif
 	stream_index = av_find_best_stream( format_context, AVMEDIA_TYPE_VIDEO, -1, -1, &codec, 0 );
 	if( stream_index < 0 )
 		std::runtime_error( "Could not find video stream" );
@@ -81,7 +85,7 @@ bool VideoStream::isVideoFile( QString path )
 
 bool VideoStream::seek( double seconds ){
 	int64_t wanted_time = seconds * AV_TIME_BASE;
-	int64_t target = av_rescale_q( wanted_time, AV_TIME_BASE_Q, format_context->streams[stream_index]->time_base );
+	int64_t target = av_rescale_q( wanted_time, av_get_time_base_q(), format_context->streams[stream_index]->time_base );
 	if( av_seek_frame( format_context, stream_index, target,  0 ) < 0 ){
 		std::cout << "Couldn't seek\n";
 		return false;

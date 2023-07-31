@@ -20,6 +20,7 @@
 
 #include <vector>
 #include <utility>
+#include <string>
 
 #include "PlaneBase.hpp"
 

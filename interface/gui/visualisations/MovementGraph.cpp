@@ -18,7 +18,7 @@
 #include "containers/FrameContainer.hpp"
 #include "containers/ImageContainer.hpp"
 
-#include <qcustomplot.h>
+#include "qcustomplot/qcustomplot.h"
 #include <QHBoxLayout>
 
 using namespace Overmix;

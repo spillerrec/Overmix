@@ -22,12 +22,6 @@ if( WIN32 )
 endif( WIN32 )
 
 # Set-up libraries
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Concurrent REQUIRED)
-if( UNIX )
-	find_package(Qt5X11Extras REQUIRED)
-	set(PLATFORM_LIBRARIES ${PLATFORM_LIBRARIES} Qt5::X11Extras -lxcb)
-endif( UNIX )
-
 add_library(qtimgviewer ${SOURCE_GUI_VIEWER} )
-target_link_libraries(qtimgviewer Qt5::Gui Qt5::Widgets Qt5::Concurrent -llcms2 ${PLATFORM_LIBRARIES})
+target_include_directories(qtimgviewer PRIVATE ${X11_INCLUDE_DIR})
+target_link_libraries(qtimgviewer Qt5::Gui Qt5::Widgets Qt5::Concurrent PkgConfig::LCMS2 ${PLATFORM_LIBRARIES})

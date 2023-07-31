@@ -46,11 +46,11 @@ bool ImageEx::from_libraw( QIODevice& dev ){
 	
 	color_space = {Transform::BAYER, Transfer::LINEAR};
 	
-	int width  = loader.imgdata.rawdata.sizes.width/2;
-	int height = loader.imgdata.rawdata.sizes.height/2;
-	int off_x = loader.imgdata.rawdata.sizes.left_margin/2;
-	int off_y = loader.imgdata.rawdata.sizes.top_margin/2;
-	int stride = loader.imgdata.rawdata.sizes.raw_pitch / sizeof(uint16_t);
+	unsigned width  = loader.imgdata.rawdata.sizes.width/2;
+	unsigned height = loader.imgdata.rawdata.sizes.height/2;
+	unsigned off_x = loader.imgdata.rawdata.sizes.left_margin/2;
+	unsigned off_y = loader.imgdata.rawdata.sizes.top_margin/2;
+	unsigned stride = loader.imgdata.rawdata.sizes.raw_pitch / sizeof(uint16_t);
 	for( int i=0; i<4; i++ )
 		planes.emplace_back( Plane{width, height} );
 	
@@ -71,18 +71,18 @@ bool ImageEx::from_libraw( QIODevice& dev ){
 		for (int ix=0; ix<width; ix++)
 		{
 			auto val = GetRggb(ix, iy );
-			max_values.r  = std::max(max_values.r,  val.r );
-			max_values.g1 = std::max(max_values.g1, val.g1);
-			max_values.g2 = std::max(max_values.g2, val.g2);
-			max_values.b  = std::max(max_values.b,  val.b );
+			max_values.r  = max(max_values.r,  val.r );
+			max_values.g1 = max(max_values.g1, val.g1);
+			max_values.g2 = max(max_values.g2, val.g2);
+			max_values.b  = max(max_values.b,  val.b );
 		}
 	max_values.r = 65535;
 	max_values.g1 = 65535;
 	max_values.g2 = 65535;
 	max_values.b = 65535;
 		
-	Rggb black = {loader.imgdata.color.cblack[0], loader.imgdata.color.cblack[1], loader.imgdata.color.cblack[2], loader.imgdata.color.cblack[3]};
-	auto sub = [](int val, int subtract){ return std::max(0, val - subtract); };
+	Rggb black = {(uint16_t)loader.imgdata.color.cblack[0], (uint16_t)loader.imgdata.color.cblack[1], (uint16_t)loader.imgdata.color.cblack[2], (uint16_t)loader.imgdata.color.cblack[3]};
+	auto sub = [](int val, int subtract){ return max(0, val - subtract); };
 	max_values.r  = sub(max_values.r , black.r );
 	max_values.g1 = sub(max_values.g1, black.g1);
 	max_values.g2 = sub(max_values.g2, black.g2);
