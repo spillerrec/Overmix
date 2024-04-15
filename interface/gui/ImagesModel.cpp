@@ -59,7 +59,7 @@ class ImagesIndex{
 			if( group >= images.groupAmount() )
 				return false;
 			
-			if( column >= (isGroup() ? 1 : 5) )
+			if( column >= (isGroup() ? 1 : 8) )
 				return false;
 			
 			if( !isGroup() && item >= images.getConstGroup(group).items.size() )
@@ -105,7 +105,7 @@ int ImagesModel::rowCount( const QModelIndex &parent ) const{
 }
 
 int ImagesModel::columnCount( const QModelIndex& ) const{
-	return 5;
+	return 8;
 }
 
 QVariant ImagesModel::data( const QModelIndex& model_index, int role ) const{
@@ -124,12 +124,15 @@ QVariant ImagesModel::data( const QModelIndex& model_index, int role ) const{
 		case 2: return item.offset.y;
 		case 3: return item.maskId();
 		case 4: return item.frame;
+		case 5: return item.rotation;
+		case 6: return item.zoom.x;
+		case 7: return item.zoom.y;
 		default: return QVariant();
 	}
 }
 
 QVariant ImagesModel::headerData( int section, Qt::Orientation orien, int role ) const{
-	if( orien!=Qt::Horizontal || role != Qt::DisplayRole || section >= 5 )
+	if( orien!=Qt::Horizontal || role != Qt::DisplayRole || section >= 8 )
 		return QVariant();
 	
 	switch( section ){
@@ -138,6 +141,9 @@ QVariant ImagesModel::headerData( int section, Qt::Orientation orien, int role )
 		case 2: return "y";
 		case 3: return "Mask";
 		case 4: return "Frame";
+		case 5: return "Rotation";
+		case 6: return "ZoomX";
+		case 7: return "ZoomY";
 		default: return QVariant();
 	}
 }
@@ -224,6 +230,9 @@ bool ImagesModel::setData( const QModelIndex& model_index, const QVariant& value
 		switch( index.column ){
 			case 1: if( !checkingToDouble( value, item.offset.x ) ) return false; break;
 			case 2: if( !checkingToDouble( value, item.offset.y ) ) return false; break;
+			case 5: if( !checkingToDouble( value, item.rotation ) ) return false; break;
+			case 6: if( !checkingToDouble( value, item.zoom.x   ) ) return false; break;
+			case 7: if( !checkingToDouble( value, item.zoom.y   ) ) return false; break;
 			case 4: if( !checkingToInt   ( value, item.frame    ) ) return false; break;
 			case 3: {
 					bool ok;

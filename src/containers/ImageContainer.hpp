@@ -103,6 +103,10 @@ class ImageContainer : public AContainer{
 		virtual       void        setPos( unsigned index, Point<double> newVal ) override;
 		virtual       int          frame( unsigned index ) const override;
 		virtual       void      setFrame( unsigned index, int newVal ) override;
+		virtual Point<double>  zoom(      unsigned index ) const override;
+		virtual       void     setZoom(   unsigned index, Point<double> newVal ) override;
+		virtual       double   rotation(  unsigned index ) const override;
+		virtual       void     setRotation(unsigned index, double newVal ) override;
 		
 	public: //AContainer comparators implementation
 		const AComparator* getComparator() const override;

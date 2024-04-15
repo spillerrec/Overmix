@@ -46,6 +46,10 @@ const auto NODE_ITEM_FRAME     = "frame";
 const auto NODE_ITEM_OFFSET    = "offset";
 const auto ATTR_ITEM_OFFSET_X  = "x";
 const auto ATTR_ITEM_OFFSET_Y  = "y";
+const auto NODE_ITEM_ROTATION  = "rotation";
+const auto NODE_ITEM_ZOOM      = "zoom";
+const auto ATTR_ITEM_ZOOM_X    = "x";
+const auto ATTR_ITEM_ZOOM_Y    = "y";
 const auto NODE_ITEM_CROP      = "crop";
 const auto ATTR_ITEM_CROP_L    = "left";
 const auto ATTR_ITEM_CROP_T    = "top";
@@ -123,6 +127,12 @@ QString ImageContainerSaver::load( ImageContainer& container, QString filename )
 			auto offset_node = item.child( NODE_ITEM_OFFSET );
 			img_item.offset.x = offset_node.attribute( ATTR_ITEM_OFFSET_X ).as_double( 0.0 );
 			img_item.offset.y = offset_node.attribute( ATTR_ITEM_OFFSET_Y ).as_double( 0.0 );
+			
+			img_item.rotation = item.child( NODE_ITEM_ROTATION ).text().as_double( 0.0 );
+			
+			auto zoom_node = item.child( NODE_ITEM_ZOOM );
+			img_item.zoom.x = zoom_node.attribute( ATTR_ITEM_ZOOM_X ).as_double( 1.0 );
+			img_item.zoom.y = zoom_node.attribute( ATTR_ITEM_ZOOM_Y ).as_double( 1.0 );
 		}
 		
 		auto& items = images.loadAll();
@@ -204,10 +214,15 @@ QString ImageContainerSaver::save( ImageContainer& container, QString filename )
 			addXmlItem( item_node, NODE_ITEM_PATH , folder.relativeFilePath( item.filename ) );
 			addXmlItem( item_node, NODE_ITEM_MASK , item.maskId() );
 			addXmlItem( item_node, NODE_ITEM_FRAME, item.frame );
+			addXmlItem( item_node, NODE_ITEM_ROTATION, item.rotation );
 			
 			auto offset_node = item_node.append_child( NODE_ITEM_OFFSET );
 			offset_node.append_attribute( ATTR_ITEM_OFFSET_X ) = item.offset.x;
 			offset_node.append_attribute( ATTR_ITEM_OFFSET_Y ) = item.offset.y;
+			
+			auto zoom_node = item_node.append_child( NODE_ITEM_ZOOM );
+			zoom_node.append_attribute( ATTR_ITEM_ZOOM_X ) = item.zoom.x;
+			zoom_node.append_attribute( ATTR_ITEM_ZOOM_Y ) = item.zoom.y;
 			
 			auto crop_node = item_node.append_child( NODE_ITEM_CROP );
 			auto crop = item.image().getCrop();

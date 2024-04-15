@@ -47,9 +47,13 @@ class ContainerImageRef{
 		auto  pos()       const{ return parent->pos(       index ); }
 		auto  frame()     const{ return parent->frame(     index ); }
 		auto& plane()     const{ return parent->plane(     index ); }
+		auto  zoom()      const{ return parent->zoom(      index ); }
+		auto  rotation()  const{ return parent->rotation(  index ); }
 		
 		void  setPos( Point<double> newVal ) { parent->setPos(   index, newVal ); }
 		void  setFrame(int newVal )          { parent->setFrame( index, newVal ); }
+		void  setZoom( Point<double> newVal ){ parent->setZoom(  index, newVal ); }
+		void  setRotation( double newVal    ){ parent->setRotation( index, newVal ); }
 };
 
 
@@ -64,6 +68,12 @@ class AContainer{
 		virtual       void     setPos(    unsigned index, Point<double> newVal ) = 0;
 		virtual       int      frame(     unsigned index ) const = 0;
 		virtual       void     setFrame(  unsigned index, int newVal ) = 0;
+		
+		virtual Point<double>  zoom(      unsigned index ) const = 0;
+		virtual       void     setZoom(   unsigned index, Point<double> newVal ) = 0;
+		
+		virtual       double   rotation(  unsigned index ) const = 0;
+		virtual       void     setRotation(unsigned index, double newVal ) = 0;
 		
 		
 		virtual const Plane&   mask(      unsigned index ) const;

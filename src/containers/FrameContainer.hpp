@@ -39,10 +39,14 @@ class FrameContainer : public AContainer{
 		virtual int            imageMask( unsigned index ) const override{ return container.imageMask( realIndex(index) ); }
 		virtual const Plane&   alpha    ( unsigned index ) const override{ return container.alpha    ( realIndex(index) ); }
 		virtual Point<double>  pos      ( unsigned index ) const override{ return container.pos      ( realIndex(index) ); }
+		virtual Point<double>  zoom(      unsigned index ) const override{ return container.zoom     ( realIndex(index) ); }
+		virtual       double   rotation(  unsigned index ) const override{ return container.rotation ( realIndex(index) ); }
 		
 		virtual void setPos  ( unsigned index, Point<double> newVal ) override{ container.setPos  ( realIndex(index), newVal ); }
 		virtual void setFrame( unsigned index, int           newVal ) override{ container.setFrame( realIndex(index), newVal ); }
 		virtual void setMask(  unsigned index, int           id     ) override{ container.setMask( index, id ); }
+		virtual void setZoom(     unsigned index, Point<double> newVal ) override{ container.setZoom    ( realIndex(index), newVal ); }
+		virtual void setRotation( unsigned index, double        newVal ) override{ container.setRotation( realIndex(index), newVal ); }
 		
 		virtual const AComparator* getComparator() const override{ return container.getComparator(); }
 		

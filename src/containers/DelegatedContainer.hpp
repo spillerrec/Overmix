@@ -41,11 +41,15 @@ class ConstDelegatedContainer : public AContainer{
 		virtual unsigned maskCount() const override{ return container.maskCount(); }
 		virtual Point<double> pos( unsigned index ) const override{ return container.pos( index ); }
 		virtual int frame( unsigned index ) const override{ return container.frame( index ); }
+		virtual Point<double>  zoom(      unsigned index ) const override{ return container.zoom     ( index ); }
+		virtual       double   rotation(  unsigned index ) const override{ return container.rotation ( index ); }
 		
 		virtual ImageEx& imageRef( unsigned ) override{ throw const_exception(); }
 		virtual void setMask( unsigned, int ) override { throw const_exception(); }
 		virtual void setFrame( unsigned, int ) override{ throw const_exception(); }
 		virtual void setPos( unsigned, Point<double> ) override{ throw const_exception(); }
+		virtual void setZoom(     unsigned, Point<double> ) override{ throw const_exception(); }
+		virtual void setRotation( unsigned, double        ) override{ throw const_exception(); }
 		
 		virtual const AComparator* getComparator() const override{ return container.getComparator(); }
 		virtual bool        hasCachedOffset( unsigned i, unsigned j ) const override

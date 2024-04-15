@@ -232,6 +232,24 @@ void ImageContainer::setFrame( unsigned index, int newVal ){
 	groups.at(pos.group).setFrame( pos.index, newVal );
 }
 
+Point<double> ImageContainer::zoom( unsigned index ) const{
+	auto pos = index_cache.getImage( index );
+	return groups.at(pos.group).zoom( pos.index );
+}
+void ImageContainer::setZoom( unsigned index, Point<double> newVal ){
+	auto pos = index_cache.getImage( index );
+	groups.at(pos.group).setZoom( pos.index, newVal );
+}
+
+double ImageContainer::rotation( unsigned index ) const{
+	auto pos = index_cache.getImage( index );
+	return groups.at(pos.group).rotation( pos.index );
+}
+void ImageContainer::setRotation( unsigned index, double newVal ){
+	auto pos = index_cache.getImage( index );
+	groups.at(pos.group).setRotation( pos.index, newVal );
+}
+
 const AComparator* ImageContainer::getComparator() const{
 	if( !comparator )
 		throw std::runtime_error( "ImageContainer::getComparator - No comparator!" );

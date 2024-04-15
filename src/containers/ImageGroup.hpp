@@ -37,6 +37,8 @@ class ImageItem{
 		QString filename;
 		Point<double> offset;
 		int frame{ -1 };
+		double rotation { 0.0 };
+		Point<double> zoom { 1.0, 1.0 };
 		
 		ImageItem() { }
 		ImageItem( QString filename, ImageEx&& img )
@@ -95,9 +97,13 @@ class ImageGroup : public AContainer{
 		virtual int            frame(     unsigned index ) const override{ return items.at(index).frame; }
 		virtual unsigned       maskCount()                 const override{ return masks->size(); }
 		virtual Point<double>  pos(       unsigned index ) const override{ return items.at(index).offset; }
-		virtual void setPos( unsigned index, Point<double> newVal ) override{     items.at(index).offset = newVal; }
+		virtual Point<double>  zoom(      unsigned index ) const override{ return items.at(index).zoom; }
+		virtual       double   rotation(  unsigned index ) const override{ return items.at(index).rotation; }
 		
-		virtual void setFrame( unsigned index, int newVal ) override{ items.at(index).frame = newVal; }
+		virtual void setPos(      unsigned index, Point<double> newVal ) override{ items.at(index).offset   = newVal; }
+		virtual void setFrame(    unsigned index, int           newVal ) override{ items.at(index).frame    = newVal; }
+		virtual void setZoom(     unsigned index, Point<double> newVal ) override{ items.at(index).zoom     = newVal; }
+		virtual void setRotation( unsigned index, double        newVal ) override{ items.at(index).rotation = newVal; }
 		
 	public:
 		const AComparator* getComparator() const override{ return comparator; };
