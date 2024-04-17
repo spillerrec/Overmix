@@ -20,13 +20,18 @@
 
 #include <utility>
 
+#include "../../Geometry.hpp"
+
 namespace Overmix{
 	class Plane;
 }
 
 namespace Overmix{ namespace Transformations{
 	
-	std::pair<Plane, Plane> rotation( const Plane& p1, const Plane& p2, double radians, double scale=1.0 );
+	Rectangle<int> rotationEndSize( Size<unsigned> size, double radians, Point<double> scale={1.0, 1.0} );
+	
+	Plane rotation( const Plane& p1, double radians, Point<double> scale={1.0, 1.0} );
+	Plane rotationAlpha( const Plane& p1, double radians, Point<double> scale={1.0, 1.0} );
 	
 } }
 

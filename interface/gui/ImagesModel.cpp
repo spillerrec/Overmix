@@ -18,6 +18,8 @@
 
 #include "ImagesModel.hpp"
 
+#include "planes/basic/rotation.hpp"
+
 #include "utils/utils.hpp"
 
 #include <QFileInfo>
@@ -166,8 +168,20 @@ QImage ImagesModel::getImage( const QModelIndex& model_index ) const{
 	
 	if( index.isValid() && !index.isGroup() ){
 		auto& item = index.getItem();
-		auto img = item.image().to_qimage();
-		img = setQImageAlpha( img, item.alpha( images.getMasks() ) );
+		
+		auto baseImg = ImageEx(item.image());
+		
+		bool isRotated = item.zoom.x != 1.0 || item.zoom.y != 1.0 || item.rotation != 0.0;
+		if( isRotated ){
+			for( unsigned i=0; i<baseImg.size(); i++ )
+				baseImg[i] = Transformations::rotation( baseImg[i], item.rotation, item.zoom );
+			if( baseImg.alpha_plane() )
+				baseImg.alpha_plane() = Transformations::rotationAlpha( baseImg.alpha_plane(), item.rotation, item.zoom );
+		}
+		
+		auto img = baseImg.to_qimage();
+		if (!isRotated) //TODO: Support masks with rotation
+			img = setQImageAlpha( img, item.alpha( images.getMasks() ) );
 		
 		//Expand with transparent to fill entire output size
 		auto area = images.size();

@@ -20,34 +20,96 @@
 #include "../Plane.hpp"
 #include "../PlaneExcept.hpp"
 
+#include "../../color.hpp"
+
 
 using namespace std;
 using namespace Overmix;
 
-
-std::pair<Plane, Plane> Transformations::rotation( const Plane& p, const Plane& alpha, double radians, double scale ){
-	if( alpha )
-		planeSizeEqual( "Difference::simpleAlpha", p, alpha );
-	
-	return {};
-	/*
-	auto max_size = std::max( p.get_width(), p.get_height() );
-	Point out_size( max_size, max_size );
-	Point center = out_size / 2;
-	Point plane_center = Point( p.get_width(), p.get_height() ) / 2;
-	
-	auto forward = [&](int x, int y){
+class TransformMatrix {
+	private:
+		double x0, x1;
+		double y0, y1;
+		Point<double> scale;
 		
-	};
+	public:
+		TransformMatrix( double radians, Point<double> scale ) {
+			radians = 3.14*2-radians;
+			this->scale = Point<double>(1.0, 1.0)/scale;
+			// TODO: Support scaling
+			x0 =  std::cos(radians);// * scale.x;
+			x1 = -std::sin(radians);// * scale.y;
+			y0 =  std::sin(radians);// * scale.x;
+			y1 =  std::cos(radians);// * scale.y;
+		}
+		
+		Point<double> operator()(Point<double> pos){
+			//pos *= scale;
+			return {
+				pos.x * x0 + pos.y * x1,
+				pos.x * y0 + pos.y * y1
+			};
+		}
+};
+
+
+Rectangle<int> Transformations::rotationEndSize( Size<unsigned> size, double radians, Point<double> scale ){
+	//size /= scale;
+	TransformMatrix forward(3.14*2-radians, Point<double>(1.0, 1.0));
+	auto p0 = Point<double>(0, 0);
+	auto p1 = forward(Point<double>(0, size.y));
+	auto p2 = forward(Point<double>(size.x, size.y));
+	auto p3 = forward(Point<double>(size.x, 0));
 	
-	for( int iy=0; iy<out_size.height(); iy++ )
-		for( int ix=0; ix<out_size.height(); ix++ ){
-			auto [x, y] = forward( ix, iy );
+	auto start = p0.min(p1).min(p2).min(p3).floor();
+	auto end   = p0.max(p1).max(p2).max(p3).ceil();
+	return Rectangle<int>( start, end - start );
+}
+
+Plane Transformations::rotation( const Plane& p, double radians, Point<double> scale ){
+	auto area = rotationEndSize( p.getSize(), radians, scale );
+	TransformMatrix forward( radians, scale );
+	
+	Plane out(area.size);
+	
+	for( int iy=0; iy<out.get_height(); iy++ )
+		for( int ix=0; ix<out.get_width(); ix++ ){
+			auto pos = forward( Point<double>(ix, iy) + area.pos );
 			
-			int x1 = std::max(x, 0.0);
-			int y1 = std::max(y, 0.0);
-			//TODO: interpolate
+			auto clamped = pos.max({0,0}).min(p.getSize()-1);
+			auto base0 = clamped.floor();
+			auto delta = clamped - base0;
+			auto base1 = (base0 + 1).min(p.getSize()-1);
 			
-		}*/
+			auto v00 = p[base0.y][base0.x];
+			auto v01 = p[base0.y][base1.x];
+			auto v10 = p[base1.y][base0.x];
+			auto v11 = p[base1.y][base1.x];
+			
+			auto mix = [](auto a, auto b, double x){ return a * (1.0-x) + b * x; };
+			out[iy][ix] = mix(
+				mix(v00, v01, delta.x),
+				mix(v10, v11, delta.x),
+				delta.y);
+		}
+	
+	return out;
+}
+
+Plane Transformations::rotationAlpha( const Plane& p, double radians, Point<double> scale ){
+	auto area = rotationEndSize( p.getSize(), radians, scale );
+	TransformMatrix forward( radians, scale );
+	
+	Plane out(area.size);
+	
+	for( int iy=0; iy<out.get_height(); iy++ )
+		for( int ix=0; ix<out.get_width(); ix++ ){
+			auto pos = forward( Point<double>(ix, iy) + area.pos ).round();
+			auto posClamped = pos.max({0,0}).min(p.getSize()-1);
+			
+			out[iy][ix] = (pos == posClamped) ? color::WHITE : color::BLACK;
+		}
+	
+	return out;
 }
 
