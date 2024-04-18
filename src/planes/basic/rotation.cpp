@@ -28,23 +28,36 @@ using namespace Overmix;
 
 class TransformMatrix {
 	private:
-		double x0, x1;
-		double y0, y1;
-		Point<double> scale;
+		double x0{1}, x1{0};
+		double y0{0}, y1{1};
 		
 	public:
-		TransformMatrix( double radians, Point<double> scale ) {
+		TransformMatrix() = default;
+		
+		static TransformMatrix forward( double radians, Point<double> scale ) {
+			TransformMatrix out;
+			
+			out.x0 =  std::cos(radians) * scale.x;
+			out.x1 = -std::sin(radians) * scale.y;
+			out.y0 =  std::sin(radians) * scale.x;
+			out.y1 =  std::cos(radians) * scale.y;
+			
+			return out;
+		}
+		static TransformMatrix backwards( double radians, Point<double> scale ) {
+			TransformMatrix out;
 			radians = 3.14*2-radians;
-			this->scale = Point<double>(1.0, 1.0)/scale;
-			// TODO: Support scaling
-			x0 =  std::cos(radians);// * scale.x;
-			x1 = -std::sin(radians);// * scale.y;
-			y0 =  std::sin(radians);// * scale.x;
-			y1 =  std::cos(radians);// * scale.y;
+			scale = Point<double>(1.0, 1.0)/scale;
+			
+			out.x0 =  std::cos(radians) * scale.x;
+			out.x1 = -std::sin(radians) * scale.x;
+			out.y0 =  std::sin(radians) * scale.y;
+			out.y1 =  std::cos(radians) * scale.y;
+			
+			return out;
 		}
 		
 		Point<double> operator()(Point<double> pos){
-			//pos *= scale;
 			return {
 				pos.x * x0 + pos.y * x1,
 				pos.x * y0 + pos.y * y1
@@ -54,8 +67,7 @@ class TransformMatrix {
 
 
 Rectangle<int> Transformations::rotationEndSize( Size<unsigned> size, double radians, Point<double> scale ){
-	//size /= scale;
-	TransformMatrix forward(3.14*2-radians, Point<double>(1.0, 1.0));
+	auto forward = TransformMatrix::forward(radians, scale);
 	auto p0 = Point<double>(0, 0);
 	auto p1 = forward(Point<double>(0, size.y));
 	auto p2 = forward(Point<double>(size.x, size.y));
@@ -68,13 +80,13 @@ Rectangle<int> Transformations::rotationEndSize( Size<unsigned> size, double rad
 
 Plane Transformations::rotation( const Plane& p, double radians, Point<double> scale ){
 	auto area = rotationEndSize( p.getSize(), radians, scale );
-	TransformMatrix forward( radians, scale );
+	auto transform = TransformMatrix::backwards( radians, scale );
 	
 	Plane out(area.size);
 	
 	for( int iy=0; iy<out.get_height(); iy++ )
 		for( int ix=0; ix<out.get_width(); ix++ ){
-			auto pos = forward( Point<double>(ix, iy) + area.pos );
+			auto pos = transform( Point<double>(ix, iy) + area.pos );
 			
 			auto clamped = pos.max({0,0}).min(p.getSize()-1);
 			auto base0 = clamped.floor();
@@ -98,13 +110,13 @@ Plane Transformations::rotation( const Plane& p, double radians, Point<double> s
 
 Plane Transformations::rotationAlpha( const Plane& p, double radians, Point<double> scale ){
 	auto area = rotationEndSize( p.getSize(), radians, scale );
-	TransformMatrix forward( radians, scale );
+	auto transform = TransformMatrix::backwards( radians, scale );
 	
 	Plane out(area.size);
 	
 	for( int iy=0; iy<out.get_height(); iy++ )
 		for( int ix=0; ix<out.get_width(); ix++ ){
-			auto pos = forward( Point<double>(ix, iy) + area.pos ).round();
+			auto pos = transform( Point<double>(ix, iy) + area.pos ).round();
 			auto posClamped = pos.max({0,0}).min(p.getSize()-1);
 			
 			out[iy][ix] = (pos == posClamped) ? color::WHITE : color::BLACK;
