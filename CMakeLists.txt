@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.6)
 project(Overmix)
 add_definitions( "-DOVERMIX_VERSION_STRING=\"Overmix 4.0 dev\"" )
 
