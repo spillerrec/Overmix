@@ -39,7 +39,10 @@ class Modified{
 		
 		//TODO: "modifier" must not modify the original plane??
 		template<typename Func> void modify( Func modifier )
-			{ modified = modifier(modified); }
+		{
+			modified = modifier((*this)());
+			original = nullptr;
+		}
 };
 
 using ModifiedPlane = Modified<Plane>;

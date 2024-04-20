@@ -21,6 +21,8 @@
 #include "../planes/ImageEx.hpp"
 #include "../comparators/AComparator.hpp"
 
+#include "../planes/basic/rotation.hpp"
+
 #include <stdexcept>
 
 using namespace Overmix;
@@ -45,12 +47,40 @@ const Plane& AContainer::plane( unsigned index ) const{
 	return img[0];
 }
 
+bool AContainer::requiresTransform( unsigned index ) const
+{
+	auto z = zoom( index );
+	return z.x != 1.0 || z.y != 1.0 || rotation( index ) != 0.0;
+}
+
+Point<double> AContainer::transformedPos( unsigned index ) const
+{
+	auto p = rawPos( index );
+	if (!requiresTransform( index ))
+		return p;
+	
+	auto size = plane( index ).getSize();
+	auto area = Transformations::rotationEndSize( size, rotation( index ), zoom( index ) );
+	return area.pos + p;
+}
+
+Size<unsigned> AContainer::transformedSize( unsigned index ) const
+{
+	auto size = plane( index ).getSize();
+	if (!requiresTransform( index ))
+		return size;
+	
+	auto area = Transformations::rotationEndSize( size, rotation( index ), zoom( index ) );
+	return area.size;
+}
+
+
 /** @return The smallest rectangle which can contain all the images */
 Rectangle<double> AContainer::size() const{
 	auto min = minPoint();
 	auto max = min;
 	for( unsigned i=0; i<count(); ++i )
-		max = max.max( image(i).getSize().to<double>() + rawPos(i) );
+		max = max.max( transformedSize( i ).to<double>() + transformedPos( i ) );
 	return { min, max-min };
 }
 
@@ -61,7 +91,7 @@ Point<double> AContainer::minPoint() const{
 	
 	Point<double> min = rawPos( 0 );
 	for( unsigned i=0; i<count(); i++ )
-		min = min.min( rawPos(i) );
+		min = min.min( transformedPos( i ) );
 	
 	return min;
 }
@@ -73,7 +103,7 @@ Point<double> AContainer::maxPoint() const{
 	
 	Point<double> max = rawPos( 0 );
 	for( unsigned i=0; i<count(); i++ )
-		max = max.max( rawPos(i) );
+		max = max.max( transformedPos( i ) );
 	
 	return max;
 }

@@ -50,6 +50,10 @@ class ContainerImageRef{
 		auto  zoom()      const{ return parent->zoom(      index ); }
 		auto  rotation()  const{ return parent->rotation(  index ); }
 		
+		auto transformedPos()    const{ return parent->transformedPos(    index ); }
+		auto transformedSize()   const{ return parent->transformedSize(   index ); }
+		bool requiresTransform() const{ return parent->requiresTransform( index ); }
+		
 		void  setRawPos( Point<double> newVal ) { parent->setRawPos(   index, newVal ); }
 		void  setFrame(int newVal )          { parent->setFrame( index, newVal ); }
 		void  setZoom( Point<double> newVal ){ parent->setZoom(  index, newVal ); }
@@ -92,6 +96,10 @@ class AContainer{
 		virtual void        setCachedOffset( unsigned, unsigned, ImageOffset );
 		ImageOffset findOffset( unsigned, unsigned );
 		double findError( unsigned, unsigned );
+		
+		bool requiresTransform( unsigned index ) const;
+		Point<double> transformedPos( unsigned index ) const;
+		Size<unsigned> transformedSize( unsigned index ) const;
 		
 	public:
 		Rectangle<double> size() const;

@@ -21,6 +21,7 @@
 
 #include "../containers/AContainer.hpp"
 #include "../planes/ImageEx.hpp"
+#include "../planes/basic/rotation.hpp"
 #include "../utils/AProcessWatcher.hpp"
 #include "../utils/PlaneUtils.hpp"
 
@@ -168,6 +169,9 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 		use_plane_alpha = true;
 	if( spacing.x > 1.0 || spacing.y > 1.0 )
 		use_plane_alpha = true;
+	for( auto align : aligner )
+		if( align.requiresTransform() )
+			use_plane_alpha = true;
 	
 	auto color_space = aligner.image(0).getColorSpace();
 	ImageEx img( for_merging ? color_space.changed( Transform::GRAY ) : color_space );
@@ -196,14 +200,31 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 		sum.offset  = offset;
 		
 		for( auto align : aligner ){
-			auto pos = scale * (align.rawPos() - min_point);
+			auto pos = scale * (align.transformedPos() - min_point);
 			auto plane = getScaled( align.image()[c], (scale * align.image()[0].getSize()).round() );
 			
 			const Plane& alpha_plane = masks.getAlpha( c, align.imageMask(), align.alpha() );
-			if( use_plane_alpha && alpha_plane.valid() )
-				sum.addAlphaPlane( plane(), alpha_plane, pos );
-			else
-				sum.addPlane( plane(), pos );
+			bool has_alpha = use_plane_alpha && alpha_plane.valid();
+			
+			
+			if( align.requiresTransform() ) {
+				auto transform = [&](auto& p){ return Transformations::rotation( p, align.rotation(), align.zoom() ); };
+				
+				Plane alpha;
+				if( has_alpha )
+					alpha = transform( alpha_plane );
+				else
+					alpha = Transformations::rotationAlpha( plane(), align.rotation(), align.zoom() );
+				
+				plane.modify( transform );
+				sum.addAlphaPlane( plane(), alpha, pos );
+			}
+			else {
+				if( has_alpha )
+					sum.addAlphaPlane( plane(), alpha_plane, pos );
+				else
+					sum.addPlane( plane(), pos );
+			}
 			
 			progress.add();
 		}
@@ -213,7 +234,6 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 		
 		if( c == 0 && use_plane_alpha )
 			img.alpha_plane() = sum.alpha();
-			//TODO: what to do about the rest? We should try to fill in the gaps?
 	}
 	
 	return img;
