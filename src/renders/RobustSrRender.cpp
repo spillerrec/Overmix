@@ -135,7 +135,7 @@ ImageEx RobustSrRender::render(const AContainer &group, AProcessWatcher *watcher
 		qDebug() << "Output size: " << output.size();
 		vector<MatrixImg> lowres;
 		for( auto g : group )
-			lowres.emplace_back( g.image()[c], g.pos()-min_point, g.image().getSize()*upscale_factor, upscale_factor );
+			lowres.emplace_back( g.image()[c], g.rawPos()-min_point, g.image().getSize()*upscale_factor, upscale_factor );
 
 		for( int i=0; i<iterations; i++ ){
 			qDebug() << "Starting iteration " << i;

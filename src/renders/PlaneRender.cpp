@@ -40,7 +40,7 @@ Plane PlaneRender::renderPlane( const AContainer& aligner, int plane, AProcessWa
 	info.emplace_back( out, (aligner.size().pos * scale).round() );
 	
 	for( auto align : aligner )
-		info.emplace_back( const_cast<Plane&>( align.image()[plane] ), (align.pos() * scale).round() );
+		info.emplace_back( const_cast<Plane&>( align.image()[plane] ), (align.rawPos() * scale).round() );
 		//TODO: FIX!!!
 	
 	//Execute

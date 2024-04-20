@@ -47,7 +47,7 @@ void FrameAligner::align( class AContainer& container, class AProcessWatcher* wa
 	progress_offset.loopAll( [&](int i){
 			FrameContainer current( container, frames[i] );
 			auto aligned_offset = base_point - current.minPoint();
-			current.offsetAll( aligned_offset + (images.pos(i) - images.minPoint()) );
+			current.offsetAll( aligned_offset + (images.rawPos(i) - images.minPoint()) );
 		} );
 }
 

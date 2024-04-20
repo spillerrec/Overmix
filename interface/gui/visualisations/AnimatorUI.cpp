@@ -198,7 +198,7 @@ void AnimatorUI::render(ImageContainer& container, AProcessWatcher* watcher){
 		}
 		
 		container.addImage(std::move(copy), -1, -1, filename);
-		container.setPos(i, crop.pos);
+		container.setRawPos(i, crop.pos);
 		progress.add();
 	}
 	container.setAligned();

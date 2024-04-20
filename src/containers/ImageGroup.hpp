@@ -96,11 +96,11 @@ class ImageGroup : public AContainer{
 		virtual void           setMask(   unsigned index, int id ) override{      items.at(index).setSharedMask( id ); }
 		virtual int            frame(     unsigned index ) const override{ return items.at(index).frame; }
 		virtual unsigned       maskCount()                 const override{ return masks->size(); }
-		virtual Point<double>  pos(       unsigned index ) const override{ return items.at(index).offset; }
+		virtual Point<double>  rawPos(    unsigned index ) const override{ return items.at(index).offset; }
 		virtual Point<double>  zoom(      unsigned index ) const override{ return items.at(index).zoom; }
 		virtual       double   rotation(  unsigned index ) const override{ return items.at(index).rotation; }
 		
-		virtual void setPos(      unsigned index, Point<double> newVal ) override{ items.at(index).offset   = newVal; }
+		virtual void setRawPos(   unsigned index, Point<double> newVal ) override{ items.at(index).offset   = newVal; }
 		virtual void setFrame(    unsigned index, int           newVal ) override{ items.at(index).frame    = newVal; }
 		virtual void setZoom(     unsigned index, Point<double> newVal ) override{ items.at(index).zoom     = newVal; }
 		virtual void setRotation( unsigned index, double        newVal ) override{ items.at(index).rotation = newVal; }

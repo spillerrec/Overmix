@@ -50,7 +50,7 @@ ImageEx FastRender::render( const AContainer& aligner, AProcessWatcher* watcher 
 			return {};
 		
 		const auto& current = aligner.plane(i);
-		auto offset = aligner.pos(i) - min_point;
+		auto offset = aligner.rawPos(i) - min_point;
 		
 		auto writeArea = [&](int x, int y, int w, int h){
 			for( int iy=y; iy<h; iy++ )

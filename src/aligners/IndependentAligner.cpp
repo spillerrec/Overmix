@@ -75,6 +75,6 @@ void IndependentAligner::align( AContainer& container, AProcessWatcher* watcher 
 	}
 	
 	for( unsigned i=0; i<container.count(); i++ )
-		container.setPos( i, (offsets[i] * 2).round() / 2.0 );//.round() );
+		container.setRawPos( i, (offsets[i] * 2).round() / 2.0 );//.round() );
 }
 

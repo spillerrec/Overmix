@@ -37,7 +37,7 @@ void SRSampleCreator::render( ImageContainer& add_to, const ImageEx& img ) const
 			sample.scale( size_lr );
 			
 			add_to.addImage( std::move(sample), -1, -1, QString::fromUtf8(("lr_" + std::to_string(x) + "_" + std::to_string(y)).c_str()) );
-			add_to.setPos( add_to.count()-1, offset );
+			add_to.setRawPos( add_to.count()-1, offset );
 		}
 	add_to.setAligned();
 }

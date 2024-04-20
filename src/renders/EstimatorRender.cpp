@@ -60,7 +60,7 @@ Plane EstimatorRender::degrade( const Plane& original, const Parameters& para ) 
 	
 	
 	//Crop to the area overlapping with our current image
-	auto pos = (para.container.pos(para.index)-para.min_point)*upscale_factor*channelScale(para.container, para.index, para.channel);
+	auto pos = (para.container.rawPos(para.index)-para.min_point)*upscale_factor*channelScale(para.container, para.index, para.channel);
 	auto crop_size = para.container.image(para.index)[para.channel].getSize()*upscale_factor;
 	out.crop( pos, crop_size );
 	
@@ -147,7 +147,7 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 		for( auto ref : group ){
 			auto alpha = Plane();
 			auto scaled = ref.image()[c].scale_select(alpha, (ref.image()[c].getSize()*upscale_factor), scale_method);			
-			summer.addPlane(scaled, ref.pos()*upscale_factor); //TODO: min_point offset?
+			summer.addPlane(scaled, ref.rawPos()*upscale_factor); //TODO: min_point offset?
 		}
 		est[c] = summer.average();
 		//est[c].fill(color::WHITE/2); //This must work as well for the algorithm to be correct
@@ -159,7 +159,7 @@ ImageEx EstimatorRender::render(const AContainer &group, AProcessWatcher *watche
 			
 			//Improve estimate
 			for( unsigned j=0; j<group.count(); j++, progress.add() )
-				sign( output_copy, degrade( est[c], {group, j, c} ), group.image(j)[c], group.pos(j)-min_point
+				sign( output_copy, degrade( est[c], {group, j, c} ), group.image(j)[c], group.rawPos(j)-min_point
 					, beta, channelScale(group, j, c)*upscale_factor );
 			
 			//Regularization

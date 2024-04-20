@@ -108,7 +108,7 @@ pair<ImageGetter,Point<double>> RecursiveAligner::combine( const AContainer& con
 		ImageContainer local_container;
 		local_container.addImage( ImageEx( Plane( first.plane()), Plane( first.alpha()) ) ); //We are having copies here!!
 		local_container.addImage( ImageEx( Plane(second.plane()), Plane(second.alpha()) ) );
-		local_container.setPos( 1, offset );
+		local_container.setRawPos( 1, offset );
 		
 		//Render it
 		auto img = AverageRender( false, true ).render( local_container );
@@ -127,7 +127,7 @@ ImageGetter RecursiveAligner::align( AContainer& container, Progress& progress, 
 				return getGetter( container, begin ); //Just return this one
 		case 2: { //Optimization for two images
 				auto offset = combine( container, getGetter( container, begin ), getGetter( container, begin+1 ) );
-				container.setPos( begin+1, container.pos(begin) + offset.second );
+				container.setRawPos( begin+1, container.rawPos(begin) + offset.second );
 				progress.add( 2 );
 				return std::move( offset.first );
 			}
@@ -140,14 +140,14 @@ ImageGetter RecursiveAligner::align( AContainer& container, Progress& progress, 
 				auto corner1 = Point<double>( numeric_limits<double>::max(), numeric_limits<double>::max() );
 				auto corner2 = corner1;
 				for( unsigned i=begin; i<middle; i++ )
-					corner1 = corner1.min( container.pos(i) );
+					corner1 = corner1.min( container.rawPos(i) );
 				//Find top-left corner of second
 				for( unsigned i=middle; i<end; i++ )
-					corner2 = corner2.min( container.pos(i) );
+					corner2 = corner2.min( container.rawPos(i) );
 				
 				//move all in "middle to end" using the offset
 				for( unsigned i=middle; i<end; i++ )
-					container.setPos( i, container.pos( i ) + corner1 + offset.second - corner2 );
+					container.setRawPos( i, container.rawPos( i ) + corner1 + offset.second - corner2 );
 				
 				return std::move( offset.first ); //Return the combined image
 			}
@@ -163,6 +163,6 @@ void RecursiveAligner::align( AContainer& container, AProcessWatcher* watcher ) 
 	
 	auto scale = container.getComparator()->scale();
 	for( unsigned i=0; i<container.count(); i++ )
-		container.setPos( i, container.pos( i ) / scale );
+		container.setRawPos( i, container.rawPos( i ) / scale );
 }
 

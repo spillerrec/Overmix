@@ -84,16 +84,16 @@ void LinearAligner::align( AContainer& container, AProcessWatcher* watcher ) con
 	else*/{
 		LinearFunc hor, ver;//, both;
 		for( unsigned i=0; i<container.count(); i++ ){
-			hor.add( i, container.pos(i).x );
-			ver.add( i, container.pos(i).y );
+			hor.add( i, container.rawPos(i).x );
+			ver.add( i, container.rawPos(i).y );
 			//both.add( pos(i).x, pos(i).y );
 		}
 		
 		for( unsigned i=0; i<container.count(); i++ ){
 			switch( method ){
-				case AlignMethod::BOTH: container.setPos( i, { hor(i), ver(i) } ); break;
-				case AlignMethod::VER:  container.setPos( i, { 0, ver(i) } ); break;
-				case AlignMethod::HOR:  container.setPos( i, { hor(i), 0 } ); break;
+				case AlignMethod::BOTH: container.setRawPos( i, { hor(i), ver(i) } ); break;
+				case AlignMethod::VER:  container.setRawPos( i, { 0, ver(i) } ); break;
+				case AlignMethod::HOR:  container.setRawPos( i, { hor(i), 0 } ); break;
 			};
 		}
 	}

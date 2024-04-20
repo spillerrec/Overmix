@@ -44,13 +44,13 @@ class ContainerImageRef{
 		auto& imageRef()       { return parent->imageRef(  index ); }
 		auto& alpha()     const{ return parent->alpha(     index ); }
 		auto  imageMask() const{ return parent->imageMask( index ); }
-		auto  pos()       const{ return parent->pos(       index ); }
+		auto  rawPos()    const{ return parent->rawPos(    index ); }
 		auto  frame()     const{ return parent->frame(     index ); }
 		auto& plane()     const{ return parent->plane(     index ); }
 		auto  zoom()      const{ return parent->zoom(      index ); }
 		auto  rotation()  const{ return parent->rotation(  index ); }
 		
-		void  setPos( Point<double> newVal ) { parent->setPos(   index, newVal ); }
+		void  setRawPos( Point<double> newVal ) { parent->setRawPos(   index, newVal ); }
 		void  setFrame(int newVal )          { parent->setFrame( index, newVal ); }
 		void  setZoom( Point<double> newVal ){ parent->setZoom(  index, newVal ); }
 		void  setRotation( double newVal    ){ parent->setRotation( index, newVal ); }
@@ -64,8 +64,8 @@ class AContainer{
 		virtual       ImageEx& imageRef(  unsigned index )       = 0;
 		virtual const Plane&   alpha(     unsigned index ) const = 0;
 		virtual       int      imageMask( unsigned index ) const;
-		virtual Point<double>  pos(       unsigned index ) const = 0;
-		virtual       void     setPos(    unsigned index, Point<double> newVal ) = 0;
+		virtual Point<double>  rawPos(    unsigned index ) const = 0;
+		virtual       void     setRawPos( unsigned index, Point<double> newVal ) = 0;
 		virtual       int      frame(     unsigned index ) const = 0;
 		virtual       void     setFrame(  unsigned index, int newVal ) = 0;
 		
@@ -99,9 +99,9 @@ class AContainer{
 		Point<double> maxPoint() const;
 		std::pair<bool,bool> hasMovement() const;
 		void resetPosition()
-			{ for( unsigned i=0; i<count(); i++ ) setPos( i, { 0.0, 0.0 } ); }
+			{ for( unsigned i=0; i<count(); i++ ) setRawPos( i, { 0.0, 0.0 } ); }
 		void offsetAll( Point<double> offset )
-			{ for( unsigned i=0; i<count(); i++ ) setPos( i, pos( i ) + offset ); }
+			{ for( unsigned i=0; i<count(); i++ ) setRawPos( i, rawPos( i ) + offset ); }
 		std::vector<int> getFrames() const;
 		
 		//Indexed access, including typedefs

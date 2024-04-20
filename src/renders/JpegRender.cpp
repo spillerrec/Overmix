@@ -49,7 +49,7 @@ Plane JpegRender::degrade( const Plane& original, const Parameters& para ) const
 	Plane out( original );
 	
 	//Crop to the area overlapping with our current image
-	auto pos = (para.container.pos(para.index)-para.min_point)*channelScale(para.container, para.index, para.channel);
+	auto pos = (para.container.rawPos(para.index)-para.min_point)*channelScale(para.container, para.index, para.channel);
 	out.crop( pos.round(), para.container.image(para.index)[para.channel].getSize() );
 	
 	return out;
@@ -70,7 +70,7 @@ ImageEx JpegRender::render(const AContainer &group, AProcessWatcher *watcher) co
 		imgs.addImage( ImageEx{ group.image( j ) } );
 	imgs.rebuildIndexes();
 	for( unsigned j=0; j<group.count(); j++ )
-		imgs.setPos( j, group.pos( j ) );
+		imgs.setRawPos( j, group.rawPos( j ) );
 	
 	/* Waifu test code
 	Plane mask( 853, 480 );

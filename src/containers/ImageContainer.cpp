@@ -212,14 +212,14 @@ const Plane& ImageContainer::alpha( unsigned index ) const{
 	return groups.at(pos.group).alpha( pos.index );
 }
 
-Point<double> ImageContainer::pos( unsigned index ) const{
+Point<double> ImageContainer::rawPos( unsigned index ) const{
 	auto pos = index_cache.getImage( index );
-	return groups.at(pos.group).pos( pos.index );
+	return groups.at(pos.group).rawPos( pos.index );
 }
 
-void ImageContainer::setPos( unsigned index, Point<double> newVal ){
+void ImageContainer::setRawPos( unsigned index, Point<double> newVal ){
 	auto pos = index_cache.getImage( index );
-	groups.at(pos.group).setPos( pos.index, newVal );
+	groups.at(pos.group).setRawPos( pos.index, newVal );
 	aligned = true;
 }
 

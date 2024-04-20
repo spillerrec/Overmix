@@ -28,9 +28,9 @@ static Point<bool> imagesMoves( const AContainer& container ){
 		return { false, false };
 	
 	Point<bool> moves{ false, false };
-	auto base = container.pos( 0 );
+	auto base = container.rawPos( 0 );
 	for( unsigned i=1; i<container.count(); ++i ){
-		auto current = container.pos( i );
+		auto current = container.rawPos( i );
 		moves.x = moves.x || (base.x != current.x);
 		moves.y = moves.y || (base.y != current.y);
 	}
@@ -55,7 +55,7 @@ class Line{
 };
 
 static void addPoint( Line& line, FrameContainer& container, int index, Point<bool> moves ){
-	auto pos = container.pos( index );
+	auto pos = container.rawPos( index );
 	auto real_index = container.realIndex( index );
 	
 	line.add(

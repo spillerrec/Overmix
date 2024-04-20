@@ -99,7 +99,7 @@ class PointRender : public PointRenderBase{
 
 bool isSubpixel( const AContainer& aligner ){
 	for( unsigned j=0; j<aligner.count(); ++j ){
-		auto pos = aligner.pos( j );
+		auto pos = aligner.rawPos( j );
 		if( pos != pos.round() )
 			return true;
 	}
@@ -148,7 +148,7 @@ ImageEx FloatRender::render( const AContainer& aligner, AProcessWatcher* watcher
 				PointRender p( PointF( ix, iy ) + full.pos*scale/*, points*/ );
 				
 				for( unsigned j=0; j<aligner.count(); ++j )
-					p.add_points( aligner.image( j )[i], aligner.pos( j ) * scale, scales[j] );
+					p.add_points( aligner.image( j )[i], aligner.rawPos( j ) * scale, scales[j] );
 				
 				row[ix] = p.value();
 			}

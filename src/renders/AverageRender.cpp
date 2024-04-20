@@ -196,7 +196,7 @@ ImageEx AverageRender::render( const AContainer& aligner, AProcessWatcher* watch
 		sum.offset  = offset;
 		
 		for( auto align : aligner ){
-			auto pos = scale * (align.pos() - min_point);
+			auto pos = scale * (align.rawPos() - min_point);
 			auto plane = getScaled( align.image()[c], (scale * align.image()[0].getSize()).round() );
 			
 			const Plane& alpha_plane = masks.getAlpha( c, align.imageMask(), align.alpha() );

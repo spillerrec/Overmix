@@ -50,7 +50,7 @@ class StaticDiff{
 			auto alpha = img.alpha() ? color::fromDouble( img.alpha().pixel( offset ) ) : 1.0;
 			
 			//Find the expected color
-			auto pos = (img.pos() + offset - absolute).round();
+			auto pos = (img.rawPos() + offset - absolute).round();
 			color_type expected = reference[0].pixel( pos );
 			
 			//Add it to the sum

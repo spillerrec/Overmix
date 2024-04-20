@@ -50,7 +50,7 @@ Rectangle<double> AContainer::size() const{
 	auto min = minPoint();
 	auto max = min;
 	for( unsigned i=0; i<count(); ++i )
-		max = max.max( image(i).getSize().to<double>() + pos(i) );
+		max = max.max( image(i).getSize().to<double>() + rawPos(i) );
 	return { min, max-min };
 }
 
@@ -59,9 +59,9 @@ Point<double> AContainer::minPoint() const{
 	if( count() == 0 )
 		return { 0, 0 };
 	
-	Point<double> min = pos( 0 );
+	Point<double> min = rawPos( 0 );
 	for( unsigned i=0; i<count(); i++ )
-		min = min.min( pos(i) );
+		min = min.min( rawPos(i) );
 	
 	return min;
 }
@@ -71,9 +71,9 @@ Point<double> AContainer::maxPoint() const{
 	if( count() == 0 )
 		return { 0, 0 };
 	
-	Point<double> max = pos( 0 );
+	Point<double> max = rawPos( 0 );
 	for( unsigned i=0; i<count(); i++ )
-		max = max.max( pos(i) );
+		max = max.max( rawPos(i) );
 	
 	return max;
 }
@@ -83,9 +83,9 @@ std::pair<bool,bool> AContainer::hasMovement() const{
 	if( count() == 0 )
 		return movement;
 	
-	auto fixed = pos( 0 );
+	auto fixed = rawPos( 0 );
 	for( unsigned i=1; i<count() && (!movement.first || !movement.second); ++i ){
-		auto current = pos( i );
+		auto current = rawPos( i );
 		movement.first  = movement.first  || current.x != fixed.x;
 		movement.second = movement.second || current.y != fixed.y;
 	}
@@ -147,6 +147,6 @@ double AContainer::findError( unsigned index1, unsigned index2 ){
 	if( hasCachedOffset( index1, index2 ) )
 		return getCachedOffset( index1, index2 ).error;
 	
-	auto offset = pos(index2) - pos(index1);
+	auto offset = rawPos(index2) - rawPos(index1);
 	return getComparator()->findError( plane(index1), plane(index2), alpha(index1), alpha(index2), offset.x, offset.y );
 }

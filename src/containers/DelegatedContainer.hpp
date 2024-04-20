@@ -39,7 +39,7 @@ class ConstDelegatedContainer : public AContainer{
 		virtual const Plane& alpha( unsigned index ) const override{ return container.alpha( index ); }
 		virtual const Plane& mask( unsigned index ) const override{ return container.mask( index ); }
 		virtual unsigned maskCount() const override{ return container.maskCount(); }
-		virtual Point<double> pos( unsigned index ) const override{ return container.pos( index ); }
+		virtual Point<double> rawPos( unsigned index ) const override{ return container.rawPos( index ); }
 		virtual int frame( unsigned index ) const override{ return container.frame( index ); }
 		virtual Point<double>  zoom(      unsigned index ) const override{ return container.zoom     ( index ); }
 		virtual       double   rotation(  unsigned index ) const override{ return container.rotation ( index ); }
@@ -47,7 +47,7 @@ class ConstDelegatedContainer : public AContainer{
 		virtual ImageEx& imageRef( unsigned ) override{ throw const_exception(); }
 		virtual void setMask( unsigned, int ) override { throw const_exception(); }
 		virtual void setFrame( unsigned, int ) override{ throw const_exception(); }
-		virtual void setPos( unsigned, Point<double> ) override{ throw const_exception(); }
+		virtual void setRawPos( unsigned, Point<double> ) override{ throw const_exception(); }
 		virtual void setZoom(     unsigned, Point<double> ) override{ throw const_exception(); }
 		virtual void setRotation( unsigned, double        ) override{ throw const_exception(); }
 		
@@ -68,7 +68,7 @@ class DelegatedContainer : public ConstDelegatedContainer{
 		
 	public: //AContainer implementation
 		virtual ImageEx& imageRef( unsigned index ) override{ return mutable_container.imageRef( index ); }
-		virtual void setPos( unsigned index, Point<double> pos ) override{ mutable_container.setPos( index, pos ); }
+		virtual void setRawPos( unsigned index, Point<double> pos ) override{ mutable_container.setRawPos( index, pos ); }
 		virtual void setFrame( unsigned index, int frame ) override{ mutable_container.setFrame( index, frame ); }
 		virtual void setMask( unsigned index, int id ) override { mutable_container.setMask( index, id ); }
 		virtual void setCachedOffset( unsigned i, unsigned j, ImageOffset offset ) override { mutable_container.setCachedOffset( i, j, offset ); }

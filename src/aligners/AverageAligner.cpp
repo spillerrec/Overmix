@@ -44,7 +44,7 @@ void AverageAligner::align( AContainer& container, AProcessWatcher* watcher ) co
 		
 		//Find offset to base image
 		auto offset = comparator->findOffset( render.average(), img(), render.alpha(), alpha(), hint ).distance;
-		container.setPos( i, container.minPoint() + offset/comparator->scale() );
+		container.setRawPos( i, container.minPoint() + offset/comparator->scale() );
 		render.addAlphaPlane( img(), alpha(), offset );
 		
 		//Update hint

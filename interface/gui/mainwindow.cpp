@@ -636,7 +636,7 @@ void main_widget::applyModifications(){
 	ExceptionCatcher::Guard( this, [&](){
 		auto& container = getAlignedImages();
 		ProgressWatcher( this, "Applying modifications" ).loopAll( container.count(), [&]( int i ){
-				container.setPos( i, preprocessor_list->modifyOffset( container.pos(i) ) );
+				container.setRawPos( i, preprocessor_list->modifyOffset( container.rawPos(i) ) );
 				container.imageRef(i) = preprocessor_list->process( container.imageRef(i) );
 			} );
 	} );
