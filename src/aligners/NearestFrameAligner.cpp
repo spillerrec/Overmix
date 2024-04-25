@@ -23,9 +23,14 @@
 #include "../planes/ImageEx.hpp"
 #include "../utils/AProcessWatcher.hpp"
 
+#include <stdexcept>
+
 using namespace Overmix;
 
 void NearestFrameAligner::align( class AContainer& container, class AProcessWatcher* watcher ) const{
+	if (container.getComparator()->includesRotationOrScale())
+		throw std::runtime_error("Rotation/scaling not supported");
+	
 	//Get all used frame IDs
 	auto frames = container.getFrames();
 	if( frames.size() == 0 )

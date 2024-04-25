@@ -37,7 +37,10 @@ void SuperResAligner::align( class AContainer& container, class AProcessWatcher*
 		auto img = container.image( i );
 		img.scaleFactor( {scale, scale} );
 		//TODO: movement...
-		container.setRawPos( i, comparator->findOffset( base[0], img[0], base.alpha_plane(), img.alpha_plane() ).distance / scale );
+		auto offset = comparator->findOffset( base[0], img[0], base.alpha_plane(), img.alpha_plane() );
+		container.setRawPos( i, offset.distance / scale );
+		container.setRotation( i, offset.rotation );
+		container.setZoom( i, offset.scale );
 	}
 }
 

@@ -32,6 +32,9 @@ using namespace Overmix;
 
 
 void IndependentAligner::align( AContainer& container, AProcessWatcher* watcher ) const {
+	if (container.getComparator()->includesRotationOrScale())
+		throw std::runtime_error("Rotation/scaling not supported");
+	
 	Progress progress( "IndependentAligner", container.count() * range, watcher );
 	for( unsigned i=0; i<container.count(); i++ )
 		for( unsigned j=i+1; j<=std::min(i+range, container.count()-1); j++ ){

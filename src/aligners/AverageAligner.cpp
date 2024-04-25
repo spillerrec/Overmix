@@ -23,10 +23,15 @@
 #include "../planes/ImageEx.hpp"
 #include "../utils/AProcessWatcher.hpp"
 
+#include <stdexcept>
+
 using namespace Overmix;
 
 void AverageAligner::align( AContainer& container, AProcessWatcher* watcher ) const {
 	auto comparator = container.getComparator();
+	if (comparator->includesRotationOrScale())
+		throw std::runtime_error("Rotation/scaling not supported");
+
 	container.resetPosition();
 	if( container.count() <= 1 ) //If there is nothing to align
 		return;

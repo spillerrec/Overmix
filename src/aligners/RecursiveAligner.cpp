@@ -120,6 +120,8 @@ pair<ImageGetter,Point<double>> RecursiveAligner::combine( const AContainer& con
 ImageGetter RecursiveAligner::align( AContainer& container, Progress& progress, unsigned begin, unsigned end ) const{
 	if( begin >= end )
 		throw invalid_argument( "Invalid image range" );
+	if (container.getComparator()->includesRotationOrScale())
+		throw std::runtime_error("Rotation/scaling not supported");
 	
 	auto amount = end - begin;
 	switch( amount ){

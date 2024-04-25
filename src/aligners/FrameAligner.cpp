@@ -28,6 +28,8 @@ using namespace Overmix;
 void FrameAligner::align( class AContainer& container, class AProcessWatcher* watcher ) const{
 	auto frames = container.getFrames();
 	auto base_point = container.minPoint();
+	if (container.getComparator()->includesRotationOrScale())
+		throw std::runtime_error("Rotation/scaling not supported");
 	
 	Progress progress( "FrameAligner", 3, watcher );
 	auto progress_render = progress.makeProgress( "Render frames", frames.size() );
