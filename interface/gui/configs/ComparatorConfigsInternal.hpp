@@ -73,6 +73,15 @@ class MultiScaleComparatorConfig : public AComparatorConfig{
 		QString discription() const override{ return "Halves resolution recursively"; }
 };
 
+class LogPolarComparatorConfig : public AComparatorConfig{
+	public:
+		explicit LogPolarComparatorConfig( QWidget* parent );
+        std::unique_ptr<AComparator> getComparator() const override;
+		
+		QString name() const override { return "Log-Polar"; }
+		QString discription() const override{ return "Finds rotation/scale by aligning in the log-polar coordinate space"; }
+};
+
 
 }
 

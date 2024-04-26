@@ -22,6 +22,7 @@
 #include "comparators/GradientComparator.hpp"
 #include "comparators/BruteForceComparator.hpp"
 #include "comparators/MultiScaleComparator.hpp"
+#include "comparators/LogPolarComparator.hpp"
 
 #include "../Spinbox2D.hpp"
 #include "../AlignMethodSelector.hpp"
@@ -48,6 +49,7 @@ void ComparatorConfigChooser::p_initialize(){
 	set( &addConfig<GradientComparatorConfig>() );
 	set( &addConfig<MultiScaleComparatorConfig>() );
 	set( &addConfig<BruteForceComparatorConfig>() );
+	set( &addConfig<LogPolarComparatorConfig>() );
 }
 
 std::unique_ptr<AComparator> ComparatorConfigChooser::getComparator() const
@@ -157,5 +159,13 @@ MultiScaleComparatorConfig::MultiScaleComparatorConfig( QWidget* parent ) : ACom
 
 std::unique_ptr<AComparator> MultiScaleComparatorConfig::getComparator() const{
 	return std::make_unique<MultiScaleComparator>();
+}
+
+LogPolarComparatorConfig::LogPolarComparatorConfig( QWidget* parent ) : AComparatorConfig( parent ) {
+	
+}
+
+std::unique_ptr<AComparator> LogPolarComparatorConfig::getComparator() const{
+	return std::make_unique<LogPolarComparator>();
 }
 

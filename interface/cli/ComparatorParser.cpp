@@ -21,6 +21,7 @@
 
 #include "comparators/BruteForceComparator.hpp"
 #include "comparators/GradientComparator.hpp"
+#include "comparators/LogPolarComparator.hpp"
 #include "containers/AContainer.hpp"
 #include "containers/ImageContainer.hpp"
 
@@ -48,6 +49,8 @@ static std::unique_ptr<AComparator> makeComparator( QString name, QString parame
 		return convertUnique<GradientComparator,Difference::SimpleSettings,AlignMethod,double,int,int,color_type>( parameters );
 	if( name == "BruteForce" )
 		return convertUnique<BruteForceComparator,Difference::SimpleSettings,AlignMethod,double>( parameters );
+	if( name == "LogPolar" )
+		return std::make_unique<LogPolarComparator>();
 	else
 		throw std::invalid_argument( fromQString( "No comparator found with the name: '" + name + "'" ) );
 }
@@ -63,6 +66,7 @@ void Overmix::comparatorHelpText( QTextStream& std ){
 	std << "Algorithms:\n";
 	std << "\t" << "Gradient:<stride>/<use L2>/<min difference>:<AlignMethod>:<movement>:<start level>:<max level>:<max difference>\n";
 	std << "\t" << "BruteForce:<stride>/<use L2>/<min difference>:<AlignMethod>:<movement>\n";
+	std << "\t" << "LogPolar\n";
 	std << "\n";
 	std << "AlignMethod: both, ver, hor\n";
 	std << "\n";

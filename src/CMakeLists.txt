@@ -54,6 +54,7 @@ set(SOURCES_COMPARATORS
 	comparators/GradientComparator.cpp
 	comparators/GradientPlane.cpp
 	comparators/MultiScaleComparator.cpp
+	comparators/LogPolarComparator.cpp
 	)
 	
 set(SOURCES_RENDERS
