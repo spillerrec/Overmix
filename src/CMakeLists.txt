@@ -11,6 +11,7 @@ set(SOURCES_CONTAINERS
 set(SOURCES_PLANES
 	planes/basic/difference.cpp
 	planes/basic/rotation.cpp
+	planes/basic/logpolar.cpp
 	planes/manipulators/Inpaint.cpp
 	planes/manipulators/Mosaic.cpp
 	planes/manipulators/Steam.cpp

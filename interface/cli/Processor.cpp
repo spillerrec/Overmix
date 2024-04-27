@@ -21,6 +21,7 @@
 
 #include "planes/ImageEx.hpp"
 #include "planes/PatternRemove.hpp"
+#include "planes/basic/logpolar.hpp"
 #include "color.hpp"
 
 #include <QString>
@@ -171,6 +172,21 @@ struct PatternProcessor : public Processor {
 	}
 };
 
+struct LogPolarProcessor : public Processor {
+	Size<unsigned> size;
+	double epScale;
+	
+	explicit LogPolarProcessor( QString str )
+		{ convert( str, size, epScale ); }
+	
+	void process( ImageEx& img ) override {
+		for (unsigned i=0; i<img.size(); i++)
+			img[i] = Transformations::logPolar(img[i], size, epScale);
+		if (img.alpha_plane())
+			img.alpha_plane() = Transformations::logPolar(img.alpha_plane(), size, epScale);
+	}
+};
+
 
 std::unique_ptr<Processor> Overmix::processingParser( QString parameters ){
 	Splitter split( parameters, ':' );
@@ -194,6 +210,8 @@ std::unique_ptr<Processor> Overmix::processingParser( QString parameters ){
 		return std::make_unique<LevelProcessor>( split.right );
 	if( split.left == "pattern" )
 		return std::make_unique<PatternProcessor>( split.right );
+	if( split.left == "logpolar" )
+		return std::make_unique<LogPolarProcessor>( split.right );
 	
 	throw std::invalid_argument( fromQString( "No processor found with the name: '" + split.left + "'" ) );
 }
