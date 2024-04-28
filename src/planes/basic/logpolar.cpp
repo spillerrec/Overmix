@@ -18,6 +18,7 @@
 #include "logpolar.hpp"
 
 #include "../Plane.hpp"
+#include "interpolation.hpp"
 
 #include <iostream>
 
@@ -41,22 +42,7 @@ Plane Transformations::logPolar( const Plane& p, Size<unsigned> endSize, double 
 		for (int ix=0; ix<lp.get_width(); ix++){
 			auto ep = epPrecal[ix];
 			Point<double> pos = wantedPre * ep + half_size;
-
-			auto clamped = pos.max({0,0}).min(p.getSize()-1);
-			auto base0 = clamped.floor();
-			auto delta = clamped - base0;
-			auto base1 = (base0 + 1).min(p.getSize()-1);
-			
-			auto v00 = p[base0.y][base0.x];
-			auto v01 = p[base0.y][base1.x];
-			auto v10 = p[base1.y][base0.x];
-			auto v11 = p[base1.y][base1.x];
-			
-			auto mix = [](auto a, auto b, double x){ return a * (1.0-x) + b * x; };
-			lp[iy][ix] = mix(
-				mix(v00, v01, delta.x),
-				mix(v10, v11, delta.x),
-				delta.y);
+			lp[iy][ix] = bilinear(p, pos);
 		}
 	}
 	

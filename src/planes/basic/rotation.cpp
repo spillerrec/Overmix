@@ -19,6 +19,7 @@
 
 #include "../Plane.hpp"
 #include "../PlaneExcept.hpp"
+#include "interpolation.hpp"
 
 #include "../../color.hpp"
 
@@ -87,22 +88,7 @@ Plane Transformations::rotation( const Plane& p, double radians, Point<double> s
 	for( int iy=0; iy<out.get_height(); iy++ )
 		for( int ix=0; ix<out.get_width(); ix++ ){
 			auto pos = transform( Point<double>(ix, iy) + area.pos );
-			
-			auto clamped = pos.max({0,0}).min(p.getSize()-1);
-			auto base0 = clamped.floor();
-			auto delta = clamped - base0;
-			auto base1 = (base0 + 1).min(p.getSize()-1);
-			
-			auto v00 = p[base0.y][base0.x];
-			auto v01 = p[base0.y][base1.x];
-			auto v10 = p[base1.y][base0.x];
-			auto v11 = p[base1.y][base1.x];
-			
-			auto mix = [](auto a, auto b, double x){ return a * (1.0-x) + b * x; };
-			out[iy][ix] = mix(
-				mix(v00, v01, delta.x),
-				mix(v10, v11, delta.x),
-				delta.y);
+			out[iy][ix] = bilinear(p, pos);
 		}
 	
 	return out;
