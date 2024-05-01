@@ -43,10 +43,10 @@ struct Point{
 	template<typename T2>
 	Point( const Point<T2>& p ) : x( p.x ), y( p.y ) { }
 	
-	Point<T>( QPoint  p ) : x( p.x()     ), y( p.y()      ) { }
-	Point<T>( QPointF p ) : x( p.x()     ), y( p.y()      ) { }
-	Point<T>( QSize   p ) : x( p.width() ), y( p.height() ) { }
-	Point<T>( QSizeF  p ) : x( p.width() ), y( p.height() ) { }
+	Point( QPoint  p ) : x( p.x()     ), y( p.y()      ) { }
+	Point( QPointF p ) : x( p.x()     ), y( p.y()      ) { }
+	Point( QSize   p ) : x( p.width() ), y( p.height() ) { }
+	Point( QSizeF  p ) : x( p.width() ), y( p.height() ) { }
 	
 	double lenght() const{ return std::sqrt( x*x + y*y ); }
 	double manhattanLength() const{ return x+y; }

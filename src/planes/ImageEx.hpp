@@ -112,7 +112,7 @@ class ImageEx{
 		
 		Point<unsigned> getSize() const{
 			return std::accumulate( planes.begin(), planes.end(), Point<unsigned>( 0, 0 )
-				,	[]( auto& acc, auto& info ){ return acc.max( info.p.getSize() ); } );
+				,	[]( const auto& acc, const auto& info ){ return acc.max( info.p.getSize() ); } );
 		}
 		unsigned get_width()  const{ return getSize().width(); }
 		unsigned get_height() const{ return getSize().height(); }

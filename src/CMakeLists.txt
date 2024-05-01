@@ -114,5 +114,5 @@ if(MATH_LIBRARY)
 endif()
 
 # C++17
-set_property(TARGET OvermixCore PROPERTY CXX_STANDARD 17)
+set_property(TARGET OvermixCore PROPERTY CXX_STANDARD 20)
 set_property(TARGET OvermixCore PROPERTY CXX_STANDARD_REQUIRED ON)
