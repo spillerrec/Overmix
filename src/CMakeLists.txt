@@ -84,6 +84,12 @@ set(SOURCES_VIDEO
 	video/VideoStream.cpp
 	)
 	
+set(SOURCES_GPU
+	gpu/GpuInstance.cpp
+	gpu/GpuDevice.cpp
+	gpu/GpuBuffer.cpp
+	)
+	
 set(SOURCES_OTHERS
 	aligners/AnimationSaver.cpp
 	planes/dump/DumpPlane.cpp
@@ -104,11 +110,12 @@ add_library(OvermixCore
 	${SOURCES_RENDERS} 
 	${SOURCES_DEGRADERS} 
 	${SOURCES_VIDEO} 
+	${SOURCES_GPU} 
 	${WAIFU_SOURCES} 
 	${SOURCES_OTHERS} 
 	)
-target_include_directories(OvermixCore PRIVATE ${JPEG_INCLUDE_DIRS} ${PNGPP_INCLUDE_DIRS})
-target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent PNG::PNG ZLIB::ZLIB LibLZMA::LibLZMA pugixml::pugixml PkgConfig::FFTW3 PkgConfig::LIBRAW PkgConfig::FFMPEG OpenMP::OpenMP_CXX ${JPEG_LIBRARIES} ${WAIFU_LIB})
+target_include_directories(OvermixCore PRIVATE ${JPEG_INCLUDE_DIRS} ${PNGPP_INCLUDE_DIRS} ${WEBGPU_INCLUDE_DIR})
+target_link_libraries(OvermixCore Qt5::Gui Qt5::Concurrent PNG::PNG ZLIB::ZLIB LibLZMA::LibLZMA pugixml::pugixml PkgConfig::FFTW3 PkgConfig::LIBRAW PkgConfig::FFMPEG OpenMP::OpenMP_CXX ${JPEG_LIBRARIES} ${WAIFU_LIB} ${WEBGPU_LIBRARY})
 if(MATH_LIBRARY)
     target_link_libraries(OvermixCore ${MATH_LIBRARY})
 endif()

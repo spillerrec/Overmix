@@ -15,26 +15,27 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef PLANES_BASIC_ROTATION_HPP
-#define PLANES_BASIC_ROTATION_HPP
+#include "GpuBuffer.hpp"
+#include "GpuDevice.hpp"
 
-#include <utility>
+#include <webgpu/webgpu.h>
 
-#include "../../Geometry.hpp"
+#define WEBGPU_BACKEND_WGPU
 
-namespace Overmix{
-	class Plane;
+
+WGPUBufferMapAsyncStatus MapAsyncWaiter::Wait(GpuDevice& device) {
+	while (!done){
+		
+		#ifdef WEBGPU_BACKEND_WGPU
+			 // Non-standardized behavior: submit empty queue to flush callbacks
+			 // (wgpu-native also has a wgpuDevicePoll but its API is more complex)
+			 auto queue = device.MakeQueue();
+			 queue.Submit();
+		#else
+			 // Non-standard Dawn way
+			 wgpuDeviceTick(device.Get());
+		#endif
+		
+	}
+	return status;
 }
-class GpuPlane;
-
-namespace Overmix{ namespace Transformations{
-	
-	Rectangle<int> rotationEndSize( Size<unsigned> size, double radians, Point<double> scale={1.0, 1.0} );
-	
-	Plane rotation( const Plane& p1, double radians, Point<double> scale={1.0, 1.0} );
-	Plane rotationAlpha( const Plane& p1, double radians, Point<double> scale={1.0, 1.0} );
-	
-	GpuPlane rotation( GpuPlane& p1, double radians, Point<double> scale={1.0, 1.0} );
-} }
-
-#endif

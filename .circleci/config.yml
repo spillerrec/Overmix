@@ -8,13 +8,20 @@ jobs:
       - run: apt-get update
       - run:
           name: Install dependencies
-          command: apt-get install -y cmake libavcodec-dev libavformat-dev libavutil-dev qtbase5-dev libqcustomplot-dev liblcms2-dev libpugixml-dev libfftw3-dev libjpeg-dev libpng-dev liblzma-dev libqt5x11extras5-dev libboost-dev libeigen3-dev libx11-xcb-dev libxcb-util0-dev libpng++-dev libraw-dev
+          command: apt-get install -y cmake libavcodec-dev libavformat-dev libavutil-dev qtbase5-dev libqcustomplot-dev liblcms2-dev libpugixml-dev libfftw3-dev libjpeg-dev libpng-dev liblzma-dev libqt5x11extras5-dev libboost-dev libeigen3-dev libx11-xcb-dev libxcb-util0-dev libpng++-dev libraw-dev unzip
+      - run:
+          name: Install wgpu-native
+          command: wget https://github.com/gfx-rs/wgpu-native/releases/download/v0.19.4.1/wgpu-linux-x86_64-release.zip
+      - run: mkdir wgpu
+      - run:
+          name: Extract wgpu-native
+          command: unzip wgpu-linux-x86_64-release.zip -d wgpu/webgpu
       - run:
           name: Setup build folder
           command: mkdir -p build
       - run:
           name: Configure project for Release
-          command: cd build && cmake .. -DCMAKE_BUILD_TYPE=RELEASE
+          command: cd build && cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DWEBGPU_LIBRARY=../wgpu/webgpu -DWEBGPU_INCLUDE_DIR=../wgpu
       - run:
           name: Compile project
           command: cd build && make

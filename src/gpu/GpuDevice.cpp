@@ -15,26 +15,21 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef PLANES_BASIC_ROTATION_HPP
-#define PLANES_BASIC_ROTATION_HPP
+#include "GpuDevice.hpp"
 
-#include <utility>
+GpuHandle<WGPUShaderModule,wgpuShaderModuleRelease> GpuDevice::CreateShader(const char* const data) {
+	WGPUShaderModuleDescriptor shaderDesc{};
+	// [...] Describe shader module
+	
+	//WGPUShaderModuleSPIRVDescriptor
+	WGPUShaderModuleWGSLDescriptor shaderCodeDesc{};
+	shaderCodeDesc.chain.next = nullptr;
+	shaderCodeDesc.chain.sType = WGPUSType_ShaderModuleWGSLDescriptor;
+	
+	shaderCodeDesc.code = data;
 
-#include "../../Geometry.hpp"
-
-namespace Overmix{
-	class Plane;
+	// Connect the chain
+	shaderDesc.nextInChain = &shaderCodeDesc.chain;
+	
+	return wgpuDeviceCreateShaderModule(device, &shaderDesc);
 }
-class GpuPlane;
-
-namespace Overmix{ namespace Transformations{
-	
-	Rectangle<int> rotationEndSize( Size<unsigned> size, double radians, Point<double> scale={1.0, 1.0} );
-	
-	Plane rotation( const Plane& p1, double radians, Point<double> scale={1.0, 1.0} );
-	Plane rotationAlpha( const Plane& p1, double radians, Point<double> scale={1.0, 1.0} );
-	
-	GpuPlane rotation( GpuPlane& p1, double radians, Point<double> scale={1.0, 1.0} );
-} }
-
-#endif

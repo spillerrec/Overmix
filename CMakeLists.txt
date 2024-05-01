@@ -38,6 +38,9 @@ pkg_check_modules(LCMS2 REQUIRED IMPORTED_TARGET lcms2)
 find_library(MATH_LIBRARY m)
 find_library(W2XC NAMES w2xc libw2xc HINTS x86_64-w64-mingw32/lib)
 
+find_library(WEBGPU_LIBRARY NAMES wgpu_native wgpu_native.dll)
+find_path(WEBGPU_INCLUDE_DIR webgpu/webgpu.h)
+
 if(W2XC)
 	message( "Compiling with Waifu2x support" )
 	set(WAIFU_LIB ${W2XC})

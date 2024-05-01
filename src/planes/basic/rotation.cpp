@@ -23,12 +23,14 @@
 
 #include "../../color.hpp"
 
+#include "../../gpu/GpuInstance.hpp"
+#include "../../gpu/GpuPlane.hpp"
 
 using namespace std;
 using namespace Overmix;
 
 class TransformMatrix {
-	private:
+	public:
 		double x0{1}, x1{0};
 		double y0{0}, y1{1};
 		
@@ -80,6 +82,10 @@ Rectangle<int> Transformations::rotationEndSize( Size<unsigned> size, double rad
 }
 
 Plane Transformations::rotation( const Plane& p, double radians, Point<double> scale ){
+//	auto& device = GpuInstance::GetDevice();
+//	GpuPlane in(p, device);
+//	return rotation(in, radians, scale).ToCpu(device);
+
 	auto area = rotationEndSize( p.getSize(), radians, scale );
 	auto transform = TransformMatrix::backwards( radians, scale );
 	
@@ -108,6 +114,92 @@ Plane Transformations::rotationAlpha( const Plane& p, double radians, Point<doub
 			out[iy][ix] = (pos == posClamped) ? color::WHITE : color::BLACK;
 		}
 	
+	return out;
+}
+
+
+GpuPlane Transformations::rotation( GpuPlane& in, double radians, Point<double> scale ) {
+	auto area = rotationEndSize( in.GetSize(), radians, scale );
+	auto transform = TransformMatrix::backwards( radians, scale );
+
+	auto& device = GpuInstance::GetDevice();
+	
+	auto bindLayout = device.CreateBindLayout(
+		WGPUBufferBindingType_ReadOnlyStorage, 
+		WGPUBufferBindingType_Uniform, 
+		WGPUBufferBindingType_Storage,
+		WGPUBufferBindingType_Uniform,
+		WGPUBufferBindingType_Uniform);
+	
+	struct RotationInfo {
+		float x0, x1, y0, y1, xOffset, yOffset;
+	};
+	auto shader = R"SHADER(
+		struct PlaneInfo {
+			width: u32,
+			height: u32,
+			stride: u32,
+		}
+		struct RotationInfo {
+			x0: f32,
+			x1: f32,
+			y0: f32,
+			y1: f32,
+			xOffset: f32,
+			yOffset: f32
+		}
+
+		@group(0) @binding(0) var<storage,read> inputBuffer: array<f32>;
+		@group(0) @binding(1) var<uniform> inputBufferInfo: PlaneInfo;
+		@group(0) @binding(2) var<storage,read_write> outputBuffer: array<f32>;
+		@group(0) @binding(3) var<uniform> outputBufferInfo: PlaneInfo;
+		@group(0) @binding(4) var<uniform> rotInfo: RotationInfo;
+		@compute @workgroup_size(16, 16)
+		fn computeStuff(@builtin(global_invocation_id) id: vec3<u32>) {
+			if (id.x >= outputBufferInfo.width || id.y >= outputBufferInfo.height)
+			{
+				return;
+			}
+			
+			var outputIdx = id.x + id.y * outputBufferInfo.width;
+
+			var p = vec2f(f32(id.x), f32(id.y)) + vec2f(rotInfo.xOffset, rotInfo.yOffset);
+			var outPos = vec2f(
+							p.x * rotInfo.x0 + p.y * rotInfo.x1,
+							p.x * rotInfo.y0 + p.y * rotInfo.y1);
+			outPos = clamp(outPos, vec2f(0.0,0.0), vec2f(f32(inputBufferInfo.width-1), f32(inputBufferInfo.height-1)));
+
+			//TODO: Implement bilinear
+			var inputIdx  = u32(outPos.x) + u32(outPos.y) * inputBufferInfo.width;
+			outputBuffer[outputIdx] = inputBuffer[inputIdx];
+		}
+	)SHADER";
+	auto computePipeline = device.MakePipeline("computeStuff", shader, bindLayout);
+
+	
+	auto queue = device.MakeQueue();
+	RotationInfo rotInfo { (float)transform.x0, (float)transform.x1, (float)transform.y0, (float)transform.y1, (float)area.pos.x, (float)area.pos.y };
+
+	GpuPlane out(area.size, device);
+	auto rotInfoBuf = device.CreateStruct(rotInfo, queue);
+	auto inInfoBuf = device.CreateStruct(in.GetInfoStruct(), queue);
+	auto outInfoBuf = device.CreateStruct(out.GetInfoStruct(), queue);
+	
+	auto encoder = device.MakeEncoder();
+	
+	auto computePass = encoder.MakeComputePass();
+	
+	auto bindGroup = device.CreateBindGroup(bindLayout, in, inInfoBuf, out, outInfoBuf, rotInfoBuf);
+	computePass.SetPipeline(computePipeline);
+	computePass.SetBindGroup(bindGroup);
+	computePass.SetDispatchWorkgroups((area.size.width() + 15)/16, (area.size.height() + 15)/16);
+
+	computePass.End();
+	
+	queue.Submit(encoder.Finish());
+	
+	//queue.Wait();
+
 	return out;
 }
 

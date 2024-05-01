@@ -15,26 +15,18 @@
 	along with Overmix.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef PLANES_BASIC_ROTATION_HPP
-#define PLANES_BASIC_ROTATION_HPP
+#pragma once
 
-#include <utility>
+#include "GpuHandle.hpp"
 
-#include "../../Geometry.hpp"
+#include <webgpu/webgpu.h>
 
-namespace Overmix{
-	class Plane;
-}
-class GpuPlane;
-
-namespace Overmix{ namespace Transformations{
-	
-	Rectangle<int> rotationEndSize( Size<unsigned> size, double radians, Point<double> scale={1.0, 1.0} );
-	
-	Plane rotation( const Plane& p1, double radians, Point<double> scale={1.0, 1.0} );
-	Plane rotationAlpha( const Plane& p1, double radians, Point<double> scale={1.0, 1.0} );
-	
-	GpuPlane rotation( GpuPlane& p1, double radians, Point<double> scale={1.0, 1.0} );
-} }
-
-#endif
+class GpuCommandBuffer {
+	private:
+		GpuHandle<WGPUCommandBuffer, wgpuCommandBufferRelease> commandBuffer;
+		
+	public:
+		GpuCommandBuffer(WGPUCommandBuffer commandBuffer) : commandBuffer(commandBuffer) { }
+		
+		WGPUCommandBuffer Get() { return commandBuffer; }
+};
