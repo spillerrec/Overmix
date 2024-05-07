@@ -21,7 +21,7 @@ jobs:
           command: mkdir -p build
       - run:
           name: Configure project for Release
-          command: cd build && cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DWEBGPU_LIBRARY=../wgpu/webgpu -DWEBGPU_INCLUDE_DIR=../wgpu
+          command: cd build && cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DWEBGPU_LIBRARY=../wgpu/webgpu/libwgpu_native.a -DWEBGPU_INCLUDE_DIR=../wgpu
       - run:
           name: Compile project
           command: cd build && make
