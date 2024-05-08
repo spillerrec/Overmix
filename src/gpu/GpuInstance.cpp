@@ -110,7 +110,7 @@ GpuInstance::GpuInstance() {
 
 std::unique_ptr<GpuDevice> GpuInstance::RequestDevice(){
 	WGPUDeviceDescriptor deviceDesc = {};
-	
+	/*
 	WGPURequiredLimits requiredLimits = {};
 	requiredLimits.limits.maxComputeWorkgroupSizeX = 32;
 	requiredLimits.limits.maxComputeWorkgroupSizeY = 1;
@@ -130,7 +130,7 @@ std::unique_ptr<GpuDevice> GpuInstance::RequestDevice(){
 	requiredLimits.limits.maxBufferSize = 1024 * 1024 * 1024;
 	requiredLimits.limits.minStorageBufferOffsetAlignment = supportedLimits.limits.minStorageBufferOffsetAlignment;
 	requiredLimits.limits.minUniformBufferOffsetAlignment = supportedLimits.limits.minUniformBufferOffsetAlignment;
-
+	*/
 	
 	
 	deviceDesc.nextInChain = nullptr;

@@ -147,7 +147,7 @@ ImageEx VideoFrame::toImageEx(){
 		p.fill( 0 );
 	
 	if( info.planar ){
-		auto readPlane = [=]( int index, Plane& p, unsigned (*f)( uint8_t*& ) ){
+		auto readPlane = [&]( int index, Plane& p, unsigned (*f)( uint8_t*& ) ){
 				//Read an entire plane into 'p', using reader 'f'
 				for( unsigned iy=0; iy<p.get_height(); iy++ ){
 					uint8_t *data = frame->data[index] + iy*frame->linesize[index];

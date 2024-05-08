@@ -52,7 +52,6 @@ static auto edgeDetect(const ImageEx& input){
 				*/
 				double edgeMax = std::max(std::abs(dirs.first), std::abs(dirs.second));
 				double edgeMin = std::min(std::abs(dirs.first), std::abs(dirs.second));
-				double strength = edgeMax / maxStrenght;
 				double singleEdge = double(edgeMax - edgeMin) / edgeMax;
 				
 				//out[y][x] = std::max(out[y][x], edge * strength);

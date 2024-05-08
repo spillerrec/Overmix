@@ -492,7 +492,7 @@ void imageViewer::mouseMoveEvent( QMouseEvent *event ){
 
 		drag->setMimeData( mimeData );
 		drag->exec( Qt::CopyAction | Qt::MoveAction );
-		mouse_active = 0;
+		mouse_active = {};
 		return;
 	}
 	else if( !(mouse_active & button_drag) )
@@ -560,7 +560,7 @@ void imageViewer::create_context_event( const QMouseEvent& event ){
 }
 
 void imageViewer::wheelEvent( QWheelEvent *event ){
-	int amount = event->delta() / 8;
+	int amount = (int)std::round(event->angleDelta().y() / 8);
 	if( amount == 0 )
 		return;
 	amount = ( amount > 0 ) ? 1 : -1;
@@ -570,7 +570,7 @@ void imageViewer::wheelEvent( QWheelEvent *event ){
 		goto_frame( current_frame + amount );
 	}
 	else //Change zoom-level
-		change_zoom( zoom.level() + amount, event->pos() );
+		change_zoom( zoom.level() + amount, event->position().toPoint() );
 }
 
 
