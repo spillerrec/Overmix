@@ -203,6 +203,15 @@ class PlaneBase{
 			}
 			return output;
 		}
+		template<typename Function>
+		auto mapParallel( Function f ) const{
+			PlaneBase<decltype(f(T()))> output( getSize() );
+			#pragma omp parallel for
+			for( unsigned iy=0; iy<get_height(); iy++ )
+				for( unsigned ix=0; ix<get_width(); ix++ )
+					output[iy][ix] = f( (*this)[iy][ix] );
+			return output;
+		}
 		
 		void flipHor(){
 			for( auto row : *this )

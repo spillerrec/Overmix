@@ -21,7 +21,6 @@
 #include "GpuBuffer.hpp"
 
 #include "../planes/Plane.hpp"
-#include "../color.hpp"
 
 class GpuPlane {
 	private:
@@ -30,22 +29,14 @@ class GpuPlane {
 		GpuBuffer<float> buffer;
 
 	public:
-		GpuPlane(const Overmix::Plane& in, GpuDevice& device, GpuQueue& queue) {
-			auto p = in.map([](auto val){ return (float)Overmix::color::asDouble(val); } ); // u16/i16 requires an extension
-			size = p.getSize();
-			image_width = p.get_line_width();
-			auto amount = p.get_height() * p.get_line_width();
-			buffer = device.CreateBuffer<float>(amount, WGPUBufferUsage_Storage | WGPUBufferUsage_CopyDst);
-			buffer.Write(queue, std::span<const float>(p.allPixelsBegin(), amount));
-		}
+		GpuPlane(const Overmix::Plane& in, GpuDevice& device, GpuQueue& queue);
 
 		GpuPlane(const Overmix::Plane& p, GpuDevice& device) {
 			auto queue = device.MakeQueue();
 			*this = GpuPlane(p, device, queue);
-			//queue.Submit();
 		}
 
-		
+		/// Create uninitialized plane on the GPU
 		GpuPlane(Overmix::Size<unsigned> size, GpuDevice& device) {
 			this->size = size;
 			image_width = size.width();
@@ -55,34 +46,7 @@ class GpuPlane {
 		auto& GetBuffer() { return buffer; }
 		auto GetSize() const { return size; }
 
-		Overmix::Plane ToCpu(GpuDevice& device) {
-			Overmix::Plane out(size);
-
-			
-			auto readBuf = device.CreateBuffer<float>(size.width() * size.height(), WGPUBufferUsage_MapRead | WGPUBufferUsage_CopyDst);
-
-			auto encoder = device.MakeEncoder();
-			encoder.CopyBufferToBuffer(buffer, readBuf);
-			
-			auto queue = device.MakeQueue();
-			queue.Submit(encoder.Finish());
-			//queue.Wait();
-	
-			auto waiter = readBuf.MapAsync();
-			
-			auto status = waiter->Wait(device);
-			if (status != WGPUBufferMapAsyncStatus_Success)
-				throw std::runtime_error("GpuPlane::ToCpu wait failed with code: " + std::to_string(status));
-			
-			auto map = readBuf.GetMapped();
-			for (unsigned iy=0; iy<size.height(); iy++)
-				for (unsigned ix=0; ix<size.width(); ix++)
-					out[iy][ix] = Overmix::color::fromDouble(map[ix + iy*size.width()]);
-			
-			readBuf.Unmap();
-
-			return out;
-		}
+		Overmix::Plane ToCpu(GpuDevice& device);
 
 		
 		struct PlaneInfo {
@@ -92,7 +56,7 @@ class GpuPlane {
 
 };
 
-WGPUBindGroupEntry BindGroupEntry(GpuPlane& plane){
+inline WGPUBindGroupEntry BindGroupEntry(GpuPlane& plane){
 	return BindGroupEntry(plane.GetBuffer());
 }
 

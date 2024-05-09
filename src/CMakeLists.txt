@@ -88,6 +88,7 @@ set(SOURCES_GPU
 	gpu/GpuInstance.cpp
 	gpu/GpuDevice.cpp
 	gpu/GpuBuffer.cpp
+	gpu/GpuPlane.cpp
 	)
 	
 set(SOURCES_OTHERS
