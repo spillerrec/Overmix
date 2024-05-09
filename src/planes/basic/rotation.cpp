@@ -91,6 +91,7 @@ Plane Transformations::rotation( const Plane& p, double radians, Point<double> s
 	
 	Plane out(area.size);
 	
+	#pragma omp parallel for
 	for( int iy=0; iy<out.get_height(); iy++ )
 		for( int ix=0; ix<out.get_width(); ix++ ){
 			auto pos = transform( Point<double>(ix, iy) + area.pos );
@@ -106,6 +107,7 @@ Plane Transformations::rotationAlpha( const Plane& p, double radians, Point<doub
 	
 	Plane out(area.size);
 	
+	#pragma omp parallel for
 	for( int iy=0; iy<out.get_height(); iy++ )
 		for( int ix=0; ix<out.get_width(); ix++ ){
 			auto pos = transform( Point<double>(ix, iy) + area.pos ).round();
