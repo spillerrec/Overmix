@@ -43,7 +43,7 @@ class VideoFrame{
 		operator AVFrame*(){ return frame; }
 		
 		bool is_keyframe() const;
-		
+		int frameNumber() const;
 };
 
 }
