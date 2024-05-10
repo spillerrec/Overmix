@@ -50,9 +50,9 @@ class GpuPlane {
 
 		
 		struct PlaneInfo {
-			uint32_t w, h, s;
+			uint32_t w, h, s, offset;
 		};
-		PlaneInfo GetInfoStruct() const { return {size.x, size.y, image_width}; }
+		PlaneInfo GetInfoStruct() const { return {size.x, size.y, image_width, 0}; }
 
 };
 

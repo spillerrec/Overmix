@@ -134,21 +134,18 @@ GpuPlane Transformations::rotation( GpuPlane& in, double radians, Point<double> 
 		WGPUBufferBindingType_Uniform);
 	
 	struct RotationInfo {
-		float x0, x1, y0, y1, xOffset, yOffset;
-	};
+		float x0, y0, x1, y1, xOffset, yOffset;
+	} rotInfo { (float)transform.x0, (float)transform.y0, (float)transform.x1, (float)transform.y1, (float)area.pos.x, (float)area.pos.y };
 	auto shader = R"SHADER(
 		struct PlaneInfo {
-			width: u32,
-			height: u32,
+			size: vec2u,
 			stride: u32,
+			offset: u32
 		}
 		struct RotationInfo {
-			x0: f32,
-			x1: f32,
-			y0: f32,
-			y1: f32,
-			xOffset: f32,
-			yOffset: f32
+			mulX : vec2f,
+			mulY : vec2f,
+			offset: vec2f
 		}
 
 		@group(0) @binding(0) var<storage,read> inputBuffer: array<f32>;
@@ -158,30 +155,31 @@ GpuPlane Transformations::rotation( GpuPlane& in, double radians, Point<double> 
 		@group(0) @binding(4) var<uniform> rotInfo: RotationInfo;
 		@compute @workgroup_size(16, 16)
 		fn computeStuff(@builtin(global_invocation_id) id: vec3<u32>) {
-			if (id.x >= outputBufferInfo.width || id.y >= outputBufferInfo.height)
+			if (id.x >= outputBufferInfo.size.x || id.y >= outputBufferInfo.size.y)
 			{
 				return;
 			}
 			
-			var outputIdx = id.x + id.y * outputBufferInfo.width;
+			var p = vec2f(id.xy) + rotInfo.offset;
+			var outPos = p.x * rotInfo.mulX + p.y * rotInfo.mulY;
+			var clamped = clamp(outPos, vec2f(0.0), vec2f(inputBufferInfo.size)-1);
+			var base0 = floor(clamped);
+			var delta = clamped - base0;
+			var base1 = min(base0 + 1, vec2f(inputBufferInfo.size)-1);
 
-			var p = vec2f(f32(id.x), f32(id.y)) + vec2f(rotInfo.xOffset, rotInfo.yOffset);
-			var outPos = vec2f(
-							p.x * rotInfo.x0 + p.y * rotInfo.x1,
-							p.x * rotInfo.y0 + p.y * rotInfo.y1);
-			outPos = clamp(outPos, vec2f(0.0,0.0), vec2f(f32(inputBufferInfo.width-1), f32(inputBufferInfo.height-1)));
+			var v00 = inputBuffer[u32(base0.x) + u32(base0.y) * inputBufferInfo.stride];
+			var v01 = inputBuffer[u32(base1.x) + u32(base0.y) * inputBufferInfo.stride];
+			var v10 = inputBuffer[u32(base0.x) + u32(base1.y) * inputBufferInfo.stride];
+			var v11 = inputBuffer[u32(base1.x) + u32(base1.y) * inputBufferInfo.stride];
 
-			//TODO: Implement bilinear
-			var inputIdx  = u32(outPos.x) + u32(outPos.y) * inputBufferInfo.width;
-			outputBuffer[outputIdx] = inputBuffer[inputIdx];
+			var outputIdx = id.x + id.y * outputBufferInfo.stride;
+			outputBuffer[outputIdx] = mix(mix(v00, v01, delta.x), mix(v10, v11, delta.x), delta.y);
 		}
 	)SHADER";
 	auto computePipeline = device.MakePipeline("computeStuff", shader, bindLayout);
 
 	
 	auto queue = device.MakeQueue();
-	RotationInfo rotInfo { (float)transform.x0, (float)transform.x1, (float)transform.y0, (float)transform.y1, (float)area.pos.x, (float)area.pos.y };
-
 	GpuPlane out(area.size, device);
 	auto rotInfoBuf = device.CreateStruct(rotInfo, queue);
 	auto inInfoBuf = device.CreateStruct(in.GetInfoStruct(), queue);
@@ -199,8 +197,6 @@ GpuPlane Transformations::rotation( GpuPlane& in, double radians, Point<double> 
 	computePass.End();
 	
 	queue.Submit(encoder.Finish());
-	
-	//queue.Wait();
 
 	return out;
 }
