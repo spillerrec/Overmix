@@ -140,14 +140,26 @@ Output constructFromTuple( Tuple& tuple, std::index_sequence<I...> )
 
 template<typename Output, typename... Args>
 std::unique_ptr<Output> convertUnique( QString parameters, QChar split_char = ':' ){
-	auto args = convertTuple<Args...>( parameters, split_char );
-	return uniqueFromTuple<Output>( args, std::index_sequence_for<Args...>{} );
+	try {
+		auto args = convertTuple<Args...>( parameters, split_char );
+		return uniqueFromTuple<Output>( args, std::index_sequence_for<Args...>{} );
+	}
+	catch (std::exception& e)
+	{
+		throw std::runtime_error(typeid(Output).name() + std::string(": ") + e.what());
+	}
 }
 
 template<typename Output, typename... Args>
 Output convertConstruct( QString parameters, QChar split_char = ':' ){
-	auto args = convertTuple<Args...>( parameters, split_char );
-	return constructFromTuple<Output>( args, std::index_sequence_for<Args...>{} );
+	try {
+		auto args = convertTuple<Args...>( parameters, split_char );
+		return constructFromTuple<Output>( args, std::index_sequence_for<Args...>{} );
+	}
+	catch (std::exception& e)
+	{
+		throw std::runtime_error(typeid(Output).name() + std::string(": ") + e.what());
+	}
 }
 
 }
