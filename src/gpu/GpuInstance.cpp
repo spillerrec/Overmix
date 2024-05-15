@@ -110,16 +110,19 @@ GpuInstance::GpuInstance() {
 
 std::unique_ptr<GpuDevice> GpuInstance::RequestDevice(){
 	WGPUDeviceDescriptor deviceDesc = {};
-	/*
+	
 	WGPURequiredLimits requiredLimits = {};
-	requiredLimits.limits.maxComputeWorkgroupSizeX = 32;
-	requiredLimits.limits.maxComputeWorkgroupSizeY = 1;
+	requiredLimits.limits.maxComputeWorkgroupSizeX = 16;
+	requiredLimits.limits.maxComputeWorkgroupSizeY = 16;
 	requiredLimits.limits.maxComputeWorkgroupSizeZ = 1;
-	requiredLimits.limits.maxComputeInvocationsPerWorkgroup = 32;
-	requiredLimits.limits.maxComputeWorkgroupsPerDimension = 2;
+	requiredLimits.limits.maxComputeInvocationsPerWorkgroup = 16*16;
+	requiredLimits.limits.maxComputeWorkgroupsPerDimension = 1024;
 	
 	requiredLimits.limits.maxStorageBuffersPerShaderStage = 8;
-	requiredLimits.limits.maxStorageBufferBindingSize = 2048;
+	requiredLimits.limits.maxStorageBufferBindingSize = 16384*16384*sizeof(float);
+	requiredLimits.limits.maxUniformBufferBindingSize = 4*1024; //TODO: how much?
+
+	requiredLimits.limits.maxUniformBuffersPerShaderStage = 8;
 	
 	WGPUSupportedLimits supportedLimits{};
 	supportedLimits.nextInChain = nullptr;
@@ -127,16 +130,16 @@ std::unique_ptr<GpuDevice> GpuInstance::RequestDevice(){
 	wgpuAdapterGetLimits(adapter, &supportedLimits);
 	requiredLimits.limits.maxBindGroups = 8;
 	requiredLimits.limits.maxBindingsPerBindGroup = 8;
-	requiredLimits.limits.maxBufferSize = 1024 * 1024 * 1024;
+	requiredLimits.limits.maxBufferSize = 16384*16384*sizeof(float);
 	requiredLimits.limits.minStorageBufferOffsetAlignment = supportedLimits.limits.minStorageBufferOffsetAlignment;
 	requiredLimits.limits.minUniformBufferOffsetAlignment = supportedLimits.limits.minUniformBufferOffsetAlignment;
-	*/
+	
 	
 	
 	deviceDesc.nextInChain = nullptr;
 	deviceDesc.label = "My Device"; // anything works here, that's your call
 	deviceDesc.requiredFeatureCount = 0; // we do not require any specific feature
-	deviceDesc.requiredLimits = nullptr;// &requiredLimits; // we do not require any specific limit
+	deviceDesc.requiredLimits = &requiredLimits; // we do not require any specific limit
 	deviceDesc.defaultQueue.nextInChain = nullptr;
 	deviceDesc.defaultQueue.label = "The default queue";
 	
