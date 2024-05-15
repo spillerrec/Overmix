@@ -20,6 +20,8 @@
 
 #include "../color.hpp"
 
+#include <cstring>
+
 
 GpuPlane::GpuPlane(const Overmix::Plane& in, GpuDevice& device, GpuQueue& queue) {
 	//TODO: Move the int to float convertion to the GPU. This might require us to slightly overallocate in PlaneBase
@@ -32,13 +34,60 @@ GpuPlane::GpuPlane(const Overmix::Plane& in, GpuDevice& device, GpuQueue& queue)
 }
 
 Overmix::Plane GpuPlane::ToCpu(GpuDevice& device) {
-	//TODO: Move the float to int convertion to the GPU.
-	auto readBuf = device.CreateBuffer<float>(size.width() * size.height(), WGPUBufferUsage_MapRead | WGPUBufferUsage_CopyDst);
+	int intWidth = (size.width() + 1) / 2;
+	auto readBuf = device.CreateBuffer<uint32_t>(intWidth * size.height(), WGPUBufferUsage_MapRead | WGPUBufferUsage_CopyDst);
+	auto convertBuf = device.CreateBuffer<uint32_t>(intWidth * size.height(), WGPUBufferUsage_Storage | WGPUBufferUsage_CopySrc);
+
+	auto shader = R"SHADER(
+		struct PlaneInfo {
+			size: vec2u,
+			stride: u32,
+			offset: u32
+		}
+		@group(0) @binding(0) var<storage,read> inputBuffer: array<f32>;
+		@group(0) @binding(1) var<uniform> bufferInfo: PlaneInfo;
+		@group(0) @binding(2) var<storage,read_write> outputBuffer: array<u32>;
+		@compute @workgroup_size(16, 16)
+		fn convertToInt(@builtin(global_invocation_id) id: vec3<u32>) {
+			if (id.x >= bufferInfo.size.x || id.y >= bufferInfo.size.y)
+			{
+				return;
+			}
+			var v0 = inputBuffer[id.x * 2 + 0 + id.y * bufferInfo.stride];
+			var v1 = inputBuffer[id.x * 2 + 1 + id.y * bufferInfo.stride];
+
+			var maxVal = 65536/4 - 1.0;
+			var res0 = u32(clamp(v0, 0.0, 1.0) * maxVal);
+			var res1 = u32(clamp(v1, 0.0, 1.0) * maxVal);
+			var res = res1 * 65536 + res0;
+			
+			var outputIdx = id.x + id.y * u32((bufferInfo.size.x + 1) / 2);
+			outputBuffer[outputIdx] = res;
+		}
+	)SHADER";
+
+	auto bindLayout = device.CreateBindLayout(
+		WGPUBufferBindingType_ReadOnlyStorage, 
+		WGPUBufferBindingType_Uniform, 
+		WGPUBufferBindingType_Storage);
+	auto computePipeline = device.MakePipeline("convertToInt", shader, bindLayout);
+
+
+	auto queue = device.MakeQueue();
+	auto infoBuf = device.CreateStruct(GetInfoStruct(), queue);
 
 	auto encoder = device.MakeEncoder();
-	encoder.CopyBufferToBuffer(buffer, readBuf);
+	auto computePass = encoder.MakeComputePass();
+
+	auto bindGroup = device.CreateBindGroup(bindLayout, buffer, infoBuf, convertBuf);
+	computePass.SetPipeline(computePipeline);
+	computePass.SetBindGroup(bindGroup);
+	computePass.SetDispatchWorkgroups((intWidth + 15)/16, (size.height() + 15)/16);
+
+	computePass.End();
 	
-	auto queue = device.MakeQueue();
+	encoder.CopyBufferToBuffer(convertBuf, readBuf);
+	
 	queue.Submit(encoder.Finish());
 
 	auto waiter = readBuf.MapAsync();
@@ -47,12 +96,10 @@ Overmix::Plane GpuPlane::ToCpu(GpuDevice& device) {
 	if (status != WGPUBufferMapAsyncStatus_Success)
 		throw std::runtime_error("GpuPlane::ToCpu wait failed with code: " + std::to_string(status));
 	
-	Overmix::Plane out(size);
+	Overmix::Plane out(intWidth*2, size.height());
 	auto map = readBuf.GetMapped();
-	#pragma omp parallel for
-	for (unsigned iy=0; iy<size.height(); iy++)
-		for (unsigned ix=0; ix<size.width(); ix++)
-			out[iy][ix] = Overmix::color::fromDouble(map[ix + iy*size.width()]);
+	std::memcpy(out[0].begin(), map.data(), size.y * intWidth * sizeof(uint32_t));
+	out.crop({0,0}, size);
 	
 	readBuf.Unmap();
 
