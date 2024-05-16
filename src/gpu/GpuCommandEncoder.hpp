@@ -44,7 +44,7 @@ public:
 	}
 	
 	GpuComputePass MakeComputePass() {
-		WGPUComputePassDescriptor computePassDesc;
+		WGPUComputePassDescriptor computePassDesc = {};
 		//computePassDesc.timestampWriteCount = 0;
 		computePassDesc.timestampWrites = nullptr;
 		return wgpuCommandEncoderBeginComputePass(encoder, &computePassDesc);
